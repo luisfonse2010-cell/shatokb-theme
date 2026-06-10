@@ -1,0 +1,128 @@
+{%- comment -%}
+This file has been modified by the Yoast SEO for Shopify app.
+You can learn more about this (and learn how to cleanly revert these changes) at https://yoa.st/removing-theme-changes.
+{%- endcomment -%}
+<!doctype html>
+{%- liquid
+    if settings.list_iso_rtl != blank
+        assign locale_iso_code = request.locale.iso_code
+        assign arr_list_rtl = settings.list_iso_rtl | remove:' ' | split:','
+        if arr_list_rtl contains locale_iso_code
+            assign enable_iso_rtl = true
+        else
+            assign enable_iso_rtl = false
+        endif
+    else
+        assign enable_iso_rtl = false
+    endif
+-%}
+<html class="no-js" lang="{{ request.locale.iso_code }}"{% if settings.enable_layout_rtl and enable_iso_rtl %} dir="rtl"{% endif %}>
+    <head>
+{% include 'limespot' %}
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <meta name="theme-color" content="">
+        {%- comment -%}Auto-disabled. Yoast plugin is taking care of Meta Tags output.{%- endcomment -%}
+{%- if disabled_by_yoast_seo -%}
+<link rel="canonical" href="{{ canonical_url }}" canonical-shop-url="{{ shop.url }}/">
+{%- comment -%} End Yoast auto-disable. {%- endcomment -%}
+{%- endif -%}
+        {%- if settings.favicon != blank -%}
+            <link rel="shortcut icon" href="{{ settings.favicon | img_url: '32x32' }}" type="image/png">
+        {%- endif -%}
+        <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+        {%- comment -%}Auto-disabled. Yoast plugin is taking care of SEO output.{%- endcomment -%}
+{%- if disabled_by_yoast_seo -%}
+<title>{{ page_title }} {%- if current_tags %} &ndash; tagged "{{ current_tags | join: ', ' }}"{% endif -%} {%- if current_page != 1 %} &ndash; Page {{ current_page }}{% endif -%} {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}</title>
+{%- comment -%} End Yoast auto-disable. {%- endcomment -%}
+{%- endif -%}
+
+        {%- if page_description -%}
+            {%- comment -%}Auto-disabled. Yoast plugin is taking care of Meta Tags output.{%- endcomment -%}
+{%- if disabled_by_yoast_seo -%}
+<meta name="description" content="{{ page_description | escape }}">
+{%- comment -%} End Yoast auto-disable. {%- endcomment -%}
+{%- endif -%}
+        {%- endif -%}
+        {% render 'meta-tags' %}
+        {{ content_for_header }}
+        {% render 'variable' %}
+        {% render 'global-style' %}
+        {% render 'global-script' %}
+
+        <script>document.documentElement.className = document.documentElement.className.replace('no-js', 'js');</script>
+
+        {%- liquid
+            if settings.layout_body == 'full'
+                assign layout_body = 'body-full-width'
+            elsif settings.layout_body == 'boxed'
+                assign layout_body = 'body-boxed'
+            elsif settings.layout_body == 'custom_width'
+                assign layout_body = 'body-custom-width'
+            endif
+        
+            if settings.style_dots == '02'
+                assign style_dots = 'style-dots-2'
+            endif
+        
+            if settings.style_arrows == '02'
+                assign style_arrows = 'style-arrows-2'
+            elsif settings.style_arrows == '05'
+                assign style_arrows = 'style-arrows-5'
+            elsif settings.style_arrows == '06'
+                assign style_arrows = 'style-arrows-6'
+            elsif settings.style_arrows == '07'
+                assign style_arrows = 'style-arrows-7'
+            elsif settings.style_arrows == '08'
+                assign style_arrows = 'style-arrows-8'
+            elsif settings.style_arrows == '09'
+                assign style_arrows = 'style-arrows-9'
+            endif
+        
+            if settings.product_card_layout == '02'
+                if settings.enable_infor_on_image
+                    assign product_card_layout = 'product-card-layout-02 enable_infor_on_image'
+                else
+                    assign product_card_layout = 'product-card-layout-02'
+                endif
+            elsif settings.product_card_layout == '03'
+                assign product_card_layout = 'product-card-layout-03'
+            elsif settings.product_card_layout == '04'
+                assign product_card_layout = 'product-card-layout-04'
+            elsif settings.product_card_layout == '05'
+                assign product_card_layout = 'product-card-layout-05'
+            elsif settings.product_card_layout == '06'
+                assign product_card_layout = 'product-card-layout-06'
+            elsif settings.product_card_layout == '07'
+                assign product_card_layout = 'product-card-layout-07'
+            elsif settings.product_card_layout == '08'
+                assign product_card_layout = 'product-card-layout-08'
+            elsif settings.product_card_layout == '09'
+                assign product_card_layout = 'product-card-layout-09'
+            else
+                assign product_card_layout = 'product-card-layout-01'
+            endif
+        
+            case settings.quick_shop_type
+                when '1'
+                    assign quick_shop_type = 'quick_shop_option_1'
+                when '2'
+                    assign quick_shop_type = 'quick_shop_option_2'
+                when '3'
+                    assign quick_shop_type = 'quick_shop_option_3'
+                when '4'
+                    assign quick_shop_type = 'quick_shop_bulk'
+            endcase
+        
+            if settings.style_text_size_varriant == '02'
+                assign style_text_size_varriant = 'size_varriant_style_2'
+            endif
+        -%}
+    </head>
+
+    <body class="template-{{ request.page_type }} {{layout_body}} {{style_dots}} {{style_text_size_varriant}} {{style_arrows}} {{product_card_layout}} {% if settings.enable_button_disable_arrows %} enable_button_disable_arrows{% endif %}{% if settings.display_text_color_title %} enable_text_color_title{% if settings.style_text_color_varriant == '02' %} style_2_text_color_varriant{% endif %}{% endif %}{% if settings.hide_compare_homepage %} hide_compare_homepage{% endif %} {{ quick_shop_type }}{% if settings.show_image_loading %} show_image_loading{% endif %}{% if settings.show_effect_close %} show_effect_close{% endif %}{% if settings.enable_layout_rtl and enable_iso_rtl %} layout_rtl{% endif %}{% if request.design_mode %} shopify-design-mode{% endif %}{% if settings.animations_hover_elements != 'none' %} animate--hover-{{ settings.animations_hover_elements }}{% endif %}{% if settings.enable_following_cursor and settings.following_cursor_style == 'default' %} cursor-fixed__show{% endif %}{% unless settings.enable_currencies %} disable_currencies{% endunless %}{% if settings.enable_button_1_border_outside %} btn_1_br_outside{% endif %}{% if settings.enable_button_2_border_outside %} btn_2_br_outside{% endif %}{% if settings.enable_button_3_border_outside %} btn_3_br_outside{% endif %}{% if settings.show_price_percent %} show_price_percent{% endif %}{% if settings.show_wishlist_full_icon %} icon_wishlist_full{% endif %}{% if settings.discount_calculator_free_shipping == 'setup_shipping_delivery' %} setup_shipping_delivery{% endif %}" allow-transparency><main id="MainContent" class="wrapper-body content-for-layout focus-none" role="main" tabindex="-1">
+                    {{ content_for_layout }}
+<limespot></limespot>
+                </main></body>
+</html>
