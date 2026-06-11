@@ -1323,12 +1323,53 @@
     },
     "shatokb_hero_8iDwep": {
       "type": "shatokb-hero",
+      "blocks": {
+        "benefit_i7tKdY": {
+          "type": "benefit",
+          "settings": {
+            "icon_emoji": "🔄",
+            "title": "No results? We'll make it right.",
+            "description": "Every order comes with our satisfaction guarantee. If your skin doesn't respond, we'll find you a better match — no questions, no hassle."
+          }
+        },
+        "benefit_CtV3Yh": {
+          "type": "benefit",
+          "settings": {
+            "icon_emoji": "🇰🇷",
+            "title": "Ingredients that Korean women swear by.",
+            "description": "Snail mucin. Centella. Rice essence. Not trends — decades of science backed by millions of real results. Now available for your skin."
+          }
+        },
+        "benefit_N787P3": {
+          "type": "benefit",
+          "settings": {
+            "icon_emoji": "🌿",
+            "title": "The routine that fits your life.",
+            "description": "3 steps or 7 — you choose. Morning and night, fully mapped. You'll know exactly what to use, when and why."
+          }
+        },
+        "benefit_qMm7dq": {
+          "type": "benefit",
+          "settings": {
+            "icon_emoji": "🎯",
+            "title": "Built for YOUR skin. Not everyone's.",
+            "description": "No generic lists. No \"top 10 products\". Every recommendation is generated in real time based on your exact skin type, concerns and budget."
+          }
+        }
+      },
+      "block_order": [
+        "benefit_i7tKdY",
+        "benefit_CtV3Yh",
+        "benefit_N787P3",
+        "benefit_qMm7dq"
+      ],
       "name": "🌸 Hero — Diagnosis",
       "settings": {
         "badge_text": "🎫 THE SKIN SECRET KOREAN WOMEN HAVE HAD FOR YEARS — NOW YOURS",
         "subtitle": "6 questions. 2 minutes. A complete routine built exclusively for your skin — with the exact Korean products that will actually change it.",
         "cta_primary": "Reveal My Skin Routine",
-        "show_trust_bar": true
+        "show_trust_bar": true,
+        "benefits_title": "Why choose your routine with us?"
       }
     },
     "163945138066afddf5": {
