@@ -54,7 +54,7 @@
   }
   #shatokb-hero .shatokb-hero__title {
     font-family: 'Prompt', 'Arial Black', sans-serif !important;
-    font-size: 62px !important;
+    font-size: 48px !important;
     font-weight: 800 !important;
     line-height: 1.05 !important;
     margin: 0 0 28px !important;
@@ -68,7 +68,7 @@
   }
   #shatokb-hero .shatokb-hero__subtitle {
     font-family: 'Arimo', Arial, sans-serif !important;
-    font-size: 18px !important;
+    font-size: 16px !important;
     line-height: 1.70 !important;
     margin: 0 auto 44px !important;
     max-width: 560px !important;
@@ -112,11 +112,35 @@
     color: rgba(255,255,255,0.40) !important;
     font-family: 'Arimo', Arial, sans-serif !important;
   }
+  /* ── Quiz section title/subtitle — override Halo base 10px ── */
+  .shatokb-quiz-section__titulo {
+    font-family: 'Prompt', 'Arial Black', sans-serif !important;
+    font-size: 28px !important;
+    font-weight: 800 !important;
+    color: #0b0335 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.02em !important;
+    margin: 0 0 12px !important;
+    line-height: 1.2 !important;
+  }
+  .shatokb-quiz-section__subtitulo {
+    font-family: 'Arimo', Arial, sans-serif !important;
+    font-size: 15px !important;
+    color: #6b7280 !important;
+    margin: 0 !important;
+    line-height: 1.55 !important;
+  }
+  .shatokb-progreso__meta {
+    font-family: 'Arimo', Arial, sans-serif !important;
+    font-size: 14px !important;
+    color: #6b7280 !important;
+  }
   @media (max-width: 768px) {
     #shatokb-hero { padding: 72px 24px 64px !important; min-height: auto !important; }
     #shatokb-hero .shatokb-hero__title { font-size: 38px !important; }
     #shatokb-hero .shatokb-hero__subtitle { font-size: 16px !important; }
     #shatokb-hero .shatokb-btn--primary { width: 100% !important; justify-content: center !important; }
+    .shatokb-quiz-section__titulo { font-size: 22px !important; }
   }
 </style>
 
@@ -211,15 +235,15 @@
     </header>
 
     <div id="shatokb-quiz-inicio" style="text-align:center; padding:12px 0 40px;">
-      <div style="font-size:3.6rem; margin-bottom:20px; line-height:1;">🔬✨</div>
-      <p style="font-size:1rem; color:#6b7280; line-height:1.65; max-width:480px; margin:0 auto 32px;">
+      <div style="font-size:36px; margin-bottom:16px; line-height:1;">🔬✨</div>
+      <p style="font-family:'Arimo',Arial,sans-serif; font-size:15px; color:#6b7280; line-height:1.65; max-width:480px; margin:0 auto 28px;">
         Most people spend years — and hundreds of dollars — trying random products that don't work for their skin.<br><br>
         <strong>This quiz ends that.</strong> In 2 minutes you'll know your exact skin profile and the Korean products proven to work for it.
       </p>
-      <button class="shatokb-btn shatokb-btn--primary shatokb-btn--lg" type="button" onclick="shatokbIniciarQuiz()">
+      <button style="display:inline-flex;align-items:center;justify-content:center;padding:15px 36px;background:#3a7af5;color:#fff;font-family:'Arimo',Arial,sans-serif;font-size:16px;font-weight:700;border:none;border-radius:6px;cursor:pointer;text-decoration:none;transition:background 0.2s;" type="button" onclick="shatokbIniciarQuiz()">
         Yes — show me my routine →
       </button>
-      <p style="font-size:0.75rem; color:#9ca3af; margin-top:14px;">Free · No account needed · Results in 2 minutes</p>
+      <p style="font-family:'Arimo',Arial,sans-serif; font-size:13px; color:#9ca3af; margin-top:14px;">Free · No account needed · Results in 2 minutes</p>
     </div>
 
     <div id="shatokb-progreso" class="shatokb-progreso" style="display:none;"
