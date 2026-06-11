@@ -1368,8 +1368,20 @@
         "badge_text": "🎫 THE SKIN SECRET KOREAN WOMEN HAVE HAD FOR YEARS — NOW YOURS",
         "subtitle": "6 questions. 2 minutes. A complete routine built exclusively for your skin — with the exact Korean products that will actually change it.",
         "cta_primary": "Reveal My Skin Routine",
-        "show_trust_bar": true,
-        "benefits_title": "Why does this quiz actually work?"
+        "benefits_title": "Why does this quiz actually work?",
+        "quiz_titulo": "Find out exactly what your skin needs.",
+        "quiz_subtitulo": "2 minutes. 6 questions. A complete routine with real Korean products — chosen for your skin, your concerns and your budget. Free.",
+        "btn_catalogue_show": true,
+        "btn_catalogue_text": "🛍️ Explore the full catalogue",
+        "btn_catalogue_url": "",
+        "btn_whatsapp_show": true,
+        "btn_whatsapp_text": "💬 Talk to a skin expert",
+        "btn_whatsapp_number": "12345678900",
+        "btn_whatsapp_message": "Hi! I just took the skin quiz and need help with my routine.",
+        "btn_retake_show": true,
+        "btn_retake_text": "↺ My skin feels different — redo",
+        "total_bar_label": "Estimated total for your routine",
+        "total_bar_cta": "🛒 Add my full routine to cart"
       }
     },
     "163945138066afddf5": {
@@ -2948,130 +2960,6 @@
         "mg_bottom_mobile": 50
       }
     },
-    "16409351391bc6ccf9": {
-      "type": "product-tab-block",
-      "blocks": {
-        "754a9b2c-0b43-4bbf-839c-c229e8f156eb": {
-          "type": "ProductTabs",
-          "settings": {
-            "title": "COS DE BAHA",
-            "collection": "cos-de-baha"
-          }
-        },
-        "d672657b-959a-44fb-91cd-4352ed8ee468": {
-          "type": "ProductTabs",
-          "disabled": true,
-          "settings": {
-            "title": "Best Sellers",
-            "collection": "collection-home-09-mobile"
-          }
-        },
-        "e98430ab-8a6b-49f8-a27c-63914b504aa3": {
-          "type": "ProductTabs",
-          "disabled": true,
-          "settings": {
-            "title": "Featured Products",
-            "collection": "collection-home-09-flash-deals"
-          }
-        },
-        "ea639172-fc06-4325-af6a-ad57a309e57e": {
-          "type": "ProductTabs",
-          "disabled": true,
-          "settings": {
-            "title": "View All",
-            "collection": "collection-home-09-all"
-          }
-        },
-        "3bf5f6d5-9964-4053-b129-da4a001eebde": {
-          "type": "banner",
-          "settings": {
-            "image": "shopify://shop_images/Sin_titulo_250_x_250_px_1200_x_1200_px_652_x_500_px_500_x_652_px_1.jpg"
-          }
-        }
-      },
-      "block_order": [
-        "754a9b2c-0b43-4bbf-839c-c229e8f156eb",
-        "d672657b-959a-44fb-91cd-4352ed8ee468",
-        "e98430ab-8a6b-49f8-a27c-63914b504aa3",
-        "ea639172-fc06-4325-af6a-ad57a309e57e",
-        "3bf5f6d5-9964-4053-b129-da4a001eebde"
-      ],
-      "settings": {
-        "container": "container",
-        "padding_full_width": 0,
-        "product_bg": "#ffffff",
-        "product_bg_gradient": "",
-        "product_block_layout": "slider",
-        "product_block_limit": 20,
-        "product_block_title": "Top Brand",
-        "fontsize_title": 20,
-        "fontsize_title_mb": 16,
-        "mg_bottom_title": 35,
-        "enable_border_title": true,
-        "border_color_title": "#e0e0e0",
-        "enable_border_title2": true,
-        "border_color_title2": "#1d5dd9",
-        "color_title": "#0b0335",
-        "title_align": "left",
-        "view_all_style": "style_1",
-        "view_all": "",
-        "font_weight_view_all": "400",
-        "mg_bottom_view": 30,
-        "link_view_all": "",
-        "color_view_all": "#3c3c3c",
-        "image_behavior": "none",
-        "product_block_per_row": "3",
-        "product_block_infinite_scroll": true,
-        "min_width_button": "",
-        "product_block_dots": false,
-        "product_block_dots_mb": true,
-        "product_block_arrows": true,
-        "product_block_arrows_mb": false,
-        "product_block_arrows_custom_position": false,
-        "product_block_progress_bar": false,
-        "enable_infinite": true,
-        "product_block_show": "3",
-        "product_block_per_view": "4",
-        "show_half": true,
-        "scroll_height": 4,
-        "scroll_track_bg": "#f1f1f1",
-        "scroll_thumb_color": "#000000",
-        "scroll_thumb_hover_color": "#444444",
-        "position": "left",
-        "width_banner": 40,
-        "tab_title_style": "style_2",
-        "mg_bottom_title_tab": 0,
-        "type_tab_font": "font_1",
-        "separation": true,
-        "style_separation": "style2",
-        "color_separation": "#bebebe",
-        "enable_scroll_title": true,
-        "fontsize_tab": 12,
-        "fontsize_tab_mb": 12,
-        "font_weight_tab": "400",
-        "font_weight_active_tab": "400",
-        "spacing_between_title": 10,
-        "line_height_tab": 38,
-        "line_height_tab_mobile": 24,
-        "border_tab_radius": 60,
-        "min_width_tab": 5,
-        "border_width_tab": 1,
-        "tab_align": "center",
-        "color_tab": "#828282",
-        "border_color_tab": "rgba(0,0,0,0)",
-        "bg_color_tab": "rgba(0,0,0,0)",
-        "bg_color_gradient_tab": "",
-        "color_tab_active": "#1d5dd9",
-        "bg_color_tab_active": "#e0e0e0",
-        "bg_color_gradient_tab_active": "",
-        "mg_top_desktop": 40,
-        "mg_top_tablet": 20,
-        "mg_top_mobile": 20,
-        "mg_bottom_desktop": 40,
-        "mg_bottom_tablet": 20,
-        "mg_bottom_mobile": 20
-      }
-    },
     "16409351508cd2f3e1": {
       "type": "product-tab-block",
       "blocks": {
@@ -4604,6 +4492,29 @@
       "settings": {
         "include_margins": false
       }
+    },
+    "shatokb_skin_quiz_fqC38m": {
+      "type": "shatokb-skin-quiz",
+      "name": "🔬 Skin Quiz",
+      "settings": {
+        "badge": "🇰🇷 Free · 2 minutes · Real K-Beauty products",
+        "titulo": "Find out exactly what your skin needs.",
+        "subtitulo": "2 minutes. 6 questions. A complete routine with real Korean products — chosen for your skin, your concerns and your budget. Free.",
+        "btn_catalogue_show": true,
+        "btn_catalogue_text": "🛍️ Explore the full catalogue",
+        "btn_catalogue_url": "",
+        "btn_whatsapp_show": true,
+        "btn_whatsapp_text": "💬 Talk to a skin expert",
+        "btn_whatsapp_number": "12345678900",
+        "btn_whatsapp_message": "Hi! I just took the skin quiz and need help with my routine.",
+        "btn_bestsellers_show": true,
+        "btn_bestsellers_text": "⭐ View Best Sellers",
+        "btn_bestsellers_url": "",
+        "btn_retake_show": true,
+        "btn_retake_text": "↺ My skin feels different — redo",
+        "total_bar_label": "Estimated total for your routine",
+        "total_bar_cta": "🛒 Add my full routine to cart"
+      }
     }
   },
   "order": [
@@ -4619,7 +4530,6 @@
     "product_tab_block_BNFmHc",
     "product_tab_block_AfLYBd",
     "product_tab_block_qRR89q",
-    "16409351391bc6ccf9",
     "16409351508cd2f3e1",
     "product_tab_block_hEKJFW",
     "product_tab_block_NyhkEw",
@@ -4631,6 +4541,7 @@
     "1640661849c9458fec",
     "1639989383a6d05981",
     "rich_text_3GmHwC",
-    "1738694158c436eae8"
+    "1738694158c436eae8",
+    "shatokb_skin_quiz_fqC38m"
   ]
 }
