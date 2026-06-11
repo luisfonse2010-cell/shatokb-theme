@@ -1321,6 +1321,16 @@
         "mg_bottom_mobile": 0
       }
     },
+    "shatokb_hero_8iDwep": {
+      "type": "shatokb-hero",
+      "name": "🌸 Hero — Diagnosis",
+      "settings": {
+        "badge_text": "🎫 THE SKIN SECRET KOREAN WOMEN HAVE HAD FOR YEARS — NOW YOURS",
+        "subtitle": "Answer 6 questions and we'll recommend the exact products your skin needs. No guessing. No getting lost.",
+        "cta_primary": "Reveal My Skin Routine",
+        "show_trust_bar": true
+      }
+    },
     "163945138066afddf5": {
       "type": "product-block",
       "blocks": {
@@ -4553,24 +4563,13 @@
       "settings": {
         "include_margins": false
       }
-    },
-    "shatokb_hero_8iDwep": {
-      "type": "shatokb-hero",
-      "name": "🌸 Hero — Diagnosis",
-      "settings": {
-        "badge_text": "🎫 THE SKIN SECRET KOREAN WOMEN HAVE HAD FOR YEARS — NOW YOURS",
-        "subtitle": "Answer 6 questions and we'll recommend the exact products your skin needs. No guessing. No getting lost.",
-        "cta_primary": "Reveal My Skin Routine",
-        "cta_secondary": "⭐ View Best Sellers",
-        "cta_secondary_url": "",
-        "show_trust_bar": true
-      }
     }
   },
   "order": [
     "164007305002c9359c",
     "slide_show_twt8Y6",
     "marquee_CPUri8",
+    "shatokb_hero_8iDwep",
     "163945138066afddf5",
     "164077099606fca4f1",
     "163835209394385a65",
@@ -4591,7 +4590,6 @@
     "1640661849c9458fec",
     "1639989383a6d05981",
     "rich_text_3GmHwC",
-    "1738694158c436eae8",
-    "shatokb_hero_8iDwep"
+    "1738694158c436eae8"
   ]
 }
