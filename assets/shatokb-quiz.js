@@ -1454,6 +1454,26 @@ async function shatokbMostrarResultado() {
       return t + (p ? p.precio_num : 0);
     }, 0)
   });
+    // 🌸 KOI — lanzar asistente IA después del resultado
+  setTimeout(function() {
+    const contextoKOI = {
+      perfil: {
+        id:          perfilId,
+        nombre:      perfil.titulo,
+        descripcion: perfil.descripcion,
+        tags:        tags,
+      },
+      productos:    SHATOKB_CATALOGO ? pasosProd.flatMap(p => p.opciones.slice(0,1).map(o => ({ nombre: o.nombre, precio: o.precio_num, paso: p.nombre }))) : [],
+      rutinaAM:     perfil.rutinaAM  || [],
+      rutinaPM:     perfil.rutinaPM  || [],
+      presupuesto:  budgetLabel,
+      experiencia:  shatokbState.respuestas?.experiencia || '',
+      totalCarrito: 0,
+    };
+    localStorage.setItem('shatokb_resultado', JSON.stringify(contextoKOI));
+    document.dispatchEvent(new CustomEvent('shatokb:resultado', { detail: contextoKOI }));
+  }, 800);
+
 }
 
 
