@@ -4492,29 +4492,6 @@
       "settings": {
         "include_margins": false
       }
-    },
-    "shatokb_skin_quiz_fqC38m": {
-      "type": "shatokb-skin-quiz",
-      "name": "🔬 Skin Quiz",
-      "settings": {
-        "badge": "🇰🇷 Free · 2 minutes · Real K-Beauty products",
-        "titulo": "Find out exactly what your skin needs.",
-        "subtitulo": "2 minutes. 6 questions. A complete routine with real Korean products — chosen for your skin, your concerns and your budget. Free.",
-        "btn_catalogue_show": true,
-        "btn_catalogue_text": "🛍️ Explore the full catalogue",
-        "btn_catalogue_url": "",
-        "btn_whatsapp_show": true,
-        "btn_whatsapp_text": "💬 Talk to a skin expert",
-        "btn_whatsapp_number": "12345678900",
-        "btn_whatsapp_message": "Hi! I just took the skin quiz and need help with my routine.",
-        "btn_bestsellers_show": true,
-        "btn_bestsellers_text": "⭐ View Best Sellers",
-        "btn_bestsellers_url": "",
-        "btn_retake_show": true,
-        "btn_retake_text": "↺ My skin feels different — redo",
-        "total_bar_label": "Estimated total for your routine",
-        "total_bar_cta": "🛒 Add my full routine to cart"
-      }
     }
   },
   "order": [
@@ -4541,7 +4518,6 @@
     "1640661849c9458fec",
     "1639989383a6d05981",
     "rich_text_3GmHwC",
-    "1738694158c436eae8",
-    "shatokb_skin_quiz_fqC38m"
+    "1738694158c436eae8"
   ]
 }
