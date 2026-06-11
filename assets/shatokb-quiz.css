@@ -25,19 +25,19 @@
 /* ── Variables de diseño ────────────────────────────────────── */
 :root {
   /* ── Paleta real de la marca shatokb.com ── */
-  --stk-primary:        #3a7af5;
-  --stk-primary-dark:   #1d5dd9;
-  --stk-primary-light:  #e8f0fe;
-  --stk-secondary:      #0b0335;
-  --stk-accent:         #f42b23;
+  --stk-primary:        #3a7af5;   /* Azul eléctrico — btn_1_bg real (CTAs principales) */
+  --stk-primary-dark:   #1d5dd9;   /* Azul oscuro — hover / link activo real */
+  --stk-primary-light:  #e8f0fe;   /* Azul muy claro — tint hover en opciones */
+  --stk-secondary:      #0b0335;   /* Navy profundo — títulos, precios, vendor del tema */
+  --stk-accent:         #f42b23;   /* Rojo sale badge — sale_badge_bg real */
 
   /* ── Neutros reales ── */
-  --stk-text:           #232323;
-  --stk-text-muted:     #6b7280;
-  --stk-border:         #e5e7eb;
-  --stk-bg:             #f8f9fa;
-  --stk-bg-card:        #ffffff;
-  --stk-bg-light:       #eef3ff;
+  --stk-text:           #232323;   /* Body text real */
+  --stk-text-muted:     #6b7280;   /* Gris medio */
+  --stk-border:         #e5e7eb;   /* Border gris suave */
+  --stk-bg:             #f8f9fa;   /* Fondo sección alterno */
+  --stk-bg-card:        #ffffff;   /* Fondo cards */
+  --stk-bg-light:       #eef3ff;   /* Fondo hover opción quiz (tint azul suave) */
 
   /* ── WhatsApp ── */
   --stk-whatsapp:       #25d366;
@@ -215,6 +215,7 @@
   background-color: #0b0335 !important;
   background-image: none !important;
   box-sizing: border-box !important;
+  /* Neutraliza cualquier límite del tema */
   left: auto !important;
   right: auto !important;
   transform: none !important;
@@ -312,6 +313,9 @@
 
 /* ══════════════════════════════════════════════════════════
    BENEFITS SECTION — B4c · Tinted Fade
+   Base: #F5F6F7 (Halo theme) → #ECEEF0 (gradient down)
+   Cards: blanco puro — flotan sobre el gris frío.
+   Separador top: línea simétrica rosa pálido→fucsia→carbón.
    ══════════════════════════════════════════════════════════ */
 
 /* Wrapper Shopify reset */
@@ -518,6 +522,7 @@
 
 .shatokb-progreso__fill {
   height: 100%;
+  /* Gradiente negro → navy, colores reales del tema */
   background: linear-gradient(90deg, var(--stk-primary), var(--stk-secondary));
   border-radius: 50px;
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -588,6 +593,7 @@
   text-align: left;
   transition: all var(--stk-transition);
   width: 100%;
+  /* borde izquierdo negro al hover — estilo Halo */
   border-left: 3px solid var(--stk-border);
 }
 
@@ -646,6 +652,7 @@
 }
 
 /* ── Header resultado ─────────────────────────────────── */
+/* Fondo navy oscuro — paleta real del tema */
 .shatokb-resultado__header {
   text-align: center;
   padding: 40px 24px 32px;
@@ -828,6 +835,7 @@
 }
 
 /* ── Card de producto ─────────────────────────────────── */
+/* Sigue el patrón visual de los product cards del tema Halo */
 .shatokb-prod-card {
   position: relative;
   background: var(--stk-bg-card);
@@ -847,7 +855,7 @@
   position: absolute;
   top: 10px;
   left: 10px;
-  background: var(--stk-accent);
+  background: var(--stk-accent);  /* #f42b23 — rojo sale real */
   color: #fff;
   padding: 3px 10px;
   border-radius: 2px;
