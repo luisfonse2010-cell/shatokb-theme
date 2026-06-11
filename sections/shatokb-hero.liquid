@@ -1,13 +1,25 @@
 {% comment %}
   ============================================================
-  SHATOKB · Main Hero — Skin Diagnosis
+  SHATOKB · Hero + Benefits + Quiz — All-in-one
   File: sections/shatokb-hero.liquid
+
+  Structure:
+  1. <section> Hero — Charcoal + Rose (C3)
+  2. <div>     Benefits — B4c Tinted Fade
+  3. <div>     Quiz — skin diagnosis engine
+  4. <div>     Email gate modal
+  5. <div>     Result container
+
+  Merged into one section to avoid the 25-section Shopify limit.
+  All CSS lives in assets/shatokb-quiz.css (loaded below).
+  All JS logic lives in assets/shatokb-quiz.js (loaded at bottom).
   ============================================================
 {% endcomment %}
 
 {{ 'shatokb-quiz.css' | asset_url | stylesheet_tag }}
 
 <style>
+  /* ── HERO — C3 Charcoal + Rose ───────────────────────────── */
   #shatokb-hero {
     background: linear-gradient(135deg, #1c1c1e 0%, #2a1f24 100%) !important;
     min-height: 600px !important;
@@ -64,7 +76,6 @@
   }
   #shatokb-hero .shatokb-hero__ctas {
     display: flex !important;
-    gap: 0 !important;
     justify-content: center !important;
     flex-wrap: wrap !important;
     margin-bottom: 44px !important;
@@ -84,6 +95,12 @@
     white-space: nowrap !important;
     font-family: 'Arimo', Arial, sans-serif !important;
     letter-spacing: 0.01em !important;
+    transition: background 0.2s ease, transform 0.2s ease !important;
+  }
+  #shatokb-hero .shatokb-btn--primary:hover {
+    background: #e0607e !important;
+    border-color: #e0607e !important;
+    transform: translateY(-2px) !important;
   }
   #shatokb-hero .shatokb-hero__trust {
     display: flex !important;
@@ -96,23 +113,16 @@
     font-family: 'Arimo', Arial, sans-serif !important;
   }
   @media (max-width: 768px) {
-    #shatokb-hero {
-      padding: 72px 24px 64px !important;
-      min-height: auto !important;
-    }
-    #shatokb-hero .shatokb-hero__title {
-      font-size: 38px !important;
-    }
-    #shatokb-hero .shatokb-hero__subtitle {
-      font-size: 16px !important;
-    }
-    #shatokb-hero .shatokb-btn--primary {
-      width: 100% !important;
-      justify-content: center !important;
-    }
+    #shatokb-hero { padding: 72px 24px 64px !important; min-height: auto !important; }
+    #shatokb-hero .shatokb-hero__title { font-size: 38px !important; }
+    #shatokb-hero .shatokb-hero__subtitle { font-size: 16px !important; }
+    #shatokb-hero .shatokb-btn--primary { width: 100% !important; justify-content: center !important; }
   }
 </style>
 
+<!-- ═══════════════════════════════════════════════════════════
+     1. HERO
+═══════════════════════════════════════════════════════════ -->
 <section id="shatokb-hero" class="shatokb-hero">
   <div class="shatokb-hero__inner">
 
@@ -146,8 +156,7 @@
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════
-     BENEFITS — B4c Tinted Fade
-     Incluido aquí para no consumir un slot extra de sección.
+     2. BENEFITS — B4c Tinted Fade
 ═══════════════════════════════════════════════════════════ -->
 <div id="shatokb-beneficios" class="shatokb-beneficios">
   <div class="shatokb-beneficios__inner">
@@ -171,6 +180,103 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════
+     3. QUIZ — Skin Diagnosis
+═══════════════════════════════════════════════════════════ -->
+<section
+  id="shatokb-quiz"
+  class="shatokb-quiz-section"
+  aria-label="Personalized skin diagnosis quiz"
+
+  data-btn-catalogue-show="{{ section.settings.btn_catalogue_show }}"
+  data-btn-catalogue-text="{{ section.settings.btn_catalogue_text | escape }}"
+  data-btn-catalogue-url="{{ section.settings.btn_catalogue_url }}"
+
+  data-btn-whatsapp-show="{{ section.settings.btn_whatsapp_show }}"
+  data-btn-whatsapp-text="{{ section.settings.btn_whatsapp_text | escape }}"
+  data-btn-whatsapp-number="{{ section.settings.btn_whatsapp_number | escape }}"
+  data-btn-whatsapp-message="{{ section.settings.btn_whatsapp_message | escape }}"
+
+  data-btn-retake-show="{{ section.settings.btn_retake_show }}"
+  data-btn-retake-text="{{ section.settings.btn_retake_text | escape }}"
+
+  data-total-bar-label="{{ section.settings.total_bar_label | escape }}"
+  data-total-bar-cta="{{ section.settings.total_bar_cta | escape }}"
+>
+  <div class="shatokb-quiz-section__inner">
+
+    <header class="shatokb-quiz-section__header" id="shatokb-quiz-cabecera">
+      <h2 class="shatokb-quiz-section__titulo">{{ section.settings.quiz_titulo }}</h2>
+      <p class="shatokb-quiz-section__subtitulo">{{ section.settings.quiz_subtitulo }}</p>
+    </header>
+
+    <div id="shatokb-quiz-inicio" style="text-align:center; padding:12px 0 40px;">
+      <div style="font-size:3.6rem; margin-bottom:20px; line-height:1;">🔬✨</div>
+      <p style="font-size:1rem; color:#6b7280; line-height:1.65; max-width:480px; margin:0 auto 32px;">
+        Most people spend years — and hundreds of dollars — trying random products that don't work for their skin.<br><br>
+        <strong>This quiz ends that.</strong> In 2 minutes you'll know your exact skin profile and the Korean products proven to work for it.
+      </p>
+      <button class="shatokb-btn shatokb-btn--primary shatokb-btn--lg" type="button" onclick="shatokbIniciarQuiz()">
+        Yes — show me my routine →
+      </button>
+      <p style="font-size:0.75rem; color:#9ca3af; margin-top:14px;">Free · No account needed · Results in 2 minutes</p>
+    </div>
+
+    <div id="shatokb-progreso" class="shatokb-progreso" style="display:none;"
+      role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="shatokb-progreso__meta">
+        <span id="shatokb-progreso-texto">Question 1 of 6</span>
+        <span id="shatokb-pregunta-num" aria-hidden="true">0%</span>
+      </div>
+      <div class="shatokb-progreso__track">
+        <div id="shatokb-progreso-barra" class="shatokb-progreso__fill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div id="shatokb-quiz-form" class="shatokb-quiz-form" style="display:none;"
+      aria-live="polite" aria-label="Quiz questions">
+      <noscript>
+        <p style="text-align:center; color:#f42b23; font-weight:600; padding:24px 0;">
+          Please enable JavaScript to use the skin diagnosis quiz.
+        </p>
+      </noscript>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     4. EMAIL GATE MODAL
+═══════════════════════════════════════════════════════════ -->
+<div id="stk-email-gate" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="stk-gate-title">
+  <div class="stk-gate__backdrop" onclick="shatokbSaltarEmail()"></div>
+  <div class="stk-gate__card">
+    <span class="stk-gate__emoji">🎁</span>
+    <h2 class="stk-gate__title" id="stk-gate-title">Your routine is ready!</h2>
+    <p class="stk-gate__sub">Where should we send it so you can come back to it anytime?</p>
+    <form class="stk-gate__form" onsubmit="shatokbSubmitEmail(event)">
+      <input type="email" id="stk-email-input" class="stk-gate__input"
+        placeholder="your@email.com" required autocomplete="email" />
+      <button type="submit" class="stk-gate__btn" id="stk-gate-submit">
+        Show me my routine ✨
+      </button>
+    </form>
+    <button class="stk-gate__skip" type="button" onclick="shatokbSaltarEmail()">
+      No thanks, just show me the routine
+    </button>
+    <p class="stk-gate__privacy">🔒 No spam. No subscriptions. Just your routine.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     5. RESULT CONTAINER
+═══════════════════════════════════════════════════════════ -->
+<div id="shatokb-resultado" class="shatokb-resultado"
+  style="display:none; padding:0 24px 88px;"
+  aria-live="polite" aria-label="Your skin diagnosis result">
+  <div class="shatokb-resultado__inner"></div>
+</div>
+
 <script>
   function shatokbScrollToQuiz(e) {
     e.preventDefault();
@@ -179,15 +285,18 @@
   }
 </script>
 
+<script src="{{ 'shatokb-quiz.js' | asset_url }}" defer></script>
+
 {% schema %}
 {
-  "name": "🌸 Hero — Diagnosis",
+  "name": "🌸 Hero + Benefits + Quiz",
   "tag": "section",
   "class": "shatokb-section",
   "settings": [
+
     {
       "type": "header",
-      "content": "Hero"
+      "content": "🌸 Hero"
     },
     {
       "type": "text",
@@ -204,25 +313,124 @@
     {
       "type": "text",
       "id": "cta_primary",
-      "label": "Primary button text",
+      "label": "CTA button text",
       "default": "Reveal My Skin Routine"
     },
-    {
-      "type": "checkbox",
-      "id": "show_trust_bar",
-      "label": "Show trust bar",
-      "default": true
-    },
+
     {
       "type": "header",
-      "content": "Benefits"
+      "content": "✨ Benefits"
     },
     {
       "type": "text",
       "id": "benefits_title",
       "label": "Benefits section title",
       "default": "Why choose your routine with us?"
+    },
+
+    {
+      "type": "header",
+      "content": "🔬 Quiz"
+    },
+    {
+      "type": "text",
+      "id": "quiz_titulo",
+      "label": "Quiz section title",
+      "default": "Find out exactly what your skin needs."
+    },
+    {
+      "type": "textarea",
+      "id": "quiz_subtitulo",
+      "label": "Quiz section subtitle",
+      "default": "2 minutes. 6 questions. A complete routine with real Korean products — chosen for your skin, your concerns and your budget. Free."
+    },
+
+    {
+      "type": "header",
+      "content": "🛍️ Button — Full Catalogue"
+    },
+    {
+      "type": "checkbox",
+      "id": "btn_catalogue_show",
+      "label": "Show button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "btn_catalogue_text",
+      "label": "Button text",
+      "default": "🛍️ Explore the full catalogue"
+    },
+    {
+      "type": "url",
+      "id": "btn_catalogue_url",
+      "label": "Button link"
+    },
+
+    {
+      "type": "header",
+      "content": "💬 Button — WhatsApp"
+    },
+    {
+      "type": "checkbox",
+      "id": "btn_whatsapp_show",
+      "label": "Show button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "btn_whatsapp_text",
+      "label": "Button text",
+      "default": "💬 Talk to a skin expert"
+    },
+    {
+      "type": "text",
+      "id": "btn_whatsapp_number",
+      "label": "WhatsApp number (with country code, no +)",
+      "default": "12345678900",
+      "info": "Example: 17865551234 (US) · 34612345678 (Spain)"
+    },
+    {
+      "type": "text",
+      "id": "btn_whatsapp_message",
+      "label": "Pre-written message",
+      "default": "Hi! I just took the skin quiz and need help with my routine."
+    },
+
+    {
+      "type": "header",
+      "content": "↺ Button — Retake Quiz"
+    },
+    {
+      "type": "checkbox",
+      "id": "btn_retake_show",
+      "label": "Show button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "btn_retake_text",
+      "label": "Button text",
+      "default": "↺ My skin feels different — redo"
+    },
+
+    {
+      "type": "header",
+      "content": "🛒 Sticky Total Bar"
+    },
+    {
+      "type": "text",
+      "id": "total_bar_label",
+      "label": "Bar label",
+      "default": "Estimated total for your routine"
+    },
+    {
+      "type": "text",
+      "id": "total_bar_cta",
+      "label": "Add to cart button text",
+      "default": "🛒 Add my full routine to cart"
     }
+
   ],
   "blocks": [
     {
@@ -252,7 +460,7 @@
   ],
   "presets": [
     {
-      "name": "🌸 Hero — Diagnosis",
+      "name": "🌸 Hero + Benefits + Quiz",
       "blocks": [
         {
           "type": "benefit",
