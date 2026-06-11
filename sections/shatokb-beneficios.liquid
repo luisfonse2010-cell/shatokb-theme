@@ -1,12 +1,136 @@
 {% comment %}
   ============================================================
-  SHATOKB · Bloque de Beneficios
-  Archivo: sections/shatokb-beneficios.liquid
-  
-  Muestra 3-4 tarjetas de beneficios.
-  Cada bloque es editable desde el editor visual de Shopify.
+  SHATOKB · Benefits Block  — B4c Tinted Fade
+  File: sections/shatokb-beneficios.liquid
   ============================================================
 {% endcomment %}
+
+<style>
+  .shopify-section:has(#shatokb-beneficios) {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    background: transparent !important;
+  }
+
+  #shatokb-beneficios {
+    padding: 88px 24px !important;
+    background: linear-gradient(180deg, #f5f6f7 0%, #eceef0 100%) !important;
+    position: relative !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+  }
+
+  #shatokb-beneficios::after {
+    content: '' !important;
+    display: block !important;
+    position: absolute !important;
+    top: 0 !important; left: 0 !important; right: 0 !important;
+    height: 4px !important;
+    background: linear-gradient(90deg, #f5a0bb, #e0607e, #2a1f24, #e0607e, #f5a0bb) !important;
+  }
+
+  #shatokb-beneficios .shatokb-beneficios__inner {
+    max-width: 1100px !important;
+    margin: 0 auto !important;
+  }
+
+  #shatokb-beneficios .shatokb-section-title {
+    text-align: center !important;
+    font-size: 32px !important;
+    font-weight: 800 !important;
+    color: #1c1c1e !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    margin: 0 0 56px !important;
+    line-height: 1.2 !important;
+  }
+
+  #shatokb-beneficios .shatokb-section-title em {
+    font-style: italic !important;
+    color: #e0607e !important;
+  }
+
+  #shatokb-beneficios .shatokb-beneficios__grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)) !important;
+    gap: 20px !important;
+  }
+
+  #shatokb-beneficios .shatokb-beneficio-card {
+    background: #ffffff !important;
+    border: 1px solid #e0e2e6 !important;
+    border-radius: 16px !important;
+    padding: 40px 28px 36px !important;
+    text-align: center !important;
+    position: relative !important;
+    overflow: hidden !important;
+    box-shadow: 0 2px 14px rgba(30, 40, 60, 0.07) !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+  }
+
+  #shatokb-beneficios .shatokb-beneficio-card:hover {
+    transform: translateY(-6px) !important;
+    box-shadow: 0 12px 40px rgba(30, 40, 60, 0.13) !important;
+    border-color: rgba(224, 96, 126, 0.40) !important;
+  }
+
+  #shatokb-beneficios .shatokb-beneficio-card::before {
+    content: '' !important;
+    display: block !important;
+    height: 3px !important;
+    background: linear-gradient(90deg, #f5a0bb, #e0607e) !important;
+    border-radius: 16px 16px 0 0 !important;
+    position: absolute !important;
+    top: 0 !important; left: 0 !important; right: 0 !important;
+    transform: scaleX(0) !important;
+    transition: transform 0.35s ease !important;
+    transform-origin: left !important;
+  }
+
+  #shatokb-beneficios .shatokb-beneficio-card:hover::before {
+    transform: scaleX(1) !important;
+  }
+
+  #shatokb-beneficios .shatokb-beneficio-card__icon {
+    font-size: 46px !important;
+    margin-bottom: 20px !important;
+    display: block !important;
+    line-height: 1 !important;
+  }
+
+  #shatokb-beneficios .shatokb-beneficio-card__title {
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    color: #1c1c1e !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    margin: 0 0 12px !important;
+    line-height: 1.35 !important;
+  }
+
+  #shatokb-beneficios .shatokb-beneficio-card__desc {
+    font-size: 15px !important;
+    color: #5a6270 !important;
+    line-height: 1.65 !important;
+    margin: 0 !important;
+  }
+
+  @media (max-width: 768px) {
+    #shatokb-beneficios .shatokb-beneficios__grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+    #shatokb-beneficios .shatokb-section-title {
+      font-size: 24px !important;
+    }
+  }
+  @media (max-width: 480px) {
+    #shatokb-beneficios .shatokb-beneficios__grid {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>
 
 <section id="shatokb-beneficios" class="shatokb-beneficios">
   <div class="shatokb-beneficios__inner">
@@ -35,77 +159,77 @@
 
 {% schema %}
 {
-  "name": "🌟 Beneficios",
+  "name": "🌟 Benefits",
   "tag": "section",
   "class": "shatokb-section",
   "settings": [
     {
       "type": "text",
       "id": "title",
-      "label": "Título de la sección (opcional)",
-      "default": "¿Por qué elegir tu rutina con nosotros?"
+      "label": "Section title (optional)",
+      "default": "Why choose your routine with us?"
     }
   ],
   "blocks": [
     {
-      "type": "beneficio",
-      "name": "Beneficio",
+      "type": "benefit",
+      "name": "Benefit",
       "settings": [
         {
           "type": "text",
           "id": "icon_emoji",
-          "label": "Emoji / Icono",
+          "label": "Emoji / Icon",
           "default": "🎯"
         },
         {
           "type": "text",
           "id": "title",
-          "label": "Título",
-          "default": "Recomendación personalizada"
+          "label": "Title",
+          "default": "Personalised recommendation"
         },
         {
           "type": "textarea",
           "id": "description",
-          "label": "Descripción",
-          "default": "No todos los productos funcionan igual para todas las pieles. Te ayudamos a encontrar los tuyos."
+          "label": "Description",
+          "default": "Not every product works the same for every skin. We help you find exactly yours."
         }
       ]
     }
   ],
   "presets": [
     {
-      "name": "🌟 Beneficios",
+      "name": "🌟 Benefits",
       "blocks": [
         {
-          "type": "beneficio",
+          "type": "benefit",
           "settings": {
             "icon_emoji": "🎯",
-            "title": "Recomendación personalizada",
-            "description": "Respondemos a las necesidades exactas de tu piel, no recomendamos lo mismo a todo el mundo."
+            "title": "Personalised recommendation",
+            "description": "We match products to your exact skin needs — no one-size-fits-all approach."
           }
         },
         {
-          "type": "beneficio",
+          "type": "benefit",
           "settings": {
             "icon_emoji": "🌿",
-            "title": "Rutinas según tu tipo de piel",
-            "description": "Mañana y noche. Paso a paso. Adaptadas a si tu piel es grasa, seca, sensible o mixta."
+            "title": "Routines for your skin type",
+            "description": "Morning and night. Step by step. Tailored to oily, dry, sensitive or combination skin."
           }
         },
         {
-          "type": "beneficio",
+          "type": "benefit",
           "settings": {
             "icon_emoji": "🇰🇷",
-            "title": "Productos originales K-Beauty",
-            "description": "Marcas coreanas auténticas, con ingredientes probados que la ciencia y millones de personas ya validan."
+            "title": "Authentic K-Beauty products",
+            "description": "Genuine Korean brands with science-backed ingredients trusted by millions worldwide."
           }
         },
         {
-          "type": "beneficio",
+          "type": "benefit",
           "settings": {
-            "icon_emoji": "🔄",
-            "title": "No results? We'll make it right.",
-            "description": "Every order comes with our satisfaction guarantee. If your skin doesn't respond, we'll find you a better match — no questions, no hassle."
+            "icon_emoji": "💬",
+            "title": "Guided shopping via WhatsApp",
+            "description": "Have questions? Our team helps you choose and build your ideal routine before you buy."
           }
         }
       ]
