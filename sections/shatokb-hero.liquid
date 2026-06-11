@@ -2,76 +2,154 @@
   ============================================================
   SHATOKB · Main Hero — Skin Diagnosis
   File: sections/shatokb-hero.liquid
-
-  How to use:
-  - Add in templates/index.json inside the "order" array
-  - Fully customisable from the Shopify Theme Editor
   ============================================================
 {% endcomment %}
 
-<section
-  id="shatokb-hero"
-  class="shatokb-hero"
-  style="
-    background-color: {{ section.settings.bg_color }};
-    {% if section.settings.bg_image != blank %}
-      background-image: url('{{ section.settings.bg_image | image_url: width: 1800 }}');
-      background-size: cover;
-      background-position: center;
-    {% endif %}
-  "
->
-  {%- if section.settings.bg_image != blank -%}
-    <div class="shatokb-hero__overlay" style="opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};"></div>
-  {%- endif -%}
+{{ 'shatokb-quiz.css' | asset_url | stylesheet_tag }}
 
+<style>
+  #shatokb-hero {
+    background-color: #0b0335 !important;
+    min-height: 600px !important;
+    padding: 100px 24px 96px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+  }
+  #shatokb-hero .shatokb-hero__inner {
+    width: 100% !important;
+    max-width: 800px !important;
+    margin: 0 auto !important;
+  }
+  #shatokb-hero .shatokb-hero__badge {
+    display: inline-block !important;
+    background: rgba(255,255,255,0.10) !important;
+    color: rgba(255,255,255,0.90) !important;
+    border: 1px solid rgba(255,255,255,0.28) !important;
+    border-radius: 50px !important;
+    padding: 8px 22px !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 28px !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+  }
+  #shatokb-hero .shatokb-hero__title {
+    font-family: 'Prompt', 'Arial Black', sans-serif !important;
+    font-size: clamp(2.4rem, 6vw, 4rem) !important;
+    font-weight: 800 !important;
+    line-height: 1.08 !important;
+    margin: 0 0 24px !important;
+    text-transform: uppercase !important;
+    color: #ffffff !important;
+  }
+  #shatokb-hero .shatokb-hero__title em {
+    font-style: italic !important;
+    color: #ffffff !important;
+  }
+  #shatokb-hero .shatokb-hero__subtitle {
+    font-size: clamp(1rem, 2.2vw, 1.15rem) !important;
+    line-height: 1.70 !important;
+    margin: 0 auto 40px !important;
+    max-width: 560px !important;
+    color: rgba(255,255,255,0.72) !important;
+  }
+  #shatokb-hero .shatokb-hero__ctas {
+    display: flex !important;
+    gap: 16px !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    margin-bottom: 40px !important;
+  }
+  #shatokb-hero .shatokb-btn--primary {
+    background: #3a7af5 !important;
+    color: #ffffff !important;
+    border: 2px solid #3a7af5 !important;
+    padding: 16px 36px !important;
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    border-radius: 6px !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
+  }
+  #shatokb-hero .shatokb-btn--secondary {
+    background: transparent !important;
+    color: #ffffff !important;
+    border: 2px solid rgba(255,255,255,0.50) !important;
+    padding: 16px 36px !important;
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    border-radius: 6px !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
+  }
+  #shatokb-hero .shatokb-hero__trust {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+    font-size: 0.82rem !important;
+    color: rgba(255,255,255,0.50) !important;
+  }
+  @media (max-width: 640px) {
+    #shatokb-hero {
+      padding: 64px 20px 56px !important;
+      min-height: auto !important;
+    }
+    #shatokb-hero .shatokb-hero__ctas {
+      flex-direction: column !important;
+      align-items: stretch !important;
+    }
+    #shatokb-hero .shatokb-btn--primary,
+    #shatokb-hero .shatokb-btn--secondary {
+      justify-content: center !important;
+    }
+  }
+</style>
+
+<section id="shatokb-hero" class="shatokb-hero">
   <div class="shatokb-hero__inner">
 
-    {%- if section.settings.badge_text != blank -%}
-      <span class="shatokb-hero__badge">{{ section.settings.badge_text }}</span>
-    {%- endif -%}
+    <span class="shatokb-hero__badge">
+      🎫 {{ section.settings.badge_text }}
+    </span>
 
-    <h1 class="shatokb-hero__title" style="color: {{ section.settings.title_color }};">
-      {{ section.settings.title }}
+    <h1 class="shatokb-hero__title">
+      Your skin has been waiting for <em>this</em> routine.
     </h1>
 
-    <p class="shatokb-hero__subtitle" style="color: {{ section.settings.subtitle_color }};">
+    <p class="shatokb-hero__subtitle">
       {{ section.settings.subtitle }}
     </p>
 
     <div class="shatokb-hero__ctas">
-      <a
-        href="#shatokb-quiz"
-        class="shatokb-btn shatokb-btn--primary"
-        onclick="shatokbScrollToQuiz(event)"
-        aria-label="{{ section.settings.cta_primary }}"
-      >
-        {{ section.settings.cta_primary }}
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-          <path d="M5 12h14M12 5l7 7-7 7"/>
-        </svg>
+      <a href="#shatokb-quiz" class="shatokb-btn shatokb-btn--primary" onclick="shatokbScrollToQuiz(event)">
+        {{ section.settings.cta_primary }} →
       </a>
-
-      {%- if section.settings.cta_secondary != blank -%}
-        <a
-          href="{{ section.settings.cta_secondary_url }}"
-          class="shatokb-btn shatokb-btn--secondary"
-          aria-label="{{ section.settings.cta_secondary }}"
-        >
-          {{ section.settings.cta_secondary }}
-        </a>
-      {%- endif -%}
+      <a href="{{ section.settings.cta_secondary_url }}" class="shatokb-btn shatokb-btn--secondary">
+        {{ section.settings.cta_secondary }}
+      </a>
     </div>
 
-    {%- if section.settings.show_trust_bar -%}
-      <div class="shatokb-hero__trust">
-        <span>⭐⭐⭐⭐⭐ 2,000+ routines recommended</span>
-        <span>·</span>
-        <span>🌿 100% authentic products</span>
-        <span>·</span>
-        <span>🔄 Satisfaction guaranteed</span>
-      </div>
-    {%- endif -%}
+    <div class="shatokb-hero__trust">
+      <span>⭐⭐⭐⭐⭐ +2,000 routines already revealed</span>
+      <span>·</span>
+      <span>🌿 100% authentic K-Beauty</span>
+      <span>·</span>
+      <span>⚡ Results in weeks, not months</span>
+    </div>
 
   </div>
 </section>
@@ -80,9 +158,7 @@
   function shatokbScrollToQuiz(e) {
     e.preventDefault();
     const quiz = document.getElementById('shatokb-quiz');
-    if (quiz) {
-      quiz.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    if (quiz) quiz.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 </script>
 
@@ -99,32 +175,26 @@
     {
       "type": "text",
       "id": "badge_text",
-      "label": "Badge text (optional)",
-      "default": "✨ K-Beauty · Personalised skin diagnosis"
-    },
-    {
-      "type": "text",
-      "id": "title",
-      "label": "Main title",
-      "default": "Discover the Korean routine made for your skin"
+      "label": "Badge text",
+      "default": "The skin secret Korean women have had for years — now yours"
     },
     {
       "type": "textarea",
       "id": "subtitle",
       "label": "Subtitle",
-      "default": "Answer 6 questions and we'll recommend the exact products your skin needs. No guessing. No getting lost."
+      "default": "6 questions. 2 minutes. A complete routine built exclusively for your skin — with the exact Korean products that will actually change it."
     },
     {
       "type": "text",
       "id": "cta_primary",
-      "label": "Primary button",
-      "default": "Start diagnosis"
+      "label": "Primary button text",
+      "default": "Reveal My Skin Routine"
     },
     {
       "type": "text",
       "id": "cta_secondary",
-      "label": "Secondary button (optional)",
-      "default": "View best sellers"
+      "label": "Secondary button text",
+      "default": "⭐ View Best Sellers"
     },
     {
       "type": "url",
@@ -136,47 +206,6 @@
       "id": "show_trust_bar",
       "label": "Show trust bar",
       "default": true
-    },
-    {
-      "type": "header",
-      "content": "Background image"
-    },
-    {
-      "type": "image_picker",
-      "id": "bg_image",
-      "label": "Background image (optional)"
-    },
-    {
-      "type": "range",
-      "id": "overlay_opacity",
-      "min": 0,
-      "max": 80,
-      "step": 5,
-      "unit": "%",
-      "label": "Overlay darkness",
-      "default": 30
-    },
-    {
-      "type": "header",
-      "content": "Colours"
-    },
-    {
-      "type": "color",
-      "id": "bg_color",
-      "label": "Background colour",
-      "default": "#0b0335"
-    },
-    {
-      "type": "color",
-      "id": "title_color",
-      "label": "Title colour",
-      "default": "#ffffff"
-    },
-    {
-      "type": "color",
-      "id": "subtitle_color",
-      "label": "Subtitle colour",
-      "default": "#c8d9ff"
     }
   ],
   "presets": [
