@@ -9,7 +9,7 @@
 
 <style>
   #shatokb-hero {
-    background-color: #0b0335 !important;
+    background: linear-gradient(135deg, #1c1c1e 0%, #2a1f24 100%) !important;
     min-height: 600px !important;
     padding: 100px 24px 96px !important;
     display: flex !important;
@@ -23,76 +23,67 @@
   }
   #shatokb-hero .shatokb-hero__inner {
     width: 100% !important;
-    max-width: 800px !important;
+    max-width: 820px !important;
     margin: 0 auto !important;
   }
   #shatokb-hero .shatokb-hero__badge {
     display: inline-block !important;
-    background: rgba(255,255,255,0.10) !important;
-    color: rgba(255,255,255,0.90) !important;
-    border: 1px solid rgba(255,255,255,0.28) !important;
+    background: rgba(245,160,187,0.12) !important;
+    color: #f5a0bb !important;
+    border: 1px solid rgba(245,160,187,0.30) !important;
     border-radius: 50px !important;
-    padding: 8px 22px !important;
-    font-size: 0.78rem !important;
+    padding: 9px 24px !important;
+    font-size: 12px !important;
     font-weight: 600 !important;
-    margin-bottom: 28px !important;
+    margin-bottom: 32px !important;
     letter-spacing: 0.08em !important;
     text-transform: uppercase !important;
+    font-family: 'Arimo', Arial, sans-serif !important;
   }
   #shatokb-hero .shatokb-hero__title {
     font-family: 'Prompt', 'Arial Black', sans-serif !important;
-    font-size: clamp(2.4rem, 6vw, 4rem) !important;
+    font-size: 62px !important;
     font-weight: 800 !important;
-    line-height: 1.08 !important;
-    margin: 0 0 24px !important;
+    line-height: 1.05 !important;
+    margin: 0 0 28px !important;
     text-transform: uppercase !important;
     color: #ffffff !important;
+    letter-spacing: -0.5px !important;
   }
   #shatokb-hero .shatokb-hero__title em {
     font-style: italic !important;
-    color: #ffffff !important;
+    color: #f5a0bb !important;
   }
   #shatokb-hero .shatokb-hero__subtitle {
-    font-size: clamp(1rem, 2.2vw, 1.15rem) !important;
+    font-family: 'Arimo', Arial, sans-serif !important;
+    font-size: 18px !important;
     line-height: 1.70 !important;
-    margin: 0 auto 40px !important;
+    margin: 0 auto 44px !important;
     max-width: 560px !important;
-    color: rgba(255,255,255,0.72) !important;
+    color: rgba(255,255,255,0.65) !important;
   }
   #shatokb-hero .shatokb-hero__ctas {
     display: flex !important;
-    gap: 16px !important;
+    gap: 0 !important;
     justify-content: center !important;
     flex-wrap: wrap !important;
-    margin-bottom: 40px !important;
+    margin-bottom: 44px !important;
   }
   #shatokb-hero .shatokb-btn--primary {
-    background: #3a7af5 !important;
-    color: #ffffff !important;
-    border: 2px solid #3a7af5 !important;
-    padding: 16px 36px !important;
-    font-size: 1rem !important;
-    font-weight: 700 !important;
+    background: #f5a0bb !important;
+    color: #1c1c1e !important;
+    border: 2px solid #f5a0bb !important;
+    padding: 18px 44px !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
     border-radius: 6px !important;
     text-decoration: none !important;
     display: inline-flex !important;
     align-items: center !important;
     cursor: pointer !important;
     white-space: nowrap !important;
-  }
-  #shatokb-hero .shatokb-btn--secondary {
-    background: transparent !important;
-    color: #ffffff !important;
-    border: 2px solid rgba(255,255,255,0.50) !important;
-    padding: 16px 36px !important;
-    font-size: 1rem !important;
-    font-weight: 700 !important;
-    border-radius: 6px !important;
-    text-decoration: none !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    cursor: pointer !important;
-    white-space: nowrap !important;
+    font-family: 'Arimo', Arial, sans-serif !important;
+    letter-spacing: 0.01em !important;
   }
   #shatokb-hero .shatokb-hero__trust {
     display: flex !important;
@@ -100,20 +91,23 @@
     justify-content: center !important;
     flex-wrap: wrap !important;
     gap: 12px !important;
-    font-size: 0.82rem !important;
-    color: rgba(255,255,255,0.50) !important;
+    font-size: 13px !important;
+    color: rgba(255,255,255,0.40) !important;
+    font-family: 'Arimo', Arial, sans-serif !important;
   }
-  @media (max-width: 640px) {
+  @media (max-width: 768px) {
     #shatokb-hero {
-      padding: 64px 20px 56px !important;
+      padding: 72px 24px 64px !important;
       min-height: auto !important;
     }
-    #shatokb-hero .shatokb-hero__ctas {
-      flex-direction: column !important;
-      align-items: stretch !important;
+    #shatokb-hero .shatokb-hero__title {
+      font-size: 38px !important;
     }
-    #shatokb-hero .shatokb-btn--primary,
-    #shatokb-hero .shatokb-btn--secondary {
+    #shatokb-hero .shatokb-hero__subtitle {
+      font-size: 16px !important;
+    }
+    #shatokb-hero .shatokb-btn--primary {
+      width: 100% !important;
       justify-content: center !important;
     }
   }
@@ -137,9 +131,6 @@
     <div class="shatokb-hero__ctas">
       <a href="#shatokb-quiz" class="shatokb-btn shatokb-btn--primary" onclick="shatokbScrollToQuiz(event)">
         {{ section.settings.cta_primary }} →
-      </a>
-      <a href="{{ section.settings.cta_secondary_url }}" class="shatokb-btn shatokb-btn--secondary">
-        {{ section.settings.cta_secondary }}
       </a>
     </div>
 
@@ -189,17 +180,6 @@
       "id": "cta_primary",
       "label": "Primary button text",
       "default": "Reveal My Skin Routine"
-    },
-    {
-      "type": "text",
-      "id": "cta_secondary",
-      "label": "Secondary button text",
-      "default": "⭐ View Best Sellers"
-    },
-    {
-      "type": "url",
-      "id": "cta_secondary_url",
-      "label": "Secondary button link"
     },
     {
       "type": "checkbox",
