@@ -1,11 +1,11 @@
 {% comment %}
   ============================================================
-  SHATOKB · Hero Principal — Diagnóstico de Piel
-  Archivo: sections/shatokb-hero.liquid
-  
-  Cómo usar:
-  - Añadir en templates/index.json dentro del array "order"
-  - Personalizable desde el editor visual de Shopify
+  SHATOKB · Main Hero — Skin Diagnosis
+  File: sections/shatokb-hero.liquid
+
+  How to use:
+  - Add in templates/index.json inside the "order" array
+  - Fully customisable from the Shopify Theme Editor
   ============================================================
 {% endcomment %}
 
@@ -65,11 +65,11 @@
 
     {%- if section.settings.show_trust_bar -%}
       <div class="shatokb-hero__trust">
-        <span>⭐⭐⭐⭐⭐ +2.000 rutinas recomendadas</span>
+        <span>⭐⭐⭐⭐⭐ 2,000+ routines recommended</span>
         <span>·</span>
-        <span>🌿 100% productos originales</span>
+        <span>🌿 100% authentic products</span>
         <span>·</span>
-        <span>🔄 Satisfacción garantizada</span>
+        <span>🔄 Satisfaction guaranteed</span>
       </div>
     {%- endif -%}
 
@@ -88,63 +88,63 @@
 
 {% schema %}
 {
-  "name": "🌸 Hero — Diagnóstico",
+  "name": "🌸 Hero — Diagnosis",
   "tag": "section",
   "class": "shatokb-section",
   "settings": [
     {
       "type": "header",
-      "content": "Contenido"
+      "content": "Content"
     },
     {
       "type": "text",
       "id": "badge_text",
-      "label": "Texto badge (opcional)",
-      "default": "✨ K-Beauty · Diagnóstico personalizado"
+      "label": "Badge text (optional)",
+      "default": "✨ K-Beauty · Personalised skin diagnosis"
     },
     {
       "type": "text",
       "id": "title",
-      "label": "Título principal",
-      "default": "Descubre la rutina coreana hecha para tu piel"
+      "label": "Main title",
+      "default": "Discover the Korean routine made for your skin"
     },
     {
       "type": "textarea",
       "id": "subtitle",
-      "label": "Subtítulo",
-      "default": "Responde 6 preguntas y te recomendamos los productos exactos que necesita tu piel. Sin adivinar. Sin perderte."
+      "label": "Subtitle",
+      "default": "Answer 6 questions and we'll recommend the exact products your skin needs. No guessing. No getting lost."
     },
     {
       "type": "text",
       "id": "cta_primary",
-      "label": "Botón principal",
-      "default": "Empezar diagnóstico"
+      "label": "Primary button",
+      "default": "Start diagnosis"
     },
     {
       "type": "text",
       "id": "cta_secondary",
-      "label": "Botón secundario (opcional)",
-      "default": "Ver best sellers"
+      "label": "Secondary button (optional)",
+      "default": "View best sellers"
     },
     {
       "type": "url",
       "id": "cta_secondary_url",
-      "label": "Enlace botón secundario"
+      "label": "Secondary button link"
     },
     {
       "type": "checkbox",
       "id": "show_trust_bar",
-      "label": "Mostrar barra de confianza",
+      "label": "Show trust bar",
       "default": true
     },
     {
       "type": "header",
-      "content": "Imagen de fondo"
+      "content": "Background image"
     },
     {
       "type": "image_picker",
       "id": "bg_image",
-      "label": "Imagen de fondo (opcional)"
+      "label": "Background image (optional)"
     },
     {
       "type": "range",
@@ -153,35 +153,35 @@
       "max": 80,
       "step": 5,
       "unit": "%",
-      "label": "Oscuridad del overlay",
+      "label": "Overlay darkness",
       "default": 30
     },
     {
       "type": "header",
-      "content": "Colores"
+      "content": "Colours"
     },
     {
       "type": "color",
       "id": "bg_color",
-      "label": "Color de fondo",
-      "default": "#232323"
+      "label": "Background colour",
+      "default": "#0b0335"
     },
     {
       "type": "color",
       "id": "title_color",
-      "label": "Color del título",
+      "label": "Title colour",
       "default": "#ffffff"
     },
     {
       "type": "color",
       "id": "subtitle_color",
-      "label": "Color del subtítulo",
+      "label": "Subtitle colour",
       "default": "#c8d9ff"
     }
   ],
   "presets": [
     {
-      "name": "🌸 Hero — Diagnóstico"
+      "name": "🌸 Hero — Diagnosis"
     }
   ]
 }
