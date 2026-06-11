@@ -1,0 +1,115 @@
+{% comment %}
+  ============================================================
+  SHATOKB · Bloque de Beneficios
+  Archivo: sections/shatokb-beneficios.liquid
+  
+  Muestra 3-4 tarjetas de beneficios.
+  Cada bloque es editable desde el editor visual de Shopify.
+  ============================================================
+{% endcomment %}
+
+<section id="shatokb-beneficios" class="shatokb-beneficios">
+  <div class="shatokb-beneficios__inner">
+
+    {%- if section.settings.title != blank -%}
+      <h2 class="shatokb-section-title">{{ section.settings.title }}</h2>
+    {%- endif -%}
+
+    <div class="shatokb-beneficios__grid">
+      {%- for block in section.blocks -%}
+        <article
+          class="shatokb-beneficio-card"
+          {{ block.shopify_attributes }}
+        >
+          <div class="shatokb-beneficio-card__icon" aria-hidden="true">
+            {{ block.settings.icon_emoji }}
+          </div>
+          <h3 class="shatokb-beneficio-card__title">{{ block.settings.title }}</h3>
+          <p class="shatokb-beneficio-card__desc">{{ block.settings.description }}</p>
+        </article>
+      {%- endfor -%}
+    </div>
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "🌟 Beneficios",
+  "tag": "section",
+  "class": "shatokb-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Título de la sección (opcional)",
+      "default": "¿Por qué elegir tu rutina con nosotros?"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "beneficio",
+      "name": "Beneficio",
+      "settings": [
+        {
+          "type": "text",
+          "id": "icon_emoji",
+          "label": "Emoji / Icono",
+          "default": "🎯"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Título",
+          "default": "Recomendación personalizada"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "Descripción",
+          "default": "No todos los productos funcionan igual para todas las pieles. Te ayudamos a encontrar los tuyos."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "🌟 Beneficios",
+      "blocks": [
+        {
+          "type": "beneficio",
+          "settings": {
+            "icon_emoji": "🎯",
+            "title": "Recomendación personalizada",
+            "description": "Respondemos a las necesidades exactas de tu piel, no recomendamos lo mismo a todo el mundo."
+          }
+        },
+        {
+          "type": "beneficio",
+          "settings": {
+            "icon_emoji": "🌿",
+            "title": "Rutinas según tu tipo de piel",
+            "description": "Mañana y noche. Paso a paso. Adaptadas a si tu piel es grasa, seca, sensible o mixta."
+          }
+        },
+        {
+          "type": "beneficio",
+          "settings": {
+            "icon_emoji": "🇰🇷",
+            "title": "Productos originales K-Beauty",
+            "description": "Marcas coreanas auténticas, con ingredientes probados que la ciencia y millones de personas ya validan."
+          }
+        },
+        {
+          "type": "beneficio",
+          "settings": {
+            "icon_emoji": "🔄",
+            "title": "No results? We'll make it right.",
+            "description": "Every order comes with our satisfaction guarantee. If your skin doesn't respond, we'll find you a better match — no questions, no hassle."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
