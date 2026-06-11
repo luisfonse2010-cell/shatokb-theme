@@ -145,6 +145,32 @@
   </div>
 </section>
 
+<!-- ═══════════════════════════════════════════════════════════
+     BENEFITS — B4c Tinted Fade
+     Incluido aquí para no consumir un slot extra de sección.
+═══════════════════════════════════════════════════════════ -->
+<div id="shatokb-beneficios" class="shatokb-beneficios">
+  <div class="shatokb-beneficios__inner">
+
+    {%- if section.settings.benefits_title != blank -%}
+      <h2 class="shatokb-section-title">{{ section.settings.benefits_title }}</h2>
+    {%- endif -%}
+
+    <div class="shatokb-beneficios__grid">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'benefit' -%}
+          <article class="shatokb-beneficio-card" {{ block.shopify_attributes }}>
+            <div class="shatokb-beneficio-card__icon" aria-hidden="true">{{ block.settings.icon_emoji }}</div>
+            <h3 class="shatokb-beneficio-card__title">{{ block.settings.title }}</h3>
+            <p class="shatokb-beneficio-card__desc">{{ block.settings.description }}</p>
+          </article>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+
+  </div>
+</div>
+
 <script>
   function shatokbScrollToQuiz(e) {
     e.preventDefault();
@@ -161,7 +187,7 @@
   "settings": [
     {
       "type": "header",
-      "content": "Content"
+      "content": "Hero"
     },
     {
       "type": "text",
@@ -186,11 +212,81 @@
       "id": "show_trust_bar",
       "label": "Show trust bar",
       "default": true
+    },
+    {
+      "type": "header",
+      "content": "Benefits"
+    },
+    {
+      "type": "text",
+      "id": "benefits_title",
+      "label": "Benefits section title",
+      "default": "Why choose your routine with us?"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "benefit",
+      "name": "Benefit",
+      "settings": [
+        {
+          "type": "text",
+          "id": "icon_emoji",
+          "label": "Emoji / Icon",
+          "default": "🎯"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Personalised recommendation"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "Description",
+          "default": "Not every product works the same for every skin. We help you find exactly yours."
+        }
+      ]
     }
   ],
   "presets": [
     {
-      "name": "🌸 Hero — Diagnosis"
+      "name": "🌸 Hero — Diagnosis",
+      "blocks": [
+        {
+          "type": "benefit",
+          "settings": {
+            "icon_emoji": "🎯",
+            "title": "Personalised recommendation",
+            "description": "We match products to your exact skin needs — no one-size-fits-all approach."
+          }
+        },
+        {
+          "type": "benefit",
+          "settings": {
+            "icon_emoji": "🌿",
+            "title": "Routines for your skin type",
+            "description": "Morning and night. Step by step. Tailored to oily, dry, sensitive or combination skin."
+          }
+        },
+        {
+          "type": "benefit",
+          "settings": {
+            "icon_emoji": "🇰🇷",
+            "title": "Authentic K-Beauty products",
+            "description": "Genuine Korean brands with science-backed ingredients trusted by millions worldwide."
+          }
+        },
+        {
+          "type": "benefit",
+          "settings": {
+            "icon_emoji": "💬",
+            "title": "Guided shopping via WhatsApp",
+            "description": "Have questions? Our team helps you choose and build your ideal routine before you buy."
+          }
+        }
+      ]
     }
   ]
 }
