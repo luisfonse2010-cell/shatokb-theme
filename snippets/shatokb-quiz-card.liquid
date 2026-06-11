@@ -1,0 +1,69 @@
+{% comment %}
+  ============================================================
+  SHATOKB · Card de Producto Recomendado
+  Archivo: snippets/shatokb-quiz-card.liquid
+  
+  Variables esperadas (se pasan al incluir con "with" o "assign"):
+  - card_handle: handle del producto en Shopify (ej: "cosrx-snail-mucin")
+  - card_name: nombre del producto
+  - card_image: URL de la imagen
+  - card_price: precio formateado (ej: "18,95 €")
+  - card_badge: etiqueta opcional (ej: "Más vendido", "Nuevo")
+  - card_step: paso de la rutina (ej: "Paso 1 · Limpiador")
+  - card_desc: descripción corta (1 línea)
+  
+  FASE 2: Cuando tengas productos reales, sustituye los valores
+  por variables de un objeto `product` de Shopify.
+  ============================================================
+{% endcomment %}
+
+<article class="shatokb-prod-card">
+
+  {%- if card_badge != blank -%}
+    <span class="shatokb-prod-card__badge">{{ card_badge }}</span>
+  {%- endif -%}
+
+  <a
+    href="/products/{{ card_handle }}"
+    class="shatokb-prod-card__img-link"
+    tabindex="-1"
+    aria-hidden="true"
+  >
+    <img
+      src="{{ card_image }}"
+      alt="{{ card_name }}"
+      class="shatokb-prod-card__img"
+      loading="lazy"
+      width="300"
+      height="300"
+    >
+  </a>
+
+  <div class="shatokb-prod-card__body">
+
+    {%- if card_step != blank -%}
+      <span class="shatokb-prod-card__step">{{ card_step }}</span>
+    {%- endif -%}
+
+    <h4 class="shatokb-prod-card__name">
+      <a href="/products/{{ card_handle }}">{{ card_name }}</a>
+    </h4>
+
+    {%- if card_desc != blank -%}
+      <p class="shatokb-prod-card__desc">{{ card_desc }}</p>
+    {%- endif -%}
+
+    <div class="shatokb-prod-card__footer">
+      <span class="shatokb-prod-card__price">{{ card_price }}</span>
+      <a
+        href="/products/{{ card_handle }}"
+        class="shatokb-btn shatokb-btn--sm shatokb-btn--primary"
+        aria-label="Ver {{ card_name }}"
+      >
+        Ver producto
+      </a>
+    </div>
+
+  </div>
+
+</article>
