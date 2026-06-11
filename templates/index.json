@@ -4559,16 +4559,11 @@
       "name": "🌸 Hero — Diagnosis",
       "settings": {
         "badge_text": "🎫 THE SKIN SECRET KOREAN WOMEN HAVE HAD FOR YEARS — NOW YOURS",
-        "title": "Your skin has been waiting for this routine.",
         "subtitle": "Answer 6 questions and we'll recommend the exact products your skin needs. No guessing. No getting lost.",
-        "cta_primary": "Reveal My Skin Routine →",
+        "cta_primary": "Reveal My Skin Routine",
         "cta_secondary": "⭐ View Best Sellers",
         "cta_secondary_url": "",
-        "show_trust_bar": true,
-        "overlay_opacity": 30,
-        "bg_color": "#0b0335",
-        "title_color": "#ffffff",
-        "subtitle_color": "#c8d9ff"
+        "show_trust_bar": true
       }
     }
   },
