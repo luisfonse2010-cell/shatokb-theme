@@ -108,8 +108,11 @@ const SHATOKB_PREGUNTAS = [
 
 
 /* ============================================================
-   2. TAG MAPS
+   2. TAG MAPS  —  Shopify product tags → internal engine fields
+   All tags are in English and match exactly what's in the store.
 ============================================================ */
+
+// Tag → routine step category
 const TAG_CATEGORIA = {
   'Cleansers':               'cleanser',
   'Toner, Pads & Mists':     'toner',
@@ -123,6 +126,7 @@ const TAG_CATEGORIA = {
   'Lip Care':                'lip',
 };
 
+// Tag → skin type
 const TAG_TIPO_PIEL = {
   'Dry Skin':                 'seca',
   'Oily & Acne-Prone Skin':   'grasa',
@@ -131,6 +135,7 @@ const TAG_TIPO_PIEL = {
   'Combination Skin':         'mixta',
 };
 
+// Tag → skin concern
 const TAG_CONCERN = {
   'Large Pores & Texture':          'poros',
   'Sun Protection & Damage':        'manchas',
@@ -145,11 +150,13 @@ const TAG_CONCERN = {
   'Dehydration':                    'deshidratacion',
 };
 
+// Tags that indicate safe for sensitive skin
 const TAGS_SENSIBLE_SAFE = new Set([
   'Sensitive Skin', 'Redness & Sensitive Skin',
   'Fragrance-Free', 'Hypoallergenic',
 ]);
 
+// Tags that map to a product badge
 const TAG_BADGE = {
   'Best Seller': 'Best Seller',
   'Bestseller':  'Best Seller',
@@ -159,6 +166,7 @@ const TAG_BADGE = {
   'Viral':       'Viral',
 };
 
+// Emoji per category
 const EMOJI_MAP = {
   cleanser: '🫧', toner: '💧', serum: '💊', essence: '🐌',
   moisturizer: '🧴', spf: '☀️', exfoliator: '✨',
@@ -167,59 +175,96 @@ const EMOJI_MAP = {
 
 
 /* ============================================================
-   3. LIVE CATALOGUE
+   3. LIVE CATALOGUE  —  populated at runtime by shatokbFetchCatalogo()
 ============================================================ */
 let SHATOKB_CATALOGO = [];
 let shatokbCatalogoCargado = false;
 
+/**
+ * Converts a raw Shopify product object → internal catalogue format.
+ * Returns null for products without a recognised category tag.
+ */
 function shatokbMapProduct(p) {
   const tags   = (p.tags || '').split(',').map(t => t.trim());
   const tagSet = new Set(tags);
+
+  // Determine routine step category
   let categoria = null;
   for (const [tag, cat] of Object.entries(TAG_CATEGORIA)) {
     if (tagSet.has(tag)) { categoria = cat; break; }
   }
   if (!categoria) return null;
+
+  // Skin types
   const tipo_piel = [];
   for (const [tag, tipo] of Object.entries(TAG_TIPO_PIEL)) {
     if (tagSet.has(tag) && !tipo_piel.includes(tipo)) tipo_piel.push(tipo);
   }
   if (tipo_piel.length === 0) tipo_piel.push('nolose');
+
+  // Concerns
   const concerns = [];
   for (const [tag, concern] of Object.entries(TAG_CONCERN)) {
-    if (tagSet.has(concern) && !concerns.includes(concern)) concerns.push(concern);
+    if (tagSet.has(tag) && !concerns.includes(concern)) concerns.push(concern);
   }
+
+  // Sensitive-safe?
   const sensible = [...TAGS_SENSIBLE_SAFE].some(t => tagSet.has(t));
+
+  // Badge
   let badge = null;
   for (const [tag, label] of Object.entries(TAG_BADGE)) {
     if (tagSet.has(tag)) { badge = label; break; }
   }
+
+  // Price from first variant
   const precio_num = parseFloat(p.variants?.[0]?.price || '0');
   const precio     = '$' + precio_num.toFixed(2);
+
   return {
-    id: p.handle, nombre: p.title, handle: p.handle,
-    precio, precio_num, badge,
-    emoji: EMOJI_MAP[categoria] || '🌿',
-    desc: p.body_html ? p.body_html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160) + '…' : p.title,
-    tipo_piel, categoria, concerns, sensible,
-    imagen: p.images?.[0]?.src || null,
+    id:         p.handle,
+    nombre:     p.title,
+    handle:     p.handle,
+    precio,
+    precio_num,
+    badge,
+    emoji:      EMOJI_MAP[categoria] || '🌿',
+    desc:       p.body_html
+                  ? p.body_html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160) + '…'
+                  : p.title,
+    tipo_piel,
+    categoria,
+    concerns,
+    sensible,
+    imagen:     p.images?.[0]?.src || null,
   };
 }
 
+/**
+ * Fetches ALL products from /products.json using pagination.
+ * Max 250 per Shopify page. Loops until last page.
+ * Falls back to SHATOKB_FALLBACK on any error (local preview, dev).
+ */
 async function shatokbFetchCatalogo() {
-  const all = []; let page = 1; const limit = 250;
+  const all   = [];
+  let page    = 1;
+  const limit = 250;
+
   try {
     while (true) {
       const res = await fetch(`/products.json?limit=${limit}&page=${page}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      const data     = await res.json();
       const products = data.products || [];
       all.push(...products);
       if (products.length < limit) break;
       page++;
     }
+
     SHATOKB_CATALOGO = all.map(shatokbMapProduct).filter(Boolean);
     shatokbCatalogoCargado = true;
+    console.log(`[SHATOKB] Catalogue loaded: ${SHATOKB_CATALOGO.length} products from ${all.length} total.`);
+
   } catch (err) {
     console.warn('[SHATOKB] Live catalogue unavailable — using fallback:', err.message);
     SHATOKB_CATALOGO = SHATOKB_FALLBACK;
@@ -229,28 +274,41 @@ async function shatokbFetchCatalogo() {
 
 
 /* ============================================================
-   4. FALLBACK CATALOGUE
+   4. FALLBACK CATALOGUE  —  used only when /products.json is
+   unavailable (local preview, dev environment).
+   In production Shopify this array is never used.
 ============================================================ */
 const SHATOKB_FALLBACK = [
+  /* ── CLEANSERS ── */
   { id:'cosrx-low-ph-cleanser', nombre:'COSRX Low pH Gel Cleanser', handle:'cosrx-low-ph-good-morning-gel-cleanser', precio:'$12.95', precio_num:12.95, badge:'Best Seller', emoji:'🫧', desc:'Low pH gel that cleanses without disrupting the skin barrier. Perfect for oily and acne-prone skin.', tipo_piel:['grasa','mixta','sensible','seca','nolose'], categoria:'cleanser', concerns:['acne','poros','rojeces'], sensible:true },
   { id:'klairs-cleansing-oil', nombre:'Klairs Gentle Black Cleansing Oil', handle:'klairs-gentle-black-deep-cleansing-oil', precio:'$21.90', precio_num:21.90, badge:null, emoji:'🫙', desc:'Nourishing cleansing oil for dry and sensitive skin. Dissolves makeup and SPF while moisturising.', tipo_piel:['seca','sensible','mixta','nolose'], categoria:'cleanser', concerns:['deshidratacion','rojeces','antiaging'], sensible:true },
   { id:'banila-co-balm', nombre:'Banila Co Clean It Zero Balm', handle:'banila-co-clean-it-zero-cleansing-balm', precio:'$18.50', precio_num:18.50, badge:null, emoji:'✨', desc:'Iconic cleansing balm. Melts away SPF, makeup and excess sebum — the perfect first cleanse.', tipo_piel:['grasa','mixta','seca','sensible','nolose'], categoria:'cleanser', concerns:['acne','poros','manchas'], sensible:false },
   { id:'anua-cleanser', nombre:'Anua Heartleaf Foam Cleanser', handle:'anua-heartleaf-pore-control-cleansing-foam', precio:'$15.90', precio_num:15.90, badge:'Trending', emoji:'🌿', desc:'Heartleaf-infused foam cleanser that controls excess sebum and soothes irritated skin.', tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'cleanser', concerns:['acne','poros','rojeces'], sensible:true },
+
+  /* ── TONERS ── */
   { id:'cosrx-aha-bha-toner', nombre:'COSRX AHA/BHA Clarifying Toner', handle:'cosrx-aha-bha-clarifying-treatment-toner', precio:'$14.95', precio_num:14.95, badge:'Best Seller', emoji:'💧', desc:'Gentle exfoliating toner with AHA/BHA. Clears pores, evens tone and refines texture without irritating.', tipo_piel:['grasa','mixta','seca','nolose'], categoria:'toner', concerns:['acne','poros','textura','manchas'], sensible:false },
   { id:'klairs-supple-toner', nombre:'Klairs Supple Preparation Toner', handle:'klairs-supple-preparation-facial-toner', precio:'$24.90', precio_num:24.90, badge:null, emoji:'💦', desc:'Alcohol-free hydrating toner. Soothes redness and delivers deep layered hydration to all skin types.', tipo_piel:['seca','mixta','sensible','grasa','nolose'], categoria:'toner', concerns:['deshidratacion','rojeces','antiaging'], sensible:true },
   { id:'some-by-mi-toner', nombre:'Some By Mi AHA·BHA·PHA 30 Days Toner', handle:'some-by-mi-aha-bha-pha-30-days-miracle-toner', precio:'$16.90', precio_num:16.90, badge:null, emoji:'🌿', desc:'Triple acid toner that treats acne, dark spots and rough texture simultaneously. Results in 30 days.', tipo_piel:['grasa','mixta','seca','nolose'], categoria:'toner', concerns:['acne','poros','textura','manchas'], sensible:false },
   { id:'beauty-of-joseon-toner', nombre:'Beauty of Joseon Glow Serum Toner', handle:'beauty-of-joseon-glow-serum', precio:'$19.90', precio_num:19.90, badge:'Viral', emoji:'🍚', desc:'Rice and propolis toner-serum hybrid. Brightens dull skin, evens tone and delivers intense hydration.', tipo_piel:['grasa','mixta','seca','sensible','nolose'], categoria:'toner', concerns:['manchas','deshidratacion','textura'], sensible:true },
+
+  /* ── ESSENCES ── */
   { id:'cosrx-snail-essence', nombre:'COSRX Advanced Snail 96 Mucin Essence', handle:'cosrx-advanced-snail-96-mucin-power-essence', precio:'$19.95', precio_num:19.95, badge:'Iconic', emoji:'🐌', desc:'The most famous K-Beauty essence. 96% snail mucin regenerates, hydrates and brightens every skin type.', tipo_piel:['grasa','mixta','seca','sensible','nolose'], categoria:'essence', concerns:['deshidratacion','manchas','textura','antiaging','rojeces'], sensible:true },
   { id:'missha-essence', nombre:'Missha Time Revolution Essence', handle:'missha-time-revolution-the-first-treatment-essence', precio:'$29.90', precio_num:29.90, badge:null, emoji:'⚗️', desc:'Fermented yeast essence that visibly improves skin texture, radiance and signs of aging over time.', tipo_piel:['seca','mixta','grasa','nolose'], categoria:'essence', concerns:['antiaging','textura','manchas','deshidratacion'], sensible:true },
   { id:'innisfree-green-tea-essence', nombre:'Innisfree Green Tea Seed Essence', handle:'innisfree-green-tea-seed-serum', precio:'$22.90', precio_num:22.90, badge:null, emoji:'🍵', desc:'Lightweight green tea essence packed with antioxidants. Hydrates, soothes and protects against environmental stress.', tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'essence', concerns:['deshidratacion','rojeces','textura'], sensible:true },
+
+  /* ── SERUMS ── */
   { id:'vitamin-c-serum', nombre:'By Wishtrend Pure Vitamin C 21.5%', handle:'by-wishtrend-pure-vitamin-c-21-5-advanced-serum', precio:'$28.90', precio_num:28.90, badge:'Brightening', emoji:'☀️', desc:'High-potency vitamin C serum. Brightens skin tone, fades dark spots and delivers antioxidant protection.', tipo_piel:['mixta','seca','grasa','nolose'], categoria:'serum', concerns:['manchas','antiaging','textura'], sensible:false },
   { id:'centella-serum', nombre:'Dr.Jart+ Cicapair Serum', handle:'dr-jart-cicapair-serum', precio:'$34.90', precio_num:34.90, badge:null, emoji:'🌱', desc:'High-concentration Centella Asiatica. Soothes active redness, repairs the barrier and calms inflammation.', tipo_piel:['sensible','mixta','seca','nolose'], categoria:'serum', concerns:['rojeces','textura','deshidratacion'], sensible:true },
   { id:'retinol-serum', nombre:'Some By Mi Retinol Intense Serum', handle:'some-by-mi-retinol-intense-reactivating-serum', precio:'$22.90', precio_num:22.90, badge:null, emoji:'⏳', desc:'Gentle retinol that stimulates cell renewal and collagen production. Start 2–3 nights per week.', tipo_piel:['seca','mixta','grasa','nolose'], categoria:'serum', concerns:['antiaging','textura','manchas'], sensible:false },
   { id:'niacinamide-serum', nombre:'COSRX Niacinamide 15% Face Serum', handle:'cosrx-niacinamide-15-face-serum', precio:'$17.90', precio_num:17.90, badge:'Pore Control', emoji:'🔬', desc:'15% niacinamide serum that minimises pores, controls sebum and visibly brightens uneven skin tone.', tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'serum', concerns:['poros','acne','manchas','textura'], sensible:true },
+
+  /* ── MOISTURIZERS ── */
   { id:'cosrx-oil-free-lotion', nombre:'COSRX Oil-Free Moisturizing Lotion', handle:'cosrx-oil-free-ultra-moisturizing-lotion', precio:'$16.95', precio_num:16.95, badge:null, emoji:'💧', desc:'Light gel-cream moisturizer, non-comedogenic. Hydrates oily and combination skin without clogging pores.', tipo_piel:['grasa','mixta','nolose'], categoria:'moisturizer', concerns:['acne','poros','deshidratacion'], sensible:true },
   { id:'laneige-sleeping-mask', nombre:'Laneige Water Sleeping Mask', handle:'laneige-water-sleeping-mask', precio:'$26.90', precio_num:26.90, badge:'Best Seller', emoji:'🌙', desc:"Korea's most famous sleeping mask. Overnight deep hydration — wake up with plump, glowing skin.", tipo_piel:['seca','mixta','grasa','nolose'], categoria:'moisturizer', concerns:['deshidratacion','antiaging','textura'], sensible:true },
   { id:'klairs-calming-cream', nombre:'Klairs Midnight Blue Calming Cream', handle:'klairs-midnight-blue-calming-cream', precio:'$21.90', precio_num:21.90, badge:null, emoji:'🌀', desc:'Reduces active redness and repairs the skin barrier with guaiazulene. Ideal for reactive skin.', tipo_piel:['sensible','mixta','seca','nolose'], categoria:'moisturizer', concerns:['rojeces','deshidratacion'], sensible:true },
   { id:'beauty-joseon-cream', nombre:'Beauty of Joseon Dynasty Cream', handle:'beauty-of-joseon-dynasty-cream', precio:'$16.90', precio_num:16.90, badge:'Cult Favorite', emoji:'🏺', desc:'Traditional Korean rice and ginseng cream. Deeply nourishes, brightens and firms all skin types.', tipo_piel:['seca','mixta','grasa','sensible','nolose'], categoria:'moisturizer', concerns:['deshidratacion','antiaging','manchas'], sensible:true },
+
+  /* ── SPF ── */
   { id:'cosrx-spf', nombre:'COSRX Aloe Soothing Sun Cream SPF50+', handle:'cosrx-aloe-soothing-sun-cream-spf50', precio:'$14.95', precio_num:14.95, badge:'Essential', emoji:'☀️', desc:'SPF50+ with soothing aloe vera. Non-greasy, lightweight finish — perfect for daily use on any skin type.', tipo_piel:['grasa','mixta','sensible','seca','nolose'], categoria:'spf', concerns:['acne','poros','rojeces','manchas'], sensible:true },
   { id:'roundlab-spf', nombre:'Round Lab Birch Juice Sun Cream SPF50+', handle:'round-lab-birch-juice-moisturizing-sun-cream', precio:'$18.90', precio_num:18.90, badge:null, emoji:'🌲', desc:'Hydrating SPF50+ with no white cast. Birch juice keeps skin bouncy and comfortable all day long.', tipo_piel:['seca','mixta','sensible','grasa','nolose'], categoria:'spf', concerns:['deshidratacion','antiaging','manchas'], sensible:true },
   { id:'beauty-joseon-spf', nombre:'Beauty of Joseon Relief Sun SPF50+', handle:'beauty-of-joseon-relief-sun-rice-probiotics', precio:'$16.90', precio_num:16.90, badge:'Viral', emoji:'🌸', desc:'Beloved K-Beauty SPF with rice extract and probiotics. Calming, hydrating and zero white cast.', tipo_piel:['grasa','mixta','sensible','seca','nolose'], categoria:'spf', concerns:['rojeces','manchas','deshidratacion'], sensible:true }
@@ -259,6 +317,8 @@ const SHATOKB_FALLBACK = [
 
 /* ============================================================
    5. SKIN PROFILES
+   Defines routine steps per profile.
+   Products are found dynamically — nothing is hardcoded here.
 ============================================================ */
 const SHATOKB_PERFILES = {
   grasa_acne: {
@@ -362,11 +422,13 @@ function shatokbCalcularPerfil(resp) {
   const puntos = {};
   Object.keys(SHATOKB_PERFILES).forEach(p => { puntos[p] = 0; });
   const r = resp;
+
   if (r.tipo_piel === 'grasa')    { puntos.grasa_acne += 3; puntos.grasa_poros += 3; }
   if (r.tipo_piel === 'mixta')    { puntos.mixta_general += 3; puntos.mixta_manchas += 2; }
   if (r.tipo_piel === 'seca')     { puntos.seca_hidratacion += 3; puntos.seca_antiaging += 2; }
   if (r.tipo_piel === 'sensible') { puntos.sensible_rojeces += 5; }
   if (r.tipo_piel === 'nolose')   { puntos.general_glow += 3; }
+
   if (r.preocupacion === 'acne')           { puntos.grasa_acne += 4; }
   if (r.preocupacion === 'poros')          { puntos.grasa_poros += 4; }
   if (r.preocupacion === 'manchas')        { puntos.mixta_manchas += 4; puntos.seca_antiaging += 1; }
@@ -374,12 +436,14 @@ function shatokbCalcularPerfil(resp) {
   if (r.preocupacion === 'rojeces')        { puntos.sensible_rojeces += 4; }
   if (r.preocupacion === 'antiaging')      { puntos.seca_antiaging += 4; }
   if (r.preocupacion === 'textura')        { puntos.grasa_poros += 2; puntos.mixta_general += 2; }
+
   if (r.objetivo === 'calmar')    { puntos.sensible_rojeces += 3; }
   if (r.objetivo === 'controlar') { puntos.grasa_acne += 2; puntos.grasa_poros += 2; }
   if (r.objetivo === 'hidratar')  { puntos.seca_hidratacion += 3; puntos.mixta_general += 2; }
   if (r.objetivo === 'unificar')  { puntos.mixta_manchas += 3; }
   if (r.objetivo === 'glow')      { puntos.general_glow += 2; puntos.seca_hidratacion += 1; }
   if (r.sensibilidad === 'alta')  { puntos.sensible_rojeces += 3; }
+
   let mejor = 'general_glow', max = 0;
   Object.entries(puntos).forEach(([k, v]) => { if (v > max) { max = v; mejor = k; } });
   return mejor;
@@ -401,16 +465,21 @@ function shatokbRecomendarProductos(perfilId, respuestas) {
   const nivelRutina  = respuestas.nivel_rutina;
   const presupuesto  = respuestas.presupuesto;
   const budgetMax    = SHATOKB_BUDGET_LIMITS[presupuesto] || Infinity;
+
+  // Trim steps based on routine level
   let pasos = [...perfil.pasos];
   if (nivelRutina === 'basica' && pasos.length > 4) {
     const order     = ['cleanser', 'toner', 'essence', 'serum', 'moisturizer', 'spf'];
     const essential = ['cleanser', 'moisturizer', 'spf'];
     const actives   = pasos.filter(p => !essential.includes(p.categoria));
     const base      = pasos.filter(p => essential.includes(p.categoria));
-    pasos = [...base, ...actives.slice(0, 1)].sort((a, b) => order.indexOf(a.categoria) - order.indexOf(b.categoria));
+    pasos = [...base, ...actives.slice(0, 1)]
+      .sort((a, b) => order.indexOf(a.categoria) - order.indexOf(b.categoria));
   }
+
   return pasos.map(paso => {
     let candidatos = SHATOKB_CATALOGO.filter(p => p.categoria === paso.categoria);
+
     candidatos = candidatos.map(p => {
       let score = 0;
       if (p.tipo_piel.includes(tipoPiel))         score += 10;
@@ -423,8 +492,10 @@ function shatokbRecomendarProductos(perfilId, respuestas) {
       else                                         score -= 3;
       return { ...p, _score: score };
     });
+
     candidatos.sort((a, b) => b._score - a._score);
     const opciones = candidatos.slice(0, SHATOKB_MAX_OPTIONS);
+
     return { paso: paso.nombre, por_que: paso.por_que, opciones };
   });
 }
@@ -437,7 +508,7 @@ const shatokbState = {
   preguntaActual: 0,
   respuestas:     {},
   completado:     false,
-  selectedProducts: {}
+  selectedProducts: {}   // { stepIndex: productId }
 };
 
 function shatokbIniciarQuiz() {
@@ -445,10 +516,12 @@ function shatokbIniciarQuiz() {
   const cabecera  = document.getElementById('shatokb-quiz-cabecera');
   const progreso  = document.getElementById('shatokb-progreso');
   const preguntas = document.getElementById('shatokb-quiz-form');
+
   if (inicio)    inicio.style.display    = 'none';
   if (cabecera)  cabecera.style.display  = 'none';
   if (progreso)  progreso.style.display  = 'block';
   if (preguntas) preguntas.style.display = 'block';
+
   shatokbRenderPregunta(0);
 }
 
@@ -457,14 +530,18 @@ function shatokbRenderPregunta(idx) {
   const total = SHATOKB_PREGUNTAS.length;
   const q     = SHATOKB_PREGUNTAS[idx];
   const pct   = Math.round((idx / total) * 100);
+
   const fill  = document.getElementById('shatokb-progreso-barra');
   const texto = document.getElementById('shatokb-progreso-texto');
   const pctEl = document.getElementById('shatokb-pregunta-num');
+
   if (fill)  fill.style.width     = pct + '%';
   if (texto) texto.textContent    = 'Question ' + (idx + 1) + ' of ' + total;
   if (pctEl) pctEl.textContent    = pct + '%';
+
   const container = document.getElementById('shatokb-quiz-form');
   if (!container) return;
+
   container.innerHTML = `
     <div class="shatokb-pregunta">
       <div class="shatokb-pregunta__header">
@@ -531,16 +608,22 @@ function shatokbMostrarGateEmail() {
   const texto = document.getElementById('shatokb-progreso-texto');
   const pctEl = document.getElementById('shatokb-pregunta-num');
   const form  = document.getElementById('shatokb-quiz-form');
+
   if (fill)  fill.style.width     = '100%';
   if (texto) texto.textContent    = '🎉 Done! Preparing your routine…';
   if (pctEl) pctEl.textContent    = '100%';
   if (form)  form.style.display   = 'none';
+
   shatokbTrackPixel('QuizCompleted', { skin_profile: shatokbCalcularPerfil(shatokbState.respuestas) });
+
   const gate = document.getElementById('stk-email-gate');
   if (!gate) { shatokbMostrarResultado(); return; }
   gate.style.display = 'flex';
   setTimeout(() => gate.classList.add('visible'), 10);
-  setTimeout(() => { const inp = document.getElementById('stk-email-input'); if (inp) inp.focus(); }, 80);
+  setTimeout(() => {
+    const inp = document.getElementById('stk-email-input');
+    if (inp) inp.focus();
+  }, 80);
 }
 
 async function shatokbSubmitEmail(e) {
@@ -548,9 +631,11 @@ async function shatokbSubmitEmail(e) {
   const emailEl = document.getElementById('stk-email-input');
   const email   = emailEl ? emailEl.value.trim() : '';
   if (!email) return;
+
   const btn = document.getElementById('stk-gate-submit');
   if (btn) { btn.textContent = 'One moment…'; btn.disabled = true; }
   shatokbEmailCaptured = email;
+
   try {
     await fetch('/contact', {
       method:  'POST',
@@ -563,7 +648,8 @@ async function shatokbSubmitEmail(e) {
         'contact[body]':    'Skin quiz profile: ' + shatokbCalcularPerfil(shatokbState.respuestas)
       })
     });
-  } catch(_) {}
+  } catch(_) { /* non-blocking */ }
+
   shatokbTrackPixel('Lead', { content_name: 'quiz_' + shatokbCalcularPerfil(shatokbState.respuestas) });
   shatokbCerrarGate();
   shatokbMostrarResultado();
@@ -585,6 +671,7 @@ function shatokbTrackPixel(eventName, params = {}) {
 
 /* ============================================================
    10. RESULT DISPLAY
+   Waits for catalogue to finish loading before rendering.
 ============================================================ */
 async function shatokbMostrarResultado() {
   const fill  = document.getElementById('shatokb-progreso-barra');
@@ -593,44 +680,56 @@ async function shatokbMostrarResultado() {
   if (fill)  fill.style.width   = '100%';
   if (texto) texto.textContent  = '✓ Complete!';
   if (pctEl) pctEl.textContent  = '100%';
+
   const form = document.getElementById('shatokb-quiz-form');
   if (form)  form.style.display = 'none';
+
   const resultadoEl = document.getElementById('shatokb-resultado');
   if (!resultadoEl) return;
   resultadoEl.style.display = 'block';
   resultadoEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Show spinner while catalogue loads
   if (!shatokbCatalogoCargado) {
     const inner = resultadoEl.querySelector('.shatokb-resultado__inner') || resultadoEl;
     inner.innerHTML = `
       <div style="text-align:center; padding: 60px 20px;">
-        <div style="font-size:2.5rem; margin-bottom:16px;">⏳</div>
-        <p style="font-family:'Prompt',sans-serif; font-size:1.1rem; font-weight:700; color:#0b0335;">
+        <div style="font-size:40px; margin-bottom:16px;">⏳</div>
+        <p style="font-family:'Prompt',sans-serif; font-size:18px; font-weight:700; color:#0b0335;">
           Building your personalized routine…
         </p>
-        <p style="font-size:0.85rem; color:#6b7280; margin-top:8px;">
+        <p style="font-size:14px; color:#6b7280; margin-top:8px;">
           Loading your skin profile and product catalogue
         </p>
       </div>`;
+
     await new Promise(resolve => {
       const check = setInterval(() => {
         if (shatokbCatalogoCargado) { clearInterval(check); resolve(); }
       }, 100);
     });
   }
+
   const perfilId  = shatokbCalcularPerfil(shatokbState.respuestas);
   const perfil    = SHATOKB_PERFILES[perfilId];
   const pasosProd = shatokbRecomendarProductos(perfilId, shatokbState.respuestas);
   const tags      = perfil.resumen || [];
+
+  // Pre-select top option for each step
   shatokbState.selectedProducts = {};
   pasosProd.forEach((paso, i) => {
     if (paso.opciones.length > 0) shatokbState.selectedProducts[i] = paso.opciones[0].id;
   });
-  const presupuesto   = shatokbState.respuestas.presupuesto;
-  const budgetMax     = SHATOKB_BUDGET_LIMITS[presupuesto] || Infinity;
-  const budgetLabel   = { bajo: 'under $40', medio: '$40–$80', alto: 'premium' }[presupuesto] || '';
+
+  const presupuesto  = shatokbState.respuestas.presupuesto;
+  const budgetMax    = SHATOKB_BUDGET_LIMITS[presupuesto] || Infinity;
+  const budgetLabel  = { bajo: 'under $40', medio: '$40–$80', alto: 'premium' }[presupuesto] || '';
   const hasOverBudget = pasosProd.some(p => p.opciones.length > 0 && p.opciones[0].precio_num > budgetMax);
+
   const inner = resultadoEl.querySelector('.shatokb-resultado__inner') || resultadoEl;
   inner.innerHTML = `
+
+    <!-- Profile header -->
     <div class="shatokb-resultado__header">
       <div class="shatokb-resultado__check">✨</div>
       <h2 class="shatokb-resultado__titulo">Your Skin Profile</h2>
@@ -640,15 +739,29 @@ async function shatokbMostrarResultado() {
       </div>
       <p class="shatokb-resultado__desc">${perfil.descripcion}</p>
     </div>
-    ${hasOverBudget ? `<div class="stk-budget-note">⚠️ Some recommended products exceed your <strong>${budgetLabel}</strong> budget. We've marked them so you can choose alternatives within your range.</div>` : ''}
+
+    ${hasOverBudget ? `
+      <div class="stk-budget-note">
+        ⚠️ Some recommended products exceed your <strong>${budgetLabel}</strong> budget. We've marked them so you can choose alternatives within your range.
+      </div>` : ''}
+
     <div style="margin-bottom: 24px;">
       <p class="stk-section-title">Your Personalized Routine</p>
-      <p class="stk-section-sub">For each step below we've hand-picked the best options for your skin profile and budget.<br><strong>All the products within each step work for your skin — pick the one you prefer.</strong> Your estimated total updates automatically as you choose.</p>
+      <p class="stk-section-sub">
+        For each step below we've hand-picked the best options for your skin profile and budget.<br>
+        <strong>All the products within each step work for your skin — pick the one you prefer.</strong>
+        Your estimated total updates automatically as you choose.
+      </p>
     </div>
+
     <div id="shatokb-routine-steps">
       ${pasosProd.map((paso, stepIdx) => shatokbRenderPasoHTML(paso, stepIdx, budgetMax)).join('')}
     </div>
+
+    <!-- CTAs — rendered dynamically from Theme Editor config -->
     <div class="shatokb-resultado__ctas" id="shatokb-ctas" style="margin-top: 40px;"></div>
+
+    <!-- Sticky total bar -->
     <div class="stk-total-bar" id="stk-total-bar">
       <div class="stk-total-bar__info">
         <div class="stk-total-bar__timer" id="stk-timer">⏱️ Routine saved for 15:00</div>
@@ -659,13 +772,14 @@ async function shatokbMostrarResultado() {
         🛒 Add my full routine to cart
       </button>
     </div>`;
+
   shatokbActualizarTotal();
   shatokbRenderCTAs();
   shatokbApplyConfigToUI();
   shatokbIniciarTimer();
   shatokbCargarReviewsTodos(pasosProd);
   shatokbTrackPixel('ViewContent', {
-    content_name: 'skin_routine_' + perfilId,
+    content_name:     'skin_routine_' + perfilId,
     content_category: perfilId,
     value: Object.values(shatokbState.selectedProducts).reduce((t, id) => {
       const p = SHATOKB_CATALOGO.find(x => x.id === id);
@@ -734,9 +848,11 @@ function shatokbRenderPasoHTML(paso, stepIdx, budgetMax) {
     const overBudget = prod.precio_num > budgetMax;
     const viewers    = shatokbViewersCount(prod.handle || prod.id);
     const stock      = shatokbStockCount(prod.handle || prod.id);
+
     let badgeHtml = '';
-    if (overBudget)       badgeHtml = `<div class="stk-prod-option__badge">⚠️ Above your budget</div>`;
-    else if (prod.badge)  badgeHtml = `<div class="stk-prod-option__badge stk-prod-option__badge--neutral">${prod.badge}</div>`;
+    if (overBudget)  badgeHtml = `<div class="stk-prod-option__badge">⚠️ Above your budget</div>`;
+    else if (prod.badge) badgeHtml = `<div class="stk-prod-option__badge stk-prod-option__badge--neutral">${prod.badge}</div>`;
+
     return `
       <div class="stk-prod-option${isSelected ? ' selected' : ''}"
            onclick="shatokbSeleccionarProducto(${stepIdx},'${prod.id}',this)"
@@ -747,7 +863,7 @@ function shatokbRenderPasoHTML(paso, stepIdx, budgetMax) {
         <div class="stk-prod-option__name">${prod.nombre}</div>
         <div class="stk-prod-reviews" id="rev-${prod.id}">
           <span style="color:#f0a500;">★★★★★</span>
-          <span style="font-size:0.72rem;color:#9ca3af">loading…</span>
+          <span style="font-size:11px;color:#9ca3af">loading…</span>
         </div>
         <div class="stk-prod-urgency">
           <span class="stk-prod-urgency__viewers">👀 ${viewers} people viewing now</span>
@@ -758,6 +874,7 @@ function shatokbRenderPasoHTML(paso, stepIdx, budgetMax) {
         <div class="stk-prod-option__select-hint">${isSelected ? '✓ In your routine' : 'Add to my routine'}</div>
       </div>`;
   }).join('');
+
   return `
     <div class="stk-routine-step" data-step="${stepIdx}">
       <div class="stk-routine-step__header">
@@ -767,7 +884,7 @@ function shatokbRenderPasoHTML(paso, stepIdx, budgetMax) {
           <div class="stk-routine-step__why">${paso.por_que}</div>
         </div>
       </div>
-      <p style="font-size:0.78rem;color:#6b7280;margin-bottom:10px;font-style:italic;">
+      <p style="font-size:12px;color:#6b7280;margin-bottom:10px;font-style:italic;">
         ✦ All ${paso.opciones.length} options match your skin profile — pick your favourite:
       </p>
       <div class="stk-routine-step__options">${opcionesHTML}</div>
@@ -809,13 +926,17 @@ function shatokbIniciarTimer() {
   let s  = 15 * 60;
   const el = document.getElementById('stk-timer');
   if (!el) return;
+
   const tick = () => {
     if (s < 0) { clearInterval(shatokbTimerInterval); return; }
     const m   = String(Math.floor(s / 60)).padStart(2, '0');
     const sec = String(s % 60).padStart(2, '0');
     el.textContent = `⏱️ Routine saved for ${m}:${sec}`;
-    if (s <= 60) el.classList.add('stk-total-bar__timer--urgent');
-    if (s === 0) { el.textContent = '⚠️ Session expired — retake quiz to save your routine'; clearInterval(shatokbTimerInterval); }
+    if (s <= 60)  el.classList.add('stk-total-bar__timer--urgent');
+    if (s === 0) {
+      el.textContent = '⚠️ Session expired — retake quiz to save your routine';
+      clearInterval(shatokbTimerInterval);
+    }
     s--;
   };
   tick();
@@ -829,12 +950,22 @@ function shatokbIniciarTimer() {
 async function shatokbAddAllToCart() {
   const btn = document.getElementById('stk-add-btn');
   if (!btn) return;
+
   const handles = Object.entries(shatokbState.selectedProducts)
-    .map(([, prodId]) => { const prod = SHATOKB_CATALOGO.find(p => p.id === prodId); return prod ? prod.handle : null; })
+    .map(([, prodId]) => {
+      const prod = SHATOKB_CATALOGO.find(p => p.id === prodId);
+      return prod ? prod.handle : null;
+    })
     .filter(Boolean);
-  if (handles.length === 0) { alert('Please select at least one product before adding to cart.'); return; }
+
+  if (handles.length === 0) {
+    alert('Please select at least one product before adding to cart.');
+    return;
+  }
+
   btn.disabled    = true;
   btn.textContent = '⏳ Adding to cart...';
+
   try {
     const variantRequests = handles.map(handle =>
       fetch(`/products/${handle}.js`)
@@ -842,17 +973,26 @@ async function shatokbAddAllToCart() {
         .then(data => ({ handle, variantId: data.variants?.[0]?.id || null }))
         .catch(() => ({ handle, variantId: null }))
     );
+
     const resolved = await Promise.all(variantRequests);
     const items    = resolved.filter(r => r.variantId !== null).map(r => ({ id: r.variantId, quantity: 1 }));
+
     if (items.length === 0) throw new Error('Could not retrieve product information. Please try again.');
+
     const cartRes = await fetch('/cart/add.js', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ items })
     });
-    if (!cartRes.ok) { const err = await cartRes.json().catch(() => ({})); throw new Error(err.description || 'Could not add products to cart.'); }
+
+    if (!cartRes.ok) {
+      const err = await cartRes.json().catch(() => ({}));
+      throw new Error(err.description || 'Could not add products to cart.');
+    }
+
     btn.textContent = '✅ Added! Redirecting...';
     window.location.href = '/cart';
+
   } catch (err) {
     console.error('[SHATOKB] addAllToCart error:', err);
     btn.disabled    = false;
@@ -861,7 +1001,7 @@ async function shatokbAddAllToCart() {
     if (!errEl) {
       errEl = document.createElement('p');
       errEl.id = 'stk-cart-error';
-      errEl.style.cssText = 'color:#f42b23; font-size:0.8rem; text-align:center; margin-top:8px;';
+      errEl.style.cssText = 'color:#f42b23; font-size:13px; text-align:center; margin-top:8px;';
       document.getElementById('stk-total-bar')?.after(errEl);
     }
     errEl.textContent = '⚠️ ' + err.message;
@@ -870,7 +1010,8 @@ async function shatokbAddAllToCart() {
 
 
 /* ============================================================
-   14. DYNAMIC CONFIG
+   14. DYNAMIC CONFIG  —  reads data-* attrs from <section>
+   Mirrors the Liquid Theme Editor settings exactly.
 ============================================================ */
 function shatokbGetConfig() {
   const el = document.getElementById('shatokb-quiz');
@@ -881,15 +1022,19 @@ function shatokbGetConfig() {
     btnCatalogueShow:   bool(d.btnCatalogueShow),
     btnCatalogueText:   d.btnCatalogueText   || '🛍️ Explore the full catalogue',
     btnCatalogueUrl:    d.btnCatalogueUrl    || '/collections/all',
+
     btnWhatsappShow:    bool(d.btnWhatsappShow),
     btnWhatsappText:    d.btnWhatsappText    || '💬 Talk to a skin expert',
-    btnWhatsappNumber:  d.btnWhatsappNumber  || '',
+    btnWhatsappNumber:  d.btnWhatsappNumber  || '12345678900',
     btnWhatsappMessage: d.btnWhatsappMessage || 'Hi! I just took the skin quiz and need help with my routine.',
+
     btnBestsellersShow: bool(d.btnBestsellersShow),
     btnBestsellersText: d.btnBestsellersText || '⭐ View Best Sellers',
     btnBestsellersUrl:  d.btnBestsellersUrl  || '/collections/best-sellers',
+
     btnRetakeShow:      bool(d.btnRetakeShow),
     btnRetakeText:      d.btnRetakeText      || '↺ My skin feels different — redo',
+
     totalBarLabel:      d.totalBarLabel      || 'Estimated total for your routine',
     totalBarCta:        d.totalBarCta        || '🛒 Add my full routine to cart',
   };
@@ -899,29 +1044,51 @@ function shatokbRenderCTAs() {
   const cfg       = shatokbGetConfig();
   const container = document.getElementById('shatokb-ctas');
   if (!container) return;
+
   let html = '';
+
   if (cfg.btnCatalogueShow) {
-    html += `<a href="${cfg.btnCatalogueUrl}" class="shatokb-btn shatokb-btn--secondary shatokb-btn--lg">${cfg.btnCatalogueText}</a>`;
+    html += `<a href="${cfg.btnCatalogueUrl}" class="shatokb-btn shatokb-btn--secondary shatokb-btn--lg">
+      ${cfg.btnCatalogueText}
+    </a>`;
   }
+
   if (cfg.btnWhatsappShow) {
     const waMsg = encodeURIComponent(cfg.btnWhatsappMessage);
-    html += `<a href="https://wa.me/${cfg.btnWhatsappNumber}?text=${waMsg}" class="shatokb-btn shatokb-btn--whatsapp shatokb-btn--lg" target="_blank" rel="noopener">${cfg.btnWhatsappText}</a>`;
+    html += `<a href="https://wa.me/${cfg.btnWhatsappNumber}?text=${waMsg}"
+      class="shatokb-btn shatokb-btn--whatsapp shatokb-btn--lg"
+      target="_blank" rel="noopener">
+      ${cfg.btnWhatsappText}
+    </a>`;
   }
+
   if (cfg.btnRetakeShow) {
-    html += `<button class="shatokb-btn shatokb-btn--ghost shatokb-btn--lg" type="button" onclick="shatokbReiniciar()">${cfg.btnRetakeText}</button>`;
+    html += `<button class="shatokb-btn shatokb-btn--ghost shatokb-btn--lg" type="button" onclick="shatokbReiniciar()">
+      ${cfg.btnRetakeText}
+    </button>`;
   }
+
   container.innerHTML = html;
 }
 
 function shatokbApplyConfigToUI() {
   const cfg = shatokbGetConfig();
+
+  // Hero — Best Sellers button
   const bsBtn = document.getElementById('shatokb-hero-bestsellers-btn');
   if (bsBtn) {
     bsBtn.style.display = cfg.btnBestsellersShow ? '' : 'none';
-    if (cfg.btnBestsellersShow) { bsBtn.textContent = cfg.btnBestsellersText; bsBtn.href = cfg.btnBestsellersUrl; }
+    if (cfg.btnBestsellersShow) {
+      bsBtn.textContent = cfg.btnBestsellersText;
+      bsBtn.href        = cfg.btnBestsellersUrl;
+    }
   }
+
+  // Sticky bar label
   const barLabel = document.getElementById('stk-total-bar-label');
   if (barLabel) barLabel.textContent = cfg.totalBarLabel;
+
+  // Sticky bar CTA
   const addBtn = document.getElementById('stk-add-btn');
   if (addBtn && !addBtn.disabled) addBtn.textContent = cfg.totalBarCta;
 }
@@ -935,17 +1102,21 @@ function shatokbReiniciar() {
   shatokbState.selectedProducts = {};
   shatokbState.preguntaActual   = 0;
   shatokbState.completado       = false;
+
   if (shatokbTimerInterval) { clearInterval(shatokbTimerInterval); shatokbTimerInterval = null; }
+
   const resultadoEl = document.getElementById('shatokb-resultado');
   const form        = document.getElementById('shatokb-quiz-form');
   const progreso    = document.getElementById('shatokb-progreso');
   const cabecera    = document.getElementById('shatokb-quiz-cabecera');
   const inicio      = document.getElementById('shatokb-quiz-inicio');
+
   if (resultadoEl) resultadoEl.style.display = 'none';
   if (form)        form.style.display        = 'none';
   if (progreso)    progreso.style.display    = 'none';
   if (cabecera)    cabecera.style.display    = 'block';
   if (inicio)      inicio.style.display      = 'block';
+
   const quizSection = document.getElementById('shatokb-quiz');
   if (quizSection) quizSection.scrollIntoView({ behavior: 'smooth' });
 }
@@ -953,8 +1124,11 @@ function shatokbReiniciar() {
 
 /* ============================================================
    16. INIT
+   1. Apply config to hero immediately on DOMContentLoaded.
+   2. Start fetching the live catalogue in the background so
+      it's ready by the time the user finishes all 6 questions.
 ============================================================ */
 document.addEventListener('DOMContentLoaded', function () {
   shatokbApplyConfigToUI();
-  shatokbFetchCatalogo();
+  shatokbFetchCatalogo();   // runs silently — no await needed here
 });
