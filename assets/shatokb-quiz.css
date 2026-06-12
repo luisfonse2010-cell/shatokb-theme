@@ -1504,9 +1504,9 @@
   line-height: 1.4;
 }
 
-/* Productos sombreados mientras está locked — opacity suave */
+/* Productos sombreados mientras está locked */
 .stk-reveal-section--locked .stk-routine-blurred {
-  opacity: 0.35;
+  opacity: 0.6;
   pointer-events: none;
   user-select: none;
   transition: opacity 0.4s ease;
