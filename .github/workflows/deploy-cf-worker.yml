@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'cloudflare-worker.js'
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -17,11 +18,11 @@ jobs:
         run: npm install -g wrangler
       - name: Crear wrangler.toml
         run: |
-          cat > wrangler.toml << 'TOML'
+          cat > wrangler.toml << 'EOF'
           name = "koi-proxy"
           main = "cloudflare-worker.js"
           compatibility_date = "2024-01-01"
-          TOML
+          EOF
       - name: Deploy a Cloudflare
         run: wrangler deploy
         env:
