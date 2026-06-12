@@ -1455,18 +1455,14 @@
 
 /* ══════════════════════════════════════════════════════════
    REVEAL SECTION + BLUR OVERLAY
-   Banner horizontal sticky arriba — productos blur debajo
    ══════════════════════════════════════════════════════════ */
 
 .stk-reveal-section {
   position: relative;
 }
 
-/* Banner sticky horizontal — no tapa productos, queda arriba */
+/* Aviso KOI — bloque normal, al principio de la sección */
 .stk-blur-overlay {
-  position: sticky;
-  top: 0;
-  z-index: 10;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1476,6 +1472,8 @@
   padding: 14px 18px;
   margin-bottom: 20px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  position: relative;
+  z-index: 1;
 }
 
 .stk-blur-overlay__icon {
@@ -1504,19 +1502,37 @@
   line-height: 1.4;
 }
 
-/* Productos sombreados mientras está locked */
+/* Wrapper para el efecto de sombreado */
+.stk-routine-blurred {
+  position: relative;
+}
+
+/* Productos sombreados — overlay semitransparente encima, productos VISIBLES pero bloqueados */
 .stk-reveal-section--locked .stk-routine-blurred {
-  opacity: 0.6;
   pointer-events: none;
   user-select: none;
+}
+
+.stk-reveal-section--locked .stk-routine-blurred::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: 2;
+  border-radius: 8px;
   transition: opacity 0.4s ease;
 }
 
-/* Al revelar: volver a normal */
+/* Al revelar: quitar overlay */
 .stk-reveal-section:not(.stk-reveal-section--locked) .stk-routine-blurred {
-  opacity: 1;
   pointer-events: auto;
   user-select: auto;
+}
+
+.stk-reveal-section:not(.stk-reveal-section--locked) .stk-routine-blurred::after {
+  display: none;
 }
 
 .stk-blur-overlay__cta {
