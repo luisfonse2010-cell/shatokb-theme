@@ -1443,32 +1443,49 @@ async function shatokbMostrarResultado() {
         ⚠️ Some recommended products exceed your <strong>${budgetLabel}</strong> budget. We've marked them so you can choose alternatives within your range.
       </div>` : ''}
 
-    <div style="margin-bottom: 24px;">
-      <p class="stk-section-title">Your Personalized Routine</p>
-      <p class="stk-section-sub">
-        For each step below we've hand-picked the best options for your skin profile and budget.<br>
-        <strong>All the products within each step work for your skin — pick the one you prefer.</strong>
-        Your estimated total updates automatically as you choose.
-      </p>
-    </div>
+    <!-- ── THE REVEAL: routine wrapper — starts blurred, KOI unlocks it ── -->
+    <div class="stk-reveal-section stk-reveal-section--locked" id="stk-reveal-section">
 
-    <div id="shatokb-routine-steps">
-      ${pasosProd.map((paso, stepIdx) => shatokbRenderPasoHTML(paso, stepIdx, budgetMax)).join('')}
-    </div>
-
-    <!-- CTAs — rendered dynamically from Theme Editor config -->
-    <div class="shatokb-resultado__ctas" id="shatokb-ctas" style="margin-top: 40px;"></div>
-
-    <!-- Sticky total bar -->
-    <div class="stk-total-bar" id="stk-total-bar">
-      <div class="stk-total-bar__info">
-        <div class="stk-total-bar__timer" id="stk-timer">⏱️ Routine saved for 15:00</div>
-        <div class="stk-total-bar__label" id="stk-total-bar-label">Estimated total for your routine</div>
-        <div class="stk-total-bar__amount" id="stk-total-amount">$0.00</div>
+      <div class="stk-reveal-header">
+        <p class="stk-section-title">Your Personalized Routine</p>
+        <p class="stk-section-sub">
+          For each step below we've hand-picked the best options for your skin profile and budget.<br>
+          <strong>All the products within each step work for your skin — pick the one you prefer.</strong>
+          Your estimated total updates automatically as you choose.
+        </p>
       </div>
-      <button class="stk-total-bar__cta" onclick="shatokbAddAllToCart()" id="stk-add-btn">
-        🛒 Add my full routine to cart
-      </button>
+
+      <!-- Blur overlay — visible until KOI reveals -->
+      <div class="stk-blur-overlay" id="stk-blur-overlay" aria-hidden="true">
+        <div class="stk-blur-overlay__inner">
+          <div class="stk-blur-overlay__icon">🌸</div>
+          <p class="stk-blur-overlay__title">Your routine is being prepared by KOI…</p>
+          <p class="stk-blur-overlay__sub">Your personalized K-Beauty routine is ready. KOI will walk you through it in just a moment.</p>
+        </div>
+      </div>
+
+      <!-- Products — blurred until reveal -->
+      <div class="stk-routine-blurred" id="stk-routine-blurred">
+        <div id="shatokb-routine-steps">
+          ${pasosProd.map((paso, stepIdx) => shatokbRenderPasoHTML(paso, stepIdx, budgetMax)).join('')}
+        </div>
+
+        <!-- CTAs — rendered dynamically from Theme Editor config -->
+        <div class="shatokb-resultado__ctas" id="shatokb-ctas" style="margin-top: 40px;"></div>
+
+        <!-- Sticky total bar -->
+        <div class="stk-total-bar" id="stk-total-bar">
+          <div class="stk-total-bar__info">
+            <div class="stk-total-bar__timer" id="stk-timer">⏱️ Routine saved for 15:00</div>
+            <div class="stk-total-bar__label" id="stk-total-bar-label">Estimated total for your routine</div>
+            <div class="stk-total-bar__amount" id="stk-total-amount">$0.00</div>
+          </div>
+          <button class="stk-total-bar__cta" onclick="shatokbAddAllToCart()" id="stk-add-btn">
+            🛒 Add my full routine to cart
+          </button>
+        </div>
+      </div>
+
     </div>`;
 
   shatokbActualizarTotal();
@@ -1542,6 +1559,57 @@ async function shatokbMostrarResultado() {
     }
   })(20); // reintenta hasta 20 veces × 300ms = 6 segundos máximo
 }
+
+
+/* ============================================================
+   THE REVEAL — función pública llamada por KOI cuando
+   el usuario confirma el email y KOI "entrega" la rutina.
+   Disuelve el blur y revela los productos uno a uno.
+============================================================ */
+window.shatokbRevelarProductos = function () {
+  const section = document.getElementById('stk-reveal-section');
+  const overlay = document.getElementById('stk-blur-overlay');
+  const blurred = document.getElementById('stk-routine-blurred');
+  const steps   = document.querySelectorAll('#shatokb-routine-steps .shatokb-paso');
+
+  if (!section || !overlay || !blurred) return;
+
+  // 1. Marcar como desbloqueado
+  section.classList.remove('stk-reveal-section--locked');
+  section.classList.add('stk-reveal-section--revealed');
+
+  // 2. Fade-out overlay
+  overlay.classList.add('stk-blur-overlay--hidden');
+
+  // 3. Disolver el blur de la capa contenedora
+  blurred.classList.add('stk-routine-blurred--revealed');
+
+  // 4. Revelar cada tarjeta de producto secuencialmente
+  steps.forEach(function (step, i) {
+    step.style.opacity    = '0';
+    step.style.transform  = 'translateY(20px)';
+    step.style.transition = 'opacity 0.45s ease, transform 0.45s ease';
+
+    setTimeout(function () {
+      step.style.opacity   = '1';
+      step.style.transform = 'translateY(0)';
+    }, 200 + i * 130); // 130ms de delay entre cada producto
+  });
+
+  // 5. Mostrar sticky bar con animación después de que los productos aparezcan
+  const totalBar = document.getElementById('stk-total-bar');
+  if (totalBar) {
+    const delayTotal = 200 + steps.length * 130 + 300;
+    setTimeout(function () {
+      totalBar.classList.add('stk-total-bar--visible');
+    }, delayTotal);
+  }
+
+  // 6. Limpiar overlay del DOM cuando termine la transición
+  setTimeout(function () {
+    if (overlay && overlay.parentNode) overlay.remove();
+  }, 800);
+};
 
 
 /* ============================================================
