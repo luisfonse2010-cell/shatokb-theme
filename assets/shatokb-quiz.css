@@ -1221,11 +1221,6 @@
   border-radius: 12px 12px 0 0;
   z-index: 100;
   margin: 32px -24px 0;
-  /* oculta hasta la revelación */
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(8px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
 .stk-total-bar__info {
@@ -1614,8 +1609,15 @@
   user-select: auto;
 }
 
-/* ── Sticky bar: visible al revelar ──────────────────────── */
-.stk-total-bar--visible {
+/* ── Sticky bar: oculta hasta la revelación ───────────────── */
+.stk-reveal-section--locked .stk-total-bar {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.stk-total-bar--visible,
+.stk-reveal-section--revealed .stk-total-bar {
   opacity: 1 !important;
   pointer-events: auto !important;
   transform: translateY(0) !important;
