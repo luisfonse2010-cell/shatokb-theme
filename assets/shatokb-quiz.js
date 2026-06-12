@@ -1158,4 +1158,4 @@ function shatokbReiniciar() {
 document.addEventListener('DOMContentLoaded', function () {
   shatokbApplyConfigToUI();
   shatokbFetchCatalogo();
-});
+})
