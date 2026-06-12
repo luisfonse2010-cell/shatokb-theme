@@ -194,6 +194,18 @@
         <!-- Chips de respuesta rápida -->
         <div class="koi-chips" id="koi-chips"></div>
 
+        <!-- Total bar (moved from above) -->
+        <div class="stk-total-bar" id="stk-total-bar">
+          <div class="stk-total-bar__info">
+            <div class="stk-total-bar__timer" id="stk-timer">⏱️ Routine saved for 15:00</div>
+            <div class="stk-total-bar__label" id="stk-total-bar-label">Estimated total for your routine</div>
+            <div class="stk-total-bar__amount" id="stk-total-amount">$0.00</div>
+          </div>
+          <button class="stk-total-bar__cta" onclick="shatokbAddAllToCart()" id="stk-add-btn">
+            🛒 Add my full routine to cart
+          </button>
+        </div>
+
         <!-- Input -->
         <div class="koi-input-area">
           <textarea
@@ -741,12 +753,12 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
 
     // Mensaje de KOI confirmando y revelando
     const mensajesReveal = {
-      es: `Listo ✨ Aquí está tu rutina para **${perfilNombre}**.\n\nCada producto tiene un botón ❓ — si quieres saber exactamente por qué elegí ese para ti, solo toca.`,
-      en: `Done ✨ Here's your **${perfilNombre}** routine.\n\nEach product has a ❓ button — if you want to know exactly why I chose that one for you, just tap it.`,
-      fr: `C'est fait ✨ Voici votre routine **${perfilNombre}**.\n\nChaque produit a un bouton ❓ — si vous voulez savoir exactement pourquoi je l'ai choisi pour vous, appuyez dessus.`,
-      pt: `Pronto ✨ Aqui está sua rotina **${perfilNombre}**.\n\nCada produto tem um botão ❓ — se quiser saber exatamente por que escolhi esse para você, é só tocar.`,
-      de: `Fertig ✨ Hier ist deine **${perfilNombre}** Routine.\n\nJedes Produkt hat einen ❓ Button — wenn du wissen möchtest, warum ich es genau für dich gewählt habe, tippe einfach darauf.`,
-      it: `Fatto ✨ Ecco la tua routine **${perfilNombre}**.\n\nOgni prodotto ha un pulsante ❓ — se vuoi sapere esattamente perché l'ho scelto per te, toccalo.`,
+      es: `Listo ✨ Aquí está tu rutina para **${perfilNombre}**.\n\nEn cada paso te doy **3 opciones de productos** — los tres son igualmente efectivos para tu problema, así que puedes elegir cualquiera según tu preferencia o disponibilidad.\n\nCada producto tiene un botón ❓ — si quieres saber exactamente por qué lo elegí para ti, solo toca.`,
+      en: `Done ✨ Here's your **${perfilNombre}** routine.\n\nFor each step I'm giving you **3 product options** — all three are equally effective for your concern, so pick whichever you prefer or have access to.\n\nEach product has a ❓ button — if you want to know exactly why I chose that one for you, just tap it.`,
+      fr: `C'est fait ✨ Voici votre routine **${perfilNombre}**.\n\nPour chaque étape, je vous propose **3 options de produits** — les trois sont tout aussi efficaces pour votre problème, choisissez celui que vous préférez.\n\nChaque produit a un bouton ❓ — si vous voulez savoir exactement pourquoi je l'ai choisi pour vous, appuyez dessus.`,
+      pt: `Pronto ✨ Aqui está sua rotina **${perfilNombre}**.\n\nEm cada etapa te dou **3 opções de produtos** — os três são igualmente eficazes para o seu problema, então escolha o que preferir.\n\nCada produto tem um botão ❓ — se quiser saber exatamente por que escolhi esse para você, é só tocar.`,
+      de: `Fertig ✨ Hier ist deine **${perfilNombre}** Routine.\n\nFür jeden Schritt gebe ich dir **3 Produktoptionen** — alle drei sind gleich wirksam für dein Anliegen, wähle also einfach die, die du bevorzugst.\n\nJedes Produkt hat einen ❓ Button — wenn du wissen möchtest, warum ich es genau für dich gewählt habe, tippe einfach darauf.`,
+      it: `Fatto ✨ Ecco la tua routine **${perfilNombre}**.\n\nPer ogni step ti do **3 opzioni di prodotti** — tutti e tre sono ugualmente efficaci per il tuo problema, quindi scegli quello che preferisci.\n\nOgni prodotto ha un pulsante ❓ — se vuoi sapere esattamente perché l'ho scelto per te, toccalo.`,
     };
 
     mostrarTyping();
