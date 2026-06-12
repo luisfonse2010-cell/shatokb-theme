@@ -1437,19 +1437,19 @@ async function shatokbMostrarResultado() {
         ⚠️ Some recommended products exceed your <strong>${budgetLabel}</strong> budget. We've marked them so you can choose alternatives within your range.
       </div>` : ''}
 
-    <!-- ── THE REVEAL: routine wrapper — starts blurred, KOI unlocks it ── -->
+    <!-- Routine section -->
     <div class="stk-reveal-section stk-reveal-section--locked" id="stk-reveal-section">
 
-      <!-- Blur overlay — OUTSIDE the blurred wrapper, always visible -->
+      <!-- Aviso KOI — sticky, siempre visible al tope, sin tapar productos -->
       <div class="stk-blur-overlay" id="stk-blur-overlay">
-        <div class="stk-blur-overlay__inner">
-          <div class="stk-blur-overlay__icon">🌸</div>
+        <span class="stk-blur-overlay__icon">🌸</span>
+        <div class="stk-blur-overlay__text">
           <p class="stk-blur-overlay__title">Your routine is being prepared by KOI…</p>
-          <p class="stk-blur-overlay__sub">Your personalized K-Beauty routine is ready. KOI will walk you through it in just a moment.</p>
-          <button class="stk-blur-overlay__cta" onclick="shatokbScrollAKOI()" type="button">
-            👇 Talk to KOI to see your routine
-          </button>
+          <p class="stk-blur-overlay__sub">KOI will walk you through it in just a moment.</p>
         </div>
+        <button class="stk-blur-overlay__cta" onclick="shatokbScrollAKOI()" type="button">
+          👇 Talk to KOI
+        </button>
       </div>
 
       <div class="stk-reveal-header">
@@ -1461,7 +1461,7 @@ async function shatokbMostrarResultado() {
         </p>
       </div>
 
-      <!-- Products — blurred until reveal -->
+      <!-- Productos con blur hasta que KOI los revela -->
       <div class="stk-routine-blurred" id="stk-routine-blurred">
         <div id="shatokb-routine-steps">
           ${pasosProd.map((paso, stepIdx) => shatokbRenderPasoHTML(paso, stepIdx, budgetMax)).join('')}
