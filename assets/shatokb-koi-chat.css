@@ -2,7 +2,7 @@
  * ============================================================
  * SHATOKB · KOI Chat — Experta K-Beauty con IA
  * Archivo: assets/shatokb-koi-chat.css
- * Versión: 1.0
+ * Versión: 1.1 — .koi-ask-btn added
  *
  * Paleta:
  *   #1c181a  — fondo oscuro (mismo que hero)
@@ -31,6 +31,9 @@
   --koi-transition:  0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* ══════════════════════════════════════════════════════════
+   WRAPPER PRINCIPAL — aparece debajo del resultado del quiz
+   ══════════════════════════════════════════════════════════ */
 #shatokb-koi-wrapper {
   font-family: var(--koi-font-body);
   font-size: 16px;
@@ -50,6 +53,9 @@
   box-sizing: border-box;
 }
 
+/* ══════════════════════════════════════════════════════════
+   PANEL PRINCIPAL DEL CHAT
+   ══════════════════════════════════════════════════════════ */
 .koi-panel {
   background: var(--koi-dark);
   border-radius: var(--koi-radius);
@@ -58,6 +64,7 @@
   position: relative;
 }
 
+/* Glow radial de fondo */
 .koi-panel::before {
   content: '';
   position: absolute;
@@ -71,6 +78,7 @@
   z-index: 0;
 }
 
+/* ── Header del panel ─────────────────────────────────────── */
 .koi-header {
   display: flex;
   align-items: center;
@@ -148,6 +156,7 @@
   white-space: nowrap;
 }
 
+/* ── Área de mensajes ─────────────────────────────────────── */
 .koi-messages {
   padding: 24px;
   display: flex;
@@ -161,7 +170,10 @@
   scroll-behavior: smooth;
 }
 
-.koi-messages::-webkit-scrollbar { width: 4px; }
+/* Scrollbar personalizado */
+.koi-messages::-webkit-scrollbar {
+  width: 4px;
+}
 .koi-messages::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.04);
   border-radius: 4px;
@@ -171,6 +183,7 @@
   border-radius: 4px;
 }
 
+/* ── Mensajes individuales ────────────────────────────────── */
 .koi-msg {
   display: flex;
   gap: 10px;
@@ -183,8 +196,15 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.koi-msg--koi  { flex-direction: row; }
-.koi-msg--user { flex-direction: row-reverse; }
+/* Mensaje de KOI */
+.koi-msg--koi {
+  flex-direction: row;
+}
+
+/* Mensaje del usuario */
+.koi-msg--user {
+  flex-direction: row-reverse;
+}
 
 .koi-msg__avatar {
   width: 30px;
@@ -210,6 +230,7 @@
   border-radius: 4px 14px 14px 14px;
   background: var(--koi-bubble-bg);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
 }
 
 .koi-msg--user .koi-msg__bubble {
@@ -227,7 +248,9 @@
   white-space: pre-wrap;
 }
 
-.koi-msg--user .koi-msg__bubble p { color: rgba(255, 255, 255, 0.92); }
+.koi-msg--user .koi-msg__bubble p {
+  color: rgba(255, 255, 255, 0.92);
+}
 
 .koi-msg__time {
   font-size: 10px;
@@ -237,6 +260,7 @@
   text-align: right;
 }
 
+/* ── Nombre del remitente ─────────────────────────────────── */
 .koi-msg__name {
   font-size: 10px;
   font-weight: 700;
@@ -247,6 +271,7 @@
   padding-left: 40px;
 }
 
+/* ── Typing indicator ─────────────────────────────────────── */
 .koi-typing {
   display: flex;
   gap: 10px;
@@ -280,6 +305,7 @@
   40%            { transform: scale(1.1);  opacity: 1;   }
 }
 
+/* ── Opciones rápidas (chips) ─────────────────────────────── */
 .koi-chips {
   display: flex;
   flex-wrap: wrap;
@@ -311,8 +337,11 @@
   transform: translateY(-1px);
 }
 
-.koi-chip:active { transform: translateY(0); }
+.koi-chip:active {
+  transform: translateY(0);
+}
 
+/* ── Input área ───────────────────────────────────────────── */
 .koi-input-area {
   padding: 16px 20px 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.07);
@@ -341,12 +370,16 @@
   overflow-y: auto;
 }
 
-.koi-input::placeholder { color: rgba(255, 255, 255, 0.28); }
+.koi-input::placeholder {
+  color: rgba(255, 255, 255, 0.28);
+}
+
 .koi-input:focus {
   border-color: var(--koi-rose-border);
   background: rgba(255, 255, 255, 0.09);
 }
 
+/* Scrollbar del input */
 .koi-input::-webkit-scrollbar { width: 3px; }
 .koi-input::-webkit-scrollbar-thumb {
   background: rgba(236, 149, 184, 0.3);
@@ -368,10 +401,22 @@
   font-size: 18px;
 }
 
-.koi-send-btn:hover  { background: var(--koi-rose-hover); transform: scale(1.05); }
-.koi-send-btn:active { transform: scale(0.97); }
-.koi-send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.koi-send-btn:hover {
+  background: var(--koi-rose-hover);
+  transform: scale(1.05);
+}
 
+.koi-send-btn:active {
+  transform: scale(0.97);
+}
+
+.koi-send-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Footer del chat ──────────────────────────────────────── */
 .koi-footer {
   padding: 10px 24px 16px;
   text-align: center;
@@ -385,14 +430,29 @@
   line-height: 1.4;
 }
 
-.koi-footer a { color: rgba(236, 149, 184, 0.5); text-decoration: none; }
-.koi-footer a:hover { color: var(--koi-rose); }
+.koi-footer a {
+  color: rgba(236, 149, 184, 0.5);
+  text-decoration: none;
+}
 
+.koi-footer a:hover {
+  color: var(--koi-rose);
+}
+
+/* ══════════════════════════════════════════════════════════
+   MENSAJE DE BIENVENIDA ESPECIAL
+   (primer mensaje con animación destacada)
+   ══════════════════════════════════════════════════════════ */
 .koi-msg--welcome .koi-msg__bubble {
-  background: linear-gradient(135deg, rgba(236, 149, 184, 0.12) 0%, rgba(255, 255, 255, 0.05) 100%);
+  background: linear-gradient(135deg,
+    rgba(236, 149, 184, 0.12) 0%,
+    rgba(255, 255, 255, 0.05) 100%);
   border-color: rgba(236, 149, 184, 0.25);
 }
 
+/* ══════════════════════════════════════════════════════════
+   CURSOR DE ESCRITURA (streaming)
+   ══════════════════════════════════════════════════════════ */
 .koi-cursor {
   display: inline-block;
   width: 2px;
@@ -408,6 +468,9 @@
   50%       { opacity: 0; }
 }
 
+/* ══════════════════════════════════════════════════════════
+   SEPARADOR DE SECCIÓN dentro del chat
+   ══════════════════════════════════════════════════════════ */
 .koi-divider {
   display: flex;
   align-items: center;
@@ -431,6 +494,9 @@
   background: rgba(255, 255, 255, 0.07);
 }
 
+/* ══════════════════════════════════════════════════════════
+   PRODUCTO CARD dentro del chat
+   ══════════════════════════════════════════════════════════ */
 .koi-product-card {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.10);
@@ -444,7 +510,9 @@
   text-decoration: none;
 }
 
-.koi-product-card:hover { border-color: var(--koi-rose-border); }
+.koi-product-card:hover {
+  border-color: var(--koi-rose-border);
+}
 
 .koi-product-card__img {
   width: 52px;
@@ -455,7 +523,10 @@
   flex-shrink: 0;
 }
 
-.koi-product-card__info { flex: 1; min-width: 0; }
+.koi-product-card__info {
+  flex: 1;
+  min-width: 0;
+}
 
 .koi-product-card__name {
   font-size: 13px;
@@ -482,11 +553,95 @@
   margin-bottom: 2px;
 }
 
+/* ══════════════════════════════════════════════════════════
+   ❓ BOTÓN POR PRODUCTO
+   Aparece dentro de cada tarjeta .stk-prod-option
+   Al hacer clic abre KOI y pregunta por ese producto
+   ══════════════════════════════════════════════════════════ */
+.koi-ask-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+  padding: 6px 13px;
+  background: transparent;
+  border: 1px solid rgba(236, 149, 184, 0.40);
+  border-radius: 50px;
+  color: #ec95b8;
+  font-family: 'Arimo', 'Arial', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, transform 0.12s;
+  white-space: nowrap;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.koi-ask-btn:hover {
+  background: rgba(236, 149, 184, 0.12);
+  border-color: #ec95b8;
+  transform: translateY(-1px);
+}
+
+.koi-ask-btn:active {
+  transform: translateY(0);
+}
+
+/* Icono del botón */
+.koi-ask-btn__icon {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: rgba(236, 149, 184, 0.20);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 900;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* Estado "KOI está respondiendo" — botón se desactiva */
+.koi-ask-btn[disabled],
+.koi-ask-btn.koi-ask-btn--loading {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  pointer-events: none;
+}
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════ */
 @media (max-width: 640px) {
-  .koi-messages { max-height: 320px; padding: 16px; }
-  .koi-msg__bubble { max-width: 88%; }
-  .koi-header { padding: 16px 18px; }
-  .koi-input-area { padding: 12px 16px 16px; }
-  .koi-chips { padding: 0 16px 12px; }
-  .koi-chip { font-size: 11px; padding: 6px 12px; }
+  .koi-messages {
+    max-height: 320px;
+    padding: 16px;
+  }
+
+  .koi-msg__bubble {
+    max-width: 88%;
+  }
+
+  .koi-header {
+    padding: 16px 18px;
+  }
+
+  .koi-input-area {
+    padding: 12px 16px 16px;
+  }
+
+  .koi-chips {
+    padding: 0 16px 12px;
+  }
+
+  .koi-chip {
+    font-size: 11px;
+    padding: 6px 12px;
+  }
 }
