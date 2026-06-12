@@ -1454,6 +1454,56 @@
 
 
 /* ══════════════════════════════════════════════════════════
+   BLUR OVERLAY — KOI scroll CTA button
+   ══════════════════════════════════════════════════════════ */
+.stk-blur-overlay__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 13px 26px;
+  background: var(--stk-primary, #e75480);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  font-family: var(--stk-font-heading, 'Prompt', sans-serif);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(231, 84, 128, 0.38);
+  transition: transform 0.18s, box-shadow 0.18s, background 0.18s;
+  animation: stk-cta-pulse 2s ease-in-out infinite;
+}
+
+.stk-blur-overlay__cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(231, 84, 128, 0.48);
+  background: var(--stk-primary-dark, #c9406a);
+}
+
+.stk-blur-overlay__cta:active {
+  transform: translateY(0);
+}
+
+@keyframes stk-cta-pulse {
+  0%, 100% { box-shadow: 0 4px 18px rgba(231, 84, 128, 0.38); }
+  50%       { box-shadow: 0 4px 28px rgba(231, 84, 128, 0.65); }
+}
+
+/* KOI wrapper — pulse when scrolled to */
+.stk-koi-pulse {
+  animation: stk-koi-highlight 1.2s ease-out forwards;
+}
+
+@keyframes stk-koi-highlight {
+  0%   { box-shadow: 0 0 0 0 rgba(231, 84, 128, 0.5); }
+  40%  { box-shadow: 0 0 0 12px rgba(231, 84, 128, 0.2); }
+  100% { box-shadow: 0 0 0 0 rgba(231, 84, 128, 0); }
+}
+
+
+/* ══════════════════════════════════════════════════════════
    RESPONSIVE — nuevos elementos v3
    ══════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
