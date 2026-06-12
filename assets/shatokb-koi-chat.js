@@ -2,7 +2,7 @@
  * ============================================================
  * SHATOKB · KOI — Experta K-Beauty con IA
  * Archivo: assets/shatokb-koi-chat.js
- * Version: 1.2 — window.shatokbPreguntarProducto added
+ * Version: 1.1 — English UI + workerUrl updated
  *
  * Arquitectura:
  *   - Este archivo corre en el browser (Shopify)
@@ -384,7 +384,7 @@ Browser language detected: ${nombreIdioma}.
 Respond ENTIRELY in ${nombreIdioma}.
 Skin profile: ${perfilNombre}.
 Number of recommended products: ${numProductos}.
-Introduce yourself as KOI with 30+ years of experience at shatokb.
+Introduce yourself as KOI. Say you have 9+ years of experience at shatokb. IMPORTANT: use EXACTLY "9+" — never say "30", never say "30 años", never say "decades", never say any other number of years.
 Briefly acknowledge their skin profile by name.
 Tell them the products chosen for them were selected for a specific reason.
 Hint that there is one important thing about their skin type most people get wrong — and offer to explain.
