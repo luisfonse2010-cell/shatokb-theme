@@ -1992,20 +1992,21 @@ window.shatokbRevelarProductos = function () {
    Finds the KOI wrapper and scrolls to it smoothly.
 ============================================================ */
 function shatokbScrollAKOI() {
-  // Intenta encontrar KOI — si aun no existe, espera hasta 4s
   function intentarScroll(intentos) {
     const koi = document.getElementById('shatokb-koi-wrapper')
-             || document.querySelector('.koi-panel');
+             || document.querySelector('.koi-panel')
+             || document.querySelector('.koi-header');
     if (koi) {
-      koi.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Scroll manual con offset para que se vea completo
+      const y = koi.getBoundingClientRect().top + window.pageYOffset - 20;
+      window.scrollTo({ top: y, behavior: 'smooth' });
       koi.classList.add('stk-koi-pulse');
       setTimeout(() => koi.classList.remove('stk-koi-pulse'), 1200);
     } else if (intentos > 0) {
-      // KOI todavia no esta en el DOM — reintentar en 300ms
       setTimeout(() => intentarScroll(intentos - 1), 300);
     }
   }
-  intentarScroll(13); // hasta ~4 segundos de espera
+  intentarScroll(13);
 }
 
 
