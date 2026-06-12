@@ -1440,7 +1440,16 @@ async function shatokbMostrarResultado() {
     <!-- Routine section -->
     <div class="stk-reveal-section stk-reveal-section--locked" id="stk-reveal-section">
 
-      <!-- Aviso KOI — sticky, siempre visible al tope, sin tapar productos -->
+      <div class="stk-reveal-header">
+        <p class="stk-section-title">Your Personalized Routine</p>
+        <p class="stk-section-sub">
+          For each step below we've hand-picked the best options for your skin profile and budget.<br>
+          <strong>All the products within each step work for your skin — pick the one you prefer.</strong>
+          Your estimated total updates automatically as you choose.
+        </p>
+      </div>
+
+      <!-- Aviso KOI — al principio de los productos -->
       <div class="stk-blur-overlay" id="stk-blur-overlay">
         <span class="stk-blur-overlay__icon">🌸</span>
         <div class="stk-blur-overlay__text">
@@ -1452,16 +1461,7 @@ async function shatokbMostrarResultado() {
         </button>
       </div>
 
-      <div class="stk-reveal-header">
-        <p class="stk-section-title">Your Personalized Routine</p>
-        <p class="stk-section-sub">
-          For each step below we've hand-picked the best options for your skin profile and budget.<br>
-          <strong>All the products within each step work for your skin — pick the one you prefer.</strong>
-          Your estimated total updates automatically as you choose.
-        </p>
-      </div>
-
-      <!-- Productos con blur hasta que KOI los revela -->
+      <!-- Productos sombreados -->
       <div class="stk-routine-blurred" id="stk-routine-blurred">
         <div id="shatokb-routine-steps">
           ${pasosProd.map((paso, stepIdx) => shatokbRenderPasoHTML(paso, stepIdx, budgetMax)).join('')}
