@@ -1454,8 +1454,68 @@
 
 
 /* ══════════════════════════════════════════════════════════
-   BLUR OVERLAY — KOI scroll CTA button
+   BLUR OVERLAY — contenedor + KOI scroll CTA
    ══════════════════════════════════════════════════════════ */
+
+/* Sección completa */
+.stk-reveal-section {
+  position: relative;
+}
+
+/* Wrapper de productos */
+.stk-routine-blurred {
+  position: relative;
+}
+
+/* El overlay vive al principio del wrapper, en flujo normal */
+.stk-blur-overlay {
+  position: relative;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(231, 84, 128, 0.15);
+  border-radius: 16px;
+  padding: 32px 24px;
+  text-align: center;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+}
+
+.stk-blur-overlay__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.stk-blur-overlay__icon {
+  font-size: 36px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stk-blur-overlay__title {
+  font-family: var(--stk-font-heading, 'Prompt', sans-serif);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--stk-secondary, #0b0335);
+  margin: 0;
+}
+
+.stk-blur-overlay__sub {
+  font-size: 14px;
+  color: var(--stk-text-muted, #6b7280);
+  margin: 0;
+  line-height: 1.5;
+  max-width: 360px;
+}
+
+/* Productos debajo con blur visual — todo excepto el overlay */
+.stk-reveal-section--locked .stk-routine-blurred > *:not(.stk-blur-overlay) {
+  filter: blur(4px);
+  pointer-events: none;
+  user-select: none;
+}
+
 .stk-blur-overlay__cta {
   display: inline-flex;
   align-items: center;
