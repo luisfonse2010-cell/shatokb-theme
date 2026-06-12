@@ -2,24 +2,6 @@
  * ============================================================
  * SHATOKB · Skin Diagnosis Quiz Engine  v3.4
  * File: assets/shatokb-quiz.js
- *
- * Sections:
- *  1.  QUIZ QUESTIONS
- *  2.  TAG MAPS  (Shopify tags → internal fields)
- *  3.  LIVE CATALOGUE  (fetched from /products.json)
- *  4.  FALLBACK CATALOGUE  (local/dev only)
- *  5.  SKIN PROFILES
- *  6.  SCORING ENGINE
- *  7.  RECOMMENDATION ENGINE
- *  8.  QUIZ STATE & NAVIGATION
- *  9.  EMAIL GATE + META PIXEL
- * 10.  RESULT DISPLAY
- * 11.  REVIEWS + URGENCY
- * 12.  PRODUCT RENDERING
- * 13.  CART INTEGRATION
- * 14.  DYNAMIC CONFIG (data-attributes → Theme Editor)
- * 15.  RESTART
- * 16.  INIT
  * ============================================================
  */
 
@@ -108,21 +90,9 @@ const SHATOKB_PREGUNTAS = [
 
 
 /* ============================================================
-   2. TAG MAPS  —  Shopify product tags → internal engine fields
-   All tags are in English and match exactly what's in the store.
+   2. TAG MAPS
 ============================================================ */
-
-// ============================================================
-// TAG MAPS v3.4 — Built from REAL Shopify admin product tags
-// Extracted from live store Tag Auditor run (Jun 2026).
-// v3.3: Added singular/alternate serum/toner/moisturizer tags
-//       to rescue ~14 excluded products (COSRX, TIAM, JUMISO,
-//       Cos De Baha, Round Lab, Pyunkang Yul, Innisfree).
-// ============================================================
-
-// Tag → routine step category
 const TAG_CATEGORIA = {
-  // ── CLEANSERS ──────────────────────────────────────────────
   'Cleansers':                      'cleanser',
   'Foam Cleansers':                 'cleanser',
   'Hydrating Cleansers':            'cleanser',
@@ -139,8 +109,6 @@ const TAG_CATEGORIA = {
   'Oil Cleansers':                  'cleanser',
   'Makeup Remover':                 'cleanser',
   'Double Cleansers':               'cleanser',
-
-  // ── TONERS, PADS & MISTS ───────────────────────────────────
   'Toner, Pads & Mists':            'toner',
   'Toners':                         'toner',
   'Toner':                          'toner',
@@ -157,8 +125,6 @@ const TAG_CATEGORIA = {
   'Calming Toners':                 'toner',
   'AHA BHA Toners':                 'toner',
   'BHA Toners':                     'toner',
-
-  // ── SERUMS & AMPOULES ──────────────────────────────────────
   'Serums & Ampoules':              'serum',
   'Serums':                         'serum',
   'Serum':                          'serum',
@@ -177,8 +143,6 @@ const TAG_CATEGORIA = {
   'Retinol Serums':                 'serum',
   'Snail Serums':                   'serum',
   'Centella Serums':                'serum',
-
-  // ── SUNSCREENS — NOTE: Must come BEFORE Essences ──────────
   'Sunscreens & Sun Care':          'spf',
   'Sunscreen':                      'spf',
   'Mineral Sunscreens':             'spf',
@@ -188,14 +152,10 @@ const TAG_CATEGORIA = {
   'High SPF Sunscreens (Chemical & Mineral)': 'spf',
   'SPF50':                          'spf',
   'Sun Protection & Damage':        'spf',
-
-  // ── ESSENCES ───────────────────────────────────────────────
   'Essences':                       'essence',
   'First Essences':                 'essence',
   'Boosters':                       'essence',
   'Treatment Essences':             'essence',
-
-  // ── MOISTURIZERS & CREAMS ──────────────────────────────────
   'Moisturizers & Creams':          'moisturizer',
   'Moisturizers':                   'moisturizer',
   'Moisturizer':                    'moisturizer',
@@ -207,8 +167,6 @@ const TAG_CATEGORIA = {
   'Collagen-Boosting Creams':       'moisturizer',
   'Barrier Creams':                 'moisturizer',
   'Face Moisturizers':              'moisturizer',
-
-  // ── EYE CARE ───────────────────────────────────────────────
   'Eye Care':                       'eye',
   'Eye Creams & Serums':            'eye',
   'Eye Creams':                     'eye',
@@ -217,15 +175,11 @@ const TAG_CATEGORIA = {
   'Brightening Eye Treatments':     'eye',
   'Eye Patches':                    'eye',
   'Under Eye Creams':               'eye',
-
-  // ── EXFOLIATORS & PEELS ────────────────────────────────────
   'Exfoliators & Peels':            'exfoliator',
   'AHA Exfoliators':                'exfoliator',
   'BHA Exfoliators':                'exfoliator',
   'Physical Exfoliators':           'exfoliator',
   'Peeling Gels':                   'exfoliator',
-
-  // ── FACE MASKS ─────────────────────────────────────────────
   'Face Masks':                     'mask',
   'Sheet Masks':                    'mask',
   'Clay Masks':                     'mask',
@@ -233,17 +187,12 @@ const TAG_CATEGORIA = {
   'Brightening Masks':              'mask',
   'Hydrating Masks':                'mask',
   'Acne Masks':                     'mask',
-
-  // ── LIP CARE ───────────────────────────────────────────────
   'Lip Care':                       'lip',
   'Lip Masks':                      'lip',
   'Lip Balms':                      'lip',
-
-  // ── SKINCARE SETS ──────────────────────────────────────────
   'Skincare Sets & Kits':           'set',
 };
 
-// Tag → skin type
 const TAG_TIPO_PIEL = {
   'Dry Skin':                       'seca',
   'Oily & Acne-Prone Skin':         'grasa',
@@ -259,7 +208,6 @@ const TAG_TIPO_PIEL = {
   'Skincare':                       'nolose',
 };
 
-// Tag → skin concern
 const TAG_CONCERN = {
   'Anti-Aging & Wrinkles':          'antiaging',
   'Anti-Aging Serums':              'antiaging',
@@ -271,7 +219,6 @@ const TAG_CONCERN = {
   'fine lines serum':               'antiaging',
   'retinol eye cream':              'antiaging',
   'well-aging skincare':            'antiaging',
-
   'Hyperpigmentation & Dark Spots': 'manchas',
   'Dull & Uneven Skin Tone':        'manchas',
   'Brightening Serums':             'manchas',
@@ -280,7 +227,6 @@ const TAG_CONCERN = {
   'serum for dark spots':           'manchas',
   'anti-dark spots':                'manchas',
   'daily vitamin c':                'manchas',
-
   'Hydrating':                      'deshidratacion',
   'Hydrating Serums':               'deshidratacion',
   'Hydrating Toners':               'deshidratacion',
@@ -294,23 +240,17 @@ const TAG_CONCERN = {
   'Moisturizer':                    'deshidratacion',
   'Hydrating Cleansers':            'deshidratacion',
   'Hydrating Masks':                'deshidratacion',
-
   'Redness & Irritation':           'rojeces',
   'Redness & Sensitive Skin':       'rojeces',
   'Calming Toners':                 'rojeces',
-
   'Oily & Acne-Prone Skin':         'acne',
   'Acne Treatment Serums':          'acne',
   'Acne-Prone Skin':                'acne',
   'Large Pores & Texture':          'poros',
-
   'Dull & Uneven Skin Tone':        'textura',
   'Exfoliating Toners':             'textura',
   'AHA BHA Toners':                 'textura',
-
   'Sun Protection & Damage':        'manchas',
-
-  // ── v3.4 additions ─────────────────────────────────────────
   'Brightening':                    'manchas',
   'Brightening Cleansers':          'manchas',
   'Brightening Masks':              'manchas',
@@ -321,14 +261,12 @@ const TAG_CONCERN = {
   'Dull Skin':                      'manchas',
   'Dark Spot Serum':                'manchas',
   'Glass Skin':                     'manchas',
-
   'Redness':                        'rojeces',
   'Anti-Inflammatory':              'rojeces',
   'Centella Asiatica':              'rojeces',
   'Soothing':                       'rojeces',
   'Calming':                        'rojeces',
   'Heartleaf Extract':              'rojeces',
-
   'Pore Care':                      'poros',
   'Pore Minimizing':                'poros',
   'Blackhead Removal':              'poros',
@@ -336,7 +274,6 @@ const TAG_CONCERN = {
   'Sebum Control':                  'poros',
   'Excess Sebum Control':           'poros',
   'BHA':                            'poros',
-
   'Exfoliating':                    'textura',
   'Uneven Texture':                 'textura',
   'Dullness & Uneven Texture':      'textura',
@@ -344,22 +281,12 @@ const TAG_CONCERN = {
   'Peeling Gels':                   'textura',
 };
 
-// Tags that confirm a product is safe for sensitive skin
 const TAGS_SENSIBLE_SAFE = new Set([
-  'Sensitive Skin',
-  'Redness & Sensitive Skin',
-  'Sensitive Skin Formulas',
-  'Fragrance-Free',
-  'Hypoallergenic',
-  'vegan face wash',
-  'Vegan Cleansers',
-  'reef safe',
-  'gentle retinol',
-  'retinol for beginners',
-  'Calming Toners',
+  'Sensitive Skin', 'Redness & Sensitive Skin', 'Sensitive Skin Formulas',
+  'Fragrance-Free', 'Hypoallergenic', 'vegan face wash', 'Vegan Cleansers',
+  'reef safe', 'gentle retinol', 'retinol for beginners', 'Calming Toners',
 ]);
 
-// Tags that map to a product badge
 const TAG_BADGE = {
   'Best Seller':  'Best Seller',
   'Bestseller':   'Best Seller',
@@ -372,35 +299,23 @@ const TAG_BADGE = {
   'Cult Favorite':'Cult Favorite',
 };
 
-// Emoji per category
 const EMOJI_MAP = {
-  cleanser:    '🫧',
-  toner:       '💧',
-  serum:       '💊',
-  essence:     '🐌',
-  moisturizer: '🧴',
-  spf:         '☀️',
-  exfoliator:  '✨',
-  mask:        '🩵',
-  eye:         '👁️',
-  lip:         '💋',
-  hair:        '💆',
-  makeup:      '💄',
+  cleanser:'🫧', toner:'💧', serum:'💊', essence:'🐌',
+  moisturizer:'🧴', spf:'☀️', exfoliator:'✨', mask:'🩵',
+  eye:'👁️', lip:'💋', hair:'💆', makeup:'💄',
 };
 
 
 /* ============================================================
-   3. LIVE CATALOGUE  —  populated at runtime by shatokbFetchCatalogo()
+   3. LIVE CATALOGUE
 ============================================================ */
 let SHATOKB_CATALOGO = [];
 let shatokbCatalogoCargado = false;
 
 function shatokbMapProduct(p) {
   const rawTags = p.tags || '';
-  const tags    = Array.isArray(rawTags)
-    ? rawTags.map(t => t.trim())
-    : rawTags.split(',').map(t => t.trim());
-  const tagSet = new Set(tags);
+  const tags    = Array.isArray(rawTags) ? rawTags.map(t => t.trim()) : rawTags.split(',').map(t => t.trim());
+  const tagSet  = new Set(tags);
 
   let categoria = null;
   for (const [tag, cat] of Object.entries(TAG_CATEGORIA)) {
@@ -430,32 +345,21 @@ function shatokbMapProduct(p) {
   const precio     = '$' + precio_num.toFixed(2);
 
   return {
-    id:         p.handle,
-    nombre:     p.title,
-    handle:     p.handle,
-    precio,
-    precio_num,
-    badge,
-    emoji:      EMOJI_MAP[categoria] || '🌿',
-    desc:       p.body_html
-                  ? p.body_html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160) + '…'
-                  : p.title,
-    tipo_piel,
-    categoria,
-    concerns,
-    sensible,
-    imagen:     p.images?.[0]?.src || null,
+    id: p.handle, nombre: p.title, handle: p.handle,
+    precio, precio_num, badge,
+    emoji:    EMOJI_MAP[categoria] || '🌿',
+    desc:     p.body_html ? p.body_html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160) + '…' : p.title,
+    tipo_piel, categoria, concerns, sensible,
+    imagen:   p.images?.[0]?.src || null,
   };
 }
 
 async function shatokbFetchAllPages(baseUrl) {
-  const all   = [];
-  let page    = 1;
-  const limit = 250;
+  const all = []; let page = 1; const limit = 250;
   while (true) {
     const res = await fetch(`${baseUrl}/products.json?limit=${limit}&page=${page}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data     = await res.json();
+    const data = await res.json();
     const products = data.products || [];
     all.push(...products);
     if (products.length < limit) break;
@@ -466,35 +370,27 @@ async function shatokbFetchAllPages(baseUrl) {
 
 async function shatokbFetchCatalogo() {
   const LIVE_STORE = 'https://shatokb.com';
-
   try {
-    const raw      = await shatokbFetchAllPages('');
+    const raw = await shatokbFetchAllPages('');
     const mapeados = raw.map(shatokbMapProduct).filter(Boolean);
     if (mapeados.length > 0) {
-      SHATOKB_CATALOGO = mapeados;
-      shatokbCatalogoCargado = true;
+      SHATOKB_CATALOGO = mapeados; shatokbCatalogoCargado = true;
       console.log(`[SHATOKB] ✅ Catalogue loaded: ${mapeados.length} products (from ${raw.length} total).`);
       return;
     }
     throw new Error('0 tagged products via relative URL');
-  } catch (err) {
-    console.warn('[SHATOKB] Relative fetch failed — trying absolute URL:', err.message);
-  }
+  } catch (err) { console.warn('[SHATOKB] Relative fetch failed:', err.message); }
 
   try {
-    const raw      = await shatokbFetchAllPages(LIVE_STORE);
+    const raw = await shatokbFetchAllPages(LIVE_STORE);
     const mapeados = raw.map(shatokbMapProduct).filter(Boolean);
-    SHATOKB_CATALOGO = mapeados;
-    shatokbCatalogoCargado = true;
-    console.log(`[SHATOKB] ✅ Live catalogue from shatokb.com: ${mapeados.length} products (from ${raw.length} total).`);
+    SHATOKB_CATALOGO = mapeados; shatokbCatalogoCargado = true;
+    console.log(`[SHATOKB] ✅ Live catalogue from shatokb.com: ${mapeados.length} products.`);
     return;
-  } catch (err) {
-    console.warn('[SHATOKB] Absolute fetch also failed — using static fallback:', err.message);
-  }
+  } catch (err) { console.warn('[SHATOKB] Absolute fetch failed:', err.message); }
 
-  SHATOKB_CATALOGO = SHATOKB_FALLBACK;
-  shatokbCatalogoCargado = true;
-  console.warn(`[SHATOKB] ⚠️ Using static fallback catalogue (${SHATOKB_FALLBACK.length} products). Results are representative but not exhaustive.`);
+  SHATOKB_CATALOGO = SHATOKB_FALLBACK; shatokbCatalogoCargado = true;
+  console.warn(`[SHATOKB] ⚠️ Using static fallback (${SHATOKB_FALLBACK.length} products).`);
 }
 
 
@@ -502,462 +398,61 @@ async function shatokbFetchCatalogo() {
    4. FALLBACK CATALOGUE
 ============================================================ */
 const SHATOKB_FALLBACK = [
-
-  /* ── CLEANSERS ─────────────────────────────────────────────── */
-  {
-    id:'cosrx-low-ph-cleanser', handle:'cosrx-low-ph-good-morning-gel-face-cleanser',
-    nombre:'COSRX Low pH Good Morning Gel Cleanser',
-    precio:'$12.99', precio_num:12.99, badge:'Best Seller', emoji:'🫧',
-    desc:'Low-pH gel that cleanses without disrupting your barrier. Salicylic acid controls sebum and minimises pores without stripping.',
-    tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'cleanser',
-    concerns:['acne','poros','rojeces'], sensible:true
-  },
-  {
-    id:'anua-foam-cleanser', handle:'anua-heartleaf-quercetinol-pore-deep-cleansing-foam-150ml-5-07-fl-oz',
-    nombre:'Anua Heartleaf Quercetinol Pore Deep Cleansing Foam',
-    precio:'$16.99', precio_num:16.99, badge:null, emoji:'🫧',
-    desc:'BHA + heartleaf foam that dissolves sebum plugs while calming inflammation. Ideal for oily and acne-prone skin.',
-    tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'cleanser',
-    concerns:['acne','poros','rojeces'], sensible:true
-  },
-  {
-    id:'anua-cleansing-oil', handle:'anua-heartleaf-pore-control-cleansing-oil-6-76-fl-oz-200ml',
-    nombre:'Anua Heartleaf Pore Control Cleansing Oil',
-    precio:'$19.99', precio_num:19.99, badge:'Best Seller', emoji:'🫧',
-    desc:'Glass-skin cleansing oil that dissolves SPF and makeup on contact. Fragrance-free, non-comedogenic — even for sensitive skin.',
-    tipo_piel:['grasa','mixta','sensible','seca','nolose'], categoria:'cleanser',
-    concerns:['acne','poros','deshidratacion'], sensible:true
-  },
-  {
-    id:'dearklairs-black-cleanser', handle:'dearklairs-gentle-black-facial-cleanser-4-73-fl-oz-vegan-low-ph-hydrating-finish',
-    nombre:'DearKlairs Gentle Black Facial Cleanser',
-    precio:'$18.00', precio_num:18.00, badge:'Best Seller', emoji:'🫧',
-    desc:'Low pH antioxidant cleanser with black bean and truffle. Hydrating finish — no tight feeling after washing.',
-    tipo_piel:['seca','mixta','sensible','nolose'], categoria:'cleanser',
-    concerns:['deshidratacion','rojeces','antiaging'], sensible:true
-  },
-  {
-    id:'pyunkang-foam', handle:'pyunkang-yul-cleansing-foam-5-1-fl-oz',
-    nombre:'Pyunkang Yul Cleansing Foam',
-    precio:'$14.00', precio_num:14.00, badge:null, emoji:'🫧',
-    desc:'Zero-irritation foam for dry and sensitive skin. Minimal ingredients, maximum gentleness.',
-    tipo_piel:['seca','sensible','nolose'], categoria:'cleanser',
-    concerns:['rojeces','deshidratacion'], sensible:true
-  },
-  {
-    id:'skin1004-foam', handle:'skin1004-madagascar-centella-ampoule-foam-4-22-fl-oz-125ml',
-    nombre:'SKIN1004 Madagascar Centella Ampoule Foam',
-    precio:'$14.00', precio_num:14.00, badge:'Best Seller', emoji:'🫧',
-    desc:'Baking soda + centella foam that deep-cleans pores and soothes breakout-prone skin. EWG certified.',
-    tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'cleanser',
-    concerns:['acne','poros','rojeces'], sensible:true
-  },
-  {
-    id:'heimish-balm', handle:'heimish-all-clean-balm-4-0fl-oz-120ml-multi-purpose-cleansing-balm',
-    nombre:'HEIMISH All Clean Balm',
-    precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'🫧',
-    desc:'Cult-status balm that melts makeup, SPF and impurities without residue. Perfect first cleanse.',
-    tipo_piel:['grasa','mixta','seca','sensible','nolose'], categoria:'cleanser',
-    concerns:['acne','manchas','deshidratacion'], sensible:true
-  },
-  {
-    id:'beauty-joseon-balm', handle:'beauty-of-joseon-radiance-cleansing-balm-makeup-sunscreen-pore-cleanser-for-sensitive-acne-skin-korean-skincare-for-men-and-women-100ml-3-38-fl-oz',
-    nombre:'Beauty of Joseon Radiance Cleansing Balm',
-    precio:'$13.00', precio_num:13.00, badge:'Best Seller', emoji:'🫧',
-    desc:'Exfoliating cleansing balm that removes SPF and makeup while brightening dull skin.',
-    tipo_piel:['grasa','mixta','seca','sensible','nolose'], categoria:'cleanser',
-    concerns:['manchas','textura','deshidratacion'], sensible:true
-  },
-
-  /* ── TONERS ─────────────────────────────────────────────────── */
-  {
-    id:'some-by-mi-toner', handle:'some-by-mi-aha-bha-pha-30-days-miracle-toner-5-07oz-150ml',
-    nombre:'SOME BY MI AHA·BHA·PHA 30 Days Miracle Toner',
-    precio:'$16.99', precio_num:16.99, badge:null, emoji:'💧',
-    desc:'Triple-acid toner that treats acne, dark spots and rough texture simultaneously. Visible results in 30 days.',
-    tipo_piel:['grasa','mixta','nolose'], categoria:'toner',
-    concerns:['acne','poros','textura','manchas'], sensible:false
-  },
-  {
-    id:'dearklairs-toner', handle:'dear-klairs-supple-preparation-unscented-toner-6-08-fl-oz',
-    nombre:'DearKlairs Supple Preparation Unscented Toner',
-    precio:'$24.00', precio_num:24.00, badge:'Best Seller', emoji:'💧',
-    desc:'Alcohol-free, fragrance-free hydrating toner. Beta-glucan and centella soothe redness and deeply replenish moisture.',
-    tipo_piel:['seca','mixta','sensible','grasa','nolose'], categoria:'toner',
-    concerns:['deshidratacion','rojeces','antiaging'], sensible:true
-  },
-  {
-    id:'anua-soothing-toner', handle:'anua-heartleaf-77-soothing-toner-i-ph-5-5-trouble-care-calming-skin-refreshing-hydrating-purifying-cruelty-free-vegan-250ml-8-45-fl-oz',
-    nombre:'Anua Heartleaf 77 Soothing Toner',
-    precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'💧',
-    desc:'77% heartleaf extract at pH 5.5 — calms breakouts, strengthens the barrier and hydrates in one step.',
-    tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'toner',
-    concerns:['acne','rojeces','deshidratacion'], sensible:true
-  },
-  {
-    id:'tirtir-rice-toner', handle:'tirtir-milk-skin-rice-toner-deep-moisturizing-hydrating-toner-for-face-5-07-fl-oz',
-    nombre:'TIRTIR Milk Skin Rice Toner',
-    precio:'$26.00', precio_num:26.00, badge:null, emoji:'💧',
-    desc:'Milky rice toner with 4% niacinamide. Brightens uneven tone, hydrates deeply and leaves skin glass-smooth.',
-    tipo_piel:['seca','mixta','sensible','nolose'], categoria:'toner',
-    concerns:['manchas','deshidratacion','textura'], sensible:true
-  },
-  {
-    id:'im-from-rice-toner', handle:'im-from-rice-toner-milky-toner-for-glowing-skin-korean-rice-glow-essence-with-niacinamide-5-07-fl-oz',
-    nombre:"I'm From Rice Toner",
-    precio:'$32.00', precio_num:32.00, badge:'Best Seller', emoji:'💧',
-    desc:'Milky toner with rice bran extract and niacinamide for glass skin. Brightens, hydrates and evens tone.',
-    tipo_piel:['seca','mixta','grasa','nolose'], categoria:'toner',
-    concerns:['manchas','deshidratacion','textura'], sensible:true
-  },
-  {
-    id:'medicube-collagen-toner', handle:'medicube-triple-collagen-toner',
-    nombre:'Medicube Triple Collagen Toner',
-    precio:'$29.00', precio_num:29.00, badge:'Best Seller', emoji:'💧',
-    desc:'3-type collagen toner that deeply plumps and firms. Fast-absorbing dewy formula for visible elasticity boost.',
-    tipo_piel:['seca','mixta','nolose'], categoria:'toner',
-    concerns:['antiaging','deshidratacion','textura'], sensible:true
-  },
-  {
-    id:'pyunkang-toner', handle:'pyunkang-yul-calming-deep-moisture-toner-face-toner-for-women-containing-aha-and-pha-150ml-5-07-fl-oz',
-    nombre:'Pyunkang Yul Calming Deep Moisture Toner',
-    precio:'$18.00', precio_num:18.00, badge:null, emoji:'💧',
-    desc:'AHA + PHA toner that gently exfoliates while intensely hydrating. For dry, sensitive and acne-prone skin.',
-    tipo_piel:['seca','sensible','grasa','nolose'], categoria:'toner',
-    concerns:['deshidratacion','textura','acne','rojeces'], sensible:true
-  },
-
-  /* ── ESSENCES ───────────────────────────────────────────────── */
-  {
-    id:'cosrx-snail-essence', handle:'cosrx-snail-mucin-96-power-repairing-essence-3-38-fl-oz-100ml',
-    nombre:'COSRX Snail Mucin 96% Power Repairing Essence',
-    precio:'$25.00', precio_num:25.00, badge:'Best Seller', emoji:'🐌',
-    desc:'The most iconic K-Beauty essence. 96% snail secretion repairs the barrier, fades marks and hydrates every skin type.',
-    tipo_piel:['grasa','mixta','seca','sensible','nolose'], categoria:'essence',
-    concerns:['deshidratacion','manchas','rojeces','antiaging','textura'], sensible:true
-  },
-  {
-    id:'haruharu-essence', handle:'haruharu-wonder-black-rice-probiotics-barrier-essence-4-05-fl-oz',
-    nombre:'Haruharu Wonder Black Rice Probiotics Barrier Essence',
-    precio:'$32.00', precio_num:32.00, badge:null, emoji:'🌿',
-    desc:'Fermented black rice + probiotics essence that rebuilds the barrier, adds glow and soothes redness.',
-    tipo_piel:['seca','mixta','sensible','nolose'], categoria:'essence',
-    concerns:['deshidratacion','rojeces','manchas','antiaging'], sensible:true
-  },
-  {
-    id:'abib-heartleaf-essence', handle:'abib-heartleaf-essence-calming-pump-1-69-fl-oz-50ml-i-essence-for-face',
-    nombre:'Abib Heartleaf Essence Calming Pump',
-    precio:'$29.00', precio_num:29.00, badge:'Best Seller', emoji:'🌿',
-    desc:'Houttuynia cordata essence that instantly calms redness and soothes post-breakout inflammation.',
-    tipo_piel:['sensible','mixta','seca','nolose'], categoria:'essence',
-    concerns:['rojeces','deshidratacion','acne'], sensible:true
-  },
-  {
-    id:'haruharu-hyaluronic-toner-essence', handle:'haruharu-wonder-black-rice-hyaluronic-toner-for-all-skin-types-5-1-fl-oz-150ml',
-    nombre:'Haruharu Wonder Black Rice Hyaluronic Toner',
-    precio:'$28.00', precio_num:28.00, badge:'Best Seller', emoji:'🌿',
-    desc:'EWG-safe fermented black rice toner-essence that delivers 72-hour hydration and restores skin elasticity.',
-    tipo_piel:['seca','mixta','sensible','nolose'], categoria:'essence',
-    concerns:['deshidratacion','antiaging','rojeces'], sensible:true
-  },
-  {
-    id:'vt-pdrn-essence', handle:'vt-cosmetics-pdrn-100-essence-intensive-glow-serum-vegan-pdrn-100-000ppm-1-01-fl-oz',
-    nombre:'VT COSMETICS PDRN 100 Essence Intensive Glow Serum',
-    precio:'$34.00', precio_num:34.00, badge:'Best Seller', emoji:'💊',
-    desc:'100,000ppm PDRN essence that repairs skin elasticity, boosts collagen and delivers an intense glow.',
-    tipo_piel:['seca','mixta','nolose'], categoria:'essence',
-    concerns:['antiaging','deshidratacion','textura'], sensible:true
-  },
-
-  /* ── SERUMS ─────────────────────────────────────────────────── */
-  {
-    id:'cosrx-niacinamide-serum', handle:'cosrx-15-niacinamide-face-serum-0-67-fl-oz',
-    nombre:'COSRX 15% Niacinamide Face Serum',
-    precio:'$17.99', precio_num:17.99, badge:'Best Seller', emoji:'💊',
-    desc:'15% niacinamide minimises pores, controls sebum, fades dark spots and evens skin tone — visibly in 2 weeks.',
-    tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'serum',
-    concerns:['poros','acne','manchas','textura'], sensible:true
-  },
-  {
-    id:'anua-niacinamide-serum', handle:'anua-niacinamide-10-txa-4-serum-hyaluronic-acid-tranexamic-acid-vitamin-b12-30ml-1-01-fl-oz',
-    nombre:'ANUA Niacinamide 10 + TXA 4 Serum',
-    precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'💊',
-    desc:'Niacinamide + tranexamic acid serum that fades spots, evens tone and tightens pores. A daily brightening essential.',
-    tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'serum',
-    concerns:['manchas','poros','textura','deshidratacion'], sensible:true
-  },
-  {
-    id:'some-by-mi-retinol', handle:'some-by-mi-retinol-intense-reactivating-serum-1-69oz-50ml',
-    nombre:'SOME BY MI Retinol Intense Reactivating Serum',
-    precio:'$24.00', precio_num:24.00, badge:null, emoji:'💊',
-    desc:'Gentle encapsulated retinol that stimulates collagen and speeds cell renewal. Start 2–3 nights per week.',
-    tipo_piel:['seca','mixta','grasa','nolose'], categoria:'serum',
-    concerns:['antiaging','textura','manchas'], sensible:false
-  },
-  {
-    id:'beauty-joseon-calming-serum', handle:'beauty-of-joseon-calming-serum-green-tea-panthenol-soothing-moisturizing-sensitive-acne-prone-uv-irritated-skin-daily-korean-skin-care-for-men-and-women-30ml-1-fl-oz',
-    nombre:'Beauty of Joseon Calming Serum: Green Tea + Panthenol',
-    precio:'$15.00', precio_num:15.00, badge:'Best Seller', emoji:'💊',
-    desc:'Green tea + panthenol calming serum that soothes breakouts, hydrates and strengthens the skin barrier.',
-    tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'serum',
-    concerns:['acne','rojeces','deshidratacion'], sensible:true
-  },
-  {
-    id:'beauty-joseon-glow-serum', handle:'beauty-of-joseon-glow-deep-serum-rice-alpha-arbutin-30ml',
-    nombre:'Beauty of Joseon Glow Deep Serum: Rice + Alpha-Arbutin',
-    precio:'$15.00', precio_num:15.00, badge:'Best Seller', emoji:'💊',
-    desc:'Rice water + alpha-arbutin serum that fades hyperpigmentation and delivers a glass-skin glow.',
-    tipo_piel:['seca','mixta','grasa','nolose'], categoria:'serum',
-    concerns:['manchas','textura','deshidratacion'], sensible:true
-  },
-  {
-    id:'skin1004-centella-ampoule', handle:'skin1004-madagascar-centella-asiatica-ampoule-facial-serum-3-38-fl-oz100ml',
-    nombre:'SKIN1004 Madagascar Centella Asiatica Ampoule',
-    precio:'$18.00', precio_num:18.00, badge:'Best Seller', emoji:'💊',
-    desc:'100% Madagascar centella serum that calms redness, repairs the barrier and soothes sensitised skin.',
-    tipo_piel:['sensible','mixta','seca','nolose'], categoria:'serum',
-    concerns:['rojeces','deshidratacion','acne'], sensible:true
-  },
-  {
-    id:'cosrx-vitamin-c-13', handle:'cosrx-pure-vitamin-c-13-serum-with-vitamin-e-hyaluronic-acid-0-67fl-oz-20ml',
-    nombre:'COSRX Pure Vitamin C 13% Serum',
-    precio:'$19.99', precio_num:19.99, badge:'Best Seller', emoji:'💊',
-    desc:'Pure 13% L-ascorbic acid with vitamin E and HA. Brightens, fades spots and protects against free radicals.',
-    tipo_piel:['mixta','seca','grasa','nolose'], categoria:'serum',
-    concerns:['manchas','antiaging','textura'], sensible:false
-  },
-  {
-    id:'anua-azelaic-serum', handle:'anua-azelaic-acid-10-hyaluron-redness-soothing-serum-30ml-1-01-fl-oz',
-    nombre:'ANUA Azelaic Acid 10 Hyaluron Redness Soothing Serum',
-    precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'💊',
-    desc:'Azelaic acid 10% + HA serum for redness, rosacea and blemishes. Calms, brightens and hydrates simultaneously.',
-    tipo_piel:['sensible','mixta','grasa','nolose'], categoria:'serum',
-    concerns:['rojeces','acne','manchas','deshidratacion'], sensible:true
-  },
-  {
-    id:'medicube-vita-c-serum', handle:'medicube-deep-vita-c-serum-2-0-14-5-pure-vitamin-c',
-    nombre:'Medicube Deep Vita C Serum 2.0 — 14.5% Pure Vitamin C',
-    precio:'$38.00', precio_num:38.00, badge:'Best Seller', emoji:'💊',
-    desc:'14.5% pure vitamin C for intense brightening, dark spot correction and elasticity boosting.',
-    tipo_piel:['mixta','seca','grasa','nolose'], categoria:'serum',
-    concerns:['manchas','antiaging','textura'], sensible:false
-  },
-  {
-    id:'frankly-retinol', handle:'frankly-retinol-0-1-cream-1-01-fl-oz-beginner-retinol-night-cream-with-ceramides',
-    nombre:'FRANKLY Retinol 0.1% Cream',
-    precio:'$24.00', precio_num:24.00, badge:'Best Seller', emoji:'💊',
-    desc:'Beginner retinol night cream with ceramides. Smooths texture, fades dark spots and builds collagen.',
-    tipo_piel:['seca','mixta','grasa','nolose'], categoria:'serum',
-    concerns:['antiaging','textura','manchas'], sensible:false
-  },
-  {
-    id:'cosrx-retinol-oil', handle:'cosrx-retinol-0-5-oil-anti-aging-serum-with-0-5-retinoid-treatment-for-face',
-    nombre:'COSRX Retinol 0.5 Oil',
-    precio:'$21.99', precio_num:21.99, badge:'Best Seller', emoji:'💊',
-    desc:'0.5% retinol in a squalane-rich oil base. Renews skin, fades fine lines and improves texture overnight.',
-    tipo_piel:['seca','mixta','nolose'], categoria:'serum',
-    concerns:['antiaging','textura','manchas'], sensible:false
-  },
-  {
-    id:'abib-dark-spot-serum', handle:'abib-glutathiosome-dark-spot-serum-vita-drop-1-69-fl-oz',
-    nombre:'Abib Glutathiosome Dark Spot Serum Vita Drop',
-    precio:'$38.00', precio_num:38.00, badge:'Best Seller', emoji:'💊',
-    desc:'Glutathione + vitamin C encapsulated serum for deep dark spot correction and luminous, even skin tone.',
-    tipo_piel:['mixta','seca','grasa','sensible','nolose'], categoria:'serum',
-    concerns:['manchas','antiaging','textura'], sensible:true
-  },
-
-  /* ── MOISTURIZERS ───────────────────────────────────────────── */
-  {
-    id:'cosrx-birch-lotion', handle:'cosrx-oil-free-lotion-with-birch-sap-daily-acne-facial-moisturizer-hydrating-moisturizer-for-all-skin-types-3-38-fl-oz-100ml',
-    nombre:'COSRX Oil-Free Lotion with Birch Sap',
-    precio:'$18.00', precio_num:18.00, badge:'Best Seller', emoji:'🧴',
-    desc:'Oil-free gel moisturizer with birch sap. Non-comedogenic hydration for oily and acne-prone skin.',
-    tipo_piel:['grasa','mixta','nolose'], categoria:'moisturizer',
-    concerns:['acne','poros','deshidratacion'], sensible:true
-  },
-  {
-    id:'dearklairs-calming-cream', handle:'dearklairs-midnight-blue-calming-cream-2oz',
-    nombre:'DearKlairs Midnight Blue Calming Cream',
-    precio:'$21.00', precio_num:21.00, badge:'Best Seller', emoji:'🧴',
-    desc:'Guaiazulene + centella cream that reduces active redness and repairs the barrier. The go-to for reactive skin.',
-    tipo_piel:['sensible','mixta','seca','nolose'], categoria:'moisturizer',
-    concerns:['rojeces','deshidratacion','acne'], sensible:true
-  },
-  {
-    id:'skin1004-soothing-cream', handle:'skin1004-madagascar-centella-soothing-cream-2-53-fl-oz-75ml',
-    nombre:'SKIN1004 Madagascar Centella Soothing Cream',
-    precio:'$18.00', precio_num:18.00, badge:'Best Seller', emoji:'🧴',
-    desc:'Pure centella cream that calms sensitised skin, repairs the barrier and locks in long-lasting hydration.',
-    tipo_piel:['sensible','mixta','seca','nolose'], categoria:'moisturizer',
-    concerns:['rojeces','deshidratacion','antiaging'], sensible:true
-  },
-  {
-    id:'pyunkang-moisture-cream', handle:'pyunkang-yul-moisture-cream-3-4-fl-oz',
-    nombre:'Pyunkang Yul Moisture Cream',
-    precio:'$28.00', precio_num:28.00, badge:'Best Seller', emoji:'🧴',
-    desc:'Minimal-ingredient barrier cream with shea butter and jojoba oil. Intensely nourishes dry and damaged skin.',
-    tipo_piel:['seca','sensible','mixta','nolose'], categoria:'moisturizer',
-    concerns:['deshidratacion','rojeces','antiaging'], sensible:true
-  },
-  {
-    id:'cosrx-snail-moisturizer', handle:'cosrx-snail-mucin-92-face-moisturizer-3-52-oz',
-    nombre:'COSRX Snail Mucin 92% Face Moisturizer',
-    precio:'$24.00', precio_num:24.00, badge:'Best Seller', emoji:'🧴',
-    desc:'92% snail secretion lightweight cream. Repairs, hydrates and brightens — ideal for dry and dull skin.',
-    tipo_piel:['seca','mixta','sensible','nolose'], categoria:'moisturizer',
-    concerns:['deshidratacion','manchas','antiaging','rojeces'], sensible:true
-  },
-  {
-    id:'tirtir-ceramide-cream', handle:'tirtir-natural-ceramide-cream-deep-moisturizer-for-glass-skin',
-    nombre:'TIRTIR Natural Ceramide Cream',
-    precio:'$28.00', precio_num:28.00, badge:null, emoji:'🧴',
-    desc:'Ceramide-rich deep moisturizer for glass skin. Strengthens the barrier, soothes and delivers all-day hydration.',
-    tipo_piel:['seca','mixta','sensible','nolose'], categoria:'moisturizer',
-    concerns:['deshidratacion','antiaging','rojeces'], sensible:true
-  },
-  {
-    id:'medicube-zero-pore-cream', handle:'zero-pore-one-day-cream',
-    nombre:'Medicube Zero Pore One-Day Cream',
-    precio:'$32.00', precio_num:32.00, badge:'Best Seller', emoji:'🧴',
-    desc:'Niacinamide + salicylic acid cream that tightens pores, controls sebum and hydrates — all in one step.',
-    tipo_piel:['grasa','mixta','nolose'], categoria:'moisturizer',
-    concerns:['poros','acne','deshidratacion'], sensible:true
-  },
-  {
-    id:'numbuzin-cream', handle:'numbuzin-no-4-cream-full-nutrient-firming-cream-2-02-fl-oz',
-    nombre:'Numbuzin No.4 Full-Nutrient Firming Cream',
-    precio:'$34.00', precio_num:34.00, badge:null, emoji:'🧴',
-    desc:'Red ginseng + niacinamide firming cream. Revitalises, plumps and improves elasticity for mature or dry skin.',
-    tipo_piel:['seca','mixta','nolose'], categoria:'moisturizer',
-    concerns:['antiaging','deshidratacion','manchas'], sensible:true
-  },
-
-  /* ── SPF ────────────────────────────────────────────────────── */
-  {
-    id:'beauty-joseon-spf', handle:'beauty-of-joseon-relief-sun-rice-probiotics-spf50-pa-50ml',
-    nombre:'Beauty of Joseon Relief Sun: Rice + Probiotics SPF50+',
-    precio:'$16.00', precio_num:16.00, badge:'Best Seller', emoji:'☀️',
-    desc:'The most beloved K-Beauty SPF. Rice extract + probiotics, zero white cast, deeply calming for sensitive skin.',
-    tipo_piel:['grasa','mixta','sensible','seca','nolose'], categoria:'spf',
-    concerns:['manchas','rojeces','deshidratacion'], sensible:true
-  },
-  {
-    id:'haruharu-mineral-spf', handle:'haruharu-wonder-black-rice-pure-mineral-relief-daily-sunscreen-spf50-pa-50ml-1-69fl-oz',
-    nombre:'Haruharu Wonder Black Rice Pure Mineral Sunscreen SPF50+',
-    precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'☀️',
-    desc:'Reef-safe mineral SPF50+ with black rice and niacinamide. Anti-pollution, anti-pigmentation, sensitive-skin safe.',
-    tipo_piel:['sensible','seca','mixta','nolose'], categoria:'spf',
-    concerns:['manchas','rojeces','deshidratacion'], sensible:true
-  },
-  {
-    id:'abib-sunstick', handle:'abib-airy-sunstick-protection-bar-broad-spectrum-spf50-0-81-oz-23-g-semi-matte',
-    nombre:'Abib Airy Sunstick Protection Bar SPF50+',
-    precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'☀️',
-    desc:'Hybrid SPF50+ stick with ceramides and peptides. Semi-matte finish — no white cast, makeup-friendly.',
-    tipo_piel:['grasa','mixta','nolose'], categoria:'spf',
-    concerns:['manchas','acne','poros'], sensible:true
-  },
-  {
-    id:'purito-spf', handle:'purito-sun-day-adventure-korean-sunscreen-50ml-1-69-fl-oz',
-    nombre:'PURITO Sun Day Adventure Sunscreen SPF50+',
-    precio:'$18.00', precio_num:18.00, badge:'Best Seller', emoji:'☀️',
-    desc:'Hybrid SPF50+ that is oil-free and non-comedogenic. Smooth texture that works perfectly under makeup.',
-    tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'spf',
-    concerns:['acne','poros','manchas'], sensible:true
-  },
-  {
-    id:'haruharu-airyfit-spf', handle:'haruharu-wonder-black-rice-moisture-airyfit-daily-sunscreen-50ml-1-69fl-oz',
-    nombre:'Haruharu Wonder Black Rice Moisture Airyfit Sunscreen',
-    precio:'$24.00', precio_num:24.00, badge:'Best Seller', emoji:'☀️',
-    desc:'Antioxidant-rich black rice SPF50+ with niacinamide. Fragrance-free, ultra-light finish for sensitive skin.',
-    tipo_piel:['sensible','seca','mixta','nolose'], categoria:'spf',
-    concerns:['manchas','rojeces','deshidratacion'], sensible:true
-  },
-  {
-    id:'dalba-spf', handle:'dalba-piedmont-waterfull-tone-up-sunscreen-serum-broad-spectrum-spf-50-1-7fl-oz',
-    nombre:"d'Alba Waterfull Tone-Up Sunscreen Serum SPF50+",
-    precio:'$28.00', precio_num:28.00, badge:'Best Seller', emoji:'☀️',
-    desc:'Hybrid sunscreen-serum with white truffle. Tone-up effect, dewy glow finish — perfect base for makeup.',
-    tipo_piel:['seca','mixta','nolose'], categoria:'spf',
-    concerns:['manchas','deshidratacion','textura'], sensible:true
-  },
-
-  /* ── MASKS ──────────────────────────────────────────────────── */
-  {
-    id:'cosrx-snail-mask', handle:'cosrx-advanced-snail-mucin-glass-glow-hydrogel-face-masks-skincare-3-ea',
-    nombre:'COSRX Advanced Snail Mucin Glass Glow Hydrogel Masks',
-    precio:'$12.00', precio_num:12.00, badge:null, emoji:'🩵',
-    desc:'Snail mucin hydrogel masks for glass skin. 25% snail secretion + collagen for deep hydration and brightening.',
-    tipo_piel:['grasa','mixta','seca','sensible','nolose'], categoria:'mask',
-    concerns:['deshidratacion','manchas','antiaging'], sensible:true
-  },
-  {
-    id:'vt-soothing-mask', handle:'vt-cosmetics-daily-soothing-mask-30ea-facial-sheet-mask-for-moist-hydrating',
-    nombre:'VT Cosmetics Daily Soothing Mask (30 sheets)',
-    precio:'$29.00', precio_num:29.00, badge:'Best Seller', emoji:'🩵',
-    desc:'Daily centella sheet mask for instant hydration and soothing. Non-sticky, fast-absorbing ampoule essence.',
-    tipo_piel:['sensible','mixta','seca','nolose'], categoria:'mask',
-    concerns:['deshidratacion','rojeces','textura'], sensible:true
-  },
-  {
-    id:'pyunkang-mask', handle:'pyunkang-yul-highly-moisturizing-mask-pack-10-pcs',
-    nombre:'Pyunkang Yul Highly Moisturizing Mask Pack',
-    precio:'$14.00', precio_num:14.00, badge:null, emoji:'🩵',
-    desc:'10-pack ceramide + hyaluronic acid sheet mask for dry, sensitised skin. Fragrance-free, dermatologist tested.',
-    tipo_piel:['seca','sensible','mixta','nolose'], categoria:'mask',
-    concerns:['deshidratacion','rojeces','antiaging'], sensible:true
-  },
-  {
-    id:'abib-overnight-mask', handle:'abib-rice-probiotics-overnight-mask-barrier-jelly-2-7-fl-oz',
-    nombre:'Abib Rice Probiotics Overnight Mask Barrier Jelly',
-    precio:'$26.00', precio_num:26.00, badge:'Best Seller', emoji:'🩵',
-    desc:'Overnight jelly sleeping mask with rice probiotics. Wakes up skin radiant, plump and barrier-strong.',
-    tipo_piel:['seca','mixta','nolose'], categoria:'mask',
-    concerns:['deshidratacion','manchas','antiaging'], sensible:true
-  },
-  {
-    id:'medicube-clay-mask', handle:'medicube-zero-pore-blackhead-mud-facial-mask-3-52-oz',
-    nombre:'Medicube Zero Pore Blackhead Mud Facial Mask',
-    precio:'$24.00', precio_num:24.00, badge:'Best Seller', emoji:'🩵',
-    desc:'AHA + BHA + PHA clay mask that deep-cleans pores and removes blackheads in 3 minutes.',
-    tipo_piel:['grasa','mixta','nolose'], categoria:'mask',
-    concerns:['acne','poros','textura'], sensible:false
-  },
-
-  /* ── EYE CARE ───────────────────────────────────────────────── */
-  {
-    id:'medicube-eye-serum', handle:'medicube-salmon-dna-pdrn-pink-peptide-eye-serum-with-niacinamide-and-99-purity-retinol-1-01fl-oz',
-    nombre:'Medicube Salmon DNA PDRN Pink Peptide Eye Serum',
-    precio:'$38.00', precio_num:38.00, badge:'Best Seller', emoji:'👁️',
-    desc:'PDRN + peptide + retinol eye serum that brightens dark circles, firms and reduces fine lines around the eyes.',
-    tipo_piel:['seca','mixta','nolose'], categoria:'eye',
-    concerns:['antiaging','manchas','deshidratacion'], sensible:true
-  },
-  {
-    id:'haruharu-eye-cream', handle:'haruharu-wonder-black-rice-bakuchiol-eye-cream-0-67-fl-oz-20ml-anti-aging-wrinkle-care-natural-retinol-alternative-cruelty-free-ewg-green',
-    nombre:'Haruharu Wonder Black Rice Bakuchiol Eye Cream',
-    precio:'$28.00', precio_num:28.00, badge:'Best Seller', emoji:'👁️',
-    desc:'Natural retinol-alternative bakuchiol eye cream. Firms, brightens dark circles and reduces fine lines gently.',
-    tipo_piel:['seca','mixta','sensible','nolose'], categoria:'eye',
-    concerns:['antiaging','manchas','deshidratacion'], sensible:true
-  },
-  {
-    id:'beauty-joseon-eye-serum', handle:'beauty-of-joseon-revive-eye-serum-with-retinal-niacinamide-correction-for-puffy-eye-bags-fine-lines-dark-circles-wrinkles-korean-skin-care-30ml-1-fl-oz',
-    nombre:'Beauty of Joseon Revive Eye Serum: Retinal + Niacinamide',
-    precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'👁️',
-    desc:'Retinal + niacinamide eye serum for dark circles, puffiness and fine lines. Results from week 2.',
-    tipo_piel:['seca','mixta','nolose'], categoria:'eye',
-    concerns:['antiaging','manchas','deshidratacion'], sensible:true
-  },
-  {
-    id:'goodal-eye-patch', handle:'goodal-green-tangerine-vitamin-c-moisturizing-eye-patch-5-minute-hydrating-gel-patch-60-sheets',
-    nombre:'Goodal Green Tangerine Vitamin C Eye Patches (60 sheets)',
-    precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'👁️',
-    desc:'5-minute vitamin C hydrogel eye patches that brighten dark circles, firm and instantly plump the eye area.',
-    tipo_piel:['grasa','mixta','seca','sensible','nolose'], categoria:'eye',
-    concerns:['manchas','antiaging','deshidratacion'], sensible:true
-  }
+  { id:'cosrx-low-ph-cleanser', handle:'cosrx-low-ph-good-morning-gel-face-cleanser', nombre:'COSRX Low pH Good Morning Gel Cleanser', precio:'$12.99', precio_num:12.99, badge:'Best Seller', emoji:'🫧', desc:'Low-pH gel that cleanses without disrupting your barrier. Salicylic acid controls sebum and minimises pores without stripping.', tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'cleanser', concerns:['acne','poros','rojeces'], sensible:true, imagen:null },
+  { id:'anua-foam-cleanser', handle:'anua-heartleaf-quercetinol-pore-deep-cleansing-foam-150ml-5-07-fl-oz', nombre:'Anua Heartleaf Quercetinol Pore Deep Cleansing Foam', precio:'$16.99', precio_num:16.99, badge:null, emoji:'🫧', desc:'BHA + heartleaf foam that dissolves sebum plugs while calming inflammation. Ideal for oily and acne-prone skin.', tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'cleanser', concerns:['acne','poros','rojeces'], sensible:true, imagen:null },
+  { id:'anua-cleansing-oil', handle:'anua-heartleaf-pore-control-cleansing-oil-6-76-fl-oz-200ml', nombre:'Anua Heartleaf Pore Control Cleansing Oil', precio:'$19.99', precio_num:19.99, badge:'Best Seller', emoji:'🫧', desc:'Glass-skin cleansing oil that dissolves SPF and makeup on contact. Fragrance-free, non-comedogenic.', tipo_piel:['grasa','mixta','sensible','seca','nolose'], categoria:'cleanser', concerns:['acne','poros','deshidratacion'], sensible:true, imagen:null },
+  { id:'dearklairs-black-cleanser', handle:'dearklairs-gentle-black-facial-cleanser-4-73-fl-oz-vegan-low-ph-hydrating-finish', nombre:'DearKlairs Gentle Black Facial Cleanser', precio:'$18.00', precio_num:18.00, badge:'Best Seller', emoji:'🫧', desc:'Low pH antioxidant cleanser with black bean and truffle. Hydrating finish — no tight feeling after washing.', tipo_piel:['seca','mixta','sensible','nolose'], categoria:'cleanser', concerns:['deshidratacion','rojeces','antiaging'], sensible:true, imagen:null },
+  { id:'pyunkang-foam', handle:'pyunkang-yul-cleansing-foam-5-1-fl-oz', nombre:'Pyunkang Yul Cleansing Foam', precio:'$14.00', precio_num:14.00, badge:null, emoji:'🫧', desc:'Zero-irritation foam for dry and sensitive skin. Minimal ingredients, maximum gentleness.', tipo_piel:['seca','sensible','nolose'], categoria:'cleanser', concerns:['rojeces','deshidratacion'], sensible:true, imagen:null },
+  { id:'skin1004-foam', handle:'skin1004-madagascar-centella-ampoule-foam-4-22-fl-oz-125ml', nombre:'SKIN1004 Madagascar Centella Ampoule Foam', precio:'$14.00', precio_num:14.00, badge:'Best Seller', emoji:'🫧', desc:'Baking soda + centella foam that deep-cleans pores and soothes breakout-prone skin. EWG certified.', tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'cleanser', concerns:['acne','poros','rojeces'], sensible:true, imagen:null },
+  { id:'heimish-balm', handle:'heimish-all-clean-balm-4-0fl-oz-120ml-multi-purpose-cleansing-balm', nombre:'HEIMISH All Clean Balm', precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'🫧', desc:'Cult-status balm that melts makeup, SPF and impurities without residue. Perfect first cleanse.', tipo_piel:['grasa','mixta','seca','sensible','nolose'], categoria:'cleanser', concerns:['acne','manchas','deshidratacion'], sensible:true, imagen:null },
+  { id:'beauty-joseon-balm', handle:'beauty-of-joseon-radiance-cleansing-balm-makeup-sunscreen-pore-cleanser-for-sensitive-acne-skin-korean-skincare-for-men-and-women-100ml-3-38-fl-oz', nombre:'Beauty of Joseon Radiance Cleansing Balm', precio:'$13.00', precio_num:13.00, badge:'Best Seller', emoji:'🫧', desc:'Exfoliating cleansing balm that removes SPF and makeup while brightening dull skin.', tipo_piel:['grasa','mixta','seca','sensible','nolose'], categoria:'cleanser', concerns:['manchas','textura','deshidratacion'], sensible:true, imagen:null },
+  { id:'some-by-mi-toner', handle:'some-by-mi-aha-bha-pha-30-days-miracle-toner-5-07oz-150ml', nombre:'SOME BY MI AHA·BHA·PHA 30 Days Miracle Toner', precio:'$16.99', precio_num:16.99, badge:null, emoji:'💧', desc:'Triple-acid toner that treats acne, dark spots and rough texture simultaneously. Visible results in 30 days.', tipo_piel:['grasa','mixta','nolose'], categoria:'toner', concerns:['acne','poros','textura','manchas'], sensible:false, imagen:null },
+  { id:'dearklairs-toner', handle:'dear-klairs-supple-preparation-unscented-toner-6-08-fl-oz', nombre:'DearKlairs Supple Preparation Unscented Toner', precio:'$24.00', precio_num:24.00, badge:'Best Seller', emoji:'💧', desc:'Alcohol-free, fragrance-free hydrating toner. Beta-glucan and centella soothe redness and deeply replenish moisture.', tipo_piel:['seca','mixta','sensible','grasa','nolose'], categoria:'toner', concerns:['deshidratacion','rojeces','antiaging'], sensible:true, imagen:null },
+  { id:'anua-soothing-toner', handle:'anua-heartleaf-77-soothing-toner-i-ph-5-5-trouble-care-calming-skin-refreshing-hydrating-purifying-cruelty-free-vegan-250ml-8-45-fl-oz', nombre:'Anua Heartleaf 77 Soothing Toner', precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'💧', desc:'77% heartleaf extract at pH 5.5 — calms breakouts, strengthens the barrier and hydrates in one step.', tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'toner', concerns:['acne','rojeces','deshidratacion'], sensible:true, imagen:null },
+  { id:'tirtir-rice-toner', handle:'tirtir-milk-skin-rice-toner-deep-moisturizing-hydrating-toner-for-face-5-07-fl-oz', nombre:'TIRTIR Milk Skin Rice Toner', precio:'$26.00', precio_num:26.00, badge:null, emoji:'💧', desc:'Milky rice toner with 4% niacinamide. Brightens uneven tone, hydrates deeply and leaves skin glass-smooth.', tipo_piel:['seca','mixta','sensible','nolose'], categoria:'toner', concerns:['manchas','deshidratacion','textura'], sensible:true, imagen:null },
+  { id:'im-from-rice-toner', handle:'im-from-rice-toner-milky-toner-for-glowing-skin-korean-rice-glow-essence-with-niacinamide-5-07-fl-oz', nombre:"I'm From Rice Toner", precio:'$32.00', precio_num:32.00, badge:'Best Seller', emoji:'💧', desc:'Milky toner with rice bran extract and niacinamide for glass skin. Brightens, hydrates and evens tone.', tipo_piel:['seca','mixta','grasa','nolose'], categoria:'toner', concerns:['manchas','deshidratacion','textura'], sensible:true, imagen:null },
+  { id:'medicube-collagen-toner', handle:'medicube-triple-collagen-toner', nombre:'Medicube Triple Collagen Toner', precio:'$29.00', precio_num:29.00, badge:'Best Seller', emoji:'💧', desc:'3-type collagen toner that deeply plumps and firms. Fast-absorbing dewy formula for visible elasticity boost.', tipo_piel:['seca','mixta','nolose'], categoria:'toner', concerns:['antiaging','deshidratacion','textura'], sensible:true, imagen:null },
+  { id:'pyunkang-toner', handle:'pyunkang-yul-calming-deep-moisture-toner-face-toner-for-women-containing-aha-and-pha-150ml-5-07-fl-oz', nombre:'Pyunkang Yul Calming Deep Moisture Toner', precio:'$18.00', precio_num:18.00, badge:null, emoji:'💧', desc:'AHA + PHA toner that gently exfoliates while intensely hydrating. For dry, sensitive and acne-prone skin.', tipo_piel:['seca','sensible','grasa','nolose'], categoria:'toner', concerns:['deshidratacion','textura','acne','rojeces'], sensible:true, imagen:null },
+  { id:'cosrx-snail-essence', handle:'cosrx-snail-mucin-96-power-repairing-essence-3-38-fl-oz-100ml', nombre:'COSRX Snail Mucin 96% Power Repairing Essence', precio:'$25.00', precio_num:25.00, badge:'Best Seller', emoji:'🐌', desc:'The most iconic K-Beauty essence. 96% snail secretion repairs the barrier, fades marks and hydrates every skin type.', tipo_piel:['grasa','mixta','seca','sensible','nolose'], categoria:'essence', concerns:['deshidratacion','manchas','rojeces','antiaging','textura'], sensible:true, imagen:null },
+  { id:'haruharu-essence', handle:'haruharu-wonder-black-rice-probiotics-barrier-essence-4-05-fl-oz', nombre:'Haruharu Wonder Black Rice Probiotics Barrier Essence', precio:'$32.00', precio_num:32.00, badge:null, emoji:'🌿', desc:'Fermented black rice + probiotics essence that rebuilds the barrier, adds glow and soothes redness.', tipo_piel:['seca','mixta','sensible','nolose'], categoria:'essence', concerns:['deshidratacion','rojeces','manchas','antiaging'], sensible:true, imagen:null },
+  { id:'abib-heartleaf-essence', handle:'abib-heartleaf-essence-calming-pump-1-69-fl-oz-50ml-i-essence-for-face', nombre:'Abib Heartleaf Essence Calming Pump', precio:'$29.00', precio_num:29.00, badge:'Best Seller', emoji:'🌿', desc:'Houttuynia cordata essence that instantly calms redness and soothes post-breakout inflammation.', tipo_piel:['sensible','mixta','seca','nolose'], categoria:'essence', concerns:['rojeces','deshidratacion','acne'], sensible:true, imagen:null },
+  { id:'haruharu-hyaluronic-toner-essence', handle:'haruharu-wonder-black-rice-hyaluronic-toner-for-all-skin-types-5-1-fl-oz-150ml', nombre:'Haruharu Wonder Black Rice Hyaluronic Toner', precio:'$28.00', precio_num:28.00, badge:'Best Seller', emoji:'🌿', desc:'EWG-safe fermented black rice toner-essence that delivers 72-hour hydration and restores skin elasticity.', tipo_piel:['seca','mixta','sensible','nolose'], categoria:'essence', concerns:['deshidratacion','antiaging','rojeces'], sensible:true, imagen:null },
+  { id:'vt-pdrn-essence', handle:'vt-cosmetics-pdrn-100-essence-intensive-glow-serum-vegan-pdrn-100-000ppm-1-01-fl-oz', nombre:'VT COSMETICS PDRN 100 Essence Intensive Glow Serum', precio:'$34.00', precio_num:34.00, badge:'Best Seller', emoji:'💊', desc:'100,000ppm PDRN essence that repairs skin elasticity, boosts collagen and delivers an intense glow.', tipo_piel:['seca','mixta','nolose'], categoria:'essence', concerns:['antiaging','deshidratacion','textura'], sensible:true, imagen:null },
+  { id:'cosrx-niacinamide-serum', handle:'cosrx-15-niacinamide-face-serum-0-67-fl-oz', nombre:'COSRX 15% Niacinamide Face Serum', precio:'$17.99', precio_num:17.99, badge:'Best Seller', emoji:'💊', desc:'15% niacinamide minimises pores, controls sebum, fades dark spots and evens skin tone — visibly in 2 weeks.', tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'serum', concerns:['poros','acne','manchas','textura'], sensible:true, imagen:null },
+  { id:'anua-niacinamide-serum', handle:'anua-niacinamide-10-txa-4-serum-hyaluronic-acid-tranexamic-acid-vitamin-b12-30ml-1-01-fl-oz', nombre:'ANUA Niacinamide 10 + TXA 4 Serum', precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'💊', desc:'Niacinamide + tranexamic acid serum that fades spots, evens tone and tightens pores. A daily brightening essential.', tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'serum', concerns:['manchas','poros','textura','deshidratacion'], sensible:true, imagen:null },
+  { id:'some-by-mi-retinol', handle:'some-by-mi-retinol-intense-reactivating-serum-1-69oz-50ml', nombre:'SOME BY MI Retinol Intense Reactivating Serum', precio:'$24.00', precio_num:24.00, badge:null, emoji:'💊', desc:'Gentle encapsulated retinol that stimulates collagen and speeds cell renewal. Start 2–3 nights per week.', tipo_piel:['seca','mixta','grasa','nolose'], categoria:'serum', concerns:['antiaging','textura','manchas'], sensible:false, imagen:null },
+  { id:'beauty-joseon-calming-serum', handle:'beauty-of-joseon-calming-serum-green-tea-panthenol-soothing-moisturizing-sensitive-acne-prone-uv-irritated-skin-daily-korean-skin-care-for-men-and-women-30ml-1-fl-oz', nombre:'Beauty of Joseon Calming Serum: Green Tea + Panthenol', precio:'$15.00', precio_num:15.00, badge:'Best Seller', emoji:'💊', desc:'Green tea + panthenol calming serum that soothes breakouts, hydrates and strengthens the skin barrier.', tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'serum', concerns:['acne','rojeces','deshidratacion'], sensible:true, imagen:null },
+  { id:'beauty-joseon-glow-serum', handle:'beauty-of-joseon-glow-deep-serum-rice-alpha-arbutin-30ml', nombre:'Beauty of Joseon Glow Deep Serum: Rice + Alpha-Arbutin', precio:'$15.00', precio_num:15.00, badge:'Best Seller', emoji:'💊', desc:'Rice water + alpha-arbutin serum that fades hyperpigmentation and delivers a glass-skin glow.', tipo_piel:['seca','mixta','grasa','nolose'], categoria:'serum', concerns:['manchas','textura','deshidratacion'], sensible:true, imagen:null },
+  { id:'skin1004-centella-ampoule', handle:'skin1004-madagascar-centella-asiatica-ampoule-facial-serum-3-38-fl-oz100ml', nombre:'SKIN1004 Madagascar Centella Asiatica Ampoule', precio:'$18.00', precio_num:18.00, badge:'Best Seller', emoji:'💊', desc:'100% Madagascar centella serum that calms redness, repairs the barrier and soothes sensitised skin.', tipo_piel:['sensible','mixta','seca','nolose'], categoria:'serum', concerns:['rojeces','deshidratacion','acne'], sensible:true, imagen:null },
+  { id:'cosrx-vitamin-c-13', handle:'cosrx-pure-vitamin-c-13-serum-with-vitamin-e-hyaluronic-acid-0-67fl-oz-20ml', nombre:'COSRX Pure Vitamin C 13% Serum', precio:'$19.99', precio_num:19.99, badge:'Best Seller', emoji:'💊', desc:'Pure 13% L-ascorbic acid with vitamin E and HA. Brightens, fades spots and protects against free radicals.', tipo_piel:['mixta','seca','grasa','nolose'], categoria:'serum', concerns:['manchas','antiaging','textura'], sensible:false, imagen:null },
+  { id:'anua-azelaic-serum', handle:'anua-azelaic-acid-10-hyaluron-redness-soothing-serum-30ml-1-01-fl-oz', nombre:'ANUA Azelaic Acid 10 Hyaluron Redness Soothing Serum', precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'💊', desc:'Azelaic acid 10% + HA serum for redness, rosacea and blemishes. Calms, brightens and hydrates simultaneously.', tipo_piel:['sensible','mixta','grasa','nolose'], categoria:'serum', concerns:['rojeces','acne','manchas','deshidratacion'], sensible:true, imagen:null },
+  { id:'medicube-vita-c-serum', handle:'medicube-deep-vita-c-serum-2-0-14-5-pure-vitamin-c', nombre:'Medicube Deep Vita C Serum 2.0 — 14.5% Pure Vitamin C', precio:'$38.00', precio_num:38.00, badge:'Best Seller', emoji:'💊', desc:'14.5% pure vitamin C for intense brightening, dark spot correction and elasticity boosting.', tipo_piel:['mixta','seca','grasa','nolose'], categoria:'serum', concerns:['manchas','antiaging','textura'], sensible:false, imagen:null },
+  { id:'frankly-retinol', handle:'frankly-retinol-0-1-cream-1-01-fl-oz-beginner-retinol-night-cream-with-ceramides', nombre:'FRANKLY Retinol 0.1% Cream', precio:'$24.00', precio_num:24.00, badge:'Best Seller', emoji:'💊', desc:'Beginner retinol night cream with ceramides. Smooths texture, fades dark spots and builds collagen.', tipo_piel:['seca','mixta','grasa','nolose'], categoria:'serum', concerns:['antiaging','textura','manchas'], sensible:false, imagen:null },
+  { id:'cosrx-retinol-oil', handle:'cosrx-retinol-0-5-oil-anti-aging-serum-with-0-5-retinoid-treatment-for-face', nombre:'COSRX Retinol 0.5 Oil', precio:'$21.99', precio_num:21.99, badge:'Best Seller', emoji:'💊', desc:'0.5% retinol in a squalane-rich oil base. Renews skin, fades fine lines and improves texture overnight.', tipo_piel:['seca','mixta','nolose'], categoria:'serum', concerns:['antiaging','textura','manchas'], sensible:false, imagen:null },
+  { id:'abib-dark-spot-serum', handle:'abib-glutathiosome-dark-spot-serum-vita-drop-1-69-fl-oz', nombre:'Abib Glutathiosome Dark Spot Serum Vita Drop', precio:'$38.00', precio_num:38.00, badge:'Best Seller', emoji:'💊', desc:'Glutathione + vitamin C encapsulated serum for deep dark spot correction and luminous, even skin tone.', tipo_piel:['mixta','seca','grasa','sensible','nolose'], categoria:'serum', concerns:['manchas','antiaging','textura'], sensible:true, imagen:null },
+  { id:'cosrx-birch-lotion', handle:'cosrx-oil-free-lotion-with-birch-sap-daily-acne-facial-moisturizer-hydrating-moisturizer-for-all-skin-types-3-38-fl-oz-100ml', nombre:'COSRX Oil-Free Lotion with Birch Sap', precio:'$18.00', precio_num:18.00, badge:'Best Seller', emoji:'🧴', desc:'Oil-free gel moisturizer with birch sap. Non-comedogenic hydration for oily and acne-prone skin.', tipo_piel:['grasa','mixta','nolose'], categoria:'moisturizer', concerns:['acne','poros','deshidratacion'], sensible:true, imagen:null },
+  { id:'dearklairs-calming-cream', handle:'dearklairs-midnight-blue-calming-cream-2oz', nombre:'DearKlairs Midnight Blue Calming Cream', precio:'$21.00', precio_num:21.00, badge:'Best Seller', emoji:'🧴', desc:'Guaiazulene + centella cream that reduces active redness and repairs the barrier. The go-to for reactive skin.', tipo_piel:['sensible','mixta','seca','nolose'], categoria:'moisturizer', concerns:['rojeces','deshidratacion','acne'], sensible:true, imagen:null },
+  { id:'skin1004-soothing-cream', handle:'skin1004-madagascar-centella-soothing-cream-2-53-fl-oz-75ml', nombre:'SKIN1004 Madagascar Centella Soothing Cream', precio:'$18.00', precio_num:18.00, badge:'Best Seller', emoji:'🧴', desc:'Pure centella cream that calms sensitised skin, repairs the barrier and locks in long-lasting hydration.', tipo_piel:['sensible','mixta','seca','nolose'], categoria:'moisturizer', concerns:['rojeces','deshidratacion','antiaging'], sensible:true, imagen:null },
+  { id:'pyunkang-moisture-cream', handle:'pyunkang-yul-moisture-cream-3-4-fl-oz', nombre:'Pyunkang Yul Moisture Cream', precio:'$28.00', precio_num:28.00, badge:'Best Seller', emoji:'🧴', desc:'Minimal-ingredient barrier cream with shea butter and jojoba oil. Intensely nourishes dry and damaged skin.', tipo_piel:['seca','sensible','mixta','nolose'], categoria:'moisturizer', concerns:['deshidratacion','rojeces','antiaging'], sensible:true, imagen:null },
+  { id:'cosrx-snail-moisturizer', handle:'cosrx-snail-mucin-92-face-moisturizer-3-52-oz', nombre:'COSRX Snail Mucin 92% Face Moisturizer', precio:'$24.00', precio_num:24.00, badge:'Best Seller', emoji:'🧴', desc:'92% snail secretion lightweight cream. Repairs, hydrates and brightens — ideal for dry and dull skin.', tipo_piel:['seca','mixta','sensible','nolose'], categoria:'moisturizer', concerns:['deshidratacion','manchas','antiaging','rojeces'], sensible:true, imagen:null },
+  { id:'tirtir-ceramide-cream', handle:'tirtir-natural-ceramide-cream-deep-moisturizer-for-glass-skin', nombre:'TIRTIR Natural Ceramide Cream', precio:'$28.00', precio_num:28.00, badge:null, emoji:'🧴', desc:'Ceramide-rich deep moisturizer for glass skin. Strengthens the barrier, soothes and delivers all-day hydration.', tipo_piel:['seca','mixta','sensible','nolose'], categoria:'moisturizer', concerns:['deshidratacion','antiaging','rojeces'], sensible:true, imagen:null },
+  { id:'medicube-zero-pore-cream', handle:'zero-pore-one-day-cream', nombre:'Medicube Zero Pore One-Day Cream', precio:'$32.00', precio_num:32.00, badge:'Best Seller', emoji:'🧴', desc:'Niacinamide + salicylic acid cream that tightens pores, controls sebum and hydrates — all in one step.', tipo_piel:['grasa','mixta','nolose'], categoria:'moisturizer', concerns:['poros','acne','deshidratacion'], sensible:true, imagen:null },
+  { id:'numbuzin-cream', handle:'numbuzin-no-4-cream-full-nutrient-firming-cream-2-02-fl-oz', nombre:'Numbuzin No.4 Full-Nutrient Firming Cream', precio:'$34.00', precio_num:34.00, badge:null, emoji:'🧴', desc:'Red ginseng + niacinamide firming cream. Revitalises, plumps and improves elasticity for mature or dry skin.', tipo_piel:['seca','mixta','nolose'], categoria:'moisturizer', concerns:['antiaging','deshidratacion','manchas'], sensible:true, imagen:null },
+  { id:'beauty-joseon-spf', handle:'beauty-of-joseon-relief-sun-rice-probiotics-spf50-pa-50ml', nombre:'Beauty of Joseon Relief Sun: Rice + Probiotics SPF50+', precio:'$16.00', precio_num:16.00, badge:'Best Seller', emoji:'☀️', desc:'The most beloved K-Beauty SPF. Rice extract + probiotics, zero white cast, deeply calming for sensitive skin.', tipo_piel:['grasa','mixta','sensible','seca','nolose'], categoria:'spf', concerns:['manchas','rojeces','deshidratacion'], sensible:true, imagen:null },
+  { id:'haruharu-mineral-spf', handle:'haruharu-wonder-black-rice-pure-mineral-relief-daily-sunscreen-spf50-pa-50ml-1-69fl-oz', nombre:'Haruharu Wonder Black Rice Pure Mineral Sunscreen SPF50+', precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'☀️', desc:'Reef-safe mineral SPF50+ with black rice and niacinamide. Anti-pollution, anti-pigmentation, sensitive-skin safe.', tipo_piel:['sensible','seca','mixta','nolose'], categoria:'spf', concerns:['manchas','rojeces','deshidratacion'], sensible:true, imagen:null },
+  { id:'abib-sunstick', handle:'abib-airy-sunstick-protection-bar-broad-spectrum-spf50-0-81-oz-23-g-semi-matte', nombre:'Abib Airy Sunstick Protection Bar SPF50+', precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'☀️', desc:'Hybrid SPF50+ stick with ceramides and peptides. Semi-matte finish — no white cast, makeup-friendly.', tipo_piel:['grasa','mixta','nolose'], categoria:'spf', concerns:['manchas','acne','poros'], sensible:true, imagen:null },
+  { id:'purito-spf', handle:'purito-sun-day-adventure-korean-sunscreen-50ml-1-69-fl-oz', nombre:'PURITO Sun Day Adventure Sunscreen SPF50+', precio:'$18.00', precio_num:18.00, badge:'Best Seller', emoji:'☀️', desc:'Hybrid SPF50+ that is oil-free and non-comedogenic. Smooth texture that works perfectly under makeup.', tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'spf', concerns:['acne','poros','manchas'], sensible:true, imagen:null },
+  { id:'haruharu-airyfit-spf', handle:'haruharu-wonder-black-rice-moisture-airyfit-daily-sunscreen-50ml-1-69fl-oz', nombre:'Haruharu Wonder Black Rice Moisture Airyfit Sunscreen', precio:'$24.00', precio_num:24.00, badge:'Best Seller', emoji:'☀️', desc:'Antioxidant-rich black rice SPF50+ with niacinamide. Fragrance-free, ultra-light finish for sensitive skin.', tipo_piel:['sensible','seca','mixta','nolose'], categoria:'spf', concerns:['manchas','rojeces','deshidratacion'], sensible:true, imagen:null },
+  { id:'dalba-spf', handle:'dalba-piedmont-waterfull-tone-up-sunscreen-serum-broad-spectrum-spf-50-1-7fl-oz', nombre:"d'Alba Waterfull Tone-Up Sunscreen Serum SPF50+", precio:'$28.00', precio_num:28.00, badge:'Best Seller', emoji:'☀️', desc:'Hybrid sunscreen-serum with white truffle. Tone-up effect, dewy glow finish — perfect base for makeup.', tipo_piel:['seca','mixta','nolose'], categoria:'spf', concerns:['manchas','deshidratacion','textura'], sensible:true, imagen:null },
+  { id:'cosrx-snail-mask', handle:'cosrx-advanced-snail-mucin-glass-glow-hydrogel-face-masks-skincare-3-ea', nombre:'COSRX Advanced Snail Mucin Glass Glow Hydrogel Masks', precio:'$12.00', precio_num:12.00, badge:null, emoji:'🩵', desc:'Snail mucin hydrogel masks for glass skin. 25% snail secretion + collagen for deep hydration and brightening.', tipo_piel:['grasa','mixta','seca','sensible','nolose'], categoria:'mask', concerns:['deshidratacion','manchas','antiaging'], sensible:true, imagen:null },
+  { id:'vt-soothing-mask', handle:'vt-cosmetics-daily-soothing-mask-30ea-facial-sheet-mask-for-moist-hydrating', nombre:'VT Cosmetics Daily Soothing Mask (30 sheets)', precio:'$29.00', precio_num:29.00, badge:'Best Seller', emoji:'🩵', desc:'Daily centella sheet mask for instant hydration and soothing. Non-sticky, fast-absorbing ampoule essence.', tipo_piel:['sensible','mixta','seca','nolose'], categoria:'mask', concerns:['deshidratacion','rojeces','textura'], sensible:true, imagen:null },
+  { id:'pyunkang-mask', handle:'pyunkang-yul-highly-moisturizing-mask-pack-10-pcs', nombre:'Pyunkang Yul Highly Moisturizing Mask Pack', precio:'$14.00', precio_num:14.00, badge:null, emoji:'🩵', desc:'10-pack ceramide + hyaluronic acid sheet mask for dry, sensitised skin. Fragrance-free, dermatologist tested.', tipo_piel:['seca','sensible','mixta','nolose'], categoria:'mask', concerns:['deshidratacion','rojeces','antiaging'], sensible:true, imagen:null },
+  { id:'abib-overnight-mask', handle:'abib-rice-probiotics-overnight-mask-barrier-jelly-2-7-fl-oz', nombre:'Abib Rice Probiotics Overnight Mask Barrier Jelly', precio:'$26.00', precio_num:26.00, badge:'Best Seller', emoji:'🩵', desc:'Overnight jelly sleeping mask with rice probiotics. Wakes up skin radiant, plump and barrier-strong.', tipo_piel:['seca','mixta','nolose'], categoria:'mask', concerns:['deshidratacion','manchas','antiaging'], sensible:true, imagen:null },
+  { id:'medicube-clay-mask', handle:'medicube-zero-pore-blackhead-mud-facial-mask-3-52-oz', nombre:'Medicube Zero Pore Blackhead Mud Facial Mask', precio:'$24.00', precio_num:24.00, badge:'Best Seller', emoji:'🩵', desc:'AHA + BHA + PHA clay mask that deep-cleans pores and removes blackheads in 3 minutes.', tipo_piel:['grasa','mixta','nolose'], categoria:'mask', concerns:['acne','poros','textura'], sensible:false, imagen:null },
+  { id:'medicube-eye-serum', handle:'medicube-salmon-dna-pdrn-pink-peptide-eye-serum-with-niacinamide-and-99-purity-retinol-1-01fl-oz', nombre:'Medicube Salmon DNA PDRN Pink Peptide Eye Serum', precio:'$38.00', precio_num:38.00, badge:'Best Seller', emoji:'👁️', desc:'PDRN + peptide + retinol eye serum that brightens dark circles, firms and reduces fine lines around the eyes.', tipo_piel:['seca','mixta','nolose'], categoria:'eye', concerns:['antiaging','manchas','deshidratacion'], sensible:true, imagen:null },
+  { id:'haruharu-eye-cream', handle:'haruharu-wonder-black-rice-bakuchiol-eye-cream-0-67-fl-oz-20ml-anti-aging-wrinkle-care-natural-retinol-alternative-cruelty-free-ewg-green', nombre:'Haruharu Wonder Black Rice Bakuchiol Eye Cream', precio:'$28.00', precio_num:28.00, badge:'Best Seller', emoji:'👁️', desc:'Natural retinol-alternative bakuchiol eye cream. Firms, brightens dark circles and reduces fine lines gently.', tipo_piel:['seca','mixta','sensible','nolose'], categoria:'eye', concerns:['antiaging','manchas','deshidratacion'], sensible:true, imagen:null },
+  { id:'beauty-joseon-eye-serum', handle:'beauty-of-joseon-revive-eye-serum-with-retinal-niacinamide-correction-for-puffy-eye-bags-fine-lines-dark-circles-wrinkles-korean-skin-care-30ml-1-fl-oz', nombre:'Beauty of Joseon Revive Eye Serum: Retinal + Niacinamide', precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'👁️', desc:'Retinal + niacinamide eye serum for dark circles, puffiness and fine lines. Results from week 2.', tipo_piel:['seca','mixta','nolose'], categoria:'eye', concerns:['antiaging','manchas','deshidratacion'], sensible:true, imagen:null },
+  { id:'goodal-eye-patch', handle:'goodal-green-tangerine-vitamin-c-moisturizing-eye-patch-5-minute-hydrating-gel-patch-60-sheets', nombre:'Goodal Green Tangerine Vitamin C Eye Patches (60 sheets)', precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'👁️', desc:'5-minute vitamin C hydrogel eye patches that brighten dark circles, firm and instantly plump the eye area.', tipo_piel:['grasa','mixta','seca','sensible','nolose'], categoria:'eye', concerns:['manchas','antiaging','deshidratacion'], sensible:true, imagen:null },
 ];
 
 
@@ -1066,13 +561,11 @@ function shatokbCalcularPerfil(resp) {
   const puntos = {};
   Object.keys(SHATOKB_PERFILES).forEach(p => { puntos[p] = 0; });
   const r = resp;
-
   if (r.tipo_piel === 'grasa')    { puntos.grasa_acne += 3; puntos.grasa_poros += 3; }
   if (r.tipo_piel === 'mixta')    { puntos.mixta_general += 3; puntos.mixta_manchas += 2; }
   if (r.tipo_piel === 'seca')     { puntos.seca_hidratacion += 3; puntos.seca_antiaging += 2; }
   if (r.tipo_piel === 'sensible') { puntos.sensible_rojeces += 5; }
   if (r.tipo_piel === 'nolose')   { puntos.general_glow += 3; }
-
   if (r.preocupacion === 'acne')           { puntos.grasa_acne += 4; }
   if (r.preocupacion === 'poros')          { puntos.grasa_poros += 4; }
   if (r.preocupacion === 'manchas')        { puntos.mixta_manchas += 4; puntos.seca_antiaging += 1; }
@@ -1080,14 +573,12 @@ function shatokbCalcularPerfil(resp) {
   if (r.preocupacion === 'rojeces')        { puntos.sensible_rojeces += 4; }
   if (r.preocupacion === 'antiaging')      { puntos.seca_antiaging += 4; }
   if (r.preocupacion === 'textura')        { puntos.grasa_poros += 2; puntos.mixta_general += 2; }
-
   if (r.objetivo === 'calmar')    { puntos.sensible_rojeces += 3; }
   if (r.objetivo === 'controlar') { puntos.grasa_acne += 2; puntos.grasa_poros += 2; }
   if (r.objetivo === 'hidratar')  { puntos.seca_hidratacion += 3; puntos.mixta_general += 2; }
   if (r.objetivo === 'unificar')  { puntos.mixta_manchas += 3; }
   if (r.objetivo === 'glow')      { puntos.general_glow += 2; puntos.seca_hidratacion += 1; }
   if (r.sensibilidad === 'alta')  { puntos.sensible_rojeces += 3; }
-
   let mejor = 'general_glow', max = 0;
   Object.entries(puntos).forEach(([k, v]) => { if (v > max) { max = v; mejor = k; } });
   return mejor;
@@ -1116,13 +607,11 @@ function shatokbRecomendarProductos(perfilId, respuestas) {
     const essential = ['cleanser', 'moisturizer', 'spf'];
     const actives   = pasos.filter(p => !essential.includes(p.categoria));
     const base      = pasos.filter(p => essential.includes(p.categoria));
-    pasos = [...base, ...actives.slice(0, 1)]
-      .sort((a, b) => order.indexOf(a.categoria) - order.indexOf(b.categoria));
+    pasos = [...base, ...actives.slice(0, 1)].sort((a, b) => order.indexOf(a.categoria) - order.indexOf(b.categoria));
   }
 
   return pasos.map(paso => {
     let candidatos = SHATOKB_CATALOGO.filter(p => p.categoria === paso.categoria);
-
     candidatos = candidatos.map(p => {
       let score = 0;
       if (p.tipo_piel.includes(tipoPiel))         score += 10;
@@ -1135,11 +624,8 @@ function shatokbRecomendarProductos(perfilId, respuestas) {
       else                                         score -= 3;
       return { ...p, _score: score };
     });
-
     candidatos.sort((a, b) => b._score - a._score);
-    const opciones = candidatos.slice(0, SHATOKB_MAX_OPTIONS);
-
-    return { paso: paso.nombre, por_que: paso.por_que, opciones };
+    return { paso: paso.nombre, por_que: paso.por_que, opciones: candidatos.slice(0, SHATOKB_MAX_OPTIONS) };
   });
 }
 
@@ -1159,12 +645,10 @@ function shatokbIniciarQuiz() {
   const cabecera  = document.getElementById('shatokb-quiz-cabecera');
   const progreso  = document.getElementById('shatokb-progreso');
   const preguntas = document.getElementById('shatokb-quiz-form');
-
   if (inicio)    inicio.style.display    = 'none';
   if (cabecera)  cabecera.style.display  = 'none';
   if (progreso)  progreso.style.display  = 'block';
   if (preguntas) preguntas.style.display = 'block';
-
   shatokbRenderPregunta(0);
 }
 
@@ -1173,18 +657,14 @@ function shatokbRenderPregunta(idx) {
   const total = SHATOKB_PREGUNTAS.length;
   const q     = SHATOKB_PREGUNTAS[idx];
   const pct   = Math.round((idx / total) * 100);
-
   const fill  = document.getElementById('shatokb-progreso-barra');
   const texto = document.getElementById('shatokb-progreso-texto');
   const pctEl = document.getElementById('shatokb-pregunta-num');
-
-  if (fill)  fill.style.width     = pct + '%';
-  if (texto) texto.textContent    = 'Question ' + (idx + 1) + ' of ' + total;
-  if (pctEl) pctEl.textContent    = pct + '%';
-
+  if (fill)  fill.style.width  = pct + '%';
+  if (texto) texto.textContent = 'Question ' + (idx + 1) + ' of ' + total;
+  if (pctEl) pctEl.textContent = pct + '%';
   const container = document.getElementById('shatokb-quiz-form');
   if (!container) return;
-
   container.innerHTML = `
     <div class="shatokb-pregunta">
       <div class="shatokb-pregunta__header">
@@ -1233,11 +713,8 @@ function shatokbElegirRespuesta(qId, valor, btn) {
 function shatokbSiguientePregunta(idx) {
   const q = SHATOKB_PREGUNTAS[idx];
   if (!shatokbState.respuestas[q.id]) return;
-  if (idx + 1 < SHATOKB_PREGUNTAS.length) {
-    shatokbRenderPregunta(idx + 1);
-  } else {
-    shatokbMostrarGateEmail();
-  }
+  if (idx + 1 < SHATOKB_PREGUNTAS.length) { shatokbRenderPregunta(idx + 1); }
+  else { shatokbMostrarGateEmail(); }
 }
 
 
@@ -1251,22 +728,16 @@ function shatokbMostrarGateEmail() {
   const texto = document.getElementById('shatokb-progreso-texto');
   const pctEl = document.getElementById('shatokb-pregunta-num');
   const form  = document.getElementById('shatokb-quiz-form');
-
-  if (fill)  fill.style.width     = '100%';
-  if (texto) texto.textContent    = '🎉 Done! Preparing your routine…';
-  if (pctEl) pctEl.textContent    = '100%';
-  if (form)  form.style.display   = 'none';
-
+  if (fill)  fill.style.width   = '100%';
+  if (texto) texto.textContent  = '🎉 Done! Preparing your routine…';
+  if (pctEl) pctEl.textContent  = '100%';
+  if (form)  form.style.display = 'none';
   shatokbTrackPixel('QuizCompleted', { skin_profile: shatokbCalcularPerfil(shatokbState.respuestas) });
-
   const gate = document.getElementById('stk-email-gate');
   if (!gate) { shatokbMostrarResultado(); return; }
   gate.style.display = 'flex';
   setTimeout(() => gate.classList.add('visible'), 10);
-  setTimeout(() => {
-    const inp = document.getElementById('stk-email-input');
-    if (inp) inp.focus();
-  }, 80);
+  setTimeout(() => { const inp = document.getElementById('stk-email-input'); if (inp) inp.focus(); }, 80);
 }
 
 async function shatokbSubmitEmail(e) {
@@ -1274,25 +745,21 @@ async function shatokbSubmitEmail(e) {
   const emailEl = document.getElementById('stk-email-input');
   const email   = emailEl ? emailEl.value.trim() : '';
   if (!email) return;
-
   const btn = document.getElementById('stk-gate-submit');
   if (btn) { btn.textContent = 'One moment…'; btn.disabled = true; }
   shatokbEmailCaptured = email;
-
   try {
     await fetch('/contact', {
-      method:  'POST',
+      method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
-        form_type:          'customer',
-        utf8:               '✓',
-        'contact[email]':   email,
-        'contact[tags]':    'quiz-lead,skin-' + shatokbCalcularPerfil(shatokbState.respuestas),
-        'contact[body]':    'Skin quiz profile: ' + shatokbCalcularPerfil(shatokbState.respuestas)
+        form_type: 'customer', utf8: '✓',
+        'contact[email]': email,
+        'contact[tags]':  'quiz-lead,skin-' + shatokbCalcularPerfil(shatokbState.respuestas),
+        'contact[body]':  'Skin quiz profile: ' + shatokbCalcularPerfil(shatokbState.respuestas)
       })
     });
-  } catch(_) { /* non-blocking */ }
-
+  } catch(_) {}
   shatokbTrackPixel('Lead', { content_name: 'quiz_' + shatokbCalcularPerfil(shatokbState.respuestas) });
   shatokbCerrarGate();
   shatokbMostrarResultado();
@@ -1319,13 +786,11 @@ async function shatokbMostrarResultado() {
   const fill  = document.getElementById('shatokb-progreso-barra');
   const texto = document.getElementById('shatokb-progreso-texto');
   const pctEl = document.getElementById('shatokb-pregunta-num');
-  if (fill)  fill.style.width   = '100%';
-  if (texto) texto.textContent  = '✓ Complete!';
-  if (pctEl) pctEl.textContent  = '100%';
-
+  if (fill)  fill.style.width  = '100%';
+  if (texto) texto.textContent = '✓ Complete!';
+  if (pctEl) pctEl.textContent = '100%';
   const form = document.getElementById('shatokb-quiz-form');
   if (form)  form.style.display = 'none';
-
   const resultadoEl = document.getElementById('shatokb-resultado');
   if (!resultadoEl) return;
   resultadoEl.style.display = 'block';
@@ -1336,18 +801,11 @@ async function shatokbMostrarResultado() {
     inner.innerHTML = `
       <div style="text-align:center; padding: 60px 20px;">
         <div style="font-size:40px; margin-bottom:16px;">⏳</div>
-        <p style="font-family:'Prompt',sans-serif; font-size:18px; font-weight:700; color:#0b0335;">
-          Building your personalized routine…
-        </p>
-        <p style="font-size:14px; color:#6b7280; margin-top:8px;">
-          Loading your skin profile and product catalogue
-        </p>
+        <p style="font-family:'Prompt',sans-serif; font-size:18px; font-weight:700; color:#0b0335;">Building your personalized routine…</p>
+        <p style="font-size:14px; color:#6b7280; margin-top:8px;">Loading your skin profile and product catalogue</p>
       </div>`;
-
     await new Promise(resolve => {
-      const check = setInterval(() => {
-        if (shatokbCatalogoCargado) { clearInterval(check); resolve(); }
-      }, 100);
+      const check = setInterval(() => { if (shatokbCatalogoCargado) { clearInterval(check); resolve(); } }, 100);
     });
   }
 
@@ -1357,19 +815,15 @@ async function shatokbMostrarResultado() {
   const tags      = perfil.resumen || [];
 
   shatokbState.selectedProducts = {};
-  pasosProd.forEach((paso, i) => {
-    if (paso.opciones.length > 0) shatokbState.selectedProducts[i] = paso.opciones[0].id;
-  });
+  pasosProd.forEach((paso, i) => { if (paso.opciones.length > 0) shatokbState.selectedProducts[i] = paso.opciones[0].id; });
 
-  const presupuesto  = shatokbState.respuestas.presupuesto;
-  const budgetMax    = SHATOKB_BUDGET_LIMITS[presupuesto] || Infinity;
-  const budgetLabel  = { bajo: 'under $40', medio: '$40–$80', alto: 'premium' }[presupuesto] || '';
+  const presupuesto   = shatokbState.respuestas.presupuesto;
+  const budgetMax     = SHATOKB_BUDGET_LIMITS[presupuesto] || Infinity;
+  const budgetLabel   = { bajo: 'under $40', medio: '$40–$80', alto: 'premium' }[presupuesto] || '';
   const hasOverBudget = pasosProd.some(p => p.opciones.length > 0 && p.opciones[0].precio_num > budgetMax);
 
   const inner = resultadoEl.querySelector('.shatokb-resultado__inner') || resultadoEl;
   inner.innerHTML = `
-
-    <!-- Profile header -->
     <div class="shatokb-resultado__header">
       <div class="shatokb-resultado__check">✨</div>
       <h2 class="shatokb-resultado__titulo">Your Skin Profile</h2>
@@ -1379,12 +833,7 @@ async function shatokbMostrarResultado() {
       </div>
       <p class="shatokb-resultado__desc">${perfil.descripcion}</p>
     </div>
-
-    ${hasOverBudget ? `
-      <div class="stk-budget-note">
-        ⚠️ Some recommended products exceed your <strong>${budgetLabel}</strong> budget. We've marked them so you can choose alternatives within your range.
-      </div>` : ''}
-
+    ${hasOverBudget ? `<div class="stk-budget-note">⚠️ Some recommended products exceed your <strong>${budgetLabel}</strong> budget. We've marked them so you can choose alternatives within your range.</div>` : ''}
     <div style="margin-bottom: 24px;">
       <p class="stk-section-title">Your Personalized Routine</p>
       <p class="stk-section-sub">
@@ -1393,15 +842,10 @@ async function shatokbMostrarResultado() {
         Your estimated total updates automatically as you choose.
       </p>
     </div>
-
     <div id="shatokb-routine-steps">
       ${pasosProd.map((paso, stepIdx) => shatokbRenderPasoHTML(paso, stepIdx, budgetMax)).join('')}
     </div>
-
-    <!-- CTAs -->
     <div class="shatokb-resultado__ctas" id="shatokb-ctas" style="margin-top: 40px;"></div>
-
-    <!-- Sticky total bar -->
     <div class="stk-total-bar" id="stk-total-bar">
       <div class="stk-total-bar__info">
         <div class="stk-total-bar__timer" id="stk-timer">⏱️ Routine saved for 15:00</div>
@@ -1419,8 +863,7 @@ async function shatokbMostrarResultado() {
   shatokbIniciarTimer();
   shatokbCargarReviewsTodos(pasosProd);
   shatokbTrackPixel('ViewContent', {
-    content_name:     'skin_routine_' + perfilId,
-    content_category: perfilId,
+    content_name: 'skin_routine_' + perfilId, content_category: perfilId,
     value: Object.values(shatokbState.selectedProducts).reduce((t, id) => {
       const p = SHATOKB_CATALOGO.find(x => x.id === id);
       return t + (p ? p.precio_num : 0);
@@ -1442,12 +885,8 @@ async function shatokbFetchReviews(handle) {
     const data   = await res.json();
     const rating = parseFloat(data.metafields?.find?.(m => m.key === 'rating')?.value || 0);
     const count  = parseInt(data.metafields?.find?.(m => m.key === 'rating_count')?.value || 0);
-    return shatokbReviewsCache[handle] = (rating > 0 && count > 0)
-      ? { rating, count }
-      : shatokbFallbackReviews(handle);
-  } catch(_) {
-    return shatokbReviewsCache[handle] = shatokbFallbackReviews(handle);
-  }
+    return shatokbReviewsCache[handle] = (rating > 0 && count > 0) ? { rating, count } : shatokbFallbackReviews(handle);
+  } catch(_) { return shatokbReviewsCache[handle] = shatokbFallbackReviews(handle); }
 }
 
 function shatokbFallbackReviews(h) {
@@ -1467,12 +906,10 @@ async function shatokbCargarReviewsTodos(pasosProd) {
     pasosProd.flatMap(p => p.opciones).map(prod =>
       shatokbFetchReviews(prod.handle || prod.id).then(rev => {
         const el = document.getElementById('rev-' + prod.id);
-        if (el) {
-          el.innerHTML = `
-            <span class="stk-stars">${shatokbRenderStars(rev.rating)}</span>
-            <span class="stk-rating">${rev.rating}</span>
-            <span class="stk-rcount">(${rev.count.toLocaleString()} reviews)</span>`;
-        }
+        if (el) el.innerHTML = `
+          <span class="stk-stars">${shatokbRenderStars(rev.rating)}</span>
+          <span class="stk-rating">${rev.rating}</span>
+          <span class="stk-rcount">(${rev.count.toLocaleString()} reviews)</span>`;
       })
     )
   );
@@ -1480,7 +917,7 @@ async function shatokbCargarReviewsTodos(pasosProd) {
 
 
 /* ============================================================
-   12. PRODUCT RENDERING
+   12. PRODUCT RENDERING  ← AQUÍ ESTÁ EL FIX PRINCIPAL
 ============================================================ */
 function shatokbRenderPasoHTML(paso, stepIdx, budgetMax) {
   const opcionesHTML = paso.opciones.map(prod => {
@@ -1493,8 +930,8 @@ function shatokbRenderPasoHTML(paso, stepIdx, budgetMax) {
     const precioSafe  = String(prod.precio).replace(/'/g, '&#39;');
 
     let badgeHtml = '';
-    if (overBudget)  badgeHtml = `<div class="stk-prod-option__badge">⚠️ Above your budget</div>`;
-    else if (prod.badge) badgeHtml = `<div class="stk-prod-option__badge stk-prod-option__badge--neutral">${prod.badge}</div>`;
+    if (overBudget)       badgeHtml = `<div class="stk-prod-option__badge">⚠️ Above your budget</div>`;
+    else if (prod.badge)  badgeHtml = `<div class="stk-prod-option__badge stk-prod-option__badge--neutral">${prod.badge}</div>`;
 
     return `
       <div class="stk-prod-option${isSelected ? ' selected' : ''}"
@@ -1502,7 +939,12 @@ function shatokbRenderPasoHTML(paso, stepIdx, budgetMax) {
            role="radio" aria-checked="${isSelected}" tabindex="0"
            data-handle="${prod.handle || prod.id}">
         ${badgeHtml}
-        <div class="stk-prod-option__img">${prod.emoji}</div>
+        <div class="stk-prod-option__img">
+          ${prod.imagen
+            ? `<img src="${prod.imagen}" alt="${prod.nombre}" loading="lazy" style="width:100%;height:100%;object-fit:contain;display:block;">`
+            : `<span style="font-size:40px;line-height:1;">${prod.emoji}</span>`
+          }
+        </div>
         <div class="stk-prod-option__name">${prod.nombre}</div>
         <div class="stk-prod-reviews" id="rev-${prod.id}">
           <span style="color:#f0a500;">★★★★★</span>
@@ -1575,20 +1017,16 @@ let shatokbTimerInterval = null;
 
 function shatokbIniciarTimer() {
   if (shatokbTimerInterval) clearInterval(shatokbTimerInterval);
-  let s  = 15 * 60;
+  let s = 15 * 60;
   const el = document.getElementById('stk-timer');
   if (!el) return;
-
   const tick = () => {
     if (s < 0) { clearInterval(shatokbTimerInterval); return; }
     const m   = String(Math.floor(s / 60)).padStart(2, '0');
     const sec = String(s % 60).padStart(2, '0');
     el.textContent = `⏱️ Routine saved for ${m}:${sec}`;
-    if (s <= 60)  el.classList.add('stk-total-bar__timer--urgent');
-    if (s === 0) {
-      el.textContent = '⚠️ Session expired — retake quiz to save your routine';
-      clearInterval(shatokbTimerInterval);
-    }
+    if (s <= 60) el.classList.add('stk-total-bar__timer--urgent');
+    if (s === 0) { el.textContent = '⚠️ Session expired — retake quiz to save your routine'; clearInterval(shatokbTimerInterval); }
     s--;
   };
   tick();
@@ -1602,22 +1040,11 @@ function shatokbIniciarTimer() {
 async function shatokbAddAllToCart() {
   const btn = document.getElementById('stk-add-btn');
   if (!btn) return;
-
   const handles = Object.entries(shatokbState.selectedProducts)
-    .map(([, prodId]) => {
-      const prod = SHATOKB_CATALOGO.find(p => p.id === prodId);
-      return prod ? prod.handle : null;
-    })
+    .map(([, prodId]) => { const prod = SHATOKB_CATALOGO.find(p => p.id === prodId); return prod ? prod.handle : null; })
     .filter(Boolean);
-
-  if (handles.length === 0) {
-    alert('Please select at least one product before adding to cart.');
-    return;
-  }
-
-  btn.disabled    = true;
-  btn.textContent = '⏳ Adding to cart...';
-
+  if (handles.length === 0) { alert('Please select at least one product before adding to cart.'); return; }
+  btn.disabled = true; btn.textContent = '⏳ Adding to cart...';
   try {
     const variantRequests = handles.map(handle =>
       fetch(`/products/${handle}.js`)
@@ -1625,30 +1052,18 @@ async function shatokbAddAllToCart() {
         .then(data => ({ handle, variantId: data.variants?.[0]?.id || null }))
         .catch(() => ({ handle, variantId: null }))
     );
-
     const resolved = await Promise.all(variantRequests);
     const items    = resolved.filter(r => r.variantId !== null).map(r => ({ id: r.variantId, quantity: 1 }));
-
     if (items.length === 0) throw new Error('Could not retrieve product information. Please try again.');
-
     const cartRes = await fetch('/cart/add.js', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ items })
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items })
     });
-
-    if (!cartRes.ok) {
-      const err = await cartRes.json().catch(() => ({}));
-      throw new Error(err.description || 'Could not add products to cart.');
-    }
-
+    if (!cartRes.ok) { const err = await cartRes.json().catch(() => ({})); throw new Error(err.description || 'Could not add products to cart.'); }
     btn.textContent = '✅ Added! Redirecting...';
     window.location.href = '/cart';
-
   } catch (err) {
     console.error('[SHATOKB] addAllToCart error:', err);
-    btn.disabled    = false;
-    btn.textContent = '🛒 Add All to Cart →';
+    btn.disabled = false; btn.textContent = '🛒 Add All to Cart →';
     let errEl = document.getElementById('stk-cart-error');
     if (!errEl) {
       errEl = document.createElement('p');
@@ -1670,22 +1085,18 @@ function shatokbGetConfig() {
   const d    = el.dataset;
   const bool = v => v === 'true' || v === true;
   return {
-    btnCatalogueShow:   false,   // Disabled — KOI replaces this button
+    btnCatalogueShow:   false,
     btnCatalogueText:   d.btnCatalogueText   || '🛍️ Explore the full catalogue',
     btnCatalogueUrl:    d.btnCatalogueUrl    || '/collections/all',
-
-    btnWhatsappShow:    false,   // Disabled — KOI replaces this button
+    btnWhatsappShow:    false,
     btnWhatsappText:    d.btnWhatsappText    || '💬 Talk to a skin expert',
     btnWhatsappNumber:  d.btnWhatsappNumber  || '12345678900',
     btnWhatsappMessage: d.btnWhatsappMessage || 'Hi! I just took the skin quiz and need help with my routine.',
-
     btnBestsellersShow: bool(d.btnBestsellersShow),
     btnBestsellersText: d.btnBestsellersText || '⭐ View Best Sellers',
     btnBestsellersUrl:  d.btnBestsellersUrl  || '/collections/best-sellers',
-
     btnRetakeShow:      bool(d.btnRetakeShow),
     btnRetakeText:      d.btnRetakeText      || '↺ My skin feels different — redo',
-
     totalBarLabel:      d.totalBarLabel      || 'Estimated total for your routine',
     totalBarCta:        d.totalBarCta        || '🛒 Add my full routine to cart',
   };
@@ -1695,48 +1106,25 @@ function shatokbRenderCTAs() {
   const cfg       = shatokbGetConfig();
   const container = document.getElementById('shatokb-ctas');
   if (!container) return;
-
   let html = '';
-
-  if (cfg.btnCatalogueShow) {
-    html += `<a href="${cfg.btnCatalogueUrl}" class="shatokb-btn shatokb-btn--secondary shatokb-btn--lg">
-      ${cfg.btnCatalogueText}
-    </a>`;
-  }
-
+  if (cfg.btnCatalogueShow) html += `<a href="${cfg.btnCatalogueUrl}" class="shatokb-btn shatokb-btn--secondary shatokb-btn--lg">${cfg.btnCatalogueText}</a>`;
   if (cfg.btnWhatsappShow) {
     const waMsg = encodeURIComponent(cfg.btnWhatsappMessage);
-    html += `<a href="https://wa.me/${cfg.btnWhatsappNumber}?text=${waMsg}"
-      class="shatokb-btn shatokb-btn--whatsapp shatokb-btn--lg"
-      target="_blank" rel="noopener">
-      ${cfg.btnWhatsappText}
-    </a>`;
+    html += `<a href="https://wa.me/${cfg.btnWhatsappNumber}?text=${waMsg}" class="shatokb-btn shatokb-btn--whatsapp shatokb-btn--lg" target="_blank" rel="noopener">${cfg.btnWhatsappText}</a>`;
   }
-
-  if (cfg.btnRetakeShow) {
-    html += `<button class="shatokb-btn shatokb-btn--ghost shatokb-btn--lg" type="button" onclick="shatokbReiniciar()">
-      ${cfg.btnRetakeText}
-    </button>`;
-  }
-
+  if (cfg.btnRetakeShow) html += `<button class="shatokb-btn shatokb-btn--ghost shatokb-btn--lg" type="button" onclick="shatokbReiniciar()">${cfg.btnRetakeText}</button>`;
   container.innerHTML = html;
 }
 
 function shatokbApplyConfigToUI() {
   const cfg = shatokbGetConfig();
-
   const bsBtn = document.getElementById('shatokb-hero-bestsellers-btn');
   if (bsBtn) {
     bsBtn.style.display = cfg.btnBestsellersShow ? '' : 'none';
-    if (cfg.btnBestsellersShow) {
-      bsBtn.textContent = cfg.btnBestsellersText;
-      bsBtn.href        = cfg.btnBestsellersUrl;
-    }
+    if (cfg.btnBestsellersShow) { bsBtn.textContent = cfg.btnBestsellersText; bsBtn.href = cfg.btnBestsellersUrl; }
   }
-
   const barLabel = document.getElementById('stk-total-bar-label');
   if (barLabel) barLabel.textContent = cfg.totalBarLabel;
-
   const addBtn = document.getElementById('stk-add-btn');
   if (addBtn && !addBtn.disabled) addBtn.textContent = cfg.totalBarCta;
 }
@@ -1746,25 +1134,19 @@ function shatokbApplyConfigToUI() {
    15. RESTART
 ============================================================ */
 function shatokbReiniciar() {
-  shatokbState.respuestas       = {};
-  shatokbState.selectedProducts = {};
-  shatokbState.preguntaActual   = 0;
-  shatokbState.completado       = false;
-
+  shatokbState.respuestas = {}; shatokbState.selectedProducts = {};
+  shatokbState.preguntaActual = 0; shatokbState.completado = false;
   if (shatokbTimerInterval) { clearInterval(shatokbTimerInterval); shatokbTimerInterval = null; }
-
   const resultadoEl = document.getElementById('shatokb-resultado');
   const form        = document.getElementById('shatokb-quiz-form');
   const progreso    = document.getElementById('shatokb-progreso');
   const cabecera    = document.getElementById('shatokb-quiz-cabecera');
   const inicio      = document.getElementById('shatokb-quiz-inicio');
-
   if (resultadoEl) resultadoEl.style.display = 'none';
   if (form)        form.style.display        = 'none';
   if (progreso)    progreso.style.display    = 'none';
   if (cabecera)    cabecera.style.display    = 'block';
   if (inicio)      inicio.style.display      = 'block';
-
   const quizSection = document.getElementById('shatokb-quiz');
   if (quizSection) quizSection.scrollIntoView({ behavior: 'smooth' });
 }
