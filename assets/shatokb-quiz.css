@@ -652,7 +652,7 @@
 }
 
 /* ── Header resultado ─────────────────────────────────── */
-/* Fondo oscuro — paleta del hero #1c181a + rosa #ec95b8 */
+/* Fondo navy oscuro — paleta real del tema */
 .shatokb-resultado__header {
   text-align: center;
   padding: 48px 28px 40px;
@@ -1254,7 +1254,6 @@
   font-weight: 800;
 }
 
-/* ── Botón "Add to cart" — rosa del hero ── */
 .stk-total-bar__cta {
   background: #ec95b8;
   color: #1c181a;
