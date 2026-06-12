@@ -17,6 +17,7 @@
 {% endcomment %}
 
 {{ 'shatokb-quiz.css' | asset_url | stylesheet_tag }}
+{{ 'shatokb-koi-chat.css' | asset_url | stylesheet_tag }}
 
 <style>
   /* ── HERO — C3 Charcoal + Rose ───────────────────────────── */
@@ -310,32 +311,30 @@
 </script>
 
 <script src="{{ 'shatokb-quiz.js' | asset_url }}" defer></script>
-{{ 'shatokb-koi-chat.css' | asset_url | stylesheet_tag }}
-{{ 'shatokb-koi-chat.js' | asset_url | script_tag }}
-
+<script src="{{ 'shatokb-koi-chat.js' | asset_url }}" defer></script>
 
 {% schema %}
 {
-  "name": "🌸 Hero + Benefits + Quiz",
+  "name": "Hero + Benefits + Quiz",
   "tag": "section",
   "class": "shatokb-section",
   "settings": [
 
     {
       "type": "header",
-      "content": "🌸 Hero"
+      "content": "Hero"
     },
     {
       "type": "text",
       "id": "badge_text",
       "label": "Badge text",
-      "default": "The skin secret Korean women have had for years — now yours"
+      "default": "The skin secret Korean women have had for years - now yours"
     },
     {
       "type": "textarea",
       "id": "subtitle",
       "label": "Subtitle",
-      "default": "6 questions. 2 minutes. A complete routine built exclusively for your skin — with the exact Korean products that will actually change it."
+      "default": "6 questions. 2 minutes. A complete routine built exclusively for your skin - with the exact Korean products that will actually change it."
     },
     {
       "type": "text",
@@ -346,7 +345,7 @@
 
     {
       "type": "header",
-      "content": "✨ Benefits"
+      "content": "Benefits"
     },
     {
       "type": "text",
@@ -357,7 +356,7 @@
 
     {
       "type": "header",
-      "content": "🔬 Quiz"
+      "content": "Quiz"
     },
     {
       "type": "text",
@@ -369,12 +368,12 @@
       "type": "textarea",
       "id": "quiz_subtitulo",
       "label": "Quiz section subtitle",
-      "default": "2 minutes. 6 questions. A complete routine with real Korean products — chosen for your skin, your concerns and your budget. Free."
+      "default": "2 minutes. 6 questions. A complete routine with real Korean products - chosen for your skin, your concerns and your budget. Free."
     },
 
     {
       "type": "header",
-      "content": "🛍️ Button — Full Catalogue"
+      "content": "Button - Full Catalogue"
     },
     {
       "type": "checkbox",
@@ -386,7 +385,7 @@
       "type": "text",
       "id": "btn_catalogue_text",
       "label": "Button text",
-      "default": "🛍️ Explore the full catalogue"
+      "default": "Explore the full catalogue"
     },
     {
       "type": "url",
@@ -396,7 +395,7 @@
 
     {
       "type": "header",
-      "content": "💬 Button — WhatsApp"
+      "content": "Button - WhatsApp"
     },
     {
       "type": "checkbox",
@@ -408,14 +407,14 @@
       "type": "text",
       "id": "btn_whatsapp_text",
       "label": "Button text",
-      "default": "💬 Talk to a skin expert"
+      "default": "Talk to a skin expert"
     },
     {
       "type": "text",
       "id": "btn_whatsapp_number",
       "label": "WhatsApp number (with country code, no +)",
       "default": "12345678900",
-      "info": "Example: 17865551234 (US) · 34612345678 (Spain)"
+      "info": "Example: 17865551234 (US) - 34612345678 (Spain)"
     },
     {
       "type": "text",
@@ -426,7 +425,7 @@
 
     {
       "type": "header",
-      "content": "↺ Button — Retake Quiz"
+      "content": "Button - Retake Quiz"
     },
     {
       "type": "checkbox",
@@ -438,12 +437,12 @@
       "type": "text",
       "id": "btn_retake_text",
       "label": "Button text",
-      "default": "↺ My skin feels different — redo"
+      "default": "My skin feels different - redo"
     },
 
     {
       "type": "header",
-      "content": "🛒 Sticky Total Bar"
+      "content": "Sticky Total Bar"
     },
     {
       "type": "text",
@@ -455,7 +454,7 @@
       "type": "text",
       "id": "total_bar_cta",
       "label": "Add to cart button text",
-      "default": "🛒 Add my full routine to cart"
+      "default": "Add my full routine to cart"
     }
 
   ],
@@ -468,7 +467,7 @@
           "type": "text",
           "id": "icon_emoji",
           "label": "Emoji / Icon",
-          "default": "🎯"
+          "default": "target"
         },
         {
           "type": "text",
@@ -487,20 +486,20 @@
   ],
   "presets": [
     {
-      "name": "🌸 Hero + Benefits + Quiz",
+      "name": "Hero + Benefits + Quiz",
       "blocks": [
         {
           "type": "benefit",
           "settings": {
-            "icon_emoji": "🎯",
+            "icon_emoji": "target",
             "title": "Personalised recommendation",
-            "description": "We match products to your exact skin needs — no one-size-fits-all approach."
+            "description": "We match products to your exact skin needs - no one-size-fits-all approach."
           }
         },
         {
           "type": "benefit",
           "settings": {
-            "icon_emoji": "🌿",
+            "icon_emoji": "leaf",
             "title": "Routines for your skin type",
             "description": "Morning and night. Step by step. Tailored to oily, dry, sensitive or combination skin."
           }
@@ -508,7 +507,7 @@
         {
           "type": "benefit",
           "settings": {
-            "icon_emoji": "🇰🇷",
+            "icon_emoji": "KR",
             "title": "Authentic K-Beauty products",
             "description": "Genuine Korean brands with science-backed ingredients trusted by millions worldwide."
           }
@@ -516,7 +515,7 @@
         {
           "type": "benefit",
           "settings": {
-            "icon_emoji": "💬",
+            "icon_emoji": "chat",
             "title": "Guided shopping via WhatsApp",
             "description": "Have questions? Our team helps you choose and build your ideal routine before you buy."
           }
