@@ -1469,6 +1469,18 @@ async function shatokbMostrarResultado() {
 
         <!-- CTAs — rendered dynamically from Theme Editor config -->
         <div class="shatokb-resultado__ctas" id="shatokb-ctas" style="margin-top: 40px;"></div>
+
+        <!-- Sticky total bar — KOI la moverá justo debajo del chat al montarse -->
+        <div class="stk-total-bar" id="stk-total-bar">
+          <div class="stk-total-bar__info">
+            <div class="stk-total-bar__timer" id="stk-timer">⏱️ Routine saved for 15:00</div>
+            <div class="stk-total-bar__label" id="stk-total-bar-label">Estimated total for your routine</div>
+            <div class="stk-total-bar__amount" id="stk-total-amount">$0.00</div>
+          </div>
+          <button class="stk-total-bar__cta" onclick="shatokbAddAllToCart()" id="stk-add-btn">
+            🛒 Add my full routine to cart
+          </button>
+        </div>
       </div>
 
     </div>`;
