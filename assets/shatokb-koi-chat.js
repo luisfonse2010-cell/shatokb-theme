@@ -219,12 +219,6 @@
     // Insertar después del resultado
     resultado.appendChild(wrapper);
 
-    // Mover stk-total-bar justo después del panel de KOI (fuera del chat)
-    const totalBar = document.getElementById('stk-total-bar');
-    if (totalBar) {
-      wrapper.after(totalBar);
-    }
-
     // Vincular eventos
     vincularEventos();
 
