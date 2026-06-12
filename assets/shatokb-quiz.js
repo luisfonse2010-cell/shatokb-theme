@@ -1314,14 +1314,8 @@ function shatokbMostrarGateEmail() {
 
   shatokbTrackPixel('QuizCompleted', { skin_profile: shatokbCalcularPerfil(shatokbState.respuestas) });
 
-  const gate = document.getElementById('stk-email-gate');
-  if (!gate) { shatokbMostrarResultado(); return; }  // graceful fallback if gate not in template
-  gate.style.display = 'flex';
-  setTimeout(() => gate.classList.add('visible'), 10);
-  setTimeout(() => {
-    const inp = document.getElementById('stk-email-input');
-    if (inp) inp.focus();
-  }, 80);
+  // Email gate removido — ir directo al resultado
+  shatokbMostrarResultado();
 }
 
 async function shatokbSubmitEmail(e) {
@@ -1455,20 +1449,20 @@ async function shatokbMostrarResultado() {
         </p>
       </div>
 
-      <!-- Blur overlay — visible until KOI reveals -->
-      <div class="stk-blur-overlay" id="stk-blur-overlay" aria-hidden="true">
-        <div class="stk-blur-overlay__inner">
-          <div class="stk-blur-overlay__icon">🌸</div>
-          <p class="stk-blur-overlay__title">Your routine is being prepared by KOI…</p>
-          <p class="stk-blur-overlay__sub">Your personalized K-Beauty routine is ready. KOI will walk you through it in just a moment.</p>
-          <button class="stk-blur-overlay__cta" onclick="shatokbScrollAKOI()" type="button">
-            👇 Talk to KOI to see your routine
-          </button>
-        </div>
-      </div>
-
       <!-- Products — blurred until reveal -->
       <div class="stk-routine-blurred" id="stk-routine-blurred">
+
+        <!-- Blur overlay — fixed at top of the blurred section -->
+        <div class="stk-blur-overlay" id="stk-blur-overlay">
+          <div class="stk-blur-overlay__inner">
+            <div class="stk-blur-overlay__icon">🌸</div>
+            <p class="stk-blur-overlay__title">Your routine is being prepared by KOI…</p>
+            <p class="stk-blur-overlay__sub">Your personalized K-Beauty routine is ready. KOI will walk you through it in just a moment.</p>
+            <button class="stk-blur-overlay__cta" onclick="shatokbScrollAKOI()" type="button">
+              👇 Talk to KOI to see your routine
+            </button>
+          </div>
+        </div>
         <div id="shatokb-routine-steps">
           ${pasosProd.map((paso, stepIdx) => shatokbRenderPasoHTML(paso, stepIdx, budgetMax)).join('')}
         </div>
@@ -1971,15 +1965,20 @@ function shatokbReiniciar() {
    Finds the KOI wrapper and scrolls to it smoothly.
 ============================================================ */
 function shatokbScrollAKOI() {
-  const koi = document.getElementById('shatokb-koi-wrapper')
-           || document.querySelector('.koi-panel')
-           || document.querySelector('[id*="koi"]');
-  if (koi) {
-    koi.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    // Pulse animation to draw attention
-    koi.classList.add('stk-koi-pulse');
-    setTimeout(() => koi.classList.remove('stk-koi-pulse'), 1200);
+  // Intenta encontrar KOI — si aun no existe, espera hasta 4s
+  function intentarScroll(intentos) {
+    const koi = document.getElementById('shatokb-koi-wrapper')
+             || document.querySelector('.koi-panel');
+    if (koi) {
+      koi.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      koi.classList.add('stk-koi-pulse');
+      setTimeout(() => koi.classList.remove('stk-koi-pulse'), 1200);
+    } else if (intentos > 0) {
+      // KOI todavia no esta en el DOM — reintentar en 300ms
+      setTimeout(() => intentarScroll(intentos - 1), 300);
+    }
   }
+  intentarScroll(13); // hasta ~4 segundos de espera
 }
 
 
