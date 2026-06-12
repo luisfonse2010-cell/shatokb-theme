@@ -1504,16 +1504,17 @@
   line-height: 1.4;
 }
 
-/* Productos sombreados mientras está locked */
+/* Productos sombreados mientras está locked — opacity suave */
 .stk-reveal-section--locked .stk-routine-blurred {
-  filter: blur(3px);
+  opacity: 0.35;
   pointer-events: none;
   user-select: none;
+  transition: opacity 0.4s ease;
 }
 
-/* Al revelar: quitar blur */
+/* Al revelar: volver a normal */
 .stk-reveal-section:not(.stk-reveal-section--locked) .stk-routine-blurred {
-  filter: none;
+  opacity: 1;
   pointer-events: auto;
   user-select: auto;
 }
