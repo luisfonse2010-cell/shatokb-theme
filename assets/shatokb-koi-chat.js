@@ -47,7 +47,7 @@
   const KOI_CHIPS_I18N = {
     en: {
       // ── The Reveal: bifurcación inicial ──
-      reveal:      ['✨ Reveal my routine', '📸 Analyze my skin first'],
+      reveal:      ['📸 Analyze my skin first', '✨ Reveal my routine'],
       // ── Post-cámara: después del mensaje persuasivo ──
       post_camara: ['📸 Yes, analyze my face', '✨ Show me my routine'],
       // ── Post-reveal: explorar rutina ──
@@ -56,35 +56,35 @@
       objeciones:  ['Which product matters most?', "I've never tried K-Beauty", 'Can I combine these ingredients?', 'I have a different question'],
     },
     es: {
-      reveal:      ['✨ Descubre mi rutina', '📸 Analiza mi piel primero'],
+      reveal:      ['📸 Analiza mi piel primero', '✨ Descubre mi rutina'],
       post_camara: ['📸 Sí, analiza mi rostro', '✨ Ver mi rutina ya'],
       bienvenida:  ['Explícame mi rutina paso a paso', '¿Por qué estos productos?', 'Explícame los ingredientes clave', '¿Cuánto tiempo hasta ver resultados?'],
       post_rutina: ['¿En qué orden los aplico?', 'AM vs PM — ¿qué cambia?', '¿Son seguros en el embarazo?', '¿Con cuál empiezo?'],
       objeciones:  ['¿Cuál es el producto más importante?', 'Nunca he probado K-Beauty', '¿Puedo combinar estos ingredientes?', 'Tengo otra pregunta'],
     },
     fr: {
-      reveal:      ['✨ Révéler ma routine', '📸 Analyser ma peau d\'abord'],
+      reveal:      ['📸 Analyser ma peau d\'abord', '✨ Révéler ma routine'],
       post_camara: ['📸 Oui, analyser mon visage', '✨ Voir ma routine'],
       bienvenida:  ['Expliquez-moi ma routine', 'Pourquoi ces produits ?', 'Expliquez les ingrédients clés', 'Combien de temps pour voir les résultats ?'],
       post_rutina: ['Dans quel ordre les appliquer ?', 'Matin vs soir — qu\'est-ce qui change ?', 'Sont-ils sûrs pendant la grossesse ?', 'Par lequel commencer ?'],
       objeciones:  ['Quel produit est le plus important ?', "Je n'ai jamais essayé la K-Beauty", 'Puis-je combiner ces ingrédients ?', "J'ai une autre question"],
     },
     pt: {
-      reveal:      ['✨ Revelar minha rotina', '📸 Analisar minha pele primeiro'],
+      reveal:      ['📸 Analisar minha pele primeiro', '✨ Revelar minha rotina'],
       post_camara: ['📸 Sim, analise meu rosto', '✨ Ver minha rotina agora'],
       bienvenida:  ['Explique minha rotina passo a passo', 'Por que esses produtos?', 'Explique os ingredientes principais', 'Quanto tempo para ver resultados?'],
       post_rutina: ['Em que ordem aplicar?', 'AM vs PM — o que muda?', 'São seguros na gravidez?', 'Com qual devo começar?'],
       objeciones:  ['Qual produto é mais importante?', 'Nunca experimentei K-Beauty', 'Posso combinar esses ingredientes?', 'Tenho outra pergunta'],
     },
     de: {
-      reveal:      ['✨ Meine Routine enthüllen', '📸 Zuerst meine Haut analysieren'],
+      reveal:      ['📸 Zuerst meine Haut analysieren', '✨ Meine Routine enthüllen'],
       post_camara: ['📸 Ja, analysiere mein Gesicht', '✨ Routine jetzt anzeigen'],
       bienvenida:  ['Erkläre mir meine Routine', 'Warum genau diese Produkte?', 'Erkläre die wichtigsten Inhaltsstoffe', 'Wann sehe ich erste Ergebnisse?'],
       post_rutina: ['In welcher Reihenfolge auftragen?', 'Morgen vs. Abend — was ändert sich?', 'Sind sie in der Schwangerschaft sicher?', 'Mit welchem soll ich anfangen?'],
       objeciones:  ['Welches Produkt ist am wichtigsten?', 'Ich habe K-Beauty noch nie ausprobiert', 'Kann ich diese Inhaltsstoffe kombinieren?', 'Ich habe eine andere Frage'],
     },
     it: {
-      reveal:      ['✨ Rivela la mia routine', '📸 Analizza prima la mia pelle'],
+      reveal:      ['📸 Analizza prima la mia pelle', '✨ Rivela la mia routine'],
       post_camara: ['📸 Sì, analizza il mio viso', '✨ Mostrami la mia routine'],
       bienvenida:  ['Spiegami la mia routine', 'Perché questi prodotti?', 'Spiegami gli ingredienti chiave', 'Quanto tempo per vedere i risultati?'],
       post_rutina: ['In che ordine applicarli?', 'Mattina vs sera — cosa cambia?', 'Sono sicuri in gravidanza?', 'Da quale inizio?'],
@@ -482,8 +482,30 @@ RULES — READ CAREFULLY:
       KOI_STATE.historial.push({ role: 'assistant', content: mensaje });
     }
 
-    // ── Chips de bifurcación "The Reveal" después del insight
-    setTimeout(() => mostrarChips('reveal'), 400);
+    // ── Segundo mensaje: persuasivo de cámara, directo después del insight
+    // Pequeña pausa para que se sienta como una conversación natural
+    setTimeout(async () => {
+      const mensajesCamara = {
+        es: `Tus respuestas ya me dicen mucho — lo suficiente para armarte una rutina sólida.\n\nPero hay algo que no puedo ver solo con texto: la textura real de tu piel, cómo están tus poros ahora mismo, si hay enrojecimiento que quizás tú misma no has notado aún.\n\nEl análisis facial me permite ir **una capa más profundo**. Es opcional — tu rutina ya está lista de cualquier forma.\n\n¿Quieres intentarlo? Son unos 10 segundos.`,
+        en: `Your quiz answers already tell me a lot — enough to build you a solid routine.\n\nBut there's something I can't see from text alone: your skin's actual texture right now, how your pores look today, whether there's redness you might not have noticed yourself.\n\nFacial analysis lets me go **one layer deeper**. It's completely optional — your routine is ready either way.\n\nWant to try it? It takes about 10 seconds.`,
+        fr: `Vos réponses m'en disent déjà beaucoup — assez pour construire une routine solide.\n\nMais il y a des choses que je ne peux pas voir avec du texte seul : la texture réelle de votre peau en ce moment, l'état de vos pores, une rougeur que vous n'auriez peut-être pas remarquée.\n\nL'analyse faciale me permet d'aller **une couche plus loin**. C'est totalement optionnel — votre routine est prête de toute façon.\n\nVous voulez essayer ? Ça prend environ 10 secondes.`,
+        pt: `Suas respostas já me dizem muito — o suficiente para montar uma rotina sólida.\n\nMas há algo que não consigo ver só com texto: a textura real da sua pele agora, como estão seus poros hoje, se há vermelhidão que talvez você mesma não tenha notado.\n\nA análise facial me permite ir **uma camada mais fundo**. É completamente opcional — sua rotina já está pronta de qualquer jeito.\n\nQuer tentar? Leva uns 10 segundos.`,
+        de: `Deine Antworten sagen mir schon viel — genug, um eine solide Routine zu erstellen.\n\nAber es gibt Dinge, die ich nur aus Text nicht sehen kann: die tatsächliche Textur deiner Haut gerade, wie deine Poren heute aussehen, ob es Rötungen gibt, die du vielleicht selbst nicht bemerkt hast.\n\nDie Gesichtsanalyse lässt mich **eine Schicht tiefer** gehen. Völlig optional — deine Routine ist so oder so fertig.\n\nMöchtest du es versuchen? Es dauert etwa 10 Sekunden.`,
+        it: `Le tue risposte mi dicono già molto — abbastanza per costruire una routine solida.\n\nMa c'è qualcosa che non riesco a vedere solo dal testo: la texture reale della tua pelle in questo momento, come appaiono i tuoi pori oggi, se c'è arrossamento che forse non hai ancora notato.\n\nL'analisi facciale mi permette di andare **un livello più in profondità**. È completamente opzionale — la tua routine è pronta in ogni caso.\n\nVuoi provare? Ci vogliono circa 10 secondi.`,
+      };
+
+      const msg2   = mensajesCamara[idioma] || mensajesCamara['en'];
+      mostrarTyping();
+      await new Promise(r => setTimeout(r, 900));
+      ocultarTyping();
+      const textEl2 = agregarMensaje('koi', '');
+      if (textEl2) await escribirConEfecto(textEl2, msg2);
+      KOI_STATE.historial.push({ role: 'assistant', content: msg2 });
+
+      // Chips: analizar primero o ver rutina directamente
+      KOI_STATE.revealPhase = 'camara';
+      setTimeout(() => mostrarChips('post_camara'), 400);
+    }, 1200);
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -512,6 +534,8 @@ RULES — READ CAREFULLY:
     ocultarChips();
 
     if (esChipCamara(texto)) {
+      // Marcar fase → los chips post_camara no serán interceptados por esChipReveal
+      KOI_STATE.revealPhase = 'camara';
       // ── Cámara — mensaje persuasivo con psicología de curiosidad + autoridad
       const mensajesCamara = {
         es: `Tus respuestas ya me dicen mucho — lo suficiente para armarte una rutina sólida.
@@ -566,8 +590,8 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       setTimeout(() => mostrarChips('post_camara'), 400);
 
     } else {
-      // ── Reveal — pedir email conversacionalmente
-      await pedirEmailEnChat();
+      // ── Reveal directo — sin gate de email
+      await revelarRutinaConKOI('');
     }
   }
 
@@ -718,12 +742,12 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
 
     // Mensaje de KOI confirmando y revelando
     const mensajesReveal = {
-      es: `Listo ✨ Tu rutina para **${perfilNombre}** está aquí — te la acabo de enviar también.\n\nCada producto tiene un botón ❓ — si quieres saber exactamente por qué elegí ese para ti, solo toca.`,
-      en: `Done ✨ Your **${perfilNombre}** routine is here — I've sent it to you as well.\n\nEach product has a ❓ button — if you want to know exactly why I chose that one for you, just tap it.`,
-      fr: `C'est fait ✨ Votre routine **${perfilNombre}** est là — je vous l'ai également envoyée.\n\nChaque produit a un bouton ❓ — si vous voulez savoir exactement pourquoi je l'ai choisi pour vous, appuyez dessus.`,
-      pt: `Pronto ✨ Sua rotina **${perfilNombre}** está aqui — também te enviei por email.\n\nCada produto tem um botão ❓ — se quiser saber exatamente por que escolhi esse para você, é só tocar.`,
-      de: `Fertig ✨ Deine **${perfilNombre}** Routine ist hier — ich habe sie dir auch geschickt.\n\nJedes Produkt hat einen ❓ Button — wenn du wissen möchtest, warum ich es genau für dich gewählt habe, tippe einfach darauf.`,
-      it: `Fatto ✨ La tua routine **${perfilNombre}** è qui — te l'ho inviata anche per email.\n\nOgni prodotto ha un pulsante ❓ — se vuoi sapere esattamente perché l'ho scelto per te, toccalo.`,
+      es: `Listo ✨ Aquí está tu rutina para **${perfilNombre}**.\n\nCada producto tiene un botón ❓ — si quieres saber exactamente por qué elegí ese para ti, solo toca.`,
+      en: `Done ✨ Here's your **${perfilNombre}** routine.\n\nEach product has a ❓ button — if you want to know exactly why I chose that one for you, just tap it.`,
+      fr: `C'est fait ✨ Voici votre routine **${perfilNombre}**.\n\nChaque produit a un bouton ❓ — si vous voulez savoir exactement pourquoi je l'ai choisi pour vous, appuyez dessus.`,
+      pt: `Pronto ✨ Aqui está sua rotina **${perfilNombre}**.\n\nCada produto tem um botão ❓ — se quiser saber exatamente por que escolhi esse para você, é só tocar.`,
+      de: `Fertig ✨ Hier ist deine **${perfilNombre}** Routine.\n\nJedes Produkt hat einen ❓ Button — wenn du wissen möchtest, warum ich es genau für dich gewählt habe, tippe einfach darauf.`,
+      it: `Fatto ✨ Ecco la tua routine **${perfilNombre}**.\n\nOgni prodotto ha un pulsante ❓ — se vuoi sapere esattamente perché l'ho scelto per te, toccalo.`,
     };
 
     mostrarTyping();
@@ -794,7 +818,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     }
 
     // ── Chips post-cámara: analizar rostro o ver rutina ───────
-    if (KOI_STATE.revealPhase === 'insight' && esChipPostCamara(texto)) {
+    if (KOI_STATE.revealPhase === 'camara' && esChipPostCamara(texto)) {
       agregarMensaje('user', texto);
       await manejarChipPostCamara(texto);
       return;
@@ -858,8 +882,8 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       setTimeout(() => mostrarChips('reveal'), 400);
 
     } else {
-      // ── Usuario elige ver rutina directamente → revelar
-      await pedirEmailEnChat();
+      // ── Usuario elige ver rutina directamente → revelar sin email gate
+      await revelarRutinaConKOI('');
     }
   }
 
