@@ -1461,6 +1461,9 @@ async function shatokbMostrarResultado() {
           <div class="stk-blur-overlay__icon">🌸</div>
           <p class="stk-blur-overlay__title">Your routine is being prepared by KOI…</p>
           <p class="stk-blur-overlay__sub">Your personalized K-Beauty routine is ready. KOI will walk you through it in just a moment.</p>
+          <button class="stk-blur-overlay__cta" onclick="shatokbScrollAKOI()" type="button">
+            👇 Talk to KOI to see your routine
+          </button>
         </div>
       </div>
 
@@ -1959,6 +1962,24 @@ function shatokbReiniciar() {
 
   const quizSection = document.getElementById('shatokb-quiz');
   if (quizSection) quizSection.scrollIntoView({ behavior: 'smooth' });
+}
+
+
+/* ============================================================
+   15b. SCROLL TO KOI
+   Called by the blur overlay CTA button.
+   Finds the KOI wrapper and scrolls to it smoothly.
+============================================================ */
+function shatokbScrollAKOI() {
+  const koi = document.getElementById('shatokb-koi-wrapper')
+           || document.querySelector('.koi-panel')
+           || document.querySelector('[id*="koi"]');
+  if (koi) {
+    koi.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Pulse animation to draw attention
+    koi.classList.add('stk-koi-pulse');
+    setTimeout(() => koi.classList.remove('stk-koi-pulse'), 1200);
+  }
 }
 
 
