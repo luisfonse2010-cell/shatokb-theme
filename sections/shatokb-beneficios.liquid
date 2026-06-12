@@ -1,11 +1,24 @@
 {% comment %}
   ============================================================
-  SHATOKB · Benefits Block  — B4c Tinted Fade
+  SHATOKB · Benefits Block  — C3 Charcoal + Rose
   File: sections/shatokb-beneficios.liquid
+
+  Displays 3-4 benefit cards.
+  Each block is editable from the Shopify Theme Editor.
+  Inline <style> uses #shatokb-beneficios ID for high CSS
+  specificity — overrides Halo theme defaults safely.
   ============================================================
 {% endcomment %}
 
 <style>
+  /* ══════════════════════════════════════════════════════
+     SHATOKB Benefits — B4c · Tinted Fade (definitivo)
+     Fondo: #F5F6F7 → #ECEEF0 (mismo tono frío que Halo,
+     bajado suavemente). Cards blancas flotan sobre gris.
+     Separador: rosa pálido → fucsia → carbón → simétrico.
+  ══════════════════════════════════════════════════════ */
+
+  /* Wrapper Shopify */
   .shopify-section:has(#shatokb-beneficios) {
     padding: 0 !important;
     margin: 0 !important;
@@ -14,6 +27,7 @@
     background: transparent !important;
   }
 
+  /* Sección */
   #shatokb-beneficios {
     padding: 88px 24px !important;
     background: linear-gradient(180deg, #f5f6f7 0%, #eceef0 100%) !important;
@@ -22,6 +36,7 @@
     width: 100% !important;
   }
 
+  /* Separador top simétrico */
   #shatokb-beneficios::after {
     content: '' !important;
     display: block !important;
@@ -31,11 +46,13 @@
     background: linear-gradient(90deg, #f5a0bb, #e0607e, #2a1f24, #e0607e, #f5a0bb) !important;
   }
 
+  /* Inner */
   #shatokb-beneficios .shatokb-beneficios__inner {
     max-width: 1100px !important;
     margin: 0 auto !important;
   }
 
+  /* Título sección */
   #shatokb-beneficios .shatokb-section-title {
     text-align: center !important;
     font-size: 32px !important;
@@ -52,12 +69,14 @@
     color: #e0607e !important;
   }
 
+  /* Grid */
   #shatokb-beneficios .shatokb-beneficios__grid {
     display: grid !important;
     grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)) !important;
     gap: 20px !important;
   }
 
+  /* Card */
   #shatokb-beneficios .shatokb-beneficio-card {
     background: #ffffff !important;
     border: 1px solid #e0e2e6 !important;
@@ -76,6 +95,7 @@
     border-color: rgba(224, 96, 126, 0.40) !important;
   }
 
+  /* Barra rosa top — slide in hover */
   #shatokb-beneficios .shatokb-beneficio-card::before {
     content: '' !important;
     display: block !important;
@@ -93,6 +113,7 @@
     transform: scaleX(1) !important;
   }
 
+  /* Emoji */
   #shatokb-beneficios .shatokb-beneficio-card__icon {
     font-size: 46px !important;
     margin-bottom: 20px !important;
@@ -100,6 +121,7 @@
     line-height: 1 !important;
   }
 
+  /* Título card */
   #shatokb-beneficios .shatokb-beneficio-card__title {
     font-size: 13px !important;
     font-weight: 800 !important;
@@ -110,6 +132,7 @@
     line-height: 1.35 !important;
   }
 
+  /* Descripción */
   #shatokb-beneficios .shatokb-beneficio-card__desc {
     font-size: 15px !important;
     color: #5a6270 !important;
@@ -117,6 +140,7 @@
     margin: 0 !important;
   }
 
+  /* Responsive */
   @media (max-width: 768px) {
     #shatokb-beneficios .shatokb-beneficios__grid {
       grid-template-columns: repeat(2, 1fr) !important;
