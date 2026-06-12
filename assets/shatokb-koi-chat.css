@@ -645,3 +645,116 @@
     padding: 6px 12px;
   }
 }
+
+
+/* ══════════════════════════════════════════════════════════
+   THE REVEAL — EMAIL GATE CONVERSACIONAL v2.0
+   Componente de email que se inyecta dentro del chat
+   de KOI. No es un modal — es parte de la conversación.
+   ══════════════════════════════════════════════════════════ */
+.koi-email-gate {
+  margin: 4px 0 8px 42px; /* alineado con las burbujas de KOI */
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(236, 149, 184, 0.25);
+  border-radius: 12px;
+  padding: 16px;
+  animation: koiEmailSlideIn 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes koiEmailSlideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* ── Input de email ──────────────────────────────────────── */
+.koi-email-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 11px 14px;
+  color: #fff;
+  font-family: var(--koi-font-body);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+}
+
+.koi-email-input::placeholder {
+  color: rgba(255, 255, 255, 0.30);
+}
+
+.koi-email-input:focus {
+  border-color: var(--koi-rose);
+  background: rgba(255, 255, 255, 0.11);
+}
+
+/* Error shake */
+.koi-email-input--error {
+  border-color: #f87171 !important;
+  animation: koiEmailShake 0.4s ease;
+}
+
+@keyframes koiEmailShake {
+  0%, 100% { transform: translateX(0);    }
+  20%       { transform: translateX(-5px); }
+  40%       { transform: translateX(5px);  }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px);  }
+}
+
+/* ── Botón de envío ──────────────────────────────────────── */
+.koi-email-btn {
+  width: 100%;
+  background: var(--koi-rose);
+  color: #1c181a;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 20px;
+  font-family: var(--koi-font-body);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+  letter-spacing: 0.01em;
+}
+
+.koi-email-btn:hover {
+  background: var(--koi-rose-hover);
+  transform: translateY(-1px);
+}
+
+.koi-email-btn:active {
+  transform: translateY(0);
+}
+
+/* ── Nota de privacidad ──────────────────────────────────── */
+.koi-email-note {
+  font-size: 11px !important;
+  color: rgba(255, 255, 255, 0.30) !important;
+  text-align: center;
+  margin: 8px 0 0 !important;
+  line-height: 1.4 !important;
+}
+
+/* ── Estado confirmado (fade-out antes de eliminar) ─────── */
+.koi-email-gate--confirmed {
+  opacity: 0;
+  transform: scale(0.97);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .koi-email-gate {
+    margin-left: 0;
+    padding: 14px 12px;
+  }
+  .koi-email-input,
+  .koi-email-btn {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+}
