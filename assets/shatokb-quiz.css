@@ -1567,3 +1567,131 @@
     font-size: 27px;
   }
 }
+
+
+/* ══════════════════════════════════════════════════════════
+   THE REVEAL — v2.0
+   Blur + overlay + revelación secuencial de productos
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Contenedor principal de la sección de rutina ────────── */
+.stk-reveal-section {
+  position: relative;
+  margin-top: 32px;
+}
+
+/* ── Estado BLOQUEADO: productos con blur ─────────────────── */
+.stk-reveal-section--locked .stk-routine-blurred {
+  filter: blur(7px);
+  opacity: 0.55;
+  pointer-events: none;
+  user-select: none;
+  transition: filter 0.8s ease, opacity 0.8s ease;
+}
+
+/* ── Estado REVELADO: transición suave a visible ──────────── */
+.stk-reveal-section--revealed .stk-routine-blurred {
+  filter: blur(0);
+  opacity: 1;
+  pointer-events: auto;
+  user-select: auto;
+}
+
+/* ── Sticky bar: oculta hasta la revelación ───────────────── */
+.stk-reveal-section--locked .stk-total-bar {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.stk-total-bar--visible,
+.stk-reveal-section--revealed .stk-total-bar {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transform: translateY(0) !important;
+}
+
+/* ── Overlay de blur — "Your routine is being prepared…" ──── */
+.stk-blur-overlay {
+  position: absolute;
+  top: 60px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+
+.stk-blur-overlay__inner {
+  text-align: center;
+  padding: 32px 24px;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 16px;
+  border: 1px solid rgba(58, 122, 245, 0.15);
+  box-shadow: 0 8px 32px rgba(11, 3, 53, 0.08);
+  max-width: 340px;
+  width: 90%;
+}
+
+.stk-blur-overlay__icon {
+  font-size: 36px;
+  margin-bottom: 12px;
+  animation: stk-pulse 2s ease-in-out infinite;
+}
+
+@keyframes stk-pulse {
+  0%, 100% { transform: scale(1);    opacity: 1;    }
+  50%       { transform: scale(1.1); opacity: 0.75; }
+}
+
+.stk-blur-overlay__title {
+  font-family: 'Prompt', sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: #0b0335 !important;
+  margin: 0 0 8px !important;
+  line-height: 1.35 !important;
+}
+
+.stk-blur-overlay__sub {
+  font-family: 'Arimo', sans-serif !important;
+  font-size: 13px !important;
+  color: #6b7280 !important;
+  margin: 0 !important;
+  line-height: 1.5 !important;
+}
+
+/* ── Fade-out del overlay al revelar ─────────────────────── */
+.stk-blur-overlay--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Aparición secuencial de tarjetas de producto ────────── */
+/* Estado inicial — JS los pone a opacity:0 / translateY(20px) */
+/* La transición la aplica JS dinámicamente */
+.stk-reveal-section--revealed .shatokb-paso {
+  /* Las tarjetas ya vienen con su CSS normal.
+     JS aplica opacity:0 + translateY(20px) y luego las revela
+     una a una con setTimeout. No sobreescribir aquí. */
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .stk-blur-overlay__inner {
+    padding: 24px 16px;
+    max-width: 280px;
+  }
+  .stk-blur-overlay__title {
+    font-size: 14px !important;
+  }
+  .stk-blur-overlay__sub {
+    font-size: 12px !important;
+  }
+}
