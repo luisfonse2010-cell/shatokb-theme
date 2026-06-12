@@ -194,18 +194,6 @@
         <!-- Chips de respuesta rápida -->
         <div class="koi-chips" id="koi-chips"></div>
 
-        <!-- Total bar (moved from above) -->
-        <div class="stk-total-bar" id="stk-total-bar">
-          <div class="stk-total-bar__info">
-            <div class="stk-total-bar__timer" id="stk-timer">⏱️ Routine saved for 15:00</div>
-            <div class="stk-total-bar__label" id="stk-total-bar-label">Estimated total for your routine</div>
-            <div class="stk-total-bar__amount" id="stk-total-amount">$0.00</div>
-          </div>
-          <button class="stk-total-bar__cta" onclick="shatokbAddAllToCart()" id="stk-add-btn">
-            🛒 Add my full routine to cart
-          </button>
-        </div>
-
         <!-- Input -->
         <div class="koi-input-area">
           <textarea
@@ -230,6 +218,12 @@
 
     // Insertar después del resultado
     resultado.appendChild(wrapper);
+
+    // Mover stk-total-bar justo después del panel de KOI (fuera del chat)
+    const totalBar = document.getElementById('stk-total-bar');
+    if (totalBar) {
+      wrapper.after(totalBar);
+    }
 
     // Vincular eventos
     vincularEventos();
