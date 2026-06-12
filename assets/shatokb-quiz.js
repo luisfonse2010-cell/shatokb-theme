@@ -1440,6 +1440,18 @@ async function shatokbMostrarResultado() {
     <!-- ── THE REVEAL: routine wrapper — starts blurred, KOI unlocks it ── -->
     <div class="stk-reveal-section stk-reveal-section--locked" id="stk-reveal-section">
 
+      <!-- Blur overlay — OUTSIDE the blurred wrapper, always visible -->
+      <div class="stk-blur-overlay" id="stk-blur-overlay">
+        <div class="stk-blur-overlay__inner">
+          <div class="stk-blur-overlay__icon">🌸</div>
+          <p class="stk-blur-overlay__title">Your routine is being prepared by KOI…</p>
+          <p class="stk-blur-overlay__sub">Your personalized K-Beauty routine is ready. KOI will walk you through it in just a moment.</p>
+          <button class="stk-blur-overlay__cta" onclick="shatokbScrollAKOI()" type="button">
+            👇 Talk to KOI to see your routine
+          </button>
+        </div>
+      </div>
+
       <div class="stk-reveal-header">
         <p class="stk-section-title">Your Personalized Routine</p>
         <p class="stk-section-sub">
@@ -1451,18 +1463,6 @@ async function shatokbMostrarResultado() {
 
       <!-- Products — blurred until reveal -->
       <div class="stk-routine-blurred" id="stk-routine-blurred">
-
-        <!-- Blur overlay — fixed at top of the blurred section -->
-        <div class="stk-blur-overlay" id="stk-blur-overlay">
-          <div class="stk-blur-overlay__inner">
-            <div class="stk-blur-overlay__icon">🌸</div>
-            <p class="stk-blur-overlay__title">Your routine is being prepared by KOI…</p>
-            <p class="stk-blur-overlay__sub">Your personalized K-Beauty routine is ready. KOI will walk you through it in just a moment.</p>
-            <button class="stk-blur-overlay__cta" onclick="shatokbScrollAKOI()" type="button">
-              👇 Talk to KOI to see your routine
-            </button>
-          </div>
-        </div>
         <div id="shatokb-routine-steps">
           ${pasosProd.map((paso, stepIdx) => shatokbRenderPasoHTML(paso, stepIdx, budgetMax)).join('')}
         </div>
@@ -1957,6 +1957,33 @@ function shatokbReiniciar() {
   const quizSection = document.getElementById('shatokb-quiz');
   if (quizSection) quizSection.scrollIntoView({ behavior: 'smooth' });
 }
+
+
+/* ============================================================
+   15a. REVELAR PRODUCTOS
+   Llamado por KOI cuando el usuario completa el reveal flow.
+   Quita el blur, oculta el overlay y hace scroll suave.
+============================================================ */
+window.shatokbRevelarProductos = function () {
+  // 1. Quitar clase locked del wrapper principal
+  const section = document.getElementById('stk-reveal-section');
+  if (section) section.classList.remove('stk-reveal-section--locked');
+
+  // 2. Ocultar el overlay con animación
+  const overlay = document.getElementById('stk-blur-overlay');
+  if (overlay) {
+    overlay.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+    overlay.style.opacity    = '0';
+    overlay.style.transform  = 'translateY(-8px)';
+    setTimeout(() => { overlay.style.display = 'none'; }, 420);
+  }
+
+  // 3. Scroll suave al principio de la rutina
+  setTimeout(() => {
+    const rutina = document.getElementById('stk-reveal-section');
+    if (rutina) rutina.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 300);
+};
 
 
 /* ============================================================
