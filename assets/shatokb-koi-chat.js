@@ -2,7 +2,7 @@
  * ============================================================
  * SHATOKB · KOI — Experta K-Beauty con IA
  * Archivo: assets/shatokb-koi-chat.js
- * Version: 1.1 — English UI + workerUrl updated
+ * Version: 2.0 — "The Reveal" flow: blur → insight → email gate → reveal
  *
  * Arquitectura:
  *   - Este archivo corre en el browser (Shopify)
@@ -33,41 +33,52 @@
 
   /* ── Estado global de KOI ───────────────────────────────── */
   const KOI_STATE = {
-    historial: [],          // [{role, content}]
-    contexto: null,         // perfil del quiz
-    isTyping: false,        // KOI está escribiendo
-    isReady: false,         // chat inicializado
-    msgCount: 0,            // contador de mensajes enviados
+    historial:      [],     // [{role, content}]
+    contexto:       null,   // perfil del quiz
+    isTyping:       false,  // KOI está escribiendo
+    isReady:        false,  // chat inicializado
+    msgCount:       0,      // contador de mensajes enviados
+    // ── The Reveal ──
+    revealPhase:    'insight', // 'insight' | 'email' | 'revealed'
+    emailCaptured:  '',     // email capturado en el chat
   };
 
   /* ── Chips localizados por idioma ───────────────────────── */
   const KOI_CHIPS_I18N = {
     en: {
+      // ── The Reveal: bifurcación inicial ──
+      reveal:      ['✨ Reveal my routine', '📸 Analyze my skin first'],
+      // ── Post-reveal: explorar rutina ──
       bienvenida:  ['Walk me through my routine', 'Why these specific products?', 'Explain the key ingredients', 'How long until I see results?'],
       post_rutina: ['What order do I apply them?', 'AM vs PM — what changes?', 'Are any of these pregnancy-safe?', 'Which one should I start with?'],
       objeciones:  ['Which product matters most?', "I've never tried K-Beauty", 'Can I combine these ingredients?', 'I have a different question'],
     },
     es: {
+      reveal:      ['✨ Descubre mi rutina', '📸 Analiza mi piel primero'],
       bienvenida:  ['Explícame mi rutina paso a paso', '¿Por qué estos productos?', 'Explícame los ingredientes clave', '¿Cuánto tiempo hasta ver resultados?'],
       post_rutina: ['¿En qué orden los aplico?', 'AM vs PM — ¿qué cambia?', '¿Son seguros en el embarazo?', '¿Con cuál empiezo?'],
       objeciones:  ['¿Cuál es el producto más importante?', 'Nunca he probado K-Beauty', '¿Puedo combinar estos ingredientes?', 'Tengo otra pregunta'],
     },
     fr: {
+      reveal:      ['✨ Révéler ma routine', '📸 Analyser ma peau d\'abord'],
       bienvenida:  ['Expliquez-moi ma routine', 'Pourquoi ces produits ?', 'Expliquez les ingrédients clés', 'Combien de temps pour voir les résultats ?'],
       post_rutina: ['Dans quel ordre les appliquer ?', 'Matin vs soir — qu\'est-ce qui change ?', 'Sont-ils sûrs pendant la grossesse ?', 'Par lequel commencer ?'],
       objeciones:  ['Quel produit est le plus important ?', "Je n'ai jamais essayé la K-Beauty", 'Puis-je combiner ces ingrédients ?', "J'ai une autre question"],
     },
     pt: {
+      reveal:      ['✨ Revelar minha rotina', '📸 Analisar minha pele primeiro'],
       bienvenida:  ['Explique minha rotina passo a passo', 'Por que esses produtos?', 'Explique os ingredientes principais', 'Quanto tempo para ver resultados?'],
       post_rutina: ['Em que ordem aplicar?', 'AM vs PM — o que muda?', 'São seguros na gravidez?', 'Com qual devo começar?'],
       objeciones:  ['Qual produto é mais importante?', 'Nunca experimentei K-Beauty', 'Posso combinar esses ingredientes?', 'Tenho outra pergunta'],
     },
     de: {
+      reveal:      ['✨ Meine Routine enthüllen', '📸 Zuerst meine Haut analysieren'],
       bienvenida:  ['Erkläre mir meine Routine', 'Warum genau diese Produkte?', 'Erkläre die wichtigsten Inhaltsstoffe', 'Wann sehe ich erste Ergebnisse?'],
       post_rutina: ['In welcher Reihenfolge auftragen?', 'Morgen vs. Abend — was ändert sich?', 'Sind sie in der Schwangerschaft sicher?', 'Mit welchem soll ich anfangen?'],
       objeciones:  ['Welches Produkt ist am wichtigsten?', 'Ich habe K-Beauty noch nie ausprobiert', 'Kann ich diese Inhaltsstoffe kombinieren?', 'Ich habe eine andere Frage'],
     },
     it: {
+      reveal:      ['✨ Rivela la mia routine', '📸 Analizza prima la mia pelle'],
       bienvenida:  ['Spiegami la mia routine', 'Perché questi prodotti?', 'Spiegami gli ingredienti chiave', 'Quanto tempo per vedere i risultati?'],
       post_rutina: ['In che ordine applicarli?', 'Mattina vs sera — cosa cambia?', 'Sono sicuri in gravidanza?', 'Da quale inizio?'],
       objeciones:  ['Qual è il prodotto più importante?', 'Non ho mai provato la K-Beauty', 'Posso combinare questi ingredienti?', 'Ho un\'altra domanda'],
@@ -361,35 +372,69 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     PRIMER MENSAJE PROACTIVO DE KOI
-     Generado por GPT-4o para garantizar el idioma correcto
+     THE REVEAL — MENSAJE DE APERTURA
+     KOI aparece ANTES de los productos con un insight
+     poderoso y específico al perfil. No saluda — entra
+     directo. Luego ofrece los dos chips de bifurcación.
      ══════════════════════════════════════════════════════════ */
   async function enviarMensajeKOI_proactivo () {
     const ctx          = KOI_STATE.contexto;
-    const perfilNombre = ctx?.perfil?.nombre   || 'your skin profile';
-    const numProductos = ctx?.productos?.length || 0;
+    const perfilId     = ctx?.perfil?.id     || '';
+    const perfilNombre = ctx?.perfil?.nombre || 'your skin profile';
     const idioma       = detectarIdioma();
 
-    // Mapa de nombres de idioma en inglés para el prompt interno
     const nombreIdioma = {
       es: 'Spanish', en: 'English', fr: 'French', pt: 'Portuguese',
       de: 'German',  it: 'Italian', ko: 'Korean', ja: 'Japanese',
       zh: 'Chinese', ar: 'Arabic', nl: 'Dutch',  pl: 'Polish', ru: 'Russian'
     }[idioma] || 'English';
 
-    // Instrucción especial al Worker: generar el greeting de apertura
-    // en el idioma detectado del navegador del usuario
-    const mensajeInterno = `[SYSTEM: Generate KOI's opening greeting message.]
-Browser language detected: ${nombreIdioma}.
-Respond ENTIRELY in ${nombreIdioma}.
-Skin profile: ${perfilNombre}.
-Number of recommended products: ${numProductos}.
-Introduce yourself as KOI. Say you have 9+ years of experience at shatokb. IMPORTANT: use EXACTLY "9+" — never say "30", never say "30 años", never say "decades", never say any other number of years.
-Briefly acknowledge their skin profile by name.
-Tell them the products chosen for them were selected for a specific reason.
-Hint that there is one important thing about their skin type most people get wrong — and offer to explain.
-End with a question offering 3 paths: routine order, a specific product, or the ingredient science.
-Keep it under 100 words. No filler. No emojis unless one adds meaning.`;
+    // ── Insights fallback por perfil de piel ─────────────────
+    // Uno por perfil — específicos, no genéricos. Si el Worker
+    // falla, estos garantizan que la experiencia sea poderosa.
+    const insightsFallback = {
+      es: {
+        grasa:              `Revisé tus respuestas. Tu perfil es **${perfilNombre}**.\n\nHay algo que la industria del skincare hace mal con tu tipo de piel constantemente: sobre-limpiar. La mayoría de las personas con piel grasa piensan que necesitan eliminar todo el sebo — y ese error es exactamente lo que hace que la piel produzca *más* grasa como respuesta. Tu rutina está diseñada para romper ese ciclo.\n\nTu rutina está lista. ¿Quieres que te la muestre?`,
+        seca:               `Revisé tus respuestas. Tu perfil es **${perfilNombre}**.\n\nEl error más común con tu tipo de piel: confundir sequedad con deshidratación. Son condiciones distintas con soluciones opuestas. Aplicar más crema hidratante a piel seca estructuralmente no resuelve nada — y puede empeorar la barrera cutánea. Tu rutina ataca la causa real.\n\nTu rutina está lista. ¿Quieres que te la muestre?`,
+        mixta:              `Revisé tus respuestas. Tu perfil es **${perfilNombre}**.\n\nLa industria comete un error fundamental con tu tipo de piel todos los días: crear productos "para piel mixta" que intentan hacer dos cosas a la vez y no hacen ninguna bien. Tu zona T y tus mejillas necesitan estrategias diferentes — no un producto de compromiso. Tu rutina está construida exactamente así.\n\nTu rutina está lista. ¿Quieres que te la muestre?`,
+        sensible:           `Revisé tus respuestas. Tu perfil es **${perfilNombre}**.\n\nLo primero que hay que entender: la piel sensible no es un tipo de piel permanente en la mayoría de los casos — es una barrera comprometida. Y la causa número uno de esa barrera comprometida son los productos con demasiados activos que el mercado vende como "suaves". Tu rutina prioriza reconstruir la barrera antes de cualquier otra cosa.\n\nTu rutina está lista. ¿Quieres que te la muestre?`,
+        deshidratada:       `Revisé tus respuestas. Tu perfil es **${perfilNombre}**.\n\nAlgo importante: la deshidratación puede ocurrir en cualquier tipo de piel — incluso en piel grasa. Lo que sientes no es falta de aceite, es falta de agua en las capas superficiales. Aplicar más cremas ricas en este punto puede bloquear la hidratación que necesitas. Tu rutina trabaja de adentro hacia afuera.\n\nTu rutina está lista. ¿Quieres que te la muestre?`,
+        acne:               `Revisé tus respuestas. Tu perfil es **${perfilNombre}**.\n\nLo que más daña la piel con acné no es el acné en sí — es la respuesta agresiva al acné. Exfoliantes fuertes, secantes, ácidos al máximo. Todo eso destruye la barrera justo cuando más la necesitas, prolonga los ciclos y deja marcas que tardan meses en irse. Tu rutina es efectiva sin ser agresiva.\n\nTu rutina está lista. ¿Quieres que te la muestre?`,
+        madura:             `Revisé tus respuestas. Tu perfil es **${perfilNombre}**.\n\nEl error más caro en el skincare antiedad: perseguir el colágeno cuando el problema real es la pérdida de hidratación y la degradación de la barrera. La mayoría de los productos "lifting" del mercado tratan el síntoma, no la causa. Tu rutina actúa en las tres capas correctas.\n\nTu rutina está lista. ¿Quieres que te la muestre?`,
+        manchas:            `Revisé tus respuestas. Tu perfil es **${perfilNombre}**.\n\nAlgo que pocas marcas te dicen: aclarar manchas sin protección solar es trabajo perdido. La hiperpigmentación se reactiva con cada exposición UV, sin importar qué tan potente sea tu sérum. Tu rutina cierra ese ciclo correctamente — activo de día, protección siempre.\n\nTu rutina está lista. ¿Quieres que te la muestre?`,
+        // fallback genérico
+        default:            `Revisé tus respuestas. Tu perfil es **${perfilNombre}**.\n\nHay algo específico sobre tu tipo de piel que quiero que sepas antes de empezar tu rutina — la mayoría de los productos del mercado no están diseñados para lo que tu piel realmente necesita. Los que elegí para ti sí lo están.\n\nTu rutina está lista. ¿Quieres que te la muestre?`,
+      },
+      en: {
+        grasa:              `I've reviewed your answers. Your profile is **${perfilNombre}**.\n\nHere's what the skincare industry consistently gets wrong with your skin type: over-cleansing. Most people with oily skin think they need to strip every trace of sebum — and that's exactly the mistake that makes skin produce *more* oil in response. Your routine is designed to break that cycle.\n\nYour routine is ready. Want me to show you?`,
+        seca:               `I've reviewed your answers. Your profile is **${perfilNombre}**.\n\nThe most common mistake with your skin type: confusing dryness with dehydration. These are different conditions with opposite solutions. Adding more moisturizer to structurally dry skin doesn't fix it — it can actually compromise your skin barrier further. Your routine addresses the real cause.\n\nYour routine is ready. Want me to show you?`,
+        mixta:              `I've reviewed your answers. Your profile is **${perfilNombre}**.\n\nThe industry makes a fundamental error with combination skin: creating "combination skin" products that try to do two things at once and do neither well. Your T-zone and your cheeks need different strategies — not a compromise product. Your routine is built exactly that way.\n\nYour routine is ready. Want me to show you?`,
+        sensible:           `I've reviewed your answers. Your profile is **${perfilNombre}**.\n\nFirst thing to understand: sensitive skin isn't a permanent skin type in most cases — it's a compromised barrier. And the number one cause of that compromised barrier is products with too many actives marketed as "gentle." Your routine prioritizes rebuilding the barrier before anything else.\n\nYour routine is ready. Want me to show you?`,
+        deshidratada:       `I've reviewed your answers. Your profile is **${perfilNombre}**.\n\nImportant: dehydration can occur in any skin type — including oily skin. What you're feeling isn't a lack of oil, it's a lack of water in the surface layers. Applying rich creams at this point can actually block the hydration you need. Your routine works from the inside out.\n\nYour routine is ready. Want me to show you?`,
+        acne:               `I've reviewed your answers. Your profile is **${perfilNombre}**.\n\nWhat damages acne-prone skin most isn't the acne itself — it's the aggressive response to it. Strong exfoliants, harsh drying agents, maximum-strength acids. All of that destroys your barrier exactly when you need it most, prolongs breakout cycles, and leaves marks that take months to fade. Your routine is effective without being harsh.\n\nYour routine is ready. Want me to show you?`,
+        madura:             `I've reviewed your answers. Your profile is **${perfilNombre}**.\n\nThe most expensive mistake in anti-aging skincare: chasing collagen when the real problem is hydration loss and barrier degradation. Most "lifting" products on the market treat the symptom, not the cause. Your routine works at the three correct layers.\n\nYour routine is ready. Want me to show you?`,
+        manchas:            `I've reviewed your answers. Your profile is **${perfilNombre}**.\n\nSomething most brands won't tell you: fading dark spots without sun protection is wasted effort. Hyperpigmentation reactivates with every UV exposure, no matter how potent your serum. Your routine closes that cycle correctly — active treatment by day, protection always.\n\nYour routine is ready. Want me to show you?`,
+        default:            `I've reviewed your answers. Your profile is **${perfilNombre}**.\n\nThere's something specific about your skin type I want you to know before starting your routine — most products on the market aren't designed for what your skin actually needs. The ones I selected for you are.\n\nYour routine is ready. Want me to show you?`,
+      },
+    };
+
+    // ── Prompt para GPT-4o — The Reveal version ──────────────
+    const mensajeInterno = `[SYSTEM: THE REVEAL — Generate KOI's opening message. This is the most important message in the entire user experience.]
+
+Browser language: ${nombreIdioma}. Respond ENTIRELY in ${nombreIdioma}.
+Skin profile ID: ${perfilId}
+Skin profile name: ${perfilNombre}
+
+RULES — READ CAREFULLY:
+1. Do NOT introduce yourself by name first. Do NOT say "Hello" or "Hi". Enter the subject directly.
+2. Start with: "I reviewed your answers." (or equivalent in the target language)
+3. State the user's profile name clearly.
+4. Give ONE powerful, specific insight about a mistake the skincare industry makes with this exact skin type. This must be concrete, not generic. Something that makes the user think "how does she know that?"
+5. The insight must create a contrast: "most products do X wrong — yours does Y right."
+6. End with: tell them their routine is ready and ask if they want to see it.
+7. Maximum 90 words. No filler. No corporate language. No excessive emojis.
+8. NEVER say "30 years", "decades" or any years number. If you mention experience, say "9+ years".
+9. Tone: a seasoned dermatology-trained esthetician — precise, warm, direct.`;
 
     mostrarTyping();
 
@@ -406,8 +451,8 @@ Keep it under 100 words. No filler. No emojis unless one adds meaning.`;
         body:    JSON.stringify(payload),
       });
 
-      const data         = await response.json();
-      const mensajeKOI   = data.respuesta || data.content || '';
+      const data       = await response.json();
+      const mensajeKOI = data.respuesta || data.content || '';
 
       ocultarTyping();
 
@@ -416,29 +461,244 @@ Keep it under 100 words. No filler. No emojis unless one adds meaning.`;
         await escribirConEfecto(textEl, mensajeKOI);
       }
 
-      // Guardar en historial
       KOI_STATE.historial.push({ role: 'assistant', content: mensajeKOI });
 
     } catch (err) {
-      // Fallback local si el Worker falla en el greeting
-      console.warn('[KOI] Greeting via Worker failed, using local fallback:', err);
+      console.warn('[KOI] The Reveal greeting failed, using local fallback:', err);
       ocultarTyping();
 
-      const fallbacks = {
-        es: `Hola. Soy **KOI** — 9 años en ciencia de la piel y K-Beauty, aquí en shatokb para ayudarte a obtener resultados reales con tu rutina.\n\nHe revisado tu perfil **${perfilNombre}**. Los ${numProductos} productos seleccionados para ti no son al azar — cada uno fue elegido por una razón específica.\n\nHay algo sobre tu tipo de piel que la mayoría de la gente no sabe, y quiero asegurarme de que tú sí lo sepas antes de empezar.\n\n¿Por dónde empezamos — el orden de la rutina, un producto específico, o la ciencia detrás de tus resultados?`,
-        en: `Hello. I'm **KOI** — 9 years in skin science and Korean beauty, here at shatokb to make sure you get real results.\n\nI've reviewed your **${perfilNombre}** profile. The ${numProductos} products selected for you aren't random — each one was chosen for a specific reason.\n\nThere's one thing about your skin type most people get wrong — and I want to make sure you know it before you start.\n\nWhere would you like to begin — the routine order, a specific product, or the ingredient science behind your results?`,
-        fr: `Bonjour. Je suis **KOI** — 9 ans en science de la peau et K-Beauty, ici chez shatokb pour vous aider à obtenir de vrais résultats.\n\nJ'ai analysé votre profil **${perfilNombre}**. Les ${numProductos} produits sélectionnés ne sont pas aléatoires — chacun a été choisi pour une raison précise.\n\nIl y a une chose sur votre type de peau que la plupart des gens ne savent pas — je veux m'assurer que vous, vous le sachiez.\n\nPar où commençons-nous — l'ordre de la routine, un produit précis, ou la science des ingrédients ?`,
-        pt: `Olá. Sou **KOI** — 9 anos em ciência da pele e K-Beauty, aqui na shatokb para garantir resultados reais.\n\nAnalisei o seu perfil **${perfilNombre}**. Os ${numProductos} produtos selecionados não são aleatórios — cada um foi escolhido por uma razão específica.\n\nHá algo sobre o seu tipo de pele que a maioria das pessoas não sabe — e quero ter certeza que você saiba antes de começar.\n\nPor onde começamos — a ordem da rotina, um produto específico, ou a ciência dos ingredientes?`,
-      };
-
-      const mensajeFallback = fallbacks[idioma] || fallbacks['en'];
-      const textEl          = agregarMensaje('koi', '', true);
-      if (textEl) await escribirConEfecto(textEl, mensajeFallback);
-      KOI_STATE.historial.push({ role: 'assistant', content: mensajeFallback });
+      // Fallback local por perfil e idioma
+      const setIdioma = insightsFallback[idioma] || insightsFallback['en'];
+      const mensaje   = setIdioma[perfilId] || setIdioma['default'];
+      const textEl    = agregarMensaje('koi', '', true);
+      if (textEl) await escribirConEfecto(textEl, mensaje);
+      KOI_STATE.historial.push({ role: 'assistant', content: mensaje });
     }
 
-    // Chips de bienvenida después del greeting
-    setTimeout(() => mostrarChips('bienvenida'), 400);
+    // ── Chips de bifurcación "The Reveal" después del insight
+    setTimeout(() => mostrarChips('reveal'), 400);
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     THE REVEAL — CHIPS HANDLER
+     Intercepta los chips de bifurcación y ejecuta la lógica
+     correspondiente (email gate o cámara).
+     ══════════════════════════════════════════════════════════ */
+  function esChipReveal (texto) {
+    // Detecta si el chip es de bifurcación (reveal o cámara)
+    const t = texto.toLowerCase();
+    return t.includes('reveal') || t.includes('descubre') || t.includes('révéler') ||
+           t.includes('revelar') || t.includes('enthüllen') || t.includes('rivela') ||
+           t.includes('analyz') || t.includes('analiza') || t.includes('analyser') ||
+           t.includes('analisar') || t.includes('analysier') || t.includes('analizza');
+  }
+
+  function esChipCamara (texto) {
+    const t = texto.toLowerCase();
+    return t.includes('📸') || t.includes('analyz') || t.includes('analiza') ||
+           t.includes('analyser') || t.includes('analisar') || t.includes('analysier') ||
+           t.includes('analizza') || t.includes('skin') && t.includes('first');
+  }
+
+  async function manejarChipReveal (texto) {
+    const idioma = detectarIdioma();
+    ocultarChips();
+
+    if (esChipCamara(texto)) {
+      // ── Cámara — Sprint 2: mensaje elegante de "próximamente"
+      const mensajesCamara = {
+        es: `La cámara de análisis facial llega muy pronto ✨\n\nPor ahora, voy a basarme en tus respuestas del quiz — que ya me dicen bastante. ¿Quieres que te muestre tu rutina?`,
+        en: `The facial analysis camera is coming very soon ✨\n\nFor now, I'll work from your quiz answers — which already tell me quite a lot. Want me to reveal your routine?`,
+        fr: `La caméra d'analyse faciale arrive très bientôt ✨\n\nPour l'instant, je vais me baser sur vos réponses — qui m'en disent déjà beaucoup. Vous voulez voir votre routine ?`,
+        pt: `A câmera de análise facial chega em breve ✨\n\nPor enquanto, vou me basear nas suas respostas do quiz — que já me dizem bastante. Quer ver sua rotina?`,
+        de: `Die Gesichtsanalyse-Kamera kommt sehr bald ✨\n\nFür jetzt arbeite ich mit deinen Quiz-Antworten — die mir schon viel verraten. Soll ich dir deine Routine zeigen?`,
+        it: `La fotocamera per l'analisi del viso arriva presto ✨\n\nPer ora, mi baso sulle tue risposte al quiz — che già mi dicono molto. Vuoi che ti mostri la tua routine?`,
+      };
+      const msg    = mensajesCamara[idioma] || mensajesCamara['en'];
+      const textEl = agregarMensaje('koi', '');
+      if (textEl) await escribirConEfecto(textEl, msg);
+      KOI_STATE.historial.push({ role: 'assistant', content: msg });
+
+      // Ofrecer reveal como siguiente paso
+      setTimeout(() => mostrarChips('reveal'), 400);
+
+    } else {
+      // ── Reveal — pedir email conversacionalmente
+      await pedirEmailEnChat();
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     THE REVEAL — EMAIL GATE CONVERSACIONAL
+     KOI pide el email dentro del chat, como parte natural
+     de la conversación. No hay modal, no hay formulario
+     externo. Es una pregunta de persona a persona.
+     ══════════════════════════════════════════════════════════ */
+  async function pedirEmailEnChat () {
+    const idioma = detectarIdioma();
+
+    // Mensaje de KOI pidiendo el email
+    const mensajesEmail = {
+      es: `Antes de mostrarte todo — ¿a dónde te envío tu rutina? No quiero que la pierdas si cierras la página.`,
+      en: `Before I show you everything — where should I send your routine? I don't want you to lose it if you close the page.`,
+      fr: `Avant de tout vous montrer — où dois-je vous envoyer votre routine ? Je ne veux pas que vous la perdiez si vous fermez la page.`,
+      pt: `Antes de mostrar tudo — para onde envio sua rotina? Não quero que você a perca se fechar a página.`,
+      de: `Bevor ich dir alles zeige — wohin soll ich deine Routine schicken? Ich möchte nicht, dass du sie verlierst, wenn du die Seite schließt.`,
+      it: `Prima di mostrarti tutto — dove ti mando la tua routine? Non voglio che tu la perda se chiudi la pagina.`,
+    };
+
+    const textEl = agregarMensaje('koi', '');
+    if (textEl) {
+      await escribirConEfecto(textEl, mensajesEmail[idioma] || mensajesEmail['en']);
+    }
+    KOI_STATE.historial.push({ role: 'assistant', content: mensajesEmail[idioma] || mensajesEmail['en'] });
+
+    // Inyectar el campo de email dentro del chat
+    setTimeout(() => inyectarEmailGate(), 300);
+
+    KOI_STATE.revealPhase = 'email';
+  }
+
+  function inyectarEmailGate () {
+    const container = document.getElementById('koi-messages');
+    if (!container || document.getElementById('koi-email-gate')) return;
+
+    const idioma = detectarIdioma();
+    const ui = {
+      es: { placeholder: 'tu@email.com', btn: 'Enviar →',     note: '🔒 Solo para enviarte tu rutina. Sin spam.' },
+      en: { placeholder: 'you@email.com', btn: 'Send →',      note: '🔒 Only to send you your routine. No spam.' },
+      fr: { placeholder: 'vous@email.com', btn: 'Envoyer →',  note: '🔒 Uniquement pour vous envoyer votre routine.' },
+      pt: { placeholder: 'voce@email.com', btn: 'Enviar →',   note: '🔒 Apenas para enviar sua rotina. Sem spam.' },
+      de: { placeholder: 'du@email.com', btn: 'Senden →',     note: '🔒 Nur für deine Routine. Kein Spam.' },
+      it: { placeholder: 'tu@email.com', btn: 'Invia →',      note: '🔒 Solo per inviarti la tua routine.' },
+    }[idioma] || { placeholder: 'you@email.com', btn: 'Send →', note: '🔒 No spam.' };
+
+    const gate = document.createElement('div');
+    gate.id        = 'koi-email-gate';
+    gate.className = 'koi-email-gate';
+    gate.innerHTML = `
+      <input
+        type="email"
+        id="koi-email-input"
+        class="koi-email-input"
+        placeholder="${ui.placeholder}"
+        autocomplete="email"
+        inputmode="email"
+      />
+      <button class="koi-email-btn" id="koi-email-btn">${ui.btn}</button>
+      <p class="koi-email-note">${ui.note}</p>
+    `;
+
+    container.appendChild(gate);
+    scrollAlFinal();
+
+    // Deshabilitar el input principal mientras el email gate está activo
+    setInputHabilitado(false);
+
+    // Foco automático al campo email en desktop
+    setTimeout(() => {
+      const inp = document.getElementById('koi-email-input');
+      if (inp && window.innerWidth > 768) inp.focus();
+    }, 200);
+
+    // Eventos
+    const inp = document.getElementById('koi-email-input');
+    const btn = document.getElementById('koi-email-btn');
+
+    if (btn) btn.addEventListener('click', confirmarEmail);
+    if (inp) inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); confirmarEmail(); }
+    });
+  }
+
+  async function confirmarEmail () {
+    const inp = document.getElementById('koi-email-input');
+    const gate = document.getElementById('koi-email-gate');
+    if (!inp || !gate) return;
+
+    const email = inp.value.trim();
+    const idioma = detectarIdioma();
+
+    // Validación simple
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      inp.classList.add('koi-email-input--error');
+      setTimeout(() => inp.classList.remove('koi-email-input--error'), 800);
+      return;
+    }
+
+    // Guardar email
+    KOI_STATE.emailCaptured = email;
+    KOI_STATE.revealPhase   = 'revealed';
+
+    // Quitar el gate con animación
+    gate.classList.add('koi-email-gate--confirmed');
+    setTimeout(() => { if (gate.parentNode) gate.remove(); }, 400);
+
+    // Mostrar email del usuario como mensaje en el chat
+    agregarMensaje('user', email);
+
+    // Re-habilitar input
+    setInputHabilitado(true);
+
+    // Guardar email en localStorage
+    try { localStorage.setItem('shatokb_email', email); } catch (_) {}
+
+    // Enviar email a Shopify /contact (silencioso, sin redirigir)
+    shatokbEnviarEmailShopify(email);
+
+    // KOI confirma y revela
+    await revelarRutinaConKOI(email);
+  }
+
+  function shatokbEnviarEmailShopify (email) {
+    // POST silencioso al endpoint de Shopify /contact
+    // Mismo mecanismo que el email gate original del quiz
+    const ctx  = KOI_STATE.contexto;
+    const body = new URLSearchParams({
+      'form_type':   'customer',
+      'utf8':        '✓',
+      'contact[email]': email,
+      'contact[body]':  `[KOI The Reveal] Perfil: ${ctx?.perfil?.nombre || ''} | Productos: ${(ctx?.productos || []).map(p => p.nombre).join(', ')}`,
+      'contact[tags]':  'koi-lead, quiz-completed',
+    });
+
+    fetch('/contact', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body:    body.toString(),
+    }).catch(() => {}); // silencioso — no interrumpir la experiencia
+  }
+
+  async function revelarRutinaConKOI (email) {
+    const idioma       = detectarIdioma();
+    const perfilNombre = KOI_STATE.contexto?.perfil?.nombre || '';
+
+    // Mensaje de KOI confirmando y revelando
+    const mensajesReveal = {
+      es: `Listo ✨ Tu rutina para **${perfilNombre}** está aquí — te la acabo de enviar también.\n\nCada producto tiene un botón ❓ — si quieres saber exactamente por qué elegí ese para ti, solo toca.`,
+      en: `Done ✨ Your **${perfilNombre}** routine is here — I've sent it to you as well.\n\nEach product has a ❓ button — if you want to know exactly why I chose that one for you, just tap it.`,
+      fr: `C'est fait ✨ Votre routine **${perfilNombre}** est là — je vous l'ai également envoyée.\n\nChaque produit a un bouton ❓ — si vous voulez savoir exactement pourquoi je l'ai choisi pour vous, appuyez dessus.`,
+      pt: `Pronto ✨ Sua rotina **${perfilNombre}** está aqui — também te enviei por email.\n\nCada produto tem um botão ❓ — se quiser saber exatamente por que escolhi esse para você, é só tocar.`,
+      de: `Fertig ✨ Deine **${perfilNombre}** Routine ist hier — ich habe sie dir auch geschickt.\n\nJedes Produkt hat einen ❓ Button — wenn du wissen möchtest, warum ich es genau für dich gewählt habe, tippe einfach darauf.`,
+      it: `Fatto ✨ La tua routine **${perfilNombre}** è qui — te l'ho inviata anche per email.\n\nOgni prodotto ha un pulsante ❓ — se vuoi sapere esattamente perché l'ho scelto per te, toccalo.`,
+    };
+
+    mostrarTyping();
+    await new Promise(r => setTimeout(r, 900)); // pausa dramática
+    ocultarTyping();
+
+    const msg    = mensajesReveal[idioma] || mensajesReveal['en'];
+    const textEl = agregarMensaje('koi', '', true);
+    if (textEl) await escribirConEfecto(textEl, msg);
+    KOI_STATE.historial.push({ role: 'assistant', content: msg });
+
+    // REVELAR PRODUCTOS — llamar a la función en quiz.js
+    if (typeof window.shatokbRevelarProductos === 'function') {
+      window.shatokbRevelarProductos();
+    }
+
+    // Chips de exploración de rutina después de la revelación
+    setTimeout(() => mostrarChips('bienvenida'), 800);
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -481,6 +741,16 @@ Keep it under 100 words. No filler. No emojis unless one adds meaning.`;
   }
 
   async function enviarDesdeChip (texto) {
+    // ── Chips de bifurcación "The Reveal" ─────────────────────
+    // Se interceptan aquí antes de ir al Worker — tienen lógica
+    // propia que no debe pasar por GPT-4o
+    if (KOI_STATE.revealPhase === 'insight' && esChipReveal(texto)) {
+      agregarMensaje('user', texto);
+      await manejarChipReveal(texto);
+      return;
+    }
+
+    // ── Chips normales → enviar al Worker como mensaje ────────
     const input = document.getElementById('koi-input');
     if (input) {
       input.value = texto;
