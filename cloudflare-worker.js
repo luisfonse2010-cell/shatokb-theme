@@ -19,6 +19,7 @@
  * ============================================================
  */
 
+/* ── Last deploy: 2026-06-13T00:12:29.964Z ──
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
 const KOI_SYSTEM_PROMPT = `
 You are KOI.
@@ -486,6 +487,87 @@ function buildSystemPrompt (context) {
 }
 
 /* ══════════════════════════════════════════════════════════
+   KLAVIYO — enviar evento con propiedades del reporte
+   ══════════════════════════════════════════════════════════ */
+async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
+  if (!klaviyoKey) return { ok: false, error: 'No Klaviyo key' };
+
+  const perfil     = reportData.perfil     || {};
+  const productos  = reportData.productosSeleccionados || [];
+  const rutinaAM   = reportData.rutinaAM   || [];
+  const rutinaPM   = reportData.rutinaPM   || [];
+  const total      = reportData.totalCarrito || 0;
+
+  // Payload para Klaviyo Track API v2
+  const payload = {
+    data: {
+      type: 'event',
+      attributes: {
+        metric: { data: { type: 'metric', attributes: { name: 'koi_skin_report_requested' } } },
+        profile: {
+          data: {
+            type: 'profile',
+            attributes: {
+              email,
+              properties: {
+                skin_profile_id:    perfil.id          || '',
+                skin_profile_name:  perfil.nombre      || '',
+                skin_profile_desc:  perfil.descripcion || '',
+                skin_tags:          (perfil.tags || []).join(', '),
+                rutina_am:          rutinaAM.join(' → '),
+                rutina_pm:          rutinaPM.join(' → '),
+                total_rutina:       total,
+                idioma:             reportData.idioma  || 'es',
+                report_url:         reportUrl,
+              }
+            }
+          }
+        },
+        properties: {
+          report_url:          reportUrl,
+          perfil_nombre:       perfil.nombre      || '',
+          perfil_id:           perfil.id          || '',
+          rutina_am:           rutinaAM.join(' → '),
+          rutina_pm:           rutinaPM.join(' → '),
+          total_carrito:       total,
+          productos_count:     productos.length,
+          productos_lista:     productos.map(p => p.nombre).join(', '),
+          idioma:              reportData.idioma  || 'es',
+        },
+      }
+    }
+  };
+
+  const res = await fetch('https://a.klaviyo.com/api/events/', {
+    method:  'POST',
+    headers: {
+      'Authorization':  `Klaviyo-API-Key ${klaviyoKey}`,
+      'Content-Type':   'application/json',
+      'revision':       '2024-10-15',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    console.error('[Klaviyo] Error:', res.status, errText);
+    return { ok: false, status: res.status, error: errText };
+  }
+
+  return { ok: true, status: res.status };
+}
+
+/* ══════════════════════════════════════════════════════════
+   TOKEN — genera un UUID v4 simple
+   ══════════════════════════════════════════════════════════ */
+function generateToken () {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════
    MAIN HANDLER
    ══════════════════════════════════════════════════════════ */
 export default {
@@ -496,8 +578,63 @@ export default {
       return new Response(null, { headers: CORS_HEADERS });
     }
 
-    // Only POST to /chat
     const url = new URL(request.url);
+
+    // ── Endpoint /report — guardar reporte + enviar a Klaviyo ──
+    if (request.method === 'POST' && url.pathname === '/report') {
+      let body;
+      try { body = await request.json(); } catch {
+        return new Response(JSON.stringify({ error: 'Invalid body' }), { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
+      }
+
+      const { email, reportData, siteUrl, tableApiUrl, tableApiKey } = body;
+
+      if (!email || !reportData) {
+        return new Response(JSON.stringify({ error: 'Missing email or reportData' }), { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
+      }
+
+      // 1. Generar token único
+      const token     = generateToken();
+      const reportUrl = `${siteUrl || 'https://shatokb.com'}/skin-report.html?token=${token}`;
+
+      // Enriquecer reportData con la URL final
+      reportData.reportUrl  = reportUrl;
+      reportData.token      = token;
+
+      // 2. Guardar en tabla API (paralelo con Klaviyo para no bloquear)
+      const apiBase = tableApiUrl || 'https://shatokb.com';
+      const savePromise = fetch(`${apiBase}/tables/skin_reports`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token,
+          email,
+          perfil_id:     reportData.perfil?.id          || '',
+          perfil_nombre: reportData.perfil?.nombre       || '',
+          report_data:   JSON.stringify(reportData),
+          klaviyo_sent:  false,
+          idioma:        reportData.idioma               || 'es',
+          total_carrito: reportData.totalCarrito         || 0,
+        }),
+      }).catch(e => console.error('[Report] Save error:', e.message));
+
+      // 3. Enviar evento a Klaviyo
+      const klaviyoKey = env.KLAVIYO_API_KEY || '';
+      let klaviyoResult = { ok: false, error: 'No API key configured' };
+      if (klaviyoKey) {
+        klaviyoResult = await enviarEventoKlaviyo(email, reportData, reportUrl, klaviyoKey);
+      }
+
+      // Esperar a que se guarde (no bloquea la respuesta al usuario)
+      await savePromise;
+
+      return new Response(
+        JSON.stringify({ ok: true, token, reportUrl, klaviyo: klaviyoResult }),
+        { status: 200, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Only POST to /chat
     if (request.method !== 'POST' || url.pathname !== '/chat') {
       return new Response(
         JSON.stringify({ error: 'Invalid endpoint' }),
