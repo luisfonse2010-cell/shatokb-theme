@@ -18,11 +18,10 @@ jobs:
         run: npm install -g wrangler
       - name: Crear wrangler.toml
         run: |
-          cat > wrangler.toml << 'EOF'
-          name = "koi-proxy"
-          main = "cloudflare-worker.js"
-          compatibility_date = "2024-01-01"
-          EOF
+          printf '[build]\n' > wrangler.toml
+          printf 'name = "koi-proxy"\n' >> wrangler.toml
+          printf 'main = "cloudflare-worker.js"\n' >> wrangler.toml
+          printf 'compatibility_date = "2024-01-01"\n' >> wrangler.toml
       - name: Deploy a Cloudflare
         run: wrangler deploy
         env:
