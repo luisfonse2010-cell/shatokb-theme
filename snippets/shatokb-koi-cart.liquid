@@ -1,0 +1,30 @@
+{% comment %}
+  ============================================================
+  SHATOKB · KOI Cart Widget — Snippet
+  Archivo: snippets/shatokb-koi-cart.liquid
+  Version: 1.0
+
+  Incluir en: layout/theme.liquid (antes del </body>)
+  Solo carga en la página del carrito (/cart)
+
+  Uso:
+    {% render 'shatokb-koi-cart' %}
+  ============================================================
+{% endcomment %}
+
+{% if template.name == 'cart' %}
+
+  {{ 'shatokb-koi-cart.css' | asset_url | stylesheet_tag }}
+
+  <script>
+    // Cargar el widget después de que el DOM esté listo
+    (function() {
+      var script = document.createElement('script');
+      script.src = {{ 'shatokb-koi-cart.js' | asset_url | json }};
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  </script>
+
+{% endif %}
