@@ -1516,14 +1516,38 @@ async function shatokbMostrarResultado() {
     rutinaPM: pasosProd
       .filter(p => p.momento === 'pm' || p.momento === 'ambos')
       .map(p => p.nombre),
+    // Todos los productos de cada paso (no solo el primero) con razón de selección
     productos: pasosProd.flatMap(paso =>
-      paso.opciones.slice(0, 1).map(prod => ({
-        nombre:  prod.nombre,
-        precio:  prod.precio,
-        paso:    paso.nombre,
-        id:      prod.id,
+      paso.opciones.map((prod, idx) => ({
+        nombre:   prod.nombre,
+        precio:   prod.precio,
+        paso:     paso.nombre || paso.paso || '',
+        id:       prod.id,
+        handle:   prod.handle || prod.id,
+        momento:  paso.momento || 'ambos',
+        // Razón del paso (por qué este paso es importante para este perfil)
+        razon:    paso.por_que || prod.desc || '',
+        // Descripción del producto
+        descripcion: prod.desc || '',
+        // Indica si este es el producto principal (más recomendado) de este paso
+        principal: idx === 0,
       }))
     ),
+    // Respuestas completas del quiz — KOI las usa para entender
+    // el análisis de piel y tener contexto del diagnóstico
+    respuestas: {
+      tipo_piel:    shatokbState.respuestas.tipo_piel    || '',
+      sensibilidad: shatokbState.respuestas.sensibilidad || '',
+      preocupacion: shatokbState.respuestas.preocupacion || '',
+      rutina:       shatokbState.respuestas.rutina       || '',
+      presupuesto:  shatokbState.respuestas.presupuesto  || '',
+      experiencia:  shatokbState.respuestas.experiencia  || '',
+      // Incluir cualquier otra respuesta disponible
+      ...Object.fromEntries(
+        Object.entries(shatokbState.respuestas || {})
+          .filter(([k]) => !['tipo_piel','sensibilidad','preocupacion','rutina','presupuesto','experiencia'].includes(k))
+      ),
+    },
     presupuesto:   shatokbState.respuestas.presupuesto  || '',
     experiencia:   shatokbState.respuestas.experiencia  || '',
     totalCarrito:  Object.values(shatokbState.selectedProducts).reduce((t, id) => {
