@@ -94,36 +94,51 @@
   function crearWidget() {
     if (document.getElementById('koi-cart-widget')) return;
 
-    const idioma = detectarIdioma();
-    const ctx    = KOI_CART_STATE.contexto;
-    const perfil = ctx ? (ctx.perfil_nombre || ctx.perfilNombre || '') : '';
+    const idioma        = detectarIdioma();
+    const ctx           = KOI_CART_STATE.contexto;
+    const perfil        = ctx ? (ctx.perfil_nombre || ctx.perfilNombre || ctx.perfil?.nombre || '') : '';
+    const tieneHistorial = KOI_CART_STATE.historialPrevio && KOI_CART_STATE.historialPrevio.length > 0;
 
+    // ── 3 niveles de greeting:
+    // 1. historial previo → "Bienvenida de vuelta" (vino del quiz KOI)
+    // 2. perfil sin historial → "Vi tu rutina para X"
+    // 3. sin perfil ni historial → genérico
     const i18n = {
       es: {
         badge:       'KOI · Experta K-Beauty',
-        greeting:    perfil
-          ? `Hola 🌸 Vi que tienes tu rutina para **${perfil}** lista — $${KOI_CART_STATE.cartTotal} en productos seleccionados por mí. ¿Tienes alguna duda antes de hacer checkout?`
-          : `Hola 🌸 Veo que estás a punto de completar tu compra. Soy KOI — si tienes alguna pregunta sobre los productos o cómo usarlos juntos, estoy aquí.`,
+        greeting:    tieneHistorial
+          ? `Bienvenida de vuelta 🌸 Casi lista. Tienes $${KOI_CART_STATE.cartTotal} en productos que seleccioné para tu piel${perfil ? ' de **' + perfil + '**' : ''}. ¿Alguna duda de última hora antes del checkout?`
+          : perfil
+            ? `Hola 🌸 Vi que tienes tu rutina para **${perfil}** lista — $${KOI_CART_STATE.cartTotal} en productos seleccionados por mí. ¿Tienes alguna duda antes de hacer checkout?`
+            : `Hola 🌸 Veo que estás a punto de completar tu compra. Soy KOI — si tienes alguna pregunta sobre los productos o cómo usarlos juntos, estoy aquí.`,
         placeholder: 'Escribe tu pregunta...',
-        chips: ['¿Cómo los aplico juntos?', '¿Son compatibles?', '¿Cuándo veré resultados?', '¿Cuál es el más importante?'],
+        chips: tieneHistorial
+          ? ['¿Cómo los aplico juntos?', '¿Son compatibles?', '¿Cuándo veré resultados?', 'Recuérdame el orden']
+          : ['¿Cómo los aplico juntos?', '¿Son compatibles?', '¿Cuándo veré resultados?', '¿Cuál es el más importante?'],
         minimize: 'Minimizar',
         poweredBy: 'KOI · IA K-Beauty · shatokb.com',
       },
       en: {
         badge:       'KOI · K-Beauty Expert',
-        greeting:    perfil
-          ? `Hi 🌸 I see your routine for **${perfil}** is ready — $${KOI_CART_STATE.cartTotal} in products I selected for you. Any questions before checkout?`
-          : `Hi 🌸 I see you're about to complete your purchase. I'm KOI — if you have any questions about the products or how to use them together, I'm here.`,
+        greeting:    tieneHistorial
+          ? `Welcome back 🌸 Almost there. You have $${KOI_CART_STATE.cartTotal} in products I picked for your${perfil ? ' **' + perfil + '**' : ''} skin. Any last questions before checkout?`
+          : perfil
+            ? `Hi 🌸 I see your routine for **${perfil}** is ready — $${KOI_CART_STATE.cartTotal} in products I selected for you. Any questions before checkout?`
+            : `Hi 🌸 I see you're about to complete your purchase. I'm KOI — if you have any questions about the products or how to use them together, I'm here.`,
         placeholder: 'Ask me anything...',
-        chips: ['How do I layer these?', 'Are these compatible?', 'When will I see results?', 'Which one matters most?'],
+        chips: tieneHistorial
+          ? ['How do I layer these?', 'Are these compatible?', 'When will I see results?', 'Remind me the order']
+          : ['How do I layer these?', 'Are these compatible?', 'When will I see results?', 'Which one matters most?'],
         minimize: 'Minimize',
         poweredBy: 'KOI · K-Beauty AI · shatokb.com',
       },
       fr: {
         badge:       'KOI · Experte K-Beauty',
-        greeting:    perfil
-          ? `Bonjour 🌸 Je vois que votre routine pour **${perfil}** est prête — $${KOI_CART_STATE.cartTotal} en produits. Des questions avant de passer commande ?`
-          : `Bonjour 🌸 Je vois que vous êtes sur le point de finaliser votre achat. Je suis KOI — si vous avez des questions sur les produits, je suis là.`,
+        greeting:    tieneHistorial
+          ? `Bienvenue de retour 🌸 Vous y êtes presque. Vous avez $${KOI_CART_STATE.cartTotal} en produits que j'ai sélectionnés pour votre peau${perfil ? ' **' + perfil + '**' : ''}. Des questions de dernière minute ?`
+          : perfil
+            ? `Bonjour 🌸 Je vois que votre routine pour **${perfil}** est prête — $${KOI_CART_STATE.cartTotal} en produits. Des questions avant de passer commande ?`
+            : `Bonjour 🌸 Je vois que vous êtes sur le point de finaliser votre achat. Je suis KOI — si vous avez des questions sur les produits, je suis là.`,
         placeholder: 'Posez votre question...',
         chips: ['Comment les superposer ?', 'Sont-ils compatibles ?', 'Quand verrai-je des résultats ?', 'Lequel est le plus important ?'],
         minimize: 'Réduire',
@@ -131,9 +146,11 @@
       },
       pt: {
         badge:       'KOI · Especialista K-Beauty',
-        greeting:    perfil
-          ? `Olá 🌸 Vejo que sua rotina para **${perfil}** está pronta — $${KOI_CART_STATE.cartTotal} em produtos. Alguma dúvida antes de finalizar?`
-          : `Olá 🌸 Vejo que você está prestes a completar sua compra. Sou KOI — se tiver dúvidas sobre os produtos, estou aqui.`,
+        greeting:    tieneHistorial
+          ? `Bem-vinda de volta 🌸 Quase lá. Você tem $${KOI_CART_STATE.cartTotal} em produtos que escolhi para sua pele${perfil ? ' **' + perfil + '**' : ''}. Alguma dúvida de última hora?`
+          : perfil
+            ? `Olá 🌸 Vejo que sua rotina para **${perfil}** está pronta — $${KOI_CART_STATE.cartTotal} em produtos. Alguma dúvida antes de finalizar?`
+            : `Olá 🌸 Vejo que você está prestes a completar sua compra. Sou KOI — se tiver dúvidas sobre os produtos, estou aqui.`,
         placeholder: 'Faça sua pergunta...',
         chips: ['Como aplicar juntos?', 'São compatíveis?', 'Quando verei resultados?', 'Qual é o mais importante?'],
         minimize: 'Minimizar',
@@ -141,9 +158,11 @@
       },
       de: {
         badge:       'KOI · K-Beauty Expertin',
-        greeting:    perfil
-          ? `Hallo 🌸 Ich sehe, deine Routine für **${perfil}** ist bereit — $${KOI_CART_STATE.cartTotal} in Produkten. Fragen vor dem Checkout?`
-          : `Hallo 🌸 Ich sehe, du bist kurz vor dem Kauf. Ich bin KOI — bei Fragen zu den Produkten helfe ich gerne.`,
+        greeting:    tieneHistorial
+          ? `Willkommen zurück 🌸 Fast geschafft. Du hast $${KOI_CART_STATE.cartTotal} in Produkten, die ich für deine Haut${perfil ? ' **' + perfil + '**' : ''} ausgewählt habe. Letzte Fragen vor dem Checkout?`
+          : perfil
+            ? `Hallo 🌸 Ich sehe, deine Routine für **${perfil}** ist bereit — $${KOI_CART_STATE.cartTotal} in Produkten. Fragen vor dem Checkout?`
+            : `Hallo 🌸 Ich sehe, du bist kurz vor dem Kauf. Ich bin KOI — bei Fragen zu den Produkten helfe ich gerne.`,
         placeholder: 'Frage stellen...',
         chips: ['Wie schichte ich sie?', 'Sind sie kompatibel?', 'Wann sehe ich Ergebnisse?', 'Welches ist am wichtigsten?'],
         minimize: 'Minimieren',
@@ -151,9 +170,11 @@
       },
       it: {
         badge:       'KOI · Esperta K-Beauty',
-        greeting:    perfil
-          ? `Ciao 🌸 Vedo che la tua routine per **${perfil}** è pronta — $${KOI_CART_STATE.cartTotal} in prodotti. Domande prima del checkout?`
-          : `Ciao 🌸 Vedo che stai per completare il tuo acquisto. Sono KOI — se hai domande sui prodotti, sono qui.`,
+        greeting:    tieneHistorial
+          ? `Bentornata 🌸 Ci siamo quasi. Hai $${KOI_CART_STATE.cartTotal} in prodotti che ho scelto per la tua pelle${perfil ? ' **' + perfil + '**' : ''}. Ultime domande prima del checkout?`
+          : perfil
+            ? `Ciao 🌸 Vedo che la tua routine per **${perfil}** è pronta — $${KOI_CART_STATE.cartTotal} in prodotti. Domande prima del checkout?`
+            : `Ciao 🌸 Vedo che stai per completare il tuo acquisto. Sono KOI — se hai domande sui prodotti, sono qui.`,
         placeholder: 'Scrivi la tua domanda...',
         chips: ['Come li applico insieme?', 'Sono compatibili?', 'Quando vedrò risultati?', 'Qual è il più importante?'],
         minimize: 'Riduci',
