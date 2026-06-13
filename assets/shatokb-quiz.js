@@ -1800,9 +1800,25 @@ async function shatokbAddAllToCart() {
     return;
   }
 
+  // ── Interceptar con KOI para pedir email antes del carrito ──
+  if (typeof window.shatokbInterceptarCarrito === 'function') {
+    btn.disabled    = true;
+    btn.textContent = '⏳ Un momento...';
+    window.shatokbInterceptarCarrito(function () {
+      btn.disabled    = true;
+      btn.textContent = '⏳ Adding to cart...';
+      shatokbEjecutarAddToCart(handles, btn);
+    });
+    return;
+  }
+
   btn.disabled    = true;
   btn.textContent = '⏳ Adding to cart...';
 
+  shatokbEjecutarAddToCart(handles, btn);
+}
+
+async function shatokbEjecutarAddToCart(handles, btn) {
   try {
     const variantRequests = handles.map(handle =>
       fetch(`/products/${handle}.js`)
@@ -1833,7 +1849,7 @@ async function shatokbAddAllToCart() {
   } catch (err) {
     console.error('[SHATOKB] addAllToCart error:', err);
     btn.disabled    = false;
-    btn.textContent = '🛒 Add All to Cart →';
+    btn.textContent = '🛒 Add my full routine to cart';
     let errEl = document.getElementById('stk-cart-error');
     if (!errEl) {
       errEl = document.createElement('p');
