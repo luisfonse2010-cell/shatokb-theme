@@ -456,10 +456,19 @@
   }
 
   /* ── Entry point ── */
+  // Ejecutar siempre que el DOM esté disponible
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
+    // DOM ya listo (script cargado con async/defer o al final del body)
     init();
   }
+
+  // Fallback extra: si por algún motivo no corrió, intentar en window.load
+  window.addEventListener('load', function() {
+    if (!document.getElementById('koi-cart-widget')) {
+      init();
+    }
+  });
 
 })();
