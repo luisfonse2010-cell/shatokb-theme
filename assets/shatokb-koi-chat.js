@@ -138,6 +138,15 @@
   };
 
   /* ── Obtener contexto del localStorage como fallback ────── */
+  /* ── Guardar historial en localStorage para KOI Cart ── */
+  function guardarHistorialLocal () {
+    try {
+      // Guardar solo los últimos 20 mensajes para no sobrecargar
+      const slice = KOI_STATE.historial.slice(-20);
+      localStorage.setItem('shatokb_historial', JSON.stringify(slice));
+    } catch(_) {}
+  }
+
   function obtenerContextoLocal () {
     try {
       const raw = localStorage.getItem('shatokb_resultado');
@@ -828,6 +837,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     const textEl = agregarMensaje('koi', '', true);
     if (textEl) await escribirConEfecto(textEl, msg);
     KOI_STATE.historial.push({ role: 'assistant', content: msg });
+    guardarHistorialLocal();
 
     // REVELAR PRODUCTOS — llamar a la función en quiz.js
     if (typeof window.shatokbRevelarProductos === 'function') {
@@ -860,6 +870,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
 
     // Añadir al historial
     KOI_STATE.historial.push({ role: 'user', content: texto });
+    guardarHistorialLocal();
 
     // Deshabilitar input mientras KOI responde
     setInputHabilitado(false);
@@ -1000,6 +1011,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
 
       // Guardar en historial
       KOI_STATE.historial.push({ role: 'assistant', content: respuesta });
+      guardarHistorialLocal();
 
       // Mostrar chips de objeciones si el historial es largo
       if (KOI_STATE.msgCount >= 4) {
