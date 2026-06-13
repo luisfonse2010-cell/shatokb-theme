@@ -739,6 +739,26 @@
   line-height: 1.4 !important;
 }
 
+/* ── Botón skip — ir directo al carrito sin email ───────── */
+.koi-email-skip {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.30);
+  font-size: 11px;
+  cursor: pointer;
+  text-align: center;
+  margin: 6px auto 0;
+  display: block;
+  padding: 4px 8px;
+  transition: color 0.2s;
+  font-family: var(--koi-font-body);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.koi-email-skip:hover {
+  color: rgba(255, 255, 255, 0.55);
+}
+
 /* ── Estado confirmado (fade-out antes de eliminar) ─────── */
 .koi-email-gate--confirmed {
   opacity: 0;
