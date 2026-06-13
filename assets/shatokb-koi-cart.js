@@ -388,6 +388,70 @@
     if (container) container.scrollTop = container.scrollHeight;
   }
 
+  /* ══════════════════════════════════════════════════════════
+     CONSTRUIR CONTEXTO PARA EL WORKER
+     Convierte shatokb_resultado (estructura del quiz) a las
+     claves exactas que espera buildSystemPrompt() en el Worker:
+     perfil_nombre, perfil_descripcion, caracteristicas,
+     rutina_am, rutina_pm, productos (string), presupuesto,
+     experiencia, total_carrito.
+     ══════════════════════════════════════════════════════════ */
+  function construirContextoParaWorker() {
+    const ctx = KOI_CART_STATE.contexto || {};
+
+    // ── Mismas claves exactas que construirContexto() en shatokb-koi-chat.js
+    // El Worker (buildSystemPrompt) espera exactamente estos campos.
+
+    // Productos de la rutina del quiz — solo los principales, con razón del paso
+    const todosProd = ctx.productos || [];
+    const prodPrincipales = todosProd.filter(p => p.principal !== false);
+    const prodParaContexto = prodPrincipales.length > 0 ? prodPrincipales : todosProd;
+
+    const productosQuizStr = prodParaContexto
+      .map(p => `- ${p.nombre} ($${p.precio || '?'}) — Paso: ${p.paso || 'N/A'}${p.razon ? ' | ' + p.razon : ''}`)
+      .join('\n');
+
+    // Items que están en el carrito AHORA — para dar contexto específico
+    const productosCarritoStr = KOI_CART_STATE.cartItems
+      .map(i => `- ${i.nombre}${i.variante && i.variante !== 'Default Title' ? ' (' + i.variante + ')' : ''} x${i.qty} — $${i.precio}`)
+      .join('\n');
+
+    // Combinar — primero los de la rutina, luego los del carrito actual
+    let productosStr = productosQuizStr;
+    if (productosCarritoStr) {
+      productosStr += productosStr
+        ? `\n\n[Actualmente en el carrito]:\n${productosCarritoStr}`
+        : productosCarritoStr;
+    }
+
+    // Rutinas como en el quiz
+    const rutinaAM = (ctx.rutinaAM || []).join(' → ');
+    const rutinaPM = (ctx.rutinaPM || []).join(' → ');
+
+    const tieneHistorial = KOI_CART_STATE.historialPrevio.length > 0;
+
+    return {
+      // ── Claves exactas del Worker (buildSystemPrompt) ──
+      perfil_id:           ctx.perfil?.id          || '',
+      perfil_nombre:       ctx.perfil?.nombre       || '',
+      perfil_descripcion:  ctx.perfil?.descripcion  || '',
+      caracteristicas:     (ctx.perfil?.tags || []).join(', '),
+      rutina_am:           rutinaAM || 'No especificada',
+      rutina_pm:           rutinaPM || 'No especificada',
+      productos:           productosStr  || 'No disponibles',
+      presupuesto:         ctx.presupuesto          || '',
+      experiencia:         ctx.experiencia          || '',
+      total_carrito:       KOI_CART_STATE.cartTotal || ctx.totalCarrito || 0,
+
+      // ── Campos extra para el contexto del carrito ──
+      pagina_actual:             'cart',
+      tiene_historial_previo:    tieneHistorial,
+      continuacion_conversacion: tieneHistorial
+        ? 'IMPORTANTE: El usuario ya tuvo una conversación completa con KOI durante el quiz. Este es el MISMO chat continuando esa conversación. Tienes acceso al historial completo de mensajes. Habla con familiaridad y continuidad — no como si fuera la primera vez que la conoces.'
+        : '',
+    };
+  }
+
   /* ── Enviar mensaje al Worker ── */
   async function enviarMensaje() {
     const input = document.getElementById('koi-cart-input');
@@ -405,16 +469,10 @@
     if (send) send.disabled = true;
     mostrarTyping();
 
-    // Construir contexto enriquecido con carrito
-    const ctx = KOI_CART_STATE.contexto || {};
-    const contextoEnriquecido = {
-      ...ctx,
-      carrito_items:  KOI_CART_STATE.cartItems.map(i => `${i.nombre} x${i.qty} ($${i.precio})`).join(', '),
-      total_carrito:  KOI_CART_STATE.cartTotal,
-      pagina_actual:  'cart',
-      // Señal al Worker de que tiene memoria de la conversación previa
-      tiene_historial_previo: KOI_CART_STATE.historialPrevio.length > 0,
-    };
+    // Construir contexto con las mismas claves que espera el Worker
+    // El Worker usa: perfil_nombre, perfil_descripcion, caracteristicas,
+    // rutina_am, rutina_pm, productos (string), presupuesto, experiencia, total_carrito
+    const contextoEnriquecido = construirContextoParaWorker();
 
     try {
       const res = await fetch(KOI_CART_CONFIG.workerUrl, {
@@ -458,6 +516,102 @@
   }
 
   /* ══════════════════════════════════════════════════════════
+     MENSAJE-PUENTE DE CONTEXTO
+     Se inyecta como primer mensaje del historial del cart.
+     Resume TODO lo que KOI sabe de la usuaria: perfil, análisis,
+     rutina completa, productos con sus razones, carrito actual.
+     Garantiza que aunque el historial real sea largo y se trunque,
+     KOI SIEMPRE entra al carrito sabiendo todo.
+     ══════════════════════════════════════════════════════════ */
+  function generarMensajePuente() {
+    const ctx = KOI_CART_STATE.contexto;
+    if (!ctx) return null;
+
+    const perfil    = ctx.perfil    || {};
+    const productos = ctx.productos || [];
+    const rutinaAM  = ctx.rutinaAM  || [];
+    const rutinaPM  = ctx.rutinaPM  || [];
+
+    // Productos con toda la información disponible
+    // Solo los productos principales (idx=0) de cada paso para no sobrecargar el contexto
+    const productosPrincipales = productos.filter(p => p.principal !== false);
+    const productosParaPuente  = productosPrincipales.length > 0 ? productosPrincipales : productos;
+
+    const productosDetalle = productosParaPuente.map(p => {
+      let linea = `  • [${p.paso || 'Paso'}] ${p.nombre} — $${p.precio || '?'}`;
+      if (p.momento && p.momento !== 'ambos') linea += ` (${p.momento === 'am' ? 'Mañana' : 'Noche'})`;
+      if (p.razon)       linea += `\n    → Por qué: ${p.razon}`;
+      if (p.descripcion && p.descripcion !== p.razon) linea += `\n    → Producto: ${p.descripcion}`;
+      return linea;
+    }).join('\n');
+
+    // Carrito actual
+    const carritoDetalle = KOI_CART_STATE.cartItems.map(i =>
+      `  • ${i.nombre}${i.variante && i.variante !== 'Default Title' ? ' (' + i.variante + ')' : ''} x${i.qty} — $${i.precio}`
+    ).join('\n');
+
+    // Respuestas del quiz — diagnóstico completo de la piel
+    const respuestasRaw = ctx.respuestas || {};
+    const labelRespuestas = {
+      tipo_piel:    'Tipo de piel',
+      sensibilidad: 'Sensibilidad',
+      preocupacion: 'Preocupación principal',
+      rutina:       'Rutina actual',
+      presupuesto:  'Presupuesto',
+      experiencia:  'Experiencia K-Beauty',
+    };
+    const resumenRespuestas = Object.keys(respuestasRaw).length > 0
+      ? '\n═══ DIAGNÓSTICO — RESPUESTAS DEL QUIZ ═══\n' +
+        Object.entries(respuestasRaw)
+          .filter(([, v]) => v && v !== '')
+          .map(([k, v]) => `  ${labelRespuestas[k] || k}: ${Array.isArray(v) ? v.join(', ') : v}`)
+          .join('\n')
+      : '';
+
+    const lines = [
+      `[MEMORIA DE CONVERSACIÓN — CONTINUACIÓN DEL QUIZ KOI]`,
+      ``,
+      `Esta usuaria ya habló conmigo (KOI) durante el quiz en shatokb.com.`,
+      `Respondió mis preguntas, analizamos su piel juntas, y yo le diseñé`,
+      `una rutina K-Beauty personalizada. Ahora está en la página del carrito`,
+      `con sus productos seleccionados. Este es el MISMO chat — no empezamos de cero.`,
+      ``,
+      `═══ PERFIL DE PIEL ASIGNADO ═══`,
+      `Perfil: ${perfil.nombre || 'No especificado'}`,
+      perfil.descripcion ? `Descripción: ${perfil.descripcion}` : '',
+      `Características: ${(perfil.tags || []).join(', ') || 'No especificadas'}`,
+      `Presupuesto declarado: ${ctx.presupuesto || 'No especificado'}`,
+      `Experiencia K-Beauty: ${ctx.experiencia || 'No especificada'}`,
+      resumenRespuestas,
+      ``,
+      `═══ RUTINA K-BEAUTY DISEÑADA ═══`,
+      `Mañana (AM): ${rutinaAM.join(' → ') || 'No especificada'}`,
+      `Noche (PM):  ${rutinaPM.join(' → ') || 'No especificada'}`,
+      ``,
+      `═══ PRODUCTOS RECOMENDADOS EN LA RUTINA ═══`,
+      productosDetalle || '  (no disponibles)',
+      ``,
+      `═══ LO QUE TIENE EN EL CARRITO AHORA ($${KOI_CART_STATE.cartTotal}) ═══`,
+      carritoDetalle || '  (vacío)',
+      ``,
+      `INSTRUCCIÓN CRÍTICA:`,
+      `Conoces a esta persona — analizaste su piel, escuchaste sus respuestas,`,
+      `y diseñaste esta rutina específicamente para ella.`,
+      `• Si pregunta por un producto → sabes exactamente cuál es, por qué lo elegiste y cómo usarlo`,
+      `• Si pregunta por el orden → tienes la rutina AM/PM completa arriba`,
+      `• Si pregunta por ingredientes → los conoces y puedes explicar por qué son ideales para su perfil`,
+      `• NUNCA digas "no tengo acceso a los productos" — los tienes todos listados arriba`,
+      `• NUNCA digas "no recuerdo nuestra conversación" — la tienes en tu historial`,
+      `• Habla con familiaridad, como si la conocieras desde el quiz`,
+    ].filter(l => l !== '');
+
+    return {
+      role:    'assistant',
+      content: lines.filter(l => l !== undefined).join('\n').trim(),
+    };
+  }
+
+  /* ══════════════════════════════════════════════════════════
      INICIALIZACIÓN
      ══════════════════════════════════════════════════════════ */
   async function init() {
@@ -477,8 +631,25 @@
     // Guardar contexto e historial en el estado
     KOI_CART_STATE.contexto        = ctx;
     KOI_CART_STATE.historialPrevio = historialPrevio;
-    // El cart arranca con la memoria completa de la conversación del quiz
-    KOI_CART_STATE.historial       = [...historialPrevio];
+
+    // ── Estrategia de 2 capas para garantizar continuidad total ──
+    //
+    // CAPA 1 — Mensaje-puente (SIEMPRE primero, nunca se trunca)
+    //   Sintetiza perfil, rutina, productos y razones. El Worker
+    //   lo recibe aunque haya 100 mensajes de historial — porque
+    //   siempre está en la posición [0] antes del slice(-N).
+    //
+    // CAPA 2 — Historial real del quiz (últimos mensajes)
+    //   Los mensajes reales dan el tono y la familiaridad.
+    //   Se mantienen los últimos 18 para no exceder el límite del Worker.
+
+    const mensajePuente = ctx ? generarMensajePuente() : null;
+    const historialReal  = historialPrevio.slice(-18);
+
+    KOI_CART_STATE.historial = [
+      ...(mensajePuente ? [mensajePuente] : []),
+      ...historialReal,
+    ];
 
     // Crear widget
     crearWidget();
