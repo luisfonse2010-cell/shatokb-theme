@@ -26,14 +26,15 @@
 
   /* ── Estado ── */
   const KOI_CART_STATE = {
-    historial:  [],
-    contexto:   null,
-    cartItems:  [],
-    cartTotal:  0,
-    isTyping:   false,
-    isOpen:     false,
-    isReady:    false,
-    msgCount:   0,
+    historial:      [],
+    historialPrevio: [],
+    contexto:       null,
+    cartItems:      [],
+    cartTotal:      0,
+    isTyping:       false,
+    isOpen:         false,
+    isReady:        false,
+    msgCount:       0,
   };
 
   /* ── Solo correr en /cart ── */
@@ -379,11 +380,11 @@
     const ctx = KOI_CART_STATE.contexto || {};
     const contextoEnriquecido = {
       ...ctx,
-      // Añadir info del carrito actual
       carrito_items:  KOI_CART_STATE.cartItems.map(i => `${i.nombre} x${i.qty} ($${i.precio})`).join(', '),
       total_carrito:  KOI_CART_STATE.cartTotal,
-      // Señal de que estamos en el carrito
       pagina_actual:  'cart',
+      // Señal al Worker de que tiene memoria de la conversación previa
+      tiene_historial_previo: KOI_CART_STATE.historialPrevio.length > 0,
     };
 
     try {
@@ -434,8 +435,9 @@
     // Solo en /cart
     if (!esCartPage()) return;
 
-    // Necesita contexto del quiz
-    const ctx = obtenerContexto();
+    // Obtener contexto del quiz e historial previo de la conversación
+    const ctx             = obtenerContexto();
+    const historialPrevio = obtenerHistorialPrevio();
 
     // Obtener carrito
     await obtenerCarrito();
@@ -443,8 +445,11 @@
     // Si no hay items en el carrito, no mostrar
     if (KOI_CART_STATE.cartItems.length === 0) return;
 
-    // Guardar contexto (puede ser null si no vino del quiz)
-    KOI_CART_STATE.contexto = ctx;
+    // Guardar contexto e historial en el estado
+    KOI_CART_STATE.contexto        = ctx;
+    KOI_CART_STATE.historialPrevio = historialPrevio;
+    // El cart arranca con la memoria completa de la conversación del quiz
+    KOI_CART_STATE.historial       = [...historialPrevio];
 
     // Crear widget
     crearWidget();
