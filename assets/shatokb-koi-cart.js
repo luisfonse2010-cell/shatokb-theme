@@ -51,6 +51,14 @@
     } catch(e) { return null; }
   }
 
+  /* ── Obtener historial previo de conversación con KOI ── */
+  function obtenerHistorialPrevio() {
+    try {
+      const raw = localStorage.getItem('shatokb_historial');
+      return raw ? JSON.parse(raw) : [];
+    } catch(e) { return []; }
+  }
+
   /* ── Obtener items del carrito desde Shopify ── */
   async function obtenerCarrito() {
     try {
