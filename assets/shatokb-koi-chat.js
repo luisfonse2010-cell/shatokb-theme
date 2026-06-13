@@ -19,7 +19,15 @@
   /* ── Configuración ──────────────────────────────────────── */
   const KOI_CONFIG = {
     // Cloudflare Worker URL — secured proxy to OpenAI
-    workerUrl: 'https://koi-proxy.luisfonse2010.workers.dev/chat',
+    workerUrl:  'https://koi-proxy.luisfonse2010.workers.dev/chat',
+    reportUrl:  'https://koi-proxy.luisfonse2010.workers.dev/report',
+
+    // URL base del sitio (para construir el link del reporte)
+    siteUrl:    'https://shatokb.com',
+
+    // URL de la tabla API (para guardar el reporte)
+    // ⚠️ Reemplazar con la URL real de la tabla API del proyecto
+    tableApiUrl: window.location.origin,
 
     // Límite de mensajes en el historial (memoria de conversación)
     maxHistory: 20,
@@ -735,6 +743,69 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     }).catch(() => {}); // silencioso — no interrumpir la experiencia
   }
 
+  /* ══════════════════════════════════════════════════════════
+     SKIN REPORT — Guarda el reporte en la tabla API y
+     dispara el evento en Klaviyo via el Worker.
+     Se llama silenciosamente al capturar el email en el
+     interceptor del carrito.
+     ══════════════════════════════════════════════════════════ */
+  async function enviarSkinReport (email) {
+    const ctx    = KOI_STATE.contexto;
+    if (!ctx || !email) return;
+
+    // Construir los productos seleccionados actualmente
+    // (los que el usuario eligió en los cards de la rutina)
+    const productosSeleccionados = (ctx.productos || []).map(p => ({
+      nombre:  p.nombre,
+      precio:  p.precio,
+      paso:    p.paso,
+      id:      p.id,
+      momento: p.momento || 'ambos',
+      razon:   p.razon   || '',
+    }));
+
+    const reportData = {
+      email,
+      perfil: {
+        id:          ctx.perfil?.id          || '',
+        nombre:      ctx.perfil?.nombre      || '',
+        descripcion: ctx.perfil?.descripcion || '',
+        tags:        ctx.perfil?.tags        || [],
+      },
+      rutinaAM:              ctx.rutinaAM  || [],
+      rutinaPM:              ctx.rutinaPM  || [],
+      productosSeleccionados,
+      totalCarrito:          ctx.totalCarrito || 0,
+      presupuesto:           ctx.presupuesto  || '',
+      experiencia:           ctx.experiencia  || '',
+      idioma:                detectarIdioma(),
+      createdAt:             Date.now(),
+    };
+
+    // Llamada silenciosa al Worker — no interrumpe el flujo
+    // tableApiUrl = URL absoluta del proyecto Genspark (donde vive la tabla API)
+    const tableApiUrl = window.location.origin;
+    fetch(KOI_CONFIG.reportUrl, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        email,
+        reportData,
+        siteUrl:     KOI_CONFIG.siteUrl,
+        tableApiUrl,
+      }),
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        // Guardar la URL del reporte en el estado por si la necesitamos
+        KOI_STATE.reportUrl = data.reportUrl;
+        console.log('[KOI] Skin Report generado:', data.reportUrl);
+      }
+    })
+    .catch(() => {}); // silencioso — nunca interrumpir la experiencia
+  }
+
   async function revelarRutinaConKOI (email) {
     const idioma       = detectarIdioma();
     const perfilNombre = KOI_STATE.contexto?.perfil?.nombre || '';
@@ -1108,5 +1179,158 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       }
     }, panel ? 400 : 0);
   };
+
+  /* ══════════════════════════════════════════════════════════
+     INTERCEPTOR DE CARRITO
+     Llamado por shatokbAddAllToCart() antes de proceder.
+     Si el email ya fue capturado → ejecuta el callback directo.
+     Si no → KOI pide el email con el contexto de "te envío
+     tu Skin Report" y luego ejecuta el callback.
+     ══════════════════════════════════════════════════════════ */
+  window.shatokbInterceptarCarrito = function (callbackProcederAlCarrito) {
+    // Si ya tenemos email, no interrumpir — ir directo al carrito
+    if (KOI_STATE.emailCaptured) {
+      callbackProcederAlCarrito();
+      return;
+    }
+
+    const idioma = detectarIdioma();
+
+    // Scroll al chat para que el usuario vea la interacción
+    const panel = document.getElementById('shatokb-koi-wrapper');
+    if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Pequeño delay para que el scroll ocurra antes del mensaje
+    setTimeout(async function () {
+
+      // Mensaje de KOI ofreciendo el Skin Report
+      const mensajes = {
+        es: `¡Perfecto, lista para ir al carrito! 🛒\n\nAntes de enviarte, quiero prepararte algo: tu **Skin Report personalizado** — incluye tu análisis de piel, el por qué de cada producto y un **manual paso a paso** para usarlos correctamente juntos.\n\nTe lo envío ahora mismo a tu email. ¿Cuál es?`,
+        en: `Perfect, ready to go to cart! 🛒\n\nBefore I send you over, I want to prepare something for you: your **personalized Skin Report** — it includes your skin analysis, the reason behind each product, and a **step-by-step guide** on how to use them together correctly.\n\nI'll send it to your email right now. What is it?`,
+        fr: `Parfait, prêt pour le panier ! 🛒\n\nAvant de vous y envoyer, je veux vous préparer quelque chose : votre **Skin Report personnalisé** — il inclut votre analyse de peau, la raison de chaque produit et un **guide étape par étape** pour les utiliser correctement ensemble.\n\nJe vous l'envoie par email maintenant. Lequel ?`,
+        pt: `Perfeito, pronto para o carrinho! 🛒\n\nAntes de te enviar, quero preparar algo: seu **Skin Report personalizado** — inclui sua análise de pele, o motivo de cada produto e um **guia passo a passo** para usá-los corretamente juntos.\n\nVou enviar agora para o seu email. Qual é?`,
+        de: `Perfekt, bereit für den Warenkorb! 🛒\n\nBevor ich dich weiterleite, möchte ich etwas für dich vorbereiten: deinen **persönlichen Skin Report** — er enthält deine Hautanalyse, den Grund für jedes Produkt und eine **Schritt-für-Schritt-Anleitung** zur richtigen Anwendung.\n\nIch schicke ihn dir gleich per E-Mail. Wie lautet sie?`,
+        it: `Perfetto, pronto per il carrello! 🛒\n\nPrima di mandarti lì, voglio prepararti qualcosa: il tuo **Skin Report personalizzato** — include la tua analisi della pelle, il motivo di ogni prodotto e una **guida passo dopo passo** su come usarli correttamente insieme.\n\nTe lo mando ora via email. Qual è?`,
+      };
+
+      const msg    = mensajes[idioma] || mensajes['en'];
+      const textEl = agregarMensaje('koi', '');
+      if (textEl) await escribirConEfecto(textEl, msg);
+      KOI_STATE.historial.push({ role: 'assistant', content: msg });
+
+      // Inyectar el campo de email adaptado para este contexto
+      setTimeout(() => inyectarEmailGateCarrito(callbackProcederAlCarrito), 300);
+
+    }, panel ? 500 : 0);
+  };
+
+  function inyectarEmailGateCarrito (callbackProcederAlCarrito) {
+    const container = document.getElementById('koi-messages');
+    if (!container || document.getElementById('koi-email-gate')) return;
+
+    const idioma = detectarIdioma();
+    const ui = {
+      es: { placeholder: 'tu@email.com', btn: 'Enviar y continuar →', note: '🔒 Solo para tu Skin Report. Sin spam.' },
+      en: { placeholder: 'you@email.com', btn: 'Send & continue →',   note: '🔒 Only for your Skin Report. No spam.' },
+      fr: { placeholder: 'vous@email.com', btn: 'Envoyer et continuer →', note: '🔒 Uniquement pour votre Skin Report.' },
+      pt: { placeholder: 'voce@email.com', btn: 'Enviar e continuar →', note: '🔒 Apenas para o seu Skin Report. Sem spam.' },
+      de: { placeholder: 'du@email.com', btn: 'Senden & weiter →',    note: '🔒 Nur für deinen Skin Report. Kein Spam.' },
+      it: { placeholder: 'tu@email.com', btn: 'Invia e continua →',   note: '🔒 Solo per il tuo Skin Report.' },
+    }[idioma] || { placeholder: 'you@email.com', btn: 'Send & continue →', note: '🔒 No spam.' };
+
+    // Texto del botón "skip" por idioma
+    const skipTexts = {
+      es: 'Prefiero ir directo al carrito',
+      en: 'Skip, take me to cart',
+      fr: 'Passer, aller au panier',
+      pt: 'Pular, ir para o carrinho',
+      de: 'Überspringen, zum Warenkorb',
+      it: 'Salta, vai al carrello',
+    };
+    const skipText = skipTexts[idioma] || skipTexts['en'];
+
+    const gate = document.createElement('div');
+    gate.id        = 'koi-email-gate';
+    gate.className = 'koi-email-gate';
+    gate.innerHTML = `
+      <input
+        type="email"
+        id="koi-email-input"
+        class="koi-email-input"
+        placeholder="${ui.placeholder}"
+        autocomplete="email"
+        inputmode="email"
+      />
+      <button class="koi-email-btn" id="koi-email-btn">${ui.btn}</button>
+      <p class="koi-email-note">${ui.note}</p>
+      <button class="koi-email-skip" id="koi-email-skip">${skipText}</button>
+    `;
+
+    container.appendChild(gate);
+    scrollAlFinal();
+    setInputHabilitado(false);
+
+    setTimeout(() => {
+      const inp = document.getElementById('koi-email-input');
+      if (inp && window.innerWidth > 768) inp.focus();
+    }, 200);
+
+    const inp     = document.getElementById('koi-email-input');
+    const btn     = document.getElementById('koi-email-btn');
+    const skipBtn = document.getElementById('koi-email-skip');
+
+    async function confirmarEmailCarrito () {
+      if (!inp) return;
+      const email  = inp.value.trim();
+      const idioma = detectarIdioma();
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        inp.classList.add('koi-email-input--error');
+        setTimeout(() => inp.classList.remove('koi-email-input--error'), 800);
+        return;
+      }
+
+      // Guardar email
+      KOI_STATE.emailCaptured = email;
+      try { localStorage.setItem('shatokb_email', email); } catch (_) {}
+      shatokbEnviarEmailShopify(email);
+
+      // ── Generar y enviar el Skin Report via Klaviyo ──────
+      enviarSkinReport(email);
+
+      // Cerrar gate
+      gate.classList.add('koi-email-gate--confirmed');
+      setTimeout(() => { if (gate.parentNode) gate.remove(); }, 400);
+      agregarMensaje('user', email);
+      setInputHabilitado(true);
+
+      // Mensaje de confirmación breve antes del carrito
+      const confirmaciones = {
+        es: '¡Listo! Te lo envío en breve. Ahora sí, aquí está tu carrito 🛒',
+        en: 'Done! Sending it shortly. Now, here\'s your cart 🛒',
+        fr: 'Fait ! Je vous l\'envoie dans un instant. Voici votre panier 🛒',
+        pt: 'Feito! Enviando em breve. Agora, aqui está seu carrinho 🛒',
+        de: 'Erledigt! Ich schicke es dir gleich. Hier ist dein Warenkorb 🛒',
+        it: 'Fatto! Te lo invio a breve. Ecco il tuo carrello 🛒',
+      };
+      const confirmMsg = confirmaciones[idioma] || confirmaciones['en'];
+      const textEl = agregarMensaje('koi', '');
+      if (textEl) await escribirConEfecto(textEl, confirmMsg, 18);
+
+      // Proceder al carrito después del mensaje
+      setTimeout(callbackProcederAlCarrito, 800);
+    }
+
+    function saltarAlCarrito () {
+      gate.classList.add('koi-email-gate--confirmed');
+      setTimeout(() => { if (gate.parentNode) gate.remove(); }, 400);
+      setInputHabilitado(true);
+      callbackProcederAlCarrito();
+    }
+
+    if (btn)     btn.addEventListener('click', confirmarEmailCarrito);
+    if (inp)     inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); confirmarEmailCarrito(); } });
+    if (skipBtn) skipBtn.addEventListener('click', saltarAlCarrito);
+  }
 
 })();
