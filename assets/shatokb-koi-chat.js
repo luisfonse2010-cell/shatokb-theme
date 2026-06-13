@@ -485,6 +485,7 @@ RULES — READ CAREFULLY:
       }
 
       KOI_STATE.historial.push({ role: 'assistant', content: mensajeKOI });
+      guardarHistorialLocal();
 
     } catch (err) {
       console.warn('[KOI] The Reveal greeting failed, using local fallback:', err);
@@ -496,6 +497,7 @@ RULES — READ CAREFULLY:
       const textEl    = agregarMensaje('koi', '', true);
       if (textEl) await escribirConEfecto(textEl, mensaje);
       KOI_STATE.historial.push({ role: 'assistant', content: mensaje });
+      guardarHistorialLocal();
     }
 
     // ── Segundo mensaje: persuasivo de cámara, directo después del insight
@@ -517,6 +519,7 @@ RULES — READ CAREFULLY:
       const textEl2 = agregarMensaje('koi', '');
       if (textEl2) await escribirConEfecto(textEl2, msg2);
       KOI_STATE.historial.push({ role: 'assistant', content: msg2 });
+      guardarHistorialLocal();
 
       // Chips: analizar primero o ver rutina directamente
       KOI_STATE.revealPhase = 'camara';
@@ -601,6 +604,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       const textEl = agregarMensaje('koi', '');
       if (textEl) await escribirConEfecto(textEl, msg);
       KOI_STATE.historial.push({ role: 'assistant', content: msg });
+      guardarHistorialLocal();
 
       // Chips post-cámara: analizar o ver rutina directamente
       setTimeout(() => mostrarChips('post_camara'), 400);
@@ -635,6 +639,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       await escribirConEfecto(textEl, mensajesEmail[idioma] || mensajesEmail['en']);
     }
     KOI_STATE.historial.push({ role: 'assistant', content: mensajesEmail[idioma] || mensajesEmail['en'] });
+    guardarHistorialLocal();
 
     // Inyectar el campo de email dentro del chat
     setTimeout(() => inyectarEmailGate(), 300);
@@ -959,6 +964,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       const textEl = agregarMensaje('koi', '');
       if (textEl) await escribirConEfecto(textEl, msg);
       KOI_STATE.historial.push({ role: 'assistant', content: msg });
+      guardarHistorialLocal();
       // Ofrecer reveal como único siguiente paso
       setTimeout(() => mostrarChips('reveal'), 400);
 
@@ -1229,6 +1235,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       const textEl = agregarMensaje('koi', '');
       if (textEl) await escribirConEfecto(textEl, msg);
       KOI_STATE.historial.push({ role: 'assistant', content: msg });
+      guardarHistorialLocal();
 
       // Inyectar el campo de email adaptado para este contexto
       setTimeout(() => inyectarEmailGateCarrito(callbackProcederAlCarrito), 300);
