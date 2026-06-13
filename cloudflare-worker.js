@@ -19,7 +19,7 @@
  * ============================================================
  */
 
-/* ── Last deploy: 2026-06-13T00:50:11.356Z ──
+/* ── Last deploy: 2026-06-13T02:56:42.087Z ──
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
 const KOI_SYSTEM_PROMPT = `
 You are KOI.
@@ -402,6 +402,8 @@ SECTION 10 — USER CONTEXT FROM QUIZ
 
 This is the data injected from the skin quiz. Use every field. This person took the time to tell you about their skin — honor that with specificity.
 
+{continuacion_conversacion}
+
 Skin profile assigned: {perfil_nombre}
 Profile description: {perfil_descripcion}
 Skin characteristics: {caracteristicas}
@@ -468,15 +470,16 @@ function buildSystemPrompt (context) {
   if (!context) return prompt;
 
   const replacements = {
-    '{perfil_nombre}':      context.perfil_nombre      || 'Not specified',
-    '{perfil_descripcion}': context.perfil_descripcion || 'Not specified',
-    '{caracteristicas}':    context.caracteristicas    || 'Not specified',
-    '{rutina_am}':          context.rutina_am          || 'Not specified',
-    '{rutina_pm}':          context.rutina_pm          || 'Not specified',
-    '{productos}':          context.productos          || 'Not specified',
-    '{presupuesto}':        context.presupuesto        || 'Not specified',
-    '{experiencia}':        context.experiencia        || 'Not specified',
-    '{total_carrito}':      context.total_carrito      || '0',
+    '{perfil_nombre}':             context.perfil_nombre             || 'Not specified',
+    '{perfil_descripcion}':        context.perfil_descripcion        || 'Not specified',
+    '{caracteristicas}':           context.caracteristicas           || 'Not specified',
+    '{rutina_am}':                 context.rutina_am                 || 'Not specified',
+    '{rutina_pm}':                 context.rutina_pm                 || 'Not specified',
+    '{productos}':                 context.productos                 || 'Not specified',
+    '{presupuesto}':               context.presupuesto               || 'Not specified',
+    '{experiencia}':               context.experiencia               || 'Not specified',
+    '{total_carrito}':             context.total_carrito             || '0',
+    '{continuacion_conversacion}': context.continuacion_conversacion || '',
   };
 
   for (const [key, value] of Object.entries(replacements)) {
@@ -679,8 +682,11 @@ export default {
 
     const messages = [
       { role: 'system', content: systemPrompt },
-      // Conversation history (last N messages)
-      ...historial.slice(-16).map(m => ({
+      // Conversation history — hasta 24 mensajes para dar espacio al
+      // mensaje-puente del cart + los mensajes reales del quiz.
+      // El mensaje-puente siempre está en posición [0] del historial
+      // del cart, por lo que nunca se trunca.
+      ...historial.slice(-24).map(m => ({
         role:    m.role === 'koi' ? 'assistant' : m.role,
         content: m.content
       })),
