@@ -37,6 +37,8 @@ const SHATOKB_PREGUNTAS = [
     titulo: 'First things first — what is your skin like?',
     emoji: '🪞',
     subtitulo: 'Be honest with yourself. This is where everything starts.',
+    // ── Momento 1: Tip contextual de KOI ──────────────────────
+    koiTip: 'The way your skin feels 30 minutes after cleansing — before any products — is the most accurate indicator of your real skin type. That morning texture you feel when you first wake up? That's the data point I use.',
     opciones: [
       { valor: 'grasa',    label: '🫧 Oily',          desc: 'Shiny by midday. Visible pores. Breakout-prone.' },
       { valor: 'mixta',    label: '☯️ Combination',   desc: 'Oily T-zone, dry or normal everywhere else.' },
@@ -50,6 +52,8 @@ const SHATOKB_PREGUNTAS = [
     titulo: 'How does your skin handle new products?',
     emoji: '⚡',
     subtitulo: 'This protects you from ingredients that could backfire.',
+    // ── Momento 1: Tip contextual de KOI ──────────────────────
+    koiTip: 'Most people confuse <em>oily skin</em> with <em>dehydrated skin</em> — they\'re opposite conditions with completely different solutions. Oily skin overproduces sebum. Dehydrated skin lacks water. You can have both at the same time.',
     opciones: [
       { valor: 'baja',  label: '💪 Tough as nails',  desc: "I can try anything. My skin barely reacts." },
       { valor: 'media', label: '🤔 It depends',      desc: 'Occasional redness or breakouts with some products.' },
@@ -61,6 +65,7 @@ const SHATOKB_PREGUNTAS = [
     titulo: 'What does your skin make you most self-conscious about?',
     emoji: '😔',
     subtitulo: 'Select all that apply — we treat every concern.',
+    koiTip: 'Dark spots and acne marks are <em>post-inflammatory hyperpigmentation</em> — a different mechanism than structural aging. Treating them without daily SPF is one of the most common (and expensive) mistakes I see.',
     multiSelect: true,
     opciones: [
       { valor: 'acne',           label: '😤 Acne & breakouts',     desc: 'Blackheads, pimples, cysts. It never fully clears.' },
@@ -93,6 +98,7 @@ const SHATOKB_PREGUNTAS = [
     titulo: 'How much time will you actually commit?',
     emoji: '⏱️',
     subtitulo: 'A routine you stick to beats a perfect one you abandon.',
+    koiTip: 'A 3-step routine done every single day outperforms a 10-step routine done twice a week. Consistency is the only variable that actually predicts results — not the number of products.',
     opciones: [
       { valor: 'basica',     label: '⚡ Quick & powerful (3–4 steps)',  desc: 'Under 5 minutes. The essentials only. Still transforms your skin.' },
       { valor: 'intermedia', label: '⚖️ Balanced (5–6 steps)',          desc: '8–10 minutes. Real results without taking over your morning.' },
@@ -1313,8 +1319,19 @@ function shatokbRenderPregunta(idx) {
     ? seleccionados.length > 0
     : !!respActual;
 
+  // ── Momento 1: Tip contextual de KOI ────────────────────────
+  const koiTipHTML = q.koiTip ? `
+    <div class="shatokb-koi-tip" role="note" aria-label="KOI tip">
+      <span class="shatokb-koi-tip__avatar" aria-hidden="true">🌸</span>
+      <div class="shatokb-koi-tip__content">
+        <div class="shatokb-koi-tip__name">KOI</div>
+        <p class="shatokb-koi-tip__text">${q.koiTip}</p>
+      </div>
+    </div>` : '';
+
   container.innerHTML = `
     <div class="shatokb-pregunta">
+      ${koiTipHTML}
       <div class="shatokb-pregunta__header">
         <span class="shatokb-pregunta__emoji" aria-hidden="true">${q.emoji || '💬'}</span>
         <div>
@@ -1329,30 +1346,33 @@ function shatokbRenderPregunta(idx) {
             ? seleccionados.includes(op.valor)
             : respActual === op.valor;
           return `
-          <button
+          <div
             class="shatokb-opcion${isSelected ? ' shatokb-opcion--selected' : ''}"
             data-qid="${q.id}"
             data-valor="${op.valor}"
             data-multi="${esMulti}"
             data-maxselect="${maxSelect || ''}"
-            type="button">
+            role="option"
+            aria-selected="${isSelected}"
+            tabindex="0">
             ${esMulti ? '<span class="shatokb-opcion__check" aria-hidden="true"></span>' : ''}
             <span class="shatokb-opcion__label">${op.label}</span>
             <span class="shatokb-opcion__desc">${op.desc || ''}</span>
-          </button>`;
+          </div>`;
         }).join('')}
       </div>
       <div class="shatokb-quiz-nav" id="stk-nav-wrap">
         ${idx > 0
-          ? `<button class="shatokb-btn shatokb-btn--ghost" data-action="back" data-idx="${idx - 1}" type="button">← Back</button>`
+          ? `<div class="shatokb-btn shatokb-btn--ghost" data-action="back" data-idx="${idx - 1}" role="button" tabindex="0">← Back</div>`
           : `<span></span>`}
         <div id="stk-next-slot" style="display:${tieneRespuesta ? 'block' : 'none'};">
-          ${tieneRespuesta ? `<button
+          ${tieneRespuesta ? `<div
             class="shatokb-btn shatokb-btn--primary shatokb-btn--ready"
             id="shatokb-btn-siguiente"
             data-action="next"
             data-idx="${idx}"
-            type="button">${labelNext}</button>` : ''}
+            role="button"
+            tabindex="0">${labelNext}</div>` : ''}
         </div>
       </div>
     </div>`;
@@ -1452,12 +1472,13 @@ function shatokbActualizarBtnNext(mostrar, idx) {
     // Si ya existe el botón, solo actualizar visibilidad
     slot.style.display = 'block';
     if (!document.getElementById('shatokb-btn-siguiente')) {
-      slot.innerHTML = `<button
+      slot.innerHTML = `<div
         class="shatokb-btn shatokb-btn--primary shatokb-btn--ready"
         id="shatokb-btn-siguiente"
         data-action="next"
         data-idx="${idx}"
-        type="button">${label}</button>`;
+        role="button"
+        tabindex="0">${label}</div>`;
       // Re-adjuntar listener en capture
       var btn = slot.querySelector('[data-action="next"]');
       if (btn) {
@@ -2258,3 +2279,24 @@ document.addEventListener('DOMContentLoaded', function () {
   shatokbApplyConfigToUI();
   shatokbFetchCatalogo();   // runs silently — no await needed here
 });
+
+/* ============================================================
+   INTERCEPTOR GLOBAL — bloquea que el tema Shopify procese
+   clicks dentro del quiz. Se registra en window con capture:true
+   (nivel más alto posible — corre antes que cualquier listener
+   del tema Halo, incluso los registrados en document).
+============================================================ */
+window.addEventListener('click', function(e) {
+  // Solo actuar si el quiz está activo (form visible)
+  var form = document.getElementById('shatokb-quiz-form');
+  if (!form || form.style.display === 'none') return;
+
+  // Solo actuar si el click viene de dentro del form
+  if (!form.contains(e.target)) return;
+
+  // Bloquear propagación hacia arriba (hacia el tema Halo)
+  e.stopPropagation();
+
+  // Si el click NO es en una shatokb-opcion ni en los botones
+  // de nav del quiz, no hacer nada más
+}, true); // capture:true = el más temprano posible
