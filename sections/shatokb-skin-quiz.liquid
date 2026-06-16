@@ -20,6 +20,8 @@
 {% endcomment %}
 
 {{ 'shatokb-quiz.css' | asset_url | stylesheet_tag }}
+{{ 'shatokb-koi-chat.css' | asset_url | stylesheet_tag }}
+{{ 'shatokb-koi-vision.css' | asset_url | stylesheet_tag }}
 
 <style>
   /* ── Quiz section — override Halo html{font-size:62.5%} base 10px ── */
@@ -131,7 +133,6 @@
       id="shatokb-quiz-form"
       class="shatokb-quiz-form"
       style="display:none;"
-      aria-live="polite"
       aria-label="Quiz questions">
       <noscript>
         <p style="text-align:center; color:#f42b23; font-weight:600; padding:24px 0;">
@@ -179,6 +180,9 @@
   <div class="shatokb-resultado__inner"></div>
 </div>
 
+<script src="{{ 'shatokb-quiz.js' | asset_url }}" defer></script>
+<script src="{{ 'shatokb-koi-vision.js' | asset_url }}" defer></script>
+<script src="{{ 'shatokb-koi-chat.js' | asset_url }}" defer></script>
 
 {% schema %}
 {
@@ -218,7 +222,8 @@
       "type": "checkbox",
       "id": "btn_catalogue_show",
       "label": "Show button",
-      "default": true
+      "info": "Disabled — KOI AI replaces this button",
+      "default": false
     },
     {
       "type": "text",
@@ -241,7 +246,8 @@
       "type": "checkbox",
       "id": "btn_whatsapp_show",
       "label": "Show button",
-      "default": true
+      "info": "Disabled — KOI AI replaces this button",
+      "default": false
     },
     {
       "type": "text",
