@@ -915,66 +915,55 @@ async function manejarResultadoVision (data) {
 
   // ── Si tenemos resultado real del Worker ───────────────────
   if (result && result.mensaje_koi) {
-    await new Promise(r => setTimeout(r, 800));
+    await new Promise(r => setTimeout(r, 900));
     ocultarTyping();
 
+    // 1. Mensaje principal de KOI con typewriter
     const textEl = agregarMensaje('koi', '', false);
+    await escribirConEfecto(textEl, result.mensaje_koi);
+    KOI_STATE.historial.push({ role: 'koi', content: result.mensaje_koi });
 
-    // Construir el mensaje completo con el análisis de zonas
-    let mensajeKOI = result.mensaje_koi;
+    await new Promise(r => setTimeout(r, 400));
 
-    // Card visual con las zonas — incrustada en el bubble
-    if (result.zonas) {
-      const z      = result.zonas;
-      const labels = {
-        en: { tzone: 'T-Zone', cheeks: 'Cheeks', eyes: 'Eye Area' },
-        es: { tzone: 'Zona T', cheeks: 'Mejillas', eyes: 'Contorno ojos' },
-      };
-      const l = labels[idioma] || labels.en;
-      const cardHTML = `
-        <div class="koi-vision-card">
-          <div class="koi-vision-card__header">📍 ${idioma === 'es' ? 'Análisis por zona' : 'Zone Analysis'}</div>
-          <div class="koi-vision-card__zone">
-            <span class="koi-vision-card__zone-pin">💦</span>
-            <span class="koi-vision-card__zone-text"><span class="koi-vision-card__zone-label">${l.tzone} —</span> ${z.tzone || '—'}</span>
-          </div>
-          <div class="koi-vision-card__zone">
-            <span class="koi-vision-card__zone-pin">🌸</span>
-            <span class="koi-vision-card__zone-text"><span class="koi-vision-card__zone-label">${l.cheeks} —</span> ${z.cheeks || '—'}</span>
-          </div>
-          <div class="koi-vision-card__zone">
-            <span class="koi-vision-card__zone-pin">👁️</span>
-            <span class="koi-vision-card__zone-text"><span class="koi-vision-card__zone-label">${l.eyes} —</span> ${z.eyes || '—'}</span>
-          </div>
-        </div>`;
+    // 2. Card de análisis avanzado — se inyecta como segundo mensaje de KOI
+    const bubble = textEl.closest
+      ? textEl.closest('.koi-msg') || textEl.parentElement
+      : textEl.parentElement;
 
-      // Añadir la card después del texto KOI
-      if (textEl && textEl.parentElement) {
-        const cardDiv = document.createElement('div');
-        cardDiv.innerHTML = cardHTML;
-        textEl.parentElement.appendChild(cardDiv.firstElementChild);
+    const cardEl = _construirCardAnalisis(result, idioma);
+    if (cardEl) {
+      // Añadir debajo del primer bubble (nuevo mensaje de KOI visual)
+      const chatContainer = document.getElementById('koi-messages') ||
+                            document.getElementById('shatokb-koi-messages') ||
+                            bubble?.parentElement;
+      if (chatContainer) {
+        chatContainer.appendChild(cardEl);
+        // Animar entrada con stagger
+        _animarCardEntrada(cardEl);
       }
     }
 
-    // Si la rutina debe ajustarse
-    if (result.ajuste && result.ajuste !== 'null') {
-      const ajusteLabel = idioma === 'es' ? '🔄 Ajuste en tu rutina' : '🔄 Routine adjustment';
-      mensajeKOI += `\n\n**${ajusteLabel}:** ${result.ajuste}`;
-    }
-
-    // Efecto de escritura para el mensaje principal
-    await escribirConEfecto(textEl, mensajeKOI);
-    KOI_STATE.historial.push({ role: 'koi', content: mensajeKOI });
     guardarHistorialLocal();
 
-    // Ir a la fase de email gate / reveal
+    // 3. Si el perfil necesita ajuste, añadir nota de KOI
+    if (result.ajuste_perfil && result.ajuste_perfil !== 'null') {
+      await new Promise(r => setTimeout(r, 600));
+      const ajusteMsgs = {
+        es: `**Nota sobre tu perfil:** ${result.ajuste_perfil}`,
+        en: `**Profile note:** ${result.ajuste_perfil}`,
+      };
+      const ajusteMsg  = ajusteMsgs[idioma] || ajusteMsgs.en;
+      const ajusteEl   = agregarMensaje('koi', '', false);
+      await escribirConEfecto(ajusteEl, ajusteMsg);
+      KOI_STATE.historial.push({ role: 'koi', content: ajusteMsg });
+    }
+
+    guardarHistorialLocal();
     KOI_STATE.revealPhase = 'email';
-    setTimeout(() => {
-      mostrarChips('reveal');
-    }, 600);
+    setTimeout(() => mostrarChips('reveal'), 700);
 
   } else {
-    // ── Fallback: sin resultado del Worker → KOI confirma con el quiz ──
+    // ── Fallback: sin resultado del Worker ────────────────────
     await new Promise(r => setTimeout(r, 1200));
     ocultarTyping();
 
@@ -993,6 +982,218 @@ async function manejarResultadoVision (data) {
   }
 
   scrollAlFinal();
+}
+
+/* ══════════════════════════════════════════════════════════
+   CONSTRUIR CARD DE ANÁLISIS AVANZADO
+   Renderiza el resultado de las 8 dimensiones + ingredientes
+   + protocolo urgente como card visual dentro del chat.
+   ══════════════════════════════════════════════════════════ */
+function _construirCardAnalisis(result, idioma) {
+  if (!result) return null;
+
+  const dim  = result.dimensiones || {};
+  const zona = result.zonas || {};
+  const ings = result.ingredientes_prioritarios || [];
+  const pts  = result.puntos_criticos || [];
+
+  // Labels por idioma
+  const L = {
+    es: {
+      titulo:        '🔬 Análisis Cutáneo Completo',
+      zonas:         'Por zonas',
+      dimensiones:   'Dimensiones analizadas',
+      criticos:      'Puntos críticos',
+      ingredientes:  'Activos recomendados',
+      protocolo:     '⚡ Prioridad esta semana',
+      edadBio:       'Edad biológica de tu piel',
+      perfil:        'Perfil confirmado visualmente',
+      perfilNo:      'Perfil requiere ajuste',
+      dim_labels: {
+        hidratacion:  'Hidratación',
+        barrera:      'Barrera cutánea',
+        sebum:        'Producción sebo',
+        pigmentacion: 'Pigmentación',
+        textura:      'Textura',
+        circulacion:  'Circulación',
+        firmeza:      'Firmeza',
+        microbioma:   'Microbioma',
+      },
+    },
+    en: {
+      titulo:        '🔬 Full Skin Analysis',
+      zonas:         'By zone',
+      dimensiones:   'Analyzed dimensions',
+      criticos:      'Critical findings',
+      ingredientes:  'Recommended actives',
+      protocolo:     '⚡ Priority this week',
+      edadBio:       'Skin biological age',
+      perfil:        'Profile visually confirmed',
+      perfilNo:      'Profile needs adjustment',
+      dim_labels: {
+        hidratacion:  'Hydration',
+        barrera:      'Skin barrier',
+        sebum:        'Sebum production',
+        pigmentacion: 'Pigmentation',
+        textura:      'Texture',
+        circulacion:  'Circulation',
+        firmeza:      'Firmness',
+        microbioma:   'Microbiome',
+      },
+    },
+  };
+  const lbl = L[idioma] || L.en;
+
+  // Colores por score
+  function scoreColor(s) {
+    if (s === null || s === undefined) return '#6b7280';
+    if (s >= 8) return '#22c55e';
+    if (s >= 6) return '#84cc16';
+    if (s >= 4) return '#f59e0b';
+    return '#ef4444';
+  }
+
+  function scoreBar(s) {
+    if (s === null || s === undefined) return '';
+    const pct   = Math.round((s / 10) * 100);
+    const color = scoreColor(s);
+    return `<div class="kva-score-bar"><div class="kva-score-fill" style="width:${pct}%;background:${color};box-shadow:0 0 6px ${color}40;"></div></div>`;
+  }
+
+  // Zonas
+  const zonaEntries = [
+    { emoji: '💦', key: 'tzone',    label: 'T-Zone'   },
+    { emoji: '🌸', key: 'mejillas', label: idioma === 'es' ? 'Mejillas' : 'Cheeks' },
+    { emoji: '👁️', key: 'ojos',    label: idioma === 'es' ? 'Contorno ojos' : 'Eye Area' },
+    { emoji: '💋', key: 'boca',     label: idioma === 'es' ? 'Contorno boca' : 'Lip Area' },
+  ];
+
+  const zonasHTML = zonaEntries.map(z => {
+    const val = zona[z.key] || zona.tzone || '—';
+    return `<div class="kva-zone">
+      <span class="kva-zone__emoji">${z.emoji}</span>
+      <div class="kva-zone__info">
+        <span class="kva-zone__label">${z.label}</span>
+        <span class="kva-zone__val">${val}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Dimensiones
+  const dimKeys = ['hidratacion','barrera','sebum','pigmentacion','textura','circulacion','firmeza','microbioma'];
+  const dimHTML = dimKeys.map(key => {
+    const d     = dim[key];
+    if (!d) return '';
+    const score = d.score;
+    const color = scoreColor(score);
+    return `<div class="kva-dim">
+      <div class="kva-dim__top">
+        <span class="kva-dim__name">${lbl.dim_labels[key] || key}</span>
+        <span class="kva-dim__score" style="color:${color}">${score !== null && score !== undefined ? score + '/10' : '—'}</span>
+      </div>
+      ${scoreBar(score)}
+      <div class="kva-dim__label">${d.label || ''}</div>
+      <div class="kva-dim__detail">${d.detalle || ''}</div>
+    </div>`;
+  }).join('');
+
+  // Puntos críticos
+  const ptsHTML = pts.length
+    ? `<div class="kva-section">
+        <div class="kva-section__title">${lbl.criticos}</div>
+        <ul class="kva-findings">
+          ${pts.map(p => `<li class="kva-finding"><span class="kva-finding__arrow">→</span>${p}</li>`).join('')}
+        </ul>
+      </div>` : '';
+
+  // Ingredientes recomendados
+  const ingsHTML = ings.length
+    ? `<div class="kva-section">
+        <div class="kva-section__title">${lbl.ingredientes}</div>
+        <div class="kva-ingredients">
+          ${ings.map(i => `
+            <div class="kva-ingredient">
+              <span class="kva-ingredient__name">${i.nombre}</span>
+              <span class="kva-ingredient__reason">${i.razon}</span>
+            </div>`).join('')}
+        </div>
+      </div>` : '';
+
+  // Protocolo urgente
+  const protHTML = result.protocolo_urgente
+    ? `<div class="kva-protocolo">
+        <div class="kva-protocolo__label">${lbl.protocolo}</div>
+        <p class="kva-protocolo__text">${result.protocolo_urgente}</p>
+      </div>` : '';
+
+  // Edad biológica + confirmación perfil
+  const metaHTML = `
+    <div class="kva-meta">
+      ${result.edad_biologica_estimada
+        ? `<div class="kva-meta__item"><span class="kva-meta__key">${lbl.edadBio}</span><span class="kva-meta__val">${result.edad_biologica_estimada}</span></div>`
+        : ''}
+      <div class="kva-meta__item">
+        <span class="kva-meta__key">${result.confirmacion_perfil ? lbl.perfil : lbl.perfilNo}</span>
+        <span class="kva-meta__badge ${result.confirmacion_perfil ? 'kva-meta__badge--ok' : 'kva-meta__badge--warn'}">
+          ${result.confirmacion_perfil ? '✓' : '⚠'}
+        </span>
+      </div>
+    </div>`;
+
+  // Ensamblar card completa
+  const wrapper = document.createElement('div');
+  wrapper.className = 'kva-card';
+  wrapper.innerHTML = `
+    <div class="kva-card__header">
+      <span class="kva-card__title">${lbl.titulo}</span>
+    </div>
+
+    <div class="kva-section kva-section--zones">
+      <div class="kva-section__title">${lbl.zonas}</div>
+      <div class="kva-zones-grid">${zonasHTML}</div>
+    </div>
+
+    <div class="kva-section">
+      <div class="kva-section__title">${lbl.dimensiones}</div>
+      <div class="kva-dims-grid">${dimHTML}</div>
+    </div>
+
+    ${ptsHTML}
+    ${ingsHTML}
+    ${protHTML}
+    ${metaHTML}
+  `;
+
+  return wrapper;
+}
+
+/* ── Animar entrada de la card con stagger ── */
+function _animarCardEntrada(cardEl) {
+  if (!cardEl) return;
+  cardEl.style.opacity = '0';
+  cardEl.style.transform = 'translateY(16px)';
+  cardEl.style.transition = 'opacity 0.5s ease, transform 0.5s cubic-bezier(0.34,1.56,0.64,1)';
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      cardEl.style.opacity = '1';
+      cardEl.style.transform = 'translateY(0)';
+    });
+  });
+
+  // Animar hijos con stagger
+  const children = cardEl.querySelectorAll('.kva-section, .kva-protocolo, .kva-meta');
+  children.forEach((child, i) => {
+    child.style.opacity = '0';
+    child.style.transform = 'translateY(8px)';
+    child.style.transition = `opacity 0.4s ease ${0.15 + i * 0.08}s, transform 0.4s ease ${0.15 + i * 0.08}s`;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        child.style.opacity = '1';
+        child.style.transform = 'translateY(0)';
+      });
+    });
+  });
 }
 
 /* ══════════════════════════════════════════════════════════
