@@ -337,6 +337,32 @@
   transform: translateY(-1px);
 }
 
+/* ── CTA botón reveal \u2014 prominente, ocupa todo el ancho ─────── */
+.koi-chip--reveal-cta {
+  width: 100%;
+  background: linear-gradient(135deg, #3a7af5, #1d5dd9) !important;
+  color: #fff !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  padding: 13px 20px !important;
+  border-radius: 10px !important;
+  border: none !important;
+  box-shadow: 0 4px 16px rgba(58, 122, 245, 0.35) !important;
+  letter-spacing: 0.01em;
+  animation: koi-cta-pulse 2s ease-in-out infinite;
+}
+
+.koi-chip--reveal-cta:hover {
+  background: linear-gradient(135deg, #1d5dd9, #1448b8) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(58, 122, 245, 0.45) !important;
+}
+
+@keyframes koi-cta-pulse {
+  0%, 100% { box-shadow: 0 4px 16px rgba(58, 122, 245, 0.35); }
+  50%       { box-shadow: 0 4px 24px rgba(58, 122, 245, 0.55); }
+}
+
 .koi-chip:active {
   transform: translateY(0);
 }
