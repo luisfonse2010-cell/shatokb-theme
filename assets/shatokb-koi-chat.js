@@ -58,6 +58,8 @@
       reveal:      ['📸 Analyze my skin first', '✨ Reveal my routine'],
       // ── Post-cámara: después del mensaje persuasivo ──
       post_camara: ['📸 Yes, analyze my face', '✨ Show me my routine'],
+      // ── Post-visión: después del análisis facial, solo reveal ──
+      post_vision: ['✨ Show me my routine now'],
       // ── Post-reveal: explorar rutina ──
       bienvenida:  ['Walk me through my routine', 'Why these specific products?', 'Explain the key ingredients', 'How long until I see results?'],
       post_rutina: ['What order do I apply them?', 'AM vs PM — what changes?', 'Are any of these pregnancy-safe?', 'Which one should I start with?'],
@@ -66,6 +68,7 @@
     es: {
       reveal:      ['📸 Analiza mi piel primero', '✨ Descubre mi rutina'],
       post_camara: ['📸 Sí, analiza mi rostro', '✨ Ver mi rutina ya'],
+      post_vision: ['✨ Muéstrame mi rutina ahora'],
       bienvenida:  ['Explícame mi rutina paso a paso', '¿Por qué estos productos?', 'Explícame los ingredientes clave', '¿Cuánto tiempo hasta ver resultados?'],
       post_rutina: ['¿En qué orden los aplico?', 'AM vs PM — ¿qué cambia?', '¿Son seguros en el embarazo?', '¿Con cuál empiezo?'],
       objeciones:  ['¿Cuál es el producto más importante?', 'Nunca he probado K-Beauty', '¿Puedo combinar estos ingredientes?', 'Tengo otra pregunta'],
@@ -73,6 +76,7 @@
     fr: {
       reveal:      ['📸 Analyser ma peau d\'abord', '✨ Révéler ma routine'],
       post_camara: ['📸 Oui, analyser mon visage', '✨ Voir ma routine'],
+      post_vision: ['✨ Montrez-moi ma routine maintenant'],
       bienvenida:  ['Expliquez-moi ma routine', 'Pourquoi ces produits ?', 'Expliquez les ingrédients clés', 'Combien de temps pour voir les résultats ?'],
       post_rutina: ['Dans quel ordre les appliquer ?', 'Matin vs soir — qu\'est-ce qui change ?', 'Sont-ils sûrs pendant la grossesse ?', 'Par lequel commencer ?'],
       objeciones:  ['Quel produit est le plus important ?', "Je n'ai jamais essayé la K-Beauty", 'Puis-je combiner ces ingrédients ?', "J'ai une autre question"],
@@ -80,6 +84,7 @@
     pt: {
       reveal:      ['📸 Analisar minha pele primeiro', '✨ Revelar minha rotina'],
       post_camara: ['📸 Sim, analise meu rosto', '✨ Ver minha rotina agora'],
+      post_vision: ['✨ Mostre-me minha rotina agora'],
       bienvenida:  ['Explique minha rotina passo a passo', 'Por que esses produtos?', 'Explique os ingredientes principais', 'Quanto tempo para ver resultados?'],
       post_rutina: ['Em que ordem aplicar?', 'AM vs PM — o que muda?', 'São seguros na gravidez?', 'Com qual devo começar?'],
       objeciones:  ['Qual produto é mais importante?', 'Nunca experimentei K-Beauty', 'Posso combinar esses ingredientes?', 'Tenho outra pergunta'],
@@ -87,6 +92,7 @@
     de: {
       reveal:      ['📸 Zuerst meine Haut analysieren', '✨ Meine Routine enthüllen'],
       post_camara: ['📸 Ja, analysiere mein Gesicht', '✨ Routine jetzt anzeigen'],
+      post_vision: ['✨ Zeig mir meine Routine jetzt'],
       bienvenida:  ['Erkläre mir meine Routine', 'Warum genau diese Produkte?', 'Erkläre die wichtigsten Inhaltsstoffe', 'Wann sehe ich erste Ergebnisse?'],
       post_rutina: ['In welcher Reihenfolge auftragen?', 'Morgen vs. Abend — was ändert sich?', 'Sind sie in der Schwangerschaft sicher?', 'Mit welchem soll ich anfangen?'],
       objeciones:  ['Welches Produkt ist am wichtigsten?', 'Ich habe K-Beauty noch nie ausprobiert', 'Kann ich diese Inhaltsstoffe kombinieren?', 'Ich habe eine andere Frage'],
@@ -94,6 +100,7 @@
     it: {
       reveal:      ['📸 Analizza prima la mia pelle', '✨ Rivela la mia routine'],
       post_camara: ['📸 Sì, analizza il mio viso', '✨ Mostrami la mia routine'],
+      post_vision: ['✨ Mostrami la mia routine adesso'],
       bienvenida:  ['Spiegami la mia routine', 'Perché questi prodotti?', 'Spiegami gli ingredienti chiave', 'Quanto tempo per vedere i risultati?'],
       post_rutina: ['In che ordine applicarli?', 'Mattina vs sera — cosa cambia?', 'Sono sicuri in gravidanza?', 'Da quale inizio?'],
       objeciones:  ['Qual è il prodotto più importante?', 'Non ho mai provato la K-Beauty', 'Posso combinare questi ingredienti?', 'Ho un\'altra domanda'],
@@ -902,10 +909,14 @@ async function manejarResultadoVision (data) {
   const { result, image, ctx } = data || {};
   const idioma = detectarIdioma();
 
-  // Añadir a historial como mensaje del usuario (chip)
+  // El mensaje del usuario ya fue añadido por enviarDesdeChip / manejarChipPostCamara.
+  // Solo guardamos en historial si aún no está (llamada directa sin chip, ej: evento global).
   const chipTexto = idioma === 'es' ? '📸 Analicé mi piel con la cámara' : '📸 I analyzed my skin with the camera';
-  KOI_STATE.historial.push({ role: 'user', content: chipTexto });
-  agregarMensaje('user', chipTexto);
+  const ultimoMsgUser = KOI_STATE.historial.filter(m => m.role === 'user').slice(-1)[0];
+  if (!ultimoMsgUser || !ultimoMsgUser.content.includes('📸')) {
+    KOI_STATE.historial.push({ role: 'user', content: chipTexto });
+    agregarMensaje('user', chipTexto);
+  }
 
   // Mostrar typing mientras KOI procesa
   mostrarTyping();
@@ -959,8 +970,9 @@ async function manejarResultadoVision (data) {
     }
 
     guardarHistorialLocal();
-    KOI_STATE.revealPhase = 'email';
-    setTimeout(() => mostrarChips('reveal'), 700);
+    KOI_STATE.revealPhase = 'post_vision';
+    // Post-análisis: solo chip para revelar la rutina (ya se analizó la piel)
+    setTimeout(() => mostrarChips('post_vision'), 700);
 
   } else {
     // ── Fallback: sin resultado del Worker ────────────────────
@@ -977,8 +989,8 @@ async function manejarResultadoVision (data) {
     KOI_STATE.historial.push({ role: 'koi', content: msg });
     guardarHistorialLocal();
 
-    KOI_STATE.revealPhase = 'email';
-    setTimeout(() => mostrarChips('reveal'), 500);
+    KOI_STATE.revealPhase = 'post_vision';
+    setTimeout(() => mostrarChips('post_vision'), 500);
   }
 
   scrollAlFinal();
@@ -1222,12 +1234,30 @@ async function enviarDesdeChip (texto) {
       return;
     }
 
+    // ── Chip post-visión: revelar rutina después del análisis ──
+    if (KOI_STATE.revealPhase === 'post_vision' && esChipPostVision(texto)) {
+      agregarMensaje('user', texto);
+      ocultarChips();
+      KOI_STATE.revealPhase = 'email';
+      await revelarRutinaConKOI('');
+      return;
+    }
+
     // ── Chips normales → enviar al Worker como mensaje ────────
     const input = document.getElementById('koi-input');
     if (input) {
       input.value = texto;
       await enviarMensajeUsuario();
     }
+  }
+
+  /* ── Detecta chip post-visión (después del análisis) ────── */
+  function esChipPostVision (texto) {
+    const t = texto.toLowerCase();
+    return t.includes('muéstrame') || t.includes('show me my routine') ||
+           t.includes('montrez') || t.includes('mostrar') ||
+           t.includes('mostrami') || t.includes('zeig mir') ||
+           t.includes('routine now') || t.includes('ahora');
   }
 
   /* ── Detecta chips post-cámara ──────────────────────────── */
