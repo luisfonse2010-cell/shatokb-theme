@@ -1,37 +1,39 @@
 /**
  * ============================================================
- * SHATOKB · KOI Vision — Camera Analysis UI
- * assets/shatokb-koi-vision.css  v1.0
+ * SHATOKB · KOI Vision — Camera Analysis UI  v2.0
+ * assets/shatokb-koi-vision.css
  *
- * El módulo de análisis facial de KOI.
- * Face detection + GPT-4o Vision — todo dentro del chat.
- * Lo que ninguna tienda de K-Beauty ha hecho.
+ * Experiencia cinematográfica. Nivel que no existe en ninguna
+ * tienda de K-Beauty del mundo.
  *
- * Paleta consistente con shatokb-quiz.css:
- *   Navy:    #0b0335
- *   Azul:    #3a7af5
- *   Rosa KOI: #ec95b8
- *   Blanco:  #ffffff
+ * Paleta:
+ *   Navy:      #0b0335
+ *   Blue:      #3a7af5
+ *   Pink KOI:  #ec95b8
+ *   Void:      #03010a
  * ============================================================
  */
 
 /* ══════════════════════════════════════════════════════════
-   VARIABLES — VISION THEME
+   VARIABLES
    ══════════════════════════════════════════════════════════ */
 :root {
-  --kv-bg:          #05030f;   /* Fondo muy oscuro — cámara sobre negro */
+  --kv-bg:          #03010a;
   --kv-navy:        #0b0335;
   --kv-blue:        #3a7af5;
   --kv-pink:        #ec95b8;
-  --kv-pink-glow:   rgba(236, 149, 184, 0.40);
-  --kv-blue-glow:   rgba(58, 122, 245, 0.35);
-  --kv-scan:        rgba(236, 149, 184, 0.90);
-  --kv-radius:      16px;
-  --kv-transition:  0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  --kv-pink-soft:   rgba(236,149,184,0.55);
+  --kv-pink-glow:   rgba(236,149,184,0.40);
+  --kv-blue-glow:   rgba(58,122,245,0.35);
+  --kv-cyan:        #67e8f9;
+  --kv-scan:        rgba(236,149,184,0.90);
+  --kv-radius:      20px;
+  --kv-ease-spring: cubic-bezier(0.34,1.56,0.64,1);
+  --kv-ease-out:    cubic-bezier(0.25,0.46,0.45,0.94);
 }
 
 /* ══════════════════════════════════════════════════════════
-   MODAL OVERLAY — el universo de KOI Vision
+   MODAL OVERLAY
    ══════════════════════════════════════════════════════════ */
 #koi-vision-modal {
   position: fixed;
@@ -40,14 +42,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(5, 3, 15, 0.92);
-  backdrop-filter: blur(12px) saturate(0.8);
-  -webkit-backdrop-filter: blur(12px) saturate(0.8);
+  background: radial-gradient(ellipse at 50% 60%, rgba(11,3,53,0.85) 0%, rgba(3,1,10,0.97) 70%);
+  backdrop-filter: blur(18px) saturate(0.7);
+  -webkit-backdrop-filter: blur(18px) saturate(0.7);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.5s ease;
   padding: 16px;
   box-sizing: border-box;
+}
+
+/* Vignette ambiental que rodea el panel */
+#koi-vision-modal::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 100%, rgba(236,149,184,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 50% 0%,   rgba(58,122,245,0.06) 0%, transparent 60%);
+  pointer-events: none;
 }
 
 #koi-vision-modal.kv--active {
@@ -61,24 +74,25 @@
 .kv-panel {
   position: relative;
   width: 100%;
-  max-width: 520px;
-  background: #07040e;
-  border: 1px solid rgba(236, 149, 184, 0.20);
-  border-radius: 24px;
+  max-width: 500px;
+  background: linear-gradient(170deg, #0c0818 0%, #050210 100%);
+  border-radius: var(--kv-radius);
   overflow: hidden;
   box-shadow:
-    0 0 0 1px rgba(236, 149, 184, 0.08),
-    0 40px 80px rgba(0, 0, 0, 0.70),
-    0 0 120px rgba(236, 149, 184, 0.08);
-  transform: translateY(30px) scale(0.96);
-  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    0 0 0 1px rgba(236,149,184,0.12),
+    0 0 0 1px rgba(58,122,245,0.06),
+    0 48px 96px rgba(0,0,0,0.80),
+    0 0 80px  rgba(236,149,184,0.06),
+    0 0 160px rgba(58,122,245,0.04);
+  transform: translateY(40px) scale(0.94);
+  transition: transform 0.55s var(--kv-ease-spring);
 }
 
 #koi-vision-modal.kv--active .kv-panel {
   transform: translateY(0) scale(1);
 }
 
-/* Borde animado rosa — aurora superior */
+/* ── Aurora border — 3 capas ── */
 .kv-panel::before {
   content: '';
   position: absolute;
@@ -86,30 +100,45 @@
   height: 2px;
   background: linear-gradient(90deg,
     transparent 0%,
-    #ec95b8 25%,
-    #3a7af5 50%,
-    #ec95b8 75%,
+    var(--kv-blue) 15%,
+    var(--kv-pink) 35%,
+    #fff 50%,
+    var(--kv-pink) 65%,
+    var(--kv-blue) 85%,
     transparent 100%
   );
-  background-size: 200% 100%;
-  animation: kvBorderFlow 3s linear infinite;
-  z-index: 10;
+  background-size: 300% 100%;
+  animation: kvAuroraFlow 4s linear infinite;
+  z-index: 20;
+  filter: blur(0.5px);
 }
 
-@keyframes kvBorderFlow {
+.kv-panel::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 60px;
+  background: linear-gradient(180deg, rgba(236,149,184,0.04) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes kvAuroraFlow {
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
 
 /* ══════════════════════════════════════════════════════════
-   HEADER DEL MODAL
+   HEADER
    ══════════════════════════════════════════════════════════ */
 .kv-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 20px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  position: relative;
+  z-index: 5;
 }
 
 .kv-header__koi {
@@ -119,80 +148,159 @@
 }
 
 .kv-header__avatar {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #ec95b8, #3a7af5);
+  background: conic-gradient(from 0deg, var(--kv-pink), var(--kv-blue), var(--kv-pink));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  box-shadow: 0 0 16px rgba(236, 149, 184, 0.50);
-  animation: kvAvatarPulse 2.5s ease-in-out infinite;
+  font-size: 16px;
+  position: relative;
+  animation: kvAvatarSpin 8s linear infinite;
 }
 
-@keyframes kvAvatarPulse {
-  0%, 100% { box-shadow: 0 0 16px rgba(236, 149, 184, 0.50); }
-  50%       { box-shadow: 0 0 28px rgba(236, 149, 184, 0.90), 0 0 50px rgba(58, 122, 245, 0.30); }
+.kv-header__avatar::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: #0c0818;
+  z-index: 0;
+}
+
+.kv-header__avatar span {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes kvAvatarSpin {
+  to { transform: rotate(360deg); }
 }
 
 .kv-header__name {
   font-family: 'Prompt', 'Arial Black', sans-serif;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
   color: #fff;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
 }
 
 .kv-header__subtitle {
-  font-family: 'Arimo', sans-serif;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--kv-pink);
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.10em;
   text-transform: uppercase;
   margin-top: 1px;
+  opacity: 0.8;
 }
 
 .kv-header__badge {
-  font-family: 'Arimo', sans-serif;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
-  color: var(--kv-pink);
-  background: rgba(236, 149, 184, 0.12);
-  border: 1px solid rgba(236, 149, 184, 0.30);
-  padding: 3px 10px;
+  color: var(--kv-cyan);
+  background: rgba(103,232,249,0.08);
+  border: 1px solid rgba(103,232,249,0.20);
+  padding: 3px 9px;
   border-radius: 50px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.10em;
   text-transform: uppercase;
+  animation: kvBadgePulse 2s ease-in-out infinite;
+}
+
+@keyframes kvBadgePulse {
+  0%,100% { opacity: 0.8; }
+  50%     { opacity: 1;   box-shadow: 0 0 8px rgba(103,232,249,0.30); }
 }
 
 .kv-close-btn {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  color: rgba(255, 255, 255, 0.50);
-  font-size: 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.40);
+  font-size: 14px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  line-height: 1;
-  margin-left: 8px;
+  margin-left: 10px;
 }
 
 .kv-close-btn:hover {
-  background: rgba(236, 149, 184, 0.15);
-  border-color: rgba(236, 149, 184, 0.40);
+  background: rgba(236,149,184,0.12);
+  border-color: rgba(236,149,184,0.35);
   color: var(--kv-pink);
+  transform: rotate(90deg);
 }
 
 
 /* ══════════════════════════════════════════════════════════
-   VIEWFINDER — el corazón visual
+   LOADING STATE
+   ══════════════════════════════════════════════════════════ */
+.kv-loading-state {
+  display: none;
+  padding: 52px 24px;
+  text-align: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.kv-loading-state.kv--active { display: flex; }
+
+/* Spinner orbital */
+.kv-spinner {
+  width: 56px;
+  height: 56px;
+  position: relative;
+}
+
+.kv-spinner::before,
+.kv-spinner::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+}
+
+.kv-spinner::before {
+  inset: 0;
+  border: 2px solid transparent;
+  border-top-color: var(--kv-pink);
+  border-right-color: var(--kv-blue);
+  animation: kvSpinA 0.8s linear infinite;
+}
+
+.kv-spinner::after {
+  inset: 8px;
+  border: 1.5px solid transparent;
+  border-bottom-color: var(--kv-pink);
+  opacity: 0.6;
+  animation: kvSpinB 1.2s linear infinite reverse;
+}
+
+@keyframes kvSpinA { to { transform: rotate(360deg); } }
+@keyframes kvSpinB { to { transform: rotate(360deg); } }
+
+.kv-loading-state__text {
+  font-size: 12px;
+  color: rgba(255,255,255,0.50);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  animation: kvTextBlink 1.5s ease-in-out infinite;
+}
+
+@keyframes kvTextBlink {
+  0%,100% { opacity: 0.5; }
+  50%     { opacity: 1; }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   VIEWFINDER — la magia ocurre aquí
    ══════════════════════════════════════════════════════════ */
 .kv-viewfinder {
   position: relative;
@@ -202,29 +310,61 @@
   overflow: hidden;
 }
 
-/* Video de la cámara */
 #koi-vision-video {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scaleX(-1); /* espejo — más natural para selfie */
+  transform: scaleX(-1);
   display: block;
 }
 
-/* Canvas oculto para captura */
-#koi-vision-canvas {
-  display: none;
-}
+#koi-vision-canvas { display: none; }
 
-/* ── Overlay de partículas y efectos ── */
+/* ── Overlay de efectos (sobre el vídeo) ── */
 .kv-fx-overlay {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 5;
+  /* Viñeta suave en bordes */
+  background:
+    radial-gradient(ellipse 90% 90% at 50% 50%, transparent 60%, rgba(3,1,10,0.55) 100%);
 }
 
-/* ── Guía oval del rostro ── */
+/* ══════════════════════════════════════════════════════════
+   ESQUINAS SCANNER — animadas al entrar
+   ══════════════════════════════════════════════════════════ */
+.kv-corner {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-color: var(--kv-pink);
+  border-style: solid;
+  opacity: 0;
+  animation: kvCornerIn 0.4s var(--kv-ease-spring) forwards;
+  z-index: 9;
+}
+
+.kv-corner--tl { top: 14px; left: 14px;  border-width: 2px 0 0 2px; border-radius: 5px 0 0 0; animation-delay: 0.05s; }
+.kv-corner--tr { top: 14px; right: 14px; border-width: 2px 2px 0 0; border-radius: 0 5px 0 0; animation-delay: 0.10s; }
+.kv-corner--bl { bottom: 14px; left: 14px;  border-width: 0 0 2px 2px; border-radius: 0 0 0 5px; animation-delay: 0.15s; }
+.kv-corner--br { bottom: 14px; right: 14px; border-width: 0 2px 2px 0; border-radius: 0 0 5px 0; animation-delay: 0.20s; }
+
+@keyframes kvCornerIn {
+  0%   { opacity: 0; transform: scale(1.3); }
+  100% { opacity: 0.75; transform: scale(1); }
+}
+
+/* Brillo suave en los corners al detectar */
+.kv--detected .kv-corner {
+  opacity: 1;
+  filter: drop-shadow(0 0 4px var(--kv-pink));
+  transition: filter 0.4s ease, opacity 0.4s ease;
+}
+
+/* ══════════════════════════════════════════════════════════
+   GUÍA OVAL — face targeting
+   ══════════════════════════════════════════════════════════ */
 .kv-face-guide {
   position: absolute;
   inset: 0;
@@ -235,55 +375,272 @@
   z-index: 6;
 }
 
+/* Oval exterior — guía */
 .kv-face-guide__oval {
-  width: 52%;
+  width: 54%;
   aspect-ratio: 3/4;
-  border: 2px solid rgba(236, 149, 184, 0.35);
+  border: 1.5px solid rgba(236,149,184,0.30);
   border-radius: 50%;
   position: relative;
-  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+  transition: border-color 0.5s ease, box-shadow 0.5s ease;
 }
 
-.kv-face-guide__oval.kv--detected {
-  border-color: rgba(236, 149, 184, 0.90);
-  box-shadow:
-    0 0 20px rgba(236, 149, 184, 0.50),
-    inset 0 0 20px rgba(236, 149, 184, 0.10);
-  animation: kvOvalPulse 1.2s ease-in-out infinite;
-}
-
-@keyframes kvOvalPulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(236, 149, 184, 0.50), inset 0 0 20px rgba(236, 149, 184, 0.10); }
-  50%       { box-shadow: 0 0 40px rgba(236, 149, 184, 0.80), inset 0 0 30px rgba(236, 149, 184, 0.20); }
-}
-
-/* Esquinas del viewfinder — estilo scanner */
-.kv-corner {
+/* Rotación de puntos de tracking alrededor del oval */
+.kv-face-guide__oval::before {
+  content: '';
   position: absolute;
-  width: 20px;
-  height: 20px;
-  border-color: var(--kv-pink);
-  border-style: solid;
-  opacity: 0.80;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px dashed rgba(236,149,184,0.12);
+  animation: kvOvalRotate 12s linear infinite;
 }
-.kv-corner--tl { top: 16px; left: 16px; border-width: 2px 0 0 2px; border-radius: 4px 0 0 0; }
-.kv-corner--tr { top: 16px; right: 16px; border-width: 2px 2px 0 0; border-radius: 0 4px 0 0; }
-.kv-corner--bl { bottom: 16px; left: 16px; border-width: 0 0 2px 2px; border-radius: 0 0 0 4px; }
-.kv-corner--br { bottom: 16px; right: 16px; border-width: 0 2px 2px 0; border-radius: 0 0 4px 0; }
 
-/* ── Línea de scan ── */
+.kv-face-guide__oval::after {
+  content: '';
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  border-top-color: rgba(58,122,245,0.20);
+  border-bottom-color: rgba(236,149,184,0.20);
+  animation: kvOvalRotate 6s linear infinite reverse;
+}
+
+@keyframes kvOvalRotate {
+  to { transform: rotate(360deg); }
+}
+
+/* Estado: rostro detectado */
+.kv-face-guide__oval.kv--detected {
+  border-color: var(--kv-pink);
+  border-width: 2px;
+  box-shadow:
+    0 0 0 1px rgba(236,149,184,0.15),
+    0 0 24px rgba(236,149,184,0.45),
+    inset 0 0 30px rgba(236,149,184,0.08);
+  animation: kvOvalHeartbeat 1.4s ease-in-out infinite;
+}
+
+.kv-face-guide__oval.kv--detected::before {
+  border-color: rgba(236,149,184,0.25);
+  animation-duration: 4s;
+}
+
+@keyframes kvOvalHeartbeat {
+  0%,100% {
+    box-shadow:
+      0 0 0 1px rgba(236,149,184,0.15),
+      0 0 24px rgba(236,149,184,0.45),
+      inset 0 0 30px rgba(236,149,184,0.08);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px rgba(236,149,184,0.10),
+      0 0 48px rgba(236,149,184,0.70),
+      inset 0 0 40px rgba(236,149,184,0.14);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   FACE MESH SVG — puntos biométricos sobre el rostro
+   ══════════════════════════════════════════════════════════ */
+.kv-face-mesh {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 7;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.kv-face-mesh.kv--active {
+  opacity: 1;
+}
+
+.kv-mesh-svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Puntos del mesh */
+.kv-mesh-point {
+  fill: var(--kv-pink);
+  opacity: 0;
+  animation: kvMeshPointIn 0.3s ease forwards;
+}
+
+/* Líneas del mesh */
+.kv-mesh-line {
+  stroke: rgba(236,149,184,0.25);
+  stroke-width: 0.5;
+  fill: none;
+  opacity: 0;
+  stroke-dasharray: 4 3;
+  animation: kvMeshLineIn 0.5s ease forwards;
+}
+
+/* Zonas iluminadas durante el análisis */
+.kv-mesh-zone {
+  fill: transparent;
+  stroke: none;
+  transition: fill 0.4s ease, stroke 0.4s ease;
+}
+
+.kv-mesh-zone.kv--scanning {
+  fill: rgba(236,149,184,0.06);
+  stroke: rgba(236,149,184,0.35);
+  stroke-width: 1;
+  animation: kvZoneGlow 0.8s ease-in-out infinite alternate;
+}
+
+.kv-mesh-zone.kv--done {
+  fill: rgba(58,122,245,0.05);
+  stroke: rgba(58,122,245,0.20);
+  stroke-width: 0.8;
+}
+
+@keyframes kvMeshPointIn {
+  0%   { opacity: 0; r: 0; }
+  100% { opacity: 0.7; }
+}
+
+@keyframes kvMeshLineIn {
+  0%   { opacity: 0; stroke-dashoffset: 10; }
+  100% { opacity: 1; stroke-dashoffset: 0; }
+}
+
+@keyframes kvZoneGlow {
+  0%   { fill: rgba(236,149,184,0.04); }
+  100% { fill: rgba(236,149,184,0.10); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   GLASSES TIP — aparece sobre el viewfinder tras detectar rostro
+   ══════════════════════════════════════════════════════════ */
+.kv-glasses-tip {
+  position: absolute;
+  bottom: 52px; /* encima del HUD */
+  left: 12px;
+  right: 12px;
+  background: rgba(7, 4, 20, 0.88);
+  border: 1px solid rgba(236,149,184,0.25);
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  z-index: 12;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow:
+    0 4px 24px rgba(0,0,0,0.50),
+    0 0 0 1px rgba(236,149,184,0.08);
+  /* Oculto por defecto */
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 0.35s ease, transform 0.35s var(--kv-ease-spring);
+}
+
+.kv-glasses-tip.kv--active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: all;
+}
+
+/* Línea de color superior */
+.kv-glasses-tip::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 16px; right: 16px;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, var(--kv-pink), transparent);
+  border-radius: 2px;
+}
+
+.kv-glasses-tip__icon {
+  font-size: 22px;
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: 1px;
+  filter: drop-shadow(0 0 6px rgba(236,149,184,0.40));
+}
+
+.kv-glasses-tip__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.kv-glasses-tip__text {
+  font-size: 11px;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.55;
+  margin-bottom: 10px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.kv-glasses-tip__actions {
+  display: flex;
+  gap: 7px;
+}
+
+.kv-glasses-btn {
+  flex: 1;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  letter-spacing: 0.03em;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+/* "Continuar con gafas" — secundario */
+.kv-glasses-btn--ok {
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.55);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+.kv-glasses-btn--ok:hover {
+  background: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.80);
+}
+
+/* "Me las quité ✓" — primario */
+.kv-glasses-btn--remove {
+  background: rgba(236,149,184,0.15);
+  color: var(--kv-pink);
+  border: 1px solid rgba(236,149,184,0.35);
+}
+.kv-glasses-btn--remove:hover {
+  background: rgba(236,149,184,0.25);
+  border-color: rgba(236,149,184,0.60);
+  transform: translateY(-1px);
+}
+
+/* ══════════════════════════════════════════════════════════
+   LÍNEAS DE SCAN — 3 zonas simultáneas
+   ══════════════════════════════════════════════════════════ */
 .kv-scan-line {
   position: absolute;
   left: 0; right: 0;
-  height: 2px;
+  height: 1.5px;
   background: linear-gradient(90deg,
     transparent 0%,
-    rgba(236, 149, 184, 0.60) 20%,
-    rgba(236, 149, 184, 1) 50%,
-    rgba(236, 149, 184, 0.60) 80%,
+    rgba(236,149,184,0.4) 15%,
+    rgba(236,149,184,1) 50%,
+    rgba(236,149,184,0.4) 85%,
     transparent 100%
   );
-  box-shadow: 0 0 16px var(--kv-pink-glow), 0 0 40px rgba(236, 149, 184, 0.20);
+  box-shadow:
+    0 0 10px var(--kv-pink),
+    0 0 30px rgba(236,149,184,0.30),
+    0 -1px 0 rgba(236,149,184,0.15),
+    0  1px 0 rgba(236,149,184,0.15);
   display: none;
   pointer-events: none;
   z-index: 8;
@@ -291,17 +648,42 @@
 
 .kv-scan-line.kv--scanning {
   display: block;
-  animation: kvScanDown 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: kvScanDown 1.8s cubic-bezier(0.4,0,0.6,1) infinite;
+}
+
+/* Segunda línea — azul, offset de tiempo */
+.kv-scan-line-2 {
+  position: absolute;
+  left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(58,122,245,0.3) 15%,
+    rgba(58,122,245,0.8) 50%,
+    rgba(58,122,245,0.3) 85%,
+    transparent 100%
+  );
+  box-shadow: 0 0 8px var(--kv-blue), 0 0 20px rgba(58,122,245,0.25);
+  display: none;
+  pointer-events: none;
+  z-index: 8;
+}
+
+.kv-scan-line-2.kv--scanning {
+  display: block;
+  animation: kvScanDown 1.8s cubic-bezier(0.4,0,0.6,1) 0.9s infinite;
 }
 
 @keyframes kvScanDown {
-  0%   { top: 5%; opacity: 0; }
-  10%  { opacity: 1; }
-  90%  { opacity: 1; }
+  0%   { top: 5%;  opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 1; }
   100% { top: 95%; opacity: 0; }
 }
 
-/* ── Partículas de datos flotantes ── */
+/* ══════════════════════════════════════════════════════════
+   PARTÍCULAS DE DATOS FLOTANTES
+   ══════════════════════════════════════════════════════════ */
 .kv-particles {
   position: absolute;
   inset: 0;
@@ -310,34 +692,43 @@
   display: none;
 }
 
-.kv-particles.kv--active {
-  display: block;
-}
+.kv-particles.kv--active { display: block; }
 
 .kv-particle {
   position: absolute;
-  font-family: 'Courier New', monospace;
-  font-size: 9px;
+  font-family: 'Courier New', 'SF Mono', monospace;
+  font-size: 8px;
+  font-weight: 600;
   color: var(--kv-pink);
   opacity: 0;
   white-space: nowrap;
-  animation: kvParticleFloat 3s ease-in-out infinite;
+  letter-spacing: 0.08em;
+  animation: kvParticleFloat linear infinite;
   pointer-events: none;
+  text-shadow: 0 0 6px var(--kv-pink-glow);
+}
+
+/* Partículas azules alternas */
+.kv-particle.kv--blue {
+  color: var(--kv-cyan);
+  text-shadow: 0 0 6px rgba(103,232,249,0.40);
 }
 
 @keyframes kvParticleFloat {
-  0%   { opacity: 0; transform: translateY(0) translateX(0); }
-  20%  { opacity: 0.70; }
-  80%  { opacity: 0.50; }
-  100% { opacity: 0; transform: translateY(-40px) translateX(10px); }
+  0%   { opacity: 0;    transform: translateY(0)    translateX(0)   scale(0.8); }
+  15%  { opacity: 0.75; transform: translateY(-6px) translateX(2px) scale(1); }
+  85%  { opacity: 0.50; transform: translateY(-34px) translateX(-3px) scale(0.95); }
+  100% { opacity: 0;    transform: translateY(-45px) translateX(5px) scale(0.85); }
 }
 
-/* ── HUD: zona de detección en tiempo real ── */
+/* ══════════════════════════════════════════════════════════
+   HUD — información en tiempo real
+   ══════════════════════════════════════════════════════════ */
 .kv-hud {
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  padding: 12px 16px;
-  background: linear-gradient(to top, rgba(5, 3, 15, 0.90) 0%, transparent 100%);
+  padding: 14px 16px 12px;
+  background: linear-gradient(to top, rgba(3,1,10,0.92) 0%, rgba(3,1,10,0.40) 60%, transparent 100%);
   z-index: 9;
   display: flex;
   align-items: center;
@@ -345,162 +736,280 @@
 }
 
 .kv-hud__status {
-  font-family: 'Arimo', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.70);
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.65);
   display: flex;
   align-items: center;
   gap: 7px;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .kv-hud__dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.30);
+  background: rgba(255,255,255,0.25);
   transition: all 0.4s ease;
   flex-shrink: 0;
+  position: relative;
 }
 
-.kv-hud__dot.kv--live    { background: #22c55e; box-shadow: 0 0 8px rgba(34, 197, 94, 0.70); animation: kvDotPulse 1s ease infinite; }
-.kv-hud__dot.kv--found   { background: var(--kv-pink); box-shadow: 0 0 10px var(--kv-pink-glow); }
-.kv-hud__dot.kv--capture { background: #fff; box-shadow: 0 0 14px rgba(255, 255, 255, 0.90); }
+.kv-hud__dot.kv--live {
+  background: #22c55e;
+  box-shadow: 0 0 8px rgba(34,197,94,0.70);
+  animation: kvDotLive 1s ease-in-out infinite;
+}
 
-@keyframes kvDotPulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.40; }
+.kv-hud__dot.kv--live::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1px solid rgba(34,197,94,0.35);
+  animation: kvDotRipple 1s ease-out infinite;
+}
+
+.kv-hud__dot.kv--found {
+  background: var(--kv-pink);
+  box-shadow: 0 0 12px var(--kv-pink-glow);
+}
+
+.kv-hud__dot.kv--capture {
+  background: #fff;
+  box-shadow: 0 0 16px rgba(255,255,255,0.90);
+  animation: kvDotCapture 0.3s ease infinite alternate;
+}
+
+@keyframes kvDotLive {
+  0%,100% { opacity: 1; }
+  50%     { opacity: 0.35; }
+}
+
+@keyframes kvDotRipple {
+  0%   { transform: scale(1);   opacity: 1; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+@keyframes kvDotCapture {
+  0%   { box-shadow: 0 0 8px rgba(255,255,255,0.60); }
+  100% { box-shadow: 0 0 24px rgba(255,255,255,1); }
 }
 
 .kv-hud__quality {
-  font-family: 'Arimo', sans-serif;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--kv-pink);
-  font-weight: 700;
+  font-weight: 800;
   opacity: 0;
-  transition: opacity 0.4s ease;
-  letter-spacing: 0.04em;
+  transition: opacity 0.5s ease;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px var(--kv-pink-glow);
 }
 
 .kv-hud__quality.kv--visible { opacity: 1; }
 
-/* ── Flash de captura ── */
-.kv-capture-flash {
+/* ══════════════════════════════════════════════════════════
+   TEXTO GUÍA
+   ══════════════════════════════════════════════════════════ */
+.kv-guide-text {
   position: absolute;
-  inset: 0;
-  background: #fff;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 20;
-  transition: opacity 0.05s ease;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.70);
+  background: rgba(3,1,10,0.70);
+  padding: 4px 14px;
+  border-radius: 50px;
+  border: 1px solid rgba(255,255,255,0.10);
+  white-space: nowrap;
+  z-index: 10;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  backdrop-filter: blur(6px);
+  transition: all 0.4s ease;
 }
 
-.kv-capture-flash.kv--flash {
-  opacity: 0.90;
-  transition: opacity 0.30s ease;
+.kv-guide-text.kv--green {
+  color: #86efac;
+  border-color: rgba(74,222,128,0.35);
+  background: rgba(3,1,10,0.82);
+  text-shadow: 0 0 8px rgba(74,222,128,0.40);
 }
 
-/* ── Countdown ring ── */
+/* ══════════════════════════════════════════════════════════
+   COUNTDOWN — sonar + número
+   ══════════════════════════════════════════════════════════ */
 .kv-countdown {
   position: absolute;
-  top: 50%; left: 50%;
+  top: 50%;
+  left: 50%;
   transform: translate(-50%, -50%);
   z-index: 15;
   display: none;
+  flex-direction: column;
+  align-items: center;
 }
 
-.kv-countdown.kv--active { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.kv-countdown.kv--active { display: flex; }
 
+/* Ring SVG */
 .kv-countdown__ring {
-  width: 72px;
-  height: 72px;
+  width: 80px;
+  height: 80px;
+  filter: drop-shadow(0 0 8px var(--kv-pink));
 }
 
 .kv-countdown__ring circle {
   fill: none;
-  stroke-width: 3;
+  stroke-width: 2.5;
 }
 
-.kv-countdown__ring .kv-ring-track {
-  stroke: rgba(255, 255, 255, 0.10);
-}
+.kv-ring-track { stroke: rgba(255,255,255,0.08); }
 
-.kv-countdown__ring .kv-ring-fill {
+.kv-ring-fill {
   stroke: var(--kv-pink);
   stroke-linecap: round;
   stroke-dasharray: 188;
   stroke-dashoffset: 0;
   transform-origin: center;
   transform: rotate(-90deg);
-  filter: drop-shadow(0 0 6px var(--kv-pink));
   transition: stroke-dashoffset 0.9s linear;
 }
 
+/* Número en el centro */
 .kv-countdown__num {
-  font-family: 'Prompt', sans-serif;
-  font-size: 28px;
-  font-weight: 800;
+  font-family: 'Prompt', 'Arial Black', sans-serif;
+  font-size: 36px;
+  font-weight: 900;
   color: #fff;
   line-height: 1;
-  margin-top: -64px;
-  text-shadow: 0 0 20px rgba(236, 149, 184, 0.80);
+  margin-top: -72px;
+  text-shadow: 0 0 30px rgba(236,149,184,0.90);
+  position: relative;
+  z-index: 2;
+  letter-spacing: -0.02em;
+  animation: kvNumPop 0.25s var(--kv-ease-spring);
 }
 
-/* ── Texto guía en viewfinder ── */
-.kv-guide-text {
+@keyframes kvNumPop {
+  0%   { transform: scale(1.4); opacity: 0.5; }
+  100% { transform: scale(1);   opacity: 1; }
+}
+
+/* Ondas de sonar alrededor del countdown */
+.kv-sonar {
   position: absolute;
-  top: 14px; left: 50%;
-  transform: translateX(-50%);
-  font-family: 'Arimo', sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.75);
-  background: rgba(5, 3, 15, 0.65);
-  padding: 4px 12px;
-  border-radius: 50px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  white-space: nowrap;
-  z-index: 10;
-  letter-spacing: 0.04em;
-  backdrop-filter: blur(4px);
-  transition: all 0.4s ease;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 14;
 }
 
-.kv-guide-text.kv--green {
-  color: #4ade80;
-  border-color: rgba(74, 222, 128, 0.30);
-  background: rgba(5, 3, 15, 0.80);
+.kv-sonar__ring {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 1px solid rgba(236,149,184,0.5);
+  opacity: 0;
 }
 
+.kv-sonar__ring:nth-child(1) { animation: kvSonar 2s ease-out 0.0s infinite; }
+.kv-sonar__ring:nth-child(2) { animation: kvSonar 2s ease-out 0.6s infinite; }
+.kv-sonar__ring:nth-child(3) { animation: kvSonar 2s ease-out 1.2s infinite; }
+
+@keyframes kvSonar {
+  0%   { transform: scale(1);   opacity: 0.5; }
+  100% { transform: scale(3.5); opacity: 0; }
+}
 
 /* ══════════════════════════════════════════════════════════
-   ANÁLISIS — ETAPAS DE PROCESAMIENTO
+   FLASH DE CAPTURA — chromatic aberration
    ══════════════════════════════════════════════════════════ */
+.kv-capture-flash {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 20;
+  background: radial-gradient(ellipse at 50% 50%, #ffffff 0%, var(--kv-pink) 40%, var(--kv-blue) 100%);
+  transition: opacity 0.04s ease;
+}
 
-/* Pantalla de análisis — reemplaza el viewfinder */
+.kv-capture-flash.kv--flash {
+  opacity: 1;
+  animation: kvFlash 0.45s ease forwards;
+}
+
+@keyframes kvFlash {
+  0%   { opacity: 1;    filter: brightness(3) saturate(0); }
+  15%  { opacity: 0.90; filter: brightness(2) saturate(0.5); }
+  40%  { opacity: 0.40; filter: brightness(1.5) saturate(1) hue-rotate(20deg); }
+  70%  { opacity: 0.15; filter: brightness(1) saturate(1); }
+  100% { opacity: 0;    filter: none; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   PANTALLA DE ANÁLISIS
+   ══════════════════════════════════════════════════════════ */
 .kv-analyzing {
   display: none;
-  padding: 32px 24px;
-  text-align: center;
-  background: #07040e;
+  background: var(--kv-bg);
+  position: relative;
+  overflow: hidden;
 }
 
 .kv-analyzing.kv--active { display: block; }
 
-/* Imagen capturada — miniatura con efecto */
+/* Glow ambiental de fondo */
+.kv-analyzing::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(236,149,184,0.08) 0%, transparent 70%);
+  pointer-events: none;
+  animation: kvAnalyzingGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes kvAnalyzingGlow {
+  0%   { opacity: 0.5; transform: translateX(-50%) scale(1); }
+  100% { opacity: 1;   transform: translateX(-50%) scale(1.3); }
+}
+
+/* Layout: imagen capturada a la izquierda, info a la derecha */
+.kv-analyzing-inner {
+  display: flex;
+  gap: 0;
+  align-items: stretch;
+}
+
+/* Imagen capturada — con efecto de análisis */
+.kv-captured-wrap {
+  position: relative;
+  width: 42%;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
 .kv-captured-img {
-  width: 120px;
-  height: 90px;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: 12px;
-  margin: 0 auto 20px;
   display: block;
-  border: 2px solid rgba(236, 149, 184, 0.40);
-  box-shadow: 0 0 30px rgba(236, 149, 184, 0.25);
   opacity: 0;
-  transform: scale(0.85);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  filter: saturate(0) brightness(0.6);
+  transform: scale(1.05);
+  transition: opacity 0.7s ease, filter 1.5s ease, transform 0.7s ease;
 }
 
 .kv-captured-img.kv--visible {
@@ -508,199 +1017,275 @@
   transform: scale(1);
 }
 
-/* Barra de progreso del análisis */
-.kv-analysis-progress {
-  margin: 0 0 20px;
+/* Overlay scanlines sobre la imagen capturada */
+.kv-captured-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(236,149,184,0.03) 2px,
+    rgba(236,149,184,0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Gradiente derecha sobre imagen */
+.kv-captured-wrap::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 40%;
+  background: linear-gradient(to right, transparent, var(--kv-bg));
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* Área de info / progreso */
+.kv-analyzing-info {
+  flex: 1;
+  padding: 20px 18px 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+  z-index: 5;
 }
 
 .kv-analysis-progress__label {
-  font-family: 'Arimo', sans-serif;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 10px;
+  font-weight: 800;
   color: var(--kv-pink);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  margin-bottom: 10px;
   display: block;
+  margin-bottom: 8px;
 }
 
 .kv-progress-track {
-  height: 4px;
-  background: rgba(255, 255, 255, 0.08);
+  height: 3px;
+  background: rgba(255,255,255,0.06);
   border-radius: 50px;
   overflow: hidden;
+  margin-bottom: 14px;
 }
 
 .kv-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #3a7af5, #ec95b8);
+  background: linear-gradient(90deg, var(--kv-blue), var(--kv-pink));
   border-radius: 50px;
   width: 0%;
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 0 12px rgba(236, 149, 184, 0.50);
+  transition: width 0.7s var(--kv-ease-out);
+  box-shadow: 0 0 10px rgba(236,149,184,0.60);
 }
 
-/* Items del análisis — se iluminan uno a uno */
+/* Items del análisis */
 .kv-analysis-items {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  text-align: left;
-  margin-bottom: 20px;
+  gap: 6px;
 }
 
 .kv-analysis-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
+  gap: 8px;
+  padding: 7px 10px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  opacity: 0.35;
-  transition: all 0.4s ease;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.04);
+  opacity: 0.30;
+  transition: all 0.35s ease;
 }
 
 .kv-analysis-item.kv--active {
   opacity: 1;
-  background: rgba(236, 149, 184, 0.07);
-  border-color: rgba(236, 149, 184, 0.20);
-}
-
-.kv-analysis-item.kv--done {
-  opacity: 0.70;
-  background: rgba(34, 197, 94, 0.05);
-  border-color: rgba(34, 197, 94, 0.15);
-}
-
-.kv-analysis-item__icon {
-  font-size: 14px;
-  flex-shrink: 0;
-  width: 22px;
-  text-align: center;
-}
-
-.kv-analysis-item__text {
-  font-family: 'Arimo', sans-serif;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.75);
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  background: rgba(236,149,184,0.08);
+  border-color: rgba(236,149,184,0.22);
+  transform: translateX(2px);
 }
 
 .kv-analysis-item.kv--active .kv-analysis-item__text {
   color: var(--kv-pink);
 }
 
+.kv-analysis-item.kv--done {
+  opacity: 0.65;
+  background: rgba(34,197,94,0.04);
+  border-color: rgba(34,197,94,0.12);
+}
+
 .kv-analysis-item.kv--done .kv-analysis-item__text {
-  color: rgba(74, 222, 128, 0.80);
+  color: rgba(134,239,172,0.75);
+}
+
+.kv-analysis-item__icon {
+  font-size: 12px;
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+}
+
+.kv-analysis-item__text {
+  font-size: 11px;
+  color: rgba(255,255,255,0.60);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: color 0.3s ease;
 }
 
 .kv-analysis-item__check {
   margin-left: auto;
-  font-size: 12px;
+  font-size: 11px;
+  color: #86efac;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 
 .kv-analysis-item.kv--done .kv-analysis-item__check { opacity: 1; }
 
-/* ── Subtítulo del análisis ── */
 .kv-analyzing__subtitle {
-  font-family: 'Arimo', sans-serif;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.40);
+  font-size: 11px;
+  color: rgba(255,255,255,0.30);
   line-height: 1.5;
-  margin-top: 4px;
 }
 
-
 /* ══════════════════════════════════════════════════════════
-   RESULTADO DEL ANÁLISIS — preview antes de mandarlo al chat
+   RESULTADO PREVIEW — la revelación
    ══════════════════════════════════════════════════════════ */
 .kv-result-preview {
   display: none;
-  padding: 20px 20px 24px;
-  background: #07040e;
+  padding: 20px 20px 22px;
+  background: var(--kv-bg);
+  position: relative;
+  overflow: hidden;
 }
 
 .kv-result-preview.kv--active { display: block; }
 
+/* Glow de fondo en resultado */
+.kv-result-preview::before {
+  content: '';
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 280px;
+  height: 200px;
+  background: radial-gradient(ellipse at 50% 100%, rgba(58,122,245,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
 .kv-result-preview__title {
-  font-family: 'Prompt', sans-serif;
-  font-size: 13px;
+  font-family: 'Prompt', 'Arial Black', sans-serif;
+  font-size: 11px;
   font-weight: 800;
   color: var(--kv-pink);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 12px;
+  letter-spacing: 0.12em;
+  margin-bottom: 14px;
   display: flex;
   align-items: center;
   gap: 8px;
+  opacity: 0;
+  animation: kvFadeUp 0.5s ease 0.1s forwards;
 }
 
 .kv-result-preview__title::before {
   content: '';
   display: block;
-  width: 16px;
-  height: 2px;
+  width: 12px;
+  height: 1.5px;
   background: var(--kv-pink);
   border-radius: 2px;
+  box-shadow: 0 0 6px var(--kv-pink-glow);
 }
 
-/* Cards de zona facial */
+/* Grid de zonas */
 .kv-zones {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 7px;
+  margin-bottom: 14px;
 }
 
+/* Zone card */
 .kv-zone-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
   border-radius: 10px;
-  padding: 10px 8px;
+  padding: 10px 7px;
   text-align: center;
   opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  transform: translateY(10px) scale(0.95);
+  transition: opacity 0.45s ease, transform 0.45s var(--kv-ease-spring);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Línea top de color en cada zona */
+.kv-zone-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1.5px;
+  background: var(--kv-pink);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s ease 0.2s;
 }
 
 .kv-zone-card.kv--visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 
-.kv-zone-card__emoji { font-size: 18px; display: block; margin-bottom: 4px; }
-.kv-zone-card__label {
-  font-family: 'Arimo', sans-serif;
-  font-size: 10px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.50);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  display: block;
-  margin-bottom: 3px;
+.kv-zone-card.kv--visible::before {
+  transform: scaleX(1);
 }
+
+.kv-zone-card__emoji {
+  font-size: 16px;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.kv-zone-card__label {
+  font-size: 9px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  display: block;
+  margin-bottom: 4px;
+}
+
 .kv-zone-card__value {
-  font-family: 'Arimo', sans-serif;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--kv-pink);
   display: block;
-  line-height: 1.3;
+  line-height: 1.35;
+  opacity: 0;
+  transition: opacity 0.4s ease 0.3s;
 }
 
-/* Botón "Ver análisis completo en el chat" */
+.kv-zone-card.kv--visible .kv-zone-card__value {
+  opacity: 1;
+}
+
+/* CTA principal */
 .kv-result-cta {
   width: 100%;
-  padding: 14px 20px;
-  background: linear-gradient(135deg, #3a7af5, #ec95b8);
+  padding: 13px 20px;
+  background: linear-gradient(135deg, var(--kv-blue) 0%, #6d3acd 50%, var(--kv-pink) 100%);
+  background-size: 200% 100%;
   border: none;
   border-radius: 10px;
-  font-family: 'Arimo', sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: #fff;
   cursor: pointer;
@@ -708,66 +1293,91 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: all 0.25s ease;
-  box-shadow: 0 8px 24px rgba(58, 122, 245, 0.35);
   letter-spacing: 0.02em;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 24px rgba(58,122,245,0.40), 0 0 0 1px rgba(255,255,255,0.08);
+  animation: kvCtaShimmer 3s ease-in-out infinite;
+  opacity: 0;
+  animation: kvFadeUp 0.5s ease 0.6s forwards, kvCtaShimmer 3s ease-in-out 1.5s infinite;
 }
 
 .kv-result-cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(58, 122, 245, 0.50), 0 4px 16px rgba(236, 149, 184, 0.30);
+  box-shadow: 0 10px 32px rgba(58,122,245,0.55), 0 4px 16px rgba(236,149,184,0.35);
 }
 
-.kv-result-cta:active {
-  transform: translateY(0);
+.kv-result-cta::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  animation: kvCtaSweep 3s ease-in-out 2s infinite;
 }
 
-/* ── Nota de privacidad ── */
+@keyframes kvCtaSweep {
+  0%,30% { left: -100%; }
+  60%    { left: 160%; }
+  100%   { left: 160%; }
+}
+
+@keyframes kvCtaShimmer {
+  0%,100% { background-position: 0% 50%; }
+  50%     { background-position: 100% 50%; }
+}
+
+/* Nota de privacidad */
 .kv-privacy-note {
+  margin-top: 10px;
+  font-size: 10px;
+  color: rgba(255,255,255,0.22);
+  text-align: center;
+  letter-spacing: 0.03em;
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 12px;
-  font-family: 'Arimo', sans-serif;
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.28);
-  text-align: center;
   justify-content: center;
-  letter-spacing: 0.02em;
-  line-height: 1.4;
+  gap: 5px;
+  opacity: 0;
+  animation: kvFadeUp 0.5s ease 0.8s forwards;
 }
 
 /* ══════════════════════════════════════════════════════════
-   ESTADO: PERMISO DENEGADO / ERROR
+   ERROR STATE
    ══════════════════════════════════════════════════════════ */
 .kv-error-state {
   display: none;
-  padding: 32px 24px;
+  padding: 36px 24px;
   text-align: center;
 }
 
 .kv-error-state.kv--active { display: block; }
 
 .kv-error-state__icon {
-  font-size: 40px;
-  margin-bottom: 14px;
+  font-size: 44px;
+  margin-bottom: 16px;
   display: block;
+  filter: grayscale(0.4);
 }
 
 .kv-error-state__title {
-  font-family: 'Prompt', sans-serif;
-  font-size: 16px;
+  font-family: 'Prompt', 'Arial Black', sans-serif;
+  font-size: 15px;
   font-weight: 800;
   color: #fff;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .kv-error-state__desc {
-  font-family: 'Arimo', sans-serif;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.50);
-  line-height: 1.55;
-  margin-bottom: 20px;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.6;
+  margin-bottom: 22px;
+  max-width: 340px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .kv-error-alt-btn {
@@ -775,82 +1385,67 @@
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
-  background: rgba(236, 149, 184, 0.12);
-  border: 1px solid rgba(236, 149, 184, 0.30);
+  background: rgba(236,149,184,0.10);
+  border: 1px solid rgba(236,149,184,0.28);
   border-radius: 8px;
   color: var(--kv-pink);
-  font-family: 'Arimo', sans-serif;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
+  letter-spacing: 0.03em;
 }
 
 .kv-error-alt-btn:hover {
-  background: rgba(236, 149, 184, 0.20);
-  border-color: rgba(236, 149, 184, 0.50);
+  background: rgba(236,149,184,0.18);
+  border-color: rgba(236,149,184,0.50);
+  transform: translateY(-1px);
 }
-
 
 /* ══════════════════════════════════════════════════════════
-   ESTADO: CARGANDO (solicitando permisos, iniciando cámara)
+   ANIMACIONES UTILITARIAS
    ══════════════════════════════════════════════════════════ */
-.kv-loading-state {
-  display: none;
-  padding: 40px 24px;
-  text-align: center;
+@keyframes kvFadeUp {
+  0%   { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
-.kv-loading-state.kv--active { display: flex; flex-direction: column; align-items: center; gap: 14px; }
-
-/* Spinner KOI */
-.kv-spinner {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  border: 3px solid rgba(236, 149, 184, 0.15);
-  border-top-color: var(--kv-pink);
-  border-right-color: var(--kv-blue);
-  animation: kvSpin 0.9s linear infinite;
+@keyframes kvFadeIn {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
 }
-
-@keyframes kvSpin {
-  to { transform: rotate(360deg); }
-}
-
-.kv-loading-state__text {
-  font-family: 'Arimo', sans-serif;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.60);
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
 
 /* ══════════════════════════════════════════════════════════
-   MENSAJE DE KOI EN EL CHAT — análisis visual incrustado
+   CARD DE ANÁLISIS EN EL CHAT DE KOI
    ══════════════════════════════════════════════════════════ */
-
-/* Card de análisis dentro del bubble de KOI */
 .koi-vision-card {
-  background: rgba(236, 149, 184, 0.07);
-  border: 1px solid rgba(236, 149, 184, 0.20);
+  background: rgba(236,149,184,0.06);
+  border: 1px solid rgba(236,149,184,0.18);
   border-radius: 12px;
   padding: 14px;
   margin-top: 12px;
-  font-family: 'Arimo', sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+.koi-vision-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1.5px;
+  background: linear-gradient(90deg, var(--kv-blue), var(--kv-pink));
 }
 
 .koi-vision-card__header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 10px;
+  font-weight: 800;
   color: var(--kv-pink);
   text-transform: uppercase;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.10em;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .koi-vision-card__zone {
@@ -858,39 +1453,72 @@
   align-items: flex-start;
   gap: 8px;
   padding: 6px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 12px;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.4;
 }
 
 .koi-vision-card__zone:last-child { border-bottom: none; }
 
-.koi-vision-card__zone-pin {
-  font-size: 13px;
+.koi-vision-card__zone-pin { flex-shrink: 0; }
+
+.koi-vision-card__zone-label {
+  color: rgba(255,255,255,0.40);
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.koi-vision-card__zone-text { flex: 1; }
+
+/* ══════════════════════════════════════════════════════════
+   KOI TIP — Momento 1 quiz
+   ══════════════════════════════════════════════════════════ */
+.shatokb-koi-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(11,3,53,0.06), rgba(58,122,245,0.04));
+  border: 1px solid rgba(58,122,245,0.14);
+  border-left: 3px solid var(--kv-blue);
+  border-radius: 10px;
+  margin-bottom: 16px;
+  opacity: 0;
+  animation: kvFadeUp 0.45s var(--kv-ease-spring) 0.35s forwards;
+}
+
+.shatokb-koi-tip__avatar {
+  font-size: 18px;
   flex-shrink: 0;
   margin-top: 1px;
 }
 
-.koi-vision-card__zone-text {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.75);
-  line-height: 1.45;
+.shatokb-koi-tip__name {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--kv-blue);
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
 }
 
-.koi-vision-card__zone-label {
+.shatokb-koi-tip__text {
+  font-size: 13px;
+  color: rgba(11,3,53,0.75);
+  line-height: 1.55;
+}
+
+.shatokb-koi-tip__text em {
+  font-style: normal;
   font-weight: 700;
-  color: var(--kv-pink);
+  color: var(--kv-blue);
 }
-
 
 /* ══════════════════════════════════════════════════════════
-   CHIP ESPECIAL: "📸 Analyze my skin" en el chat de KOI
+   CHIP DE CÁMARA — shimmer
    ══════════════════════════════════════════════════════════ */
 .koi-chip--camera {
-  background: linear-gradient(135deg,
-    rgba(236, 149, 184, 0.15) 0%,
-    rgba(58, 122, 245, 0.15) 100%
-  ) !important;
-  border: 1px solid rgba(236, 149, 184, 0.40) !important;
-  color: var(--kv-pink) !important;
   position: relative;
   overflow: hidden;
 }
@@ -898,142 +1526,308 @@
 .koi-chip--camera::before {
   content: '';
   position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(236, 149, 184, 0.12) 50%, transparent 100%);
-  transform: translateX(-100%);
-  animation: kvChipShimmer 2.5s ease-in-out 1s infinite;
+  top: 0;
+  left: -80%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  animation: kvChipShimmer 2.8s ease-in-out 1.2s infinite;
+  pointer-events: none;
 }
 
 @keyframes kvChipShimmer {
-  0%   { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0%,35% { left: -80%; opacity: 0; }
+  40%    { opacity: 1; }
+  65%    { left: 160%; opacity: 0; }
+  100%   { left: 160%; opacity: 0; }
 }
-
-.koi-chip--camera:hover {
-  background: linear-gradient(135deg,
-    rgba(236, 149, 184, 0.28) 0%,
-    rgba(58, 122, 245, 0.25) 100%
-  ) !important;
-  border-color: rgba(236, 149, 184, 0.70) !important;
-  box-shadow: 0 0 16px rgba(236, 149, 184, 0.25);
-}
-
 
 /* ══════════════════════════════════════════════════════════
-   MOMENTO 1 — TIP CONTEXTUAL DE KOI DURANTE EL QUIZ
-   Burbuja pequeña, no interactiva — solo aparece en
-   preguntas clave (tipo_piel, sensibilidad).
+   VISION ANALYSIS CARD EN EL CHAT — kva-*
+   Card de análisis avanzado (8 dimensiones) que KOI
+   renderiza en el chat después del módulo de cámara.
    ══════════════════════════════════════════════════════════ */
-.shatokb-koi-tip {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  margin: 0 0 20px;
-  padding: 14px 16px;
-  background: linear-gradient(135deg, rgba(11, 3, 53, 0.05), rgba(58, 122, 245, 0.04));
-  border: 1px solid rgba(58, 122, 245, 0.15);
-  border-left: 3px solid var(--stk-primary);
-  border-radius: 10px;
-  animation: shatokbKoiTipIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  animation-delay: 0.35s;
-  opacity: 0;
+
+.kva-card {
+  background: linear-gradient(160deg, #0c0818 0%, #07040e 100%);
+  border: 1px solid rgba(236,149,184,0.18);
+  border-radius: 16px;
+  overflow: hidden;
+  margin: 10px 0 6px;
+  font-family: 'Arimo', system-ui, sans-serif;
+  position: relative;
+  width: 100%;
 }
 
-@keyframes shatokbKoiTipIn {
-  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+.kva-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%, #3a7af5 20%, #ec95b8 50%, #3a7af5 80%, transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: kvaAurora 4s linear infinite;
 }
 
-.shatokb-koi-tip__avatar {
-  font-size: 22px;
-  flex-shrink: 0;
-  line-height: 1;
-  margin-top: 1px;
-  filter: drop-shadow(0 0 6px rgba(236, 149, 184, 0.50));
-  animation: shatokbKoiTipBob 3s ease-in-out infinite;
-  animation-delay: 1s;
+@keyframes kvaAurora {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
-@keyframes shatokbKoiTipBob {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-3px); }
+.kva-card__header {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
-.shatokb-koi-tip__content {
-  flex: 1;
-  min-width: 0;
-}
-
-.shatokb-koi-tip__name {
-  font-family: var(--stk-font-body);
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--stk-primary);
-  letter-spacing: 0.08em;
+.kva-card__title {
+  font-size: 11px;
+  font-weight: 800;
+  color: #ec95b8;
+  letter-spacing: 0.10em;
   text-transform: uppercase;
-  margin-bottom: 4px;
-  display: flex;
-  align-items: center;
+}
+
+/* ── Secciones ── */
+.kva-section {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.kva-section:last-child { border-bottom: none; }
+
+.kva-section__title {
+  font-size: 9px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.28);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+/* ── Zonas ── */
+.kva-zones-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 6px;
 }
 
-.shatokb-koi-tip__name::after {
-  content: '· K-Beauty Expert';
-  color: var(--stk-text-muted);
-  font-weight: 400;
-  text-transform: none;
-  letter-spacing: 0;
+.kva-zone {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
+  padding: 7px 9px;
 }
 
-.shatokb-koi-tip__text {
-  font-family: var(--stk-font-body);
-  font-size: 13px;
-  color: var(--stk-text);
+.kva-zone__emoji { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+
+.kva-zone__info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+.kva-zone__label {
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.28);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.kva-zone__val {
+  font-size: 11px;
+  font-weight: 600;
+  color: #ec95b8;
+  line-height: 1.3;
+}
+
+/* ── Dimensiones ── */
+.kva-dims-grid { display: flex; flex-direction: column; gap: 10px; }
+
+.kva-dim { display: flex; flex-direction: column; gap: 3px; }
+
+.kva-dim__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kva-dim__name {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.72);
+}
+
+.kva-dim__score {
+  font-size: 11px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.kva-score-bar {
+  height: 3px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 50px;
+  overflow: hidden;
+}
+
+.kva-score-fill {
+  height: 100%;
+  border-radius: 50px;
+  transition: width 0.9s cubic-bezier(0.4,0,0.2,1);
+}
+
+.kva-dim__label {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.40);
+  font-style: italic;
+}
+
+.kva-dim__detail {
+  font-size: 11px;
+  color: rgba(255,255,255,0.52);
   line-height: 1.55;
+}
+
+/* ── Findings ── */
+.kva-findings { list-style: none; display: flex; flex-direction: column; gap: 6px; padding: 0; margin: 0; }
+
+.kva-finding {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.68);
+  line-height: 1.5;
+}
+
+.kva-finding__arrow { color: #ec95b8; flex-shrink: 0; font-weight: 700; margin-top: 1px; }
+
+/* ── Ingredientes ── */
+.kva-ingredients { display: flex; flex-direction: column; gap: 7px; }
+
+.kva-ingredient {
+  background: rgba(58,122,245,0.06);
+  border: 1px solid rgba(58,122,245,0.14);
+  border-left: 2px solid #3a7af5;
+  border-radius: 8px;
+  padding: 7px 10px;
+}
+
+.kva-ingredient__name {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  color: #93c5fd;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+
+.kva-ingredient__reason {
+  display: block;
+  font-size: 11px;
+  color: rgba(255,255,255,0.52);
+  line-height: 1.5;
+}
+
+/* ── Protocolo urgente ── */
+.kva-protocolo {
+  padding: 12px 16px;
+  background: rgba(236,149,184,0.05);
+  border-top: 1px solid rgba(236,149,184,0.12);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.kva-protocolo__label {
+  font-size: 10px;
+  font-weight: 800;
+  color: #ec95b8;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.kva-protocolo__text {
+  font-size: 12px;
+  color: rgba(255,255,255,0.68);
+  line-height: 1.6;
   margin: 0;
 }
 
-.shatokb-koi-tip__text em {
-  color: var(--stk-primary);
-  font-style: normal;
-  font-weight: 600;
+/* ── Meta (edad bio + perfil) ── */
+.kva-meta {
+  padding: 9px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  background: rgba(255,255,255,0.01);
 }
 
-/* Mobile: tip más compacto */
-@media (max-width: 480px) {
-  .shatokb-koi-tip {
-    padding: 12px 14px;
-    gap: 8px;
-  }
-  .shatokb-koi-tip__avatar { font-size: 18px; }
-  .shatokb-koi-tip__text { font-size: 12px; }
+.kva-meta__item { display: flex; align-items: center; gap: 6px; }
+
+.kva-meta__key  { font-size: 10px; color: rgba(255,255,255,0.30); font-weight: 600; }
+.kva-meta__val  { font-size: 10px; color: rgba(255,255,255,0.55); font-weight: 600; }
+
+.kva-meta__badge {
+  font-size: 10px;
+  font-weight: 800;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
+.kva-meta__badge--ok   { background: rgba(34,197,94,0.15);  color: #86efac; border: 1px solid rgba(34,197,94,0.25); }
+.kva-meta__badge--warn { background: rgba(251,191,36,0.12); color: #fde68a; border: 1px solid rgba(251,191,36,0.25); }
 
 /* ══════════════════════════════════════════════════════════
-   RESPONSIVE — vision modal
+   RESPONSIVE
    ══════════════════════════════════════════════════════════ */
-@media (max-width: 600px) {
+@media (max-width: 480px) {
   .kv-panel {
-    border-radius: 20px 20px 0 0;
-    max-height: 90vh;
-    overflow-y: auto;
+    border-radius: 14px;
   }
-  #koi-vision-modal {
-    align-items: flex-end;
-    padding: 0;
-  }
-  .kv-viewfinder {
-    aspect-ratio: 1/1;
-  }
-  .kv-zones {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-  }
-}
 
-@media (max-width: 380px) {
   .kv-zones {
-    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+  }
+
+  .kv-zone-card {
+    padding: 8px 5px;
+  }
+
+  .kv-zone-card__value {
+    font-size: 9px;
+  }
+
+  .kv-analyzing-inner {
+    flex-direction: column;
+  }
+
+  .kv-captured-wrap {
+    width: 100%;
+    height: 160px;
+  }
+
+  .kv-captured-wrap::before {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 40%;
+    background: linear-gradient(to bottom, transparent, var(--kv-bg));
+  }
+
+  .kv-analyzing-info {
+    padding: 16px;
+  }
+
+  .kv-countdown__num {
+    font-size: 30px;
   }
 }
