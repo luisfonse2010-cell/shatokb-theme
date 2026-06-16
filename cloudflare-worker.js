@@ -19,7 +19,7 @@
  * ============================================================
  */
 
-/* ── Last deploy: 2026-06-16T16:33:01.371Z ──
+/* ── Last deploy: 2026-06-16T17:41:19.770Z ──
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
 const KOI_SYSTEM_PROMPT = `
 You are KOI.
@@ -635,6 +635,149 @@ export default {
         JSON.stringify({ ok: true, token, reportUrl, klaviyo: klaviyoResult }),
         { status: 200, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // ── Endpoint /vision — GPT-4o Vision skin analysis ────────
+    if (request.method === 'POST' && url.pathname === '/vision') {
+      let body;
+      try { body = await request.json(); } catch {
+        return new Response(JSON.stringify({ error: 'Invalid body' }),
+          { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
+      }
+
+      const { image, contexto: vCtx } = body;
+
+      if (!image || typeof image !== 'string') {
+        return new Response(JSON.stringify({ error: 'Missing image' }),
+          { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
+      }
+
+      const idioma      = vCtx?.idioma || 'en';
+      const perfilId    = vCtx?.perfil?.id || '';
+      const perfilNombre = vCtx?.perfil?.nombre || 'Unknown profile';
+      const respuestas  = vCtx?.respuestas || {};
+
+      const nombreIdioma = {
+        es: 'Spanish', en: 'English', fr: 'French', pt: 'Portuguese',
+        de: 'German',  it: 'Italian', ko: 'Korean', ja: 'Japanese'
+      }[idioma] || 'English';
+
+      // ── System prompt para análisis visual ─────────────────
+      const visionSystemPrompt = `You are KOI — a senior K-Beauty skin specialist with 9+ years of clinical esthetics experience. You analyze facial skin from images with the precision of a dermatology-trained specialist.
+
+Respond ENTIRELY in ${nombreIdioma}.
+
+The user has completed a skin quiz. Their profile: "${perfilNombre}" (ID: "${perfilId}").
+
+Quiz answers:
+- Skin type: ${respuestas.tipo_piel || 'unknown'}
+- Sensitivity: ${respuestas.sensibilidad || 'unknown'}
+- Concerns: ${JSON.stringify(respuestas.preocupacion || [])}
+- Goals: ${JSON.stringify(respuestas.objetivo || [])}
+
+YOUR TASK — Analyze the facial skin image and produce a structured JSON response with this EXACT format:
+{
+  "zonas": {
+    "tzone": "brief observation of T-Zone (forehead, nose, chin) — 3-6 words",
+    "cheeks": "brief observation of cheeks — 3-6 words",
+    "eyes": "brief observation of eye area — 3-6 words"
+  },
+  "hallazgos": [
+    "Finding 1 — specific, visual, concrete",
+    "Finding 2 — specific, visual, concrete",
+    "Finding 3 — specific, visual, concrete"
+  ],
+  "confirmacion_perfil": true or false (does the visual analysis confirm the quiz profile?),
+  "ajuste": "null or a brief description of how the routine should be adjusted based on visual findings (max 20 words)",
+  "mensaje_koi": "KOI's message to the user about what she observed — warm, precise, specific. DO NOT be generic. Reference actual visual observations. Max 80 words. In ${nombreIdioma}."
+}
+
+RULES:
+- Be specific about what you actually see in the image. If visibility is limited, be honest but still professional.
+- Do NOT diagnose medical conditions (eczema, rosacea, psoriasis). Say what you observe, not what it is clinically.
+- The "mensaje_koi" must feel like KOI is genuinely analyzing THIS person's skin — not generic K-Beauty advice.
+- If the image is unclear, too dark, or doesn't show the face clearly: set all zonas to "Visibility limited", confirmacion_perfil to true, ajuste to null, and write a warm mensaje_koi acknowledging the limitation while affirming the quiz results are sufficient.
+- Respond with ONLY the JSON — no markdown fences, no extra text.`;
+
+      try {
+        const visionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${env.OPENAI_API_KEY}`,
+            'Content-Type':  'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o',
+            messages: [
+              { role: 'system', content: visionSystemPrompt },
+              {
+                role: 'user',
+                content: [
+                  {
+                    type: 'image_url',
+                    image_url: {
+                      url:    image,  // data:image/jpeg;base64,... o URL
+                      detail: 'high', // alta resolución para análisis de piel
+                    },
+                  },
+                  {
+                    type: 'text',
+                    text: 'Analyze my skin and provide the structured JSON response as instructed.',
+                  },
+                ],
+              },
+            ],
+            max_tokens:  600,
+            temperature: 0.4, // más bajo = más consistente en el análisis
+          }),
+        });
+
+        if (!visionResponse.ok) {
+          const errData = await visionResponse.json().catch(() => ({}));
+          console.error('[KOI Vision] OpenAI error:', errData);
+          throw new Error(`OpenAI Vision HTTP ${visionResponse.status}`);
+        }
+
+        const visionData = await visionResponse.json();
+        const rawContent = visionData.choices?.[0]?.message?.content || '';
+
+        // Parsear JSON de la respuesta
+        let analysisResult;
+        try {
+          // Limpiar posibles markdown fences si GPT los añade
+          const cleaned = rawContent.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+          analysisResult = JSON.parse(cleaned);
+        } catch (parseErr) {
+          console.warn('[KOI Vision] Failed to parse JSON, using raw:', rawContent);
+          // Fallback: construir respuesta manual desde el texto
+          analysisResult = {
+            zonas: { tzone: 'Analysis complete', cheeks: 'Analysis complete', eyes: 'Analysis complete' },
+            hallazgos: ['Visual analysis completed'],
+            confirmacion_perfil: true,
+            ajuste: null,
+            mensaje_koi: rawContent.slice(0, 200),
+          };
+        }
+
+        return new Response(
+          JSON.stringify(analysisResult),
+          { status: 200, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
+        );
+
+      } catch (err) {
+        console.error('[KOI Vision] Error:', err.message);
+        // Fallback silencioso — el cliente lo maneja con datos del quiz
+        return new Response(
+          JSON.stringify({
+            zonas: { tzone: 'Analyzed', cheeks: 'Analyzed', eyes: 'Analyzed' },
+            hallazgos: [],
+            confirmacion_perfil: true,
+            ajuste: null,
+            mensaje_koi: null,
+          }),
+          { status: 200, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     // Only POST to /chat
