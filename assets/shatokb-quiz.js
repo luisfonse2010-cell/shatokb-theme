@@ -1,7 +1,32 @@
 /**
  * ============================================================
- * SHATOKB · Skin Diagnosis Quiz Engine  v3.3
+ * SHATOKB · Skin Diagnosis Quiz Engine  v5.0
  * File: assets/shatokb-quiz.js
+ *
+ * v5.0 — SHATO SKIN OS Ultra Integration (June 2026)
+ *   ALL FIELDS from Shato_Skin_OS_Master_Project.xlsx:
+ *     momento        — 'am' | 'pm' | 'both' (time of day)
+ *     score_base     — 0-100 editorial score from Excel
+ *     ingredientes   — active key ingredients array
+ *     risk           — safety flags (no_pregnant, pm_only…)
+ *     fit            — explicit Excel profile matches
+ *     subcategoria   — specific subcategory (serum_brightening, etc.)
+ *     nivel_usuario  — 'beginner' | 'intermediate' | 'advanced'
+ *     posicion_am    — step position in AM routine (1-10)
+ *     posicion_pm    — step position in PM routine (1-10)
+ *
+ *   NEW SCORING ENGINE v5.0:
+ *     score_base (Excel floor) + tipo_piel + concerns + objetivos
+ *     + sensibilidad + presupuesto + fit_excel + nivel_usuario
+ *     + ingredient_synergy (+3 each) + risk_penalties
+ *     + INGREDIENT CONFLICT DETECTION (penalty -15)
+ *
+ *   NEW DISPLAY:
+ *     AM/PM SPLIT — two separate routine blocks in results
+ *     CONFLICT WARNINGS — detect retinol+vitC in same routine
+ *     SYNERGY HIGHLIGHTS — show compatible stacks
+ *     HERO PRODUCT badge — Excel-designated hero per profile
+ *     LAYERING GUIDE — K-Beauty thin-to-thick order
  *
  * Sections:
  *  1.  QUIZ QUESTIONS
@@ -9,17 +34,18 @@
  *  3.  LIVE CATALOGUE  (fetched from /products.json)
  *  4.  FALLBACK CATALOGUE  (local/dev only)
  *  5.  SKIN PROFILES
- *  6.  SCORING ENGINE
- *  7.  RECOMMENDATION ENGINE
- *  8.  QUIZ STATE & NAVIGATION
- *  9.  EMAIL GATE + META PIXEL
- * 10.  RESULT DISPLAY
- * 11.  REVIEWS + URGENCY
- * 12.  PRODUCT RENDERING
- * 13.  CART INTEGRATION
- * 14.  DYNAMIC CONFIG (data-attributes → Theme Editor)
- * 15.  RESTART
- * 16.  INIT
+ *  6.  INGREDIENT INTEL (conflicts, synergies, layering)
+ *  7.  SCORING ENGINE  v5.0
+ *  8.  RECOMMENDATION ENGINE
+ *  9.  QUIZ STATE & NAVIGATION
+ * 10.  EMAIL GATE + META PIXEL
+ * 11.  RESULT DISPLAY
+ * 12.  REVIEWS + URGENCY
+ * 13.  PRODUCT RENDERING
+ * 14.  CART INTEGRATION
+ * 15.  DYNAMIC CONFIG (data-attributes → Theme Editor)
+ * 16.  RESTART
+ * 17.  INIT
  * ============================================================
  */
 
@@ -29,93 +55,155 @@
    1. QUIZ QUESTIONS
 ============================================================ */
 // Preguntas que permiten selección múltiple
-const SHATOKB_MULTI_SELECT = ['preocupacion', 'objetivo'];
+const SHATOKB_MULTI_SELECT = ['preocupacion', 'preocupacion_secundaria'];
 
+/* ============================================================
+   QUIZ v6.0 — 8 preguntas, 10 campos de salida
+   
+   Nuevos campos vs v5.x:
+     barrier_status       — 'healthy' | 'reactive' | 'damaged'
+     ingredient_tolerance — 'none' | 'basic' | 'intermediate' | 'advanced'
+     nivel_rutina         — 'basica' | 'intermedia' | 'completa' (renombrado)
+
+   Fixes aplicados:
+     - P2 y P3: "post-acne marks" solo en P2 (pigmentation), no en acne
+     - P3: excluye automáticamente la selección de P2 via excludes[]
+     - P5: wording sin "actives" — más claro para usuarios sin experiencia
+     - P6: "glow" solo aparece si primary concern NO es pigmentation/acne
+           (manejado via skipIf en el renderer)
+============================================================ */
 const SHATOKB_PREGUNTAS = [
+
+  /* ── P1: SKIN TYPE ─────────────────────────────────────── */
   {
     id: 'tipo_piel',
-    titulo: 'First things first — what is your skin like?',
+    titulo: 'How does your skin feel 30 minutes after cleansing?',
     emoji: '🪞',
-    subtitulo: 'Be honest with yourself. This is where everything starts.',
-    // ── Momento 1: Tip contextual de KOI ──────────────────────
-    koiTip: "The way your skin feels 30 minutes after cleansing \u2014 before any products \u2014 is the most accurate indicator of your real skin type. That morning texture you feel when you first wake up? That's the data point I use.",
+    subtitulo: 'Before any products. That raw, honest moment — that\'s your real skin type.',
+    koiTip: 'The 30-minute rule is the most reliable self-test in dermatology. Right after cleansing your skin is in a neutral state — no products masking it, no stress response yet. What you feel then is exactly what your skin does naturally.',
     opciones: [
-      { valor: 'grasa',    label: '🫧 Oily',          desc: 'Shiny by midday. Visible pores. Breakout-prone.' },
-      { valor: 'mixta',    label: '☯️ Combination',   desc: 'Oily T-zone, dry or normal everywhere else.' },
-      { valor: 'seca',     label: '🌵 Dry',           desc: 'Tight, flaky, thirsty. Feels stripped after cleansing.' },
-      { valor: 'sensible', label: '🌸 Sensitive',     desc: 'Reacts to everything. Redness. Irritation. Stinging.' },
-      { valor: 'nolose',   label: '🤷 Not sure yet',  desc: "No worries — we'll figure it out from your other answers." }
+      { valor: 'seca',     label: '🌵 Dry & tight',     desc: 'Feels tight, looks dull. Sometimes flaky around the nose or cheeks.' },
+      { valor: 'grasa',    label: '🫧 Oily all over',   desc: 'Shiny across the whole face by midday. Pores are visible.' },
+      { valor: 'mixta',    label: '☯️ Oily T-zone',     desc: 'Forehead and nose shine, but cheeks feel normal or dry.' },
+      { valor: 'sensible', label: '🌸 Reactive',        desc: 'Stings, flushes, or breaks out easily. Reacts to products and weather.' },
+      { valor: 'normal',   label: '✨ Balanced',        desc: 'Comfortable, not too oily or dry. Rarely reacts to products.' },
+      { valor: 'nolose',   label: '🤷 Not sure',        desc: "Changes day to day. We'll figure it out from your other answers." }
     ]
   },
-  {
-    id: 'sensibilidad',
-    titulo: 'How does your skin handle new products?',
-    emoji: '⚡',
-    subtitulo: 'This protects you from ingredients that could backfire.',
-    // ── Momento 1: Tip contextual de KOI ──────────────────────
-    koiTip: 'Most people confuse <em>oily skin</em> with <em>dehydrated skin</em> — they\'re opposite conditions with completely different solutions. Oily skin overproduces sebum. Dehydrated skin lacks water. You can have both at the same time.',
-    opciones: [
-      { valor: 'baja',  label: '💪 Tough as nails',  desc: "I can try anything. My skin barely reacts." },
-      { valor: 'media', label: '🤔 It depends',      desc: 'Occasional redness or breakouts with some products.' },
-      { valor: 'alta',  label: '🚨 Very reactive',   desc: 'My skin throws a tantrum with almost everything new.' }
-    ]
-  },
+
+  /* ── P2: PRIMARY CONCERN ───────────────────────────────── */
   {
     id: 'preocupacion',
-    titulo: 'What does your skin make you most self-conscious about?',
-    emoji: '😔',
-    subtitulo: 'Select all that apply — we treat every concern.',
-    koiTip: 'Dark spots and acne marks are <em>post-inflammatory hyperpigmentation</em> — a different mechanism than structural aging. Treating them without daily SPF is one of the most common (and expensive) mistakes I see.',
-    multiSelect: true,
+    titulo: 'What\'s the ONE thing you most want to fix?',
+    emoji: '🎯',
+    subtitulo: 'One answer only — this determines your hero product.',
+    koiTip: 'Choosing your primary concern isn\'t about what bothers you most emotionally — it\'s about what your skin is doing biologically right now. That\'s what drives which active ingredients I\'ll recommend.',
     opciones: [
-      { valor: 'acne',           label: '😤 Acne & breakouts',     desc: 'Blackheads, pimples, cysts. It never fully clears.' },
-      { valor: 'manchas',        label: '🟤 Dark spots',           desc: 'Post-acne marks, sun damage, uneven patches.' },
-      { valor: 'poros',          label: '🔬 Enlarged pores',       desc: "Visible pores that makeup can't hide." },
-      { valor: 'deshidratacion', label: '💧 Dull & dehydrated',    desc: 'Flat, lifeless skin. No bounce. No glow.' },
-      { valor: 'textura',        label: '🍊 Rough texture',        desc: "Bumpy, uneven skin that's not smooth to the touch." },
-      { valor: 'rojeces',        label: '🔴 Redness & irritation', desc: 'Constant redness, flushing or sensitive patches.' },
-      { valor: 'antiaging',      label: '⏳ Fine lines & firmness', desc: 'First signs of aging. Skin is losing its snap.' }
+      { valor: 'acne',           label: '🎯 Acne & breakouts',           desc: 'Active pimples, blackheads, clogged pores, oily skin.' },
+      { valor: 'manchas',        label: '🌗 Dark spots & post-acne marks', desc: 'Hyperpigmentation, melasma, marks left after breakouts.' },
+      { valor: 'antiaging',      label: '⏳ Fine lines & loss of firmness', desc: 'First wrinkles, skin thinning, loss of bounce.' },
+      { valor: 'rojeces',        label: '🛡️ Redness & damaged barrier',   desc: 'Constant flushing, peeling, tight or irritated skin.' },
+      { valor: 'deshidratacion', label: '💧 Dehydration & dullness',      desc: 'Flat skin with no glow. Feels thirsty even after moisturizer.' },
+      { valor: 'textura',        label: '🔬 Texture & enlarged pores',    desc: 'Rough, uneven surface. Pores that makeup can\'t hide.' }
     ]
   },
+
+  /* ── P3: SECONDARY CONCERN ─────────────────────────────── */
   {
-    id: 'objetivo',
-    titulo: 'Close your eyes. What does your dream skin look like?',
-    emoji: '💭',
-    subtitulo: 'Pick up to 2 — we build around what matters most to you.',
+    id: 'preocupacion_secundaria',
+    titulo: 'Anything else bothering your skin?',
+    emoji: '➕',
+    subtitulo: 'Pick up to 2 — these refine your routine beyond the hero product.',
+    koiTip: 'Secondary concerns tell me which supporting ingredients to add around your hero product. A good routine addresses your main issue directly and prevents the secondary ones from getting worse.',
     multiSelect: true,
     maxSelect: 2,
+    // Dynamic: excludes whatever was selected in P2 (handled by renderer)
+    excludeFrom: 'preocupacion',
     opciones: [
-      { valor: 'glow',      label: '✨ That glass-skin glow',   desc: 'Lit from within. Dewy, radiant, luminous.' },
-      { valor: 'calmar',    label: '🧘 Calm, quiet skin',       desc: 'No redness. No reactions. Just peace.' },
-      { valor: 'limpiar',   label: '🫧 Deeply clean pores',    desc: 'Unclogged, tight, purified. Clean slate.' },
-      { valor: 'hidratar',  label: '💦 Plump & bouncy',         desc: 'Hydrated to the core. Soft, pillowy, elastic.' },
-      { valor: 'unificar',  label: '🌅 Even, spot-free tone',   desc: 'Uniform complexion. Spots faded. Confidence up.' },
-      { valor: 'controlar', label: '🎯 Matte & pore-minimized', desc: 'Less shine. Smaller pores. In control all day.' }
+      { valor: 'acne',           label: '🎯 Acne & breakouts',             desc: 'Breakouts on top of your main concern.' },
+      { valor: 'manchas',        label: '🌗 Dark spots & post-acne marks',  desc: 'Discoloration alongside your primary issue.' },
+      { valor: 'antiaging',      label: '⏳ Fine lines & aging',            desc: 'Early signs of aging as a secondary concern.' },
+      { valor: 'rojeces',        label: '🛡️ Redness & sensitivity',         desc: 'Reactive skin that needs extra calming.' },
+      { valor: 'deshidratacion', label: '💧 Dehydration',                   desc: 'Skin that feels thirsty despite your routine.' },
+      { valor: 'textura',        label: '🔬 Texture & pores',               desc: 'Uneven surface or visible pores on top of everything else.' },
+      { valor: 'ninguna',        label: '— None',                           desc: 'My main concern is enough — keep it focused.' }
     ]
   },
+
+  /* ── P4: BARRIER & SENSITIVITY (fusión P4+P9) ──────────── */
+  {
+    id: 'sensibilidad',
+    titulo: 'How does your skin react to new products?',
+    emoji: '⚡',
+    subtitulo: 'This is your safety gate — it determines which ingredients are safe for you right now.',
+    koiTip: 'A compromised skin barrier doesn\'t just mean sensitivity — it means your skin can\'t absorb actives properly, can\'t retain moisture, and can\'t protect itself from environmental damage. Knowing your barrier status changes everything about which products I recommend.',
+    opciones: [
+      { valor: 'baja',    label: '💪 Rarely reacts',       desc: 'New products almost never cause problems. My skin is resilient.' },
+      { valor: 'media',   label: '🌤️ Sometimes reacts',    desc: 'Occasional breakouts or redness with strong products. Generally okay.' },
+      { valor: 'alta',    label: '⚡ Very reactive',        desc: 'Burns, breaks out, or turns red easily with new products.' },
+      { valor: 'damaged', label: '🚨 Barrier is damaged',  desc: 'Currently peeling, flaking, or inflamed. Needs repair before actives.' }
+    ]
+  },
+
+  /* ── P5: ACTIVE INGREDIENT EXPERIENCE ─────────────────── */
+  {
+    id: 'ingredient_tolerance',
+    titulo: 'Have you used stronger skincare ingredients before?',
+    emoji: '🧪',
+    subtitulo: 'Like acids, Vitamin C, or retinol. This unlocks the right product strength for you.',
+    koiTip: 'This isn\'t about what you\'ve heard of — it\'s about what your skin has actually tolerated. An advanced product on an unprepared skin barrier causes purging, irritation, and damage that sets you back months. I need to know exactly where you are.',
+    opciones: [
+      { valor: 'none',         label: '🌱 New to all of this',      desc: 'Never used acids, Vitamin C, retinol or similar. Starting fresh.' },
+      { valor: 'basic',        label: '🧴 Some experience',         desc: 'Used niacinamide, gentle Vitamin C, or light AHAs. Skin handled it.' },
+      { valor: 'intermediate', label: '💊 Comfortable with actives', desc: 'Regularly use AHAs, BHAs, or Vitamin C without issues.' },
+      { valor: 'advanced',     label: '🔬 Advanced — adapted skin',  desc: 'Retinol, strong acids, high-percentage actives. My skin is ready.' }
+    ]
+  },
+
+  /* ── P6: SKIN GOAL ─────────────────────────────────────── */
+  {
+    id: 'objetivo',
+    titulo: 'What does your ideal skin look like in 90 days?',
+    emoji: '💭',
+    subtitulo: 'One answer — this sets the direction of your entire routine.',
+    koiTip: 'The 90-day frame is intentional. Real skin transformation doesn\'t happen in 2 weeks — it happens in one full skin cell turnover cycle. Knowing your 90-day goal helps me prioritize which changes to make first.',
+    opciones: [
+      { valor: 'clear',    label: '🎯 Clear, acne-free skin',    desc: 'No breakouts. No marks. Clean, even, controlled.' },
+      { valor: 'unificar', label: '🌗 Even, spot-free tone',     desc: 'Faded marks. Uniform complexion. Confident bare-faced.' },
+      { valor: 'calmar',   label: '🛡️ Repaired, calm skin',     desc: 'No redness. No reactions. A strong, quiet barrier.' },
+      { valor: 'antiaging',label: '⏳ Firmer, smoother skin',    desc: 'Reduced fine lines. Better elasticity. Younger-looking.' },
+      { valor: 'glow',     label: '✨ That glass-skin glow',     desc: 'Dewy, luminous, lit-from-within. Healthy and radiant.' },
+      { valor: 'controlar',label: '☯️ Balanced & low-maintenance', desc: 'Controlled oil. Minimized pores. No drama day to day.' }
+    ]
+  },
+
+  /* ── P7: ROUTINE COMPLEXITY ────────────────────────────── */
   {
     id: 'nivel_rutina',
     titulo: 'How much time will you actually commit?',
     emoji: '⏱️',
-    subtitulo: 'A routine you stick to beats a perfect one you abandon.',
-    koiTip: 'A 3-step routine done every single day outperforms a 10-step routine done twice a week. Consistency is the only variable that actually predicts results — not the number of products.',
+    subtitulo: 'Be honest — a routine you stick to beats a perfect one you abandon.',
+    koiTip: 'A 3-step routine done every single day outperforms a 10-step routine done twice a week. Consistency is the only variable that actually predicts results in skincare — not the number of products.',
     opciones: [
-      { valor: 'basica',     label: '⚡ Quick & powerful (3–4 steps)',  desc: 'Under 5 minutes. The essentials only. Still transforms your skin.' },
-      { valor: 'intermedia', label: '⚖️ Balanced (5–6 steps)',          desc: '8–10 minutes. Real results without taking over your morning.' },
-      { valor: 'completa',   label: '🏆 The full ritual (7+ steps)',    desc: 'The complete K-Beauty experience. Maximum results. Worth every second.' }
+      { valor: 'basica',     label: '⚡ 2–3 min max',        desc: 'Cleanser + moisturizer + SPF. Minimal. Still effective.' },
+      { valor: 'intermedia', label: '🧴 5–7 min',            desc: 'Happy to add a serum or toner. The sweet spot.' },
+      { valor: 'completa',   label: '🏆 10+ min',            desc: 'Full AM + PM ritual. Every step. Maximum results.' }
     ]
   },
+
+  /* ── P8: BUDGET ────────────────────────────────────────── */
   {
     id: 'presupuesto',
-    titulo: "Last one. What's your investment range?",
+    titulo: "Last one — what's your monthly skincare budget?",
     emoji: '💳',
-    subtitulo: 'K-Beauty delivers incredible results at every price point.',
+    subtitulo: 'K-Beauty delivers real results at every price point.',
     opciones: [
-      { valor: 'bajo',  label: '💚 Smart spender', desc: 'Under $40 total. Proven products, zero waste.' },
-      { valor: 'medio', label: '💛 Best of both',  desc: '$40–$80. Where quality meets value. Our sweet spot.' },
-      { valor: 'alto',  label: '🖤 Best in class', desc: 'No ceiling. Only the highest-performing formulas.' }
+      { valor: 'bajo',  label: '💚 Under $40',   desc: 'Smart essentials only. No compromise on what counts.' },
+      { valor: 'medio', label: '💛 $40–$80',     desc: 'Willing to invest in key products. Our sweet spot.' },
+      { valor: 'alto',  label: '🖤 $80+',        desc: 'Best-in-class formulas only. No ceiling.' }
     ]
   }
+
 ];
 
 
@@ -424,8 +512,176 @@ let SHATOKB_CATALOGO = [];
 let shatokbCatalogoCargado = false;
 
 /**
+ * Pending audit log — handles of products auto-classified at runtime.
+ * Populated by shatokbAutoClassify(). Access from browser console:
+ *   copy(window.SHATOKB_INTEL_PENDING.join('\n'))
+ * Then send the list to get them properly classified in EXCEL_INTEL.
+ */
+window.SHATOKB_INTEL_PENDING = window.SHATOKB_INTEL_PENDING || [];
+
+/* ============================================================
+   3a. AUTO-CLASSIFIER  v5.2
+   
+   Infers EXCEL_INTEL fields for products not yet in the Excel
+   dataset. Called by shatokbMapProduct() when a product handle
+   is not found in SHATOKB_EXCEL_INTEL.
+
+   Logic:
+   - categoria + tipo_piel + concerns  →  fit_vector (6D)
+   - concerns + categoria              →  product_archetype
+   - ingredientes (retinol/retinal)    →  safety_final, pm_only
+   - categoria                         →  phase default
+   - All new products enter as SECONDARY_MATCH (score 40)
+     so they never displace editorially-classified products
+     from top positions.
+
+   The handle is logged to SHATOKB_INTEL_PENDING for batch
+   editorial review. Admin can check from browser console:
+     copy(window.SHATOKB_INTEL_PENDING.join('\n'))
+============================================================ */
+
+/**
+ * Auto-classify a product not found in EXCEL_INTEL.
+ *
+ * @param {string}   handle      — Shopify product handle
+ * @param {string}   categoria   — internal category (serum, moisturizer…)
+ * @param {string[]} tipo_piel   — inferred skin types from tags
+ * @param {string[]} concerns    — inferred concerns from tags
+ * @param {string[]} ingredientes— inferred ingredients from tags
+ * @param {boolean}  sensible    — sensitive-safe flag from tags
+ * @returns {object} — EXCEL_INTEL-shaped object with _auto: true
+ */
+function shatokbAutoClassify(handle, categoria, tipo_piel, concerns, ingredientes, sensible) {
+
+  // ── Log for audit ────────────────────────────────────────────
+  if (!window.SHATOKB_INTEL_PENDING.includes(handle)) {
+    window.SHATOKB_INTEL_PENDING.push(handle);
+  }
+
+  // ── Fit vector — inferred from tipo_piel + concerns ──────────
+  // If tipo_piel is empty/nolose → set all non-acne to 1 (universal fit)
+  const isUniversal = tipo_piel.length === 0 || tipo_piel.every(t => t === 'nolose');
+  const fit_dry         = isUniversal ? 1 : (tipo_piel.includes('seca')     ? 1 : 0);
+  const fit_oily        = isUniversal ? 1 : (tipo_piel.includes('grasa') || tipo_piel.includes('mixta') ? 1 : 0);
+  const fit_combination = isUniversal ? 1 : (tipo_piel.includes('mixta')    ? 1 : 0);
+  const fit_sensitive   = (isUniversal || tipo_piel.includes('sensible') || sensible) ? 1 : 0;
+  const fit_acne        = concerns.includes('acne')    ? 1 : 0;
+  const fit_pigmentation= concerns.includes('manchas') ? 1 : 0;
+
+  // ── Safety — from actual ingredient content ──────────────────
+  const hasRetinol   = ingredientes.includes('retinol') || ingredientes.includes('retinal');
+  const safety_final = hasRetinol ? 'NO_PREGNANCY' : 'SAFE';
+  const pm_only      = hasRetinol;  // retinoids are always PM
+
+  // ── Archetype — from dominant concern + category signal ──────
+  // Priority: acne > pigmentation > aging > barrier (default)
+  let product_archetype = 'Barrier Specialist';  // safest default
+  if (concerns.includes('acne') || concerns.includes('poros')) {
+    product_archetype = 'Acne Specialist';
+  } else if (concerns.includes('manchas') || concerns.includes('textura')) {
+    product_archetype = 'Pigmentation Specialist';
+  } else if (concerns.includes('antiaging') || ingredientes.includes('retinol') ||
+             ingredientes.includes('peptide') || ingredientes.includes('bakuchiol')) {
+    product_archetype = 'Aging Specialist';
+  }
+
+  // ── Phase — from category signal ────────────────────────────
+  // repair = barrier/hydration base; treat = actives; optimize = advanced
+  const PHASE_MAP = {
+    cleanser:    'repair',
+    toner:       'repair',
+    essence:     'repair',
+    moisturizer: 'repair',
+    serum:       'treat',
+    exfoliator:  'treat',
+    mask:        'treat',
+    eye:         'treat',
+    spf:         'repair',
+  };
+  const phase = PHASE_MAP[categoria] || 'treat';
+
+  // ── Score — conservative default ────────────────────────────
+  // 40 = below all editorial tiers (SECONDARY_MATCH=45+, GOOD_MATCH=55+,
+  // CORE_MATCH=90). Ensures auto-classified never beats Excel products.
+  const user_match_score = 40;
+
+  // ── AM routine hint — generic by category ───────────────────
+  const AM_HINTS = {
+    cleanser:    'cleanser → toner → serum → moisturizer → spf',
+    toner:       'cleanser → toner → serum → moisturizer → spf',
+    essence:     'toner → essence → serum → moisturizer',
+    serum:       'toner → serum → moisturizer → spf',
+    moisturizer: 'serum → moisturizer → spf',
+    spf:         'moisturizer → spf',
+    eye:         'serum → eye_cream → moisturizer',
+    exfoliator:  'use 2-3x/week after cleansing',
+    mask:        'use 1-2x/week',
+  };
+  const PM_HINTS = {
+    cleanser:    'cleanser → toner → treatment → moisturizer',
+    toner:       'cleanser → toner → treatment → moisturizer',
+    essence:     'toner → essence → treatment → moisturizer',
+    serum:       'toner → treatment_serum → moisturizer',
+    moisturizer: 'treatment → moisturizer',
+    spf:         null,  // SPF not used at night
+    eye:         'treatment → eye_cream → moisturizer',
+    exfoliator:  'use 2-3x/week at night after cleansing',
+    mask:        'use 1-2x/week at night',
+  };
+
+  return {
+    // Standard EXCEL_INTEL fields
+    user_match_score,
+    recommendation_tier:  'SECONDARY_MATCH',
+    fit_dry,
+    fit_oily,
+    fit_combination,
+    fit_sensitive,
+    fit_acne,
+    fit_pigmentation,
+    safety_final,
+    personalization_rule: pm_only ? 'use_only_at_night' : 'standard',
+    phase,
+    product_archetype,
+    am_routine:  AM_HINTS[categoria] || 'standard_routine',
+    pm_routine:  PM_HINTS[categoria] || 'standard_routine',
+    progress_stage:    'repair',
+    adaptation_rule:   'standard_tracking',
+    // Auto-classification metadata
+    _auto:       true,   // flag: not from Excel dataset
+  };
+}
+
+/**
  * Converts a raw Shopify product object → internal catalogue format.
  * Returns null for products without a recognised category tag.
+ *
+ * v4.0: Also extracts SHATO SKIN OS fields from Shopify tags:
+ *   momento    — from tags: 'AM Only', 'PM Only', 'AM PM', etc.
+ *   score_base — from tags: 'Score 85', 'Score_Base_85', etc.
+ *   ingredientes — from tags: 'ing_niacinamide', 'ing_retinol', etc.
+ *   risk       — from tags: 'risk_pregnant', 'risk_beginner', etc.
+ *   fit        — from tags: 'fit_grasa_acne', 'fit_seca', etc.
+ *
+ * v5.1 EXCEL_INTEL integration:
+ *   After building the product object from Shopify tags, looks up
+ *   shatokbGetIntel(handle) from the EXCEL_INTEL layer. If the
+ *   product has no intel entry OR its user_match_score is below the
+ *   gate (score 10 = non-facial / unclassified), returns null so
+ *   it is filtered out of the catalogue entirely.
+ *
+ *   When intel IS found the following fields are attached:
+ *     excel_score      — user_match_score (editorial strength 30-90)
+ *     excel_tier       — 'CORE_MATCH' | 'GOOD_MATCH' | 'SECONDARY_MATCH'
+ *     excel_fit        — { fit_dry, fit_oily, fit_combination,
+ *                          fit_sensitive, fit_acne, fit_pigmentation }
+ *     excel_safety     — 'SAFE' | 'NO_PREGNANCY'
+ *     excel_pm_only    — boolean (personalization_rule === 'use_only_at_night')
+ *     excel_phase      — 'repair' | 'treat' | 'optimize'
+ *     excel_archetype  — 'Barrier Specialist' | 'Acne Specialist' |
+ *                        'Pigmentation Specialist' | 'Aging Specialist'
+ *     excel_am_routine — textual AM routine sequence from Excel
+ *     excel_pm_routine — textual PM routine sequence from Excel
  */
 function shatokbMapProduct(p) {
   // Shopify returns tags as a comma-separated string in /products.json
@@ -469,22 +725,190 @@ function shatokbMapProduct(p) {
   const precio_num = parseFloat(p.variants?.[0]?.price || '0');
   const precio     = '$' + precio_num.toFixed(2);
 
+  // ── SHATO SKIN OS v4.0 — Extract new fields from tags ────────
+
+  // Momento (time of day) — from tags like 'AM Only', 'PM Only', 'AM PM', 'Morning', 'Evening'
+  let momento = 'both';
+  for (const tag of tags) {
+    const tl = tag.toLowerCase().replace(/[_\-\s]/g, '');
+    if (tl === 'amonly' || tl === 'morningonly' || tl === 'amroutine') { momento = 'am'; break; }
+    if (tl === 'pmonly' || tl === 'nightonly'   || tl === 'pmroutine') { momento = 'pm'; break; }
+    if (tl === 'ampm'   || tl === 'botham'      || tl === 'morningnight') { momento = 'both'; break; }
+  }
+  // Infer from category if not explicitly tagged
+  if (momento === 'both') {
+    if (categoria === 'spf') momento = 'am';  // SPF always AM
+  }
+
+  // score_base — from tags like 'Score 85', 'Score_85', 'Editorial_Score_90'
+  let score_base = 50;  // default neutral
+  for (const tag of tags) {
+    const m = tag.match(/[Ss]core[_\s](\d+)/);
+    if (m) { score_base = parseInt(m[1], 10); break; }
+    if (tag === 'Best Seller' || tag === 'Bestseller') score_base = Math.max(score_base, 75);
+    if (tag === 'Viral' || tag === 'Cult Favorite')    score_base = Math.max(score_base, 70);
+  }
+
+  // ingredientes — from tags like 'ing_niacinamide', 'ing_retinol', 'Niacinamide', 'Retinol'
+  const ingredientes = [];
+  const ING_TAG_MAP = {
+    'Niacinamide': 'niacinamide', 'Retinol': 'retinol', 'Vitamin C': 'l_ascorbic_acid',
+    'Centella Asiatica': 'centella_asiatica', 'Hyaluronic Acid': 'hyaluronic_acid',
+    'Ceramide': 'ceramide', 'AHA': 'aha', 'BHA': 'bha', 'Snail Mucin': 'snail_mucin',
+    'Peptide': 'peptide', 'Bakuchiol': 'bakuchiol', 'Heartleaf Extract': 'heartleaf_extract',
+    'Salicylic Acid': 'salicylic_acid', 'Tranexamic Acid': 'tranexamic_acid',
+    'Azelaic Acid': 'azelaic_acid', 'Alpha Arbutin': 'alpha_arbutin',
+  };
+  for (const tag of tags) {
+    if (tag.startsWith('ing_')) { ingredientes.push(tag.slice(4)); }
+    else if (ING_TAG_MAP[tag])  { ingredientes.push(ING_TAG_MAP[tag]); }
+  }
+
+  // risk — from tags like 'risk_pregnant', 'risk_beginner', 'PM Only', 'Start Slow'
+  const risk = [];
+  const RISK_TAG_MAP = {
+    'PM Only': 'pm_only', 'AM Only': 'am_only',
+    'No Pregnant': 'no_pregnant', 'Not Safe Pregnancy': 'no_pregnant',
+    'Not for Beginners': 'no_beginner', 'Advanced Only': 'no_beginner',
+    'Start Slow': 'start_slow', 'Introduce Gradually': 'start_slow',
+    'SPF Required': 'spf_required', 'Use With SPF': 'spf_required',
+    'High Potency': 'high_potency', 'High Strength': 'high_potency',
+    'Patch Test': 'patch_test',
+  };
+  for (const tag of tags) {
+    if (tag.startsWith('risk_')) { risk.push(tag.slice(5)); }
+    else if (RISK_TAG_MAP[tag])  { risk.push(RISK_TAG_MAP[tag]); }
+  }
+  // Infer risk from ingredient content
+  if (ingredientes.includes('retinol') || ingredientes.includes('retinal')) {
+    if (!risk.includes('no_pregnant')) risk.push('no_pregnant');
+    if (!risk.includes('pm_only'))     risk.push('pm_only');
+    if (!risk.includes('spf_required')) risk.push('spf_required');
+  }
+  if (ingredientes.includes('l_ascorbic_acid')) {
+    if (!risk.includes('am_only'))      risk.push('am_only');
+    if (!risk.includes('spf_required')) risk.push('spf_required');
+  }
+
+  // fit — from tags like 'fit_grasa_acne', 'fit_seca'
+  const fit = [];
+  for (const tag of tags) {
+    if (tag.startsWith('fit_')) { fit.push(tag.slice(4)); }
+  }
+
+  // ── EXCEL_INTEL v5.2 — enrich with editorial intelligence ────
+  // Look up the product in the EXCEL_INTEL map by Shopify handle.
+  // shatokbGetIntel() returns null for:
+  //   a) products not in the Excel dataset  → auto-classify
+  //   b) products with user_match_score < 20 → hard exclude (non-facial)
+  const intelAvailable = typeof shatokbGetIntel === 'function';
+  const intel = intelAvailable ? shatokbGetIntel(p.handle) : null;
+
+  // Hard exclude: EXCEL_INTEL is loaded AND the handle exists with score < 20.
+  // This covers known non-facial products (body, hair, makeup, devices).
+  // We detect this by checking the raw map directly (bypassing the gate).
+  const rawIntel = (typeof SHATOKB_EXCEL_INTEL !== 'undefined')
+    ? SHATOKB_EXCEL_INTEL[p.handle]
+    : undefined;
+  if (rawIntel && rawIntel.user_match_score < 20) return null;
+
+  // Auto-classify: product is new to Shopify, not yet in Excel.
+  // shatokbAutoClassify() infers all EXCEL_INTEL fields from available
+  // tag data. The product enters as SECONDARY_MATCH — visible but
+  // never top-1 against editorially-classified products.
+  // Also logs the handle to SHATOKB_INTEL_PENDING for batch review.
+  const autoIntel = (!intel && categoria)
+    ? shatokbAutoClassify(p.handle, categoria, tipo_piel, concerns, ingredientes, sensible)
+    : null;
+
+  // Use editorial intel if available, auto-classified otherwise.
+  // If neither (EXCEL_INTEL not loaded at all), proceed without intel.
+  const resolvedIntel = intel || autoIntel;
+
+  // ── Override/enhance tag-derived fields with intel data ─────
+  // resolvedIntel = editorial (Excel) OR auto-classified.
+  // Editorial intel is authoritative; auto-classified is best-effort.
+  let excel_score      = null;
+  let excel_tier       = null;
+  let excel_fit        = null;
+  let excel_safety     = null;   // 'SAFE' | 'NO_PREGNANCY'
+  let excel_pm_only    = false;
+  let excel_phase      = null;
+  let excel_archetype  = null;
+  let excel_am_routine = null;
+  let excel_pm_routine = null;
+  let excel_auto       = false;  // true = auto-classified, not from Excel
+
+  if (resolvedIntel) {
+    excel_auto      = resolvedIntel._auto || false;
+    excel_score     = resolvedIntel.user_match_score;
+    excel_tier      = resolvedIntel.recommendation_tier;
+    excel_fit       = {
+      fit_dry:          resolvedIntel.fit_dry          || 0,
+      fit_oily:         resolvedIntel.fit_oily          || 0,
+      fit_combination:  resolvedIntel.fit_combination   || 0,
+      fit_sensitive:    resolvedIntel.fit_sensitive     || 0,
+      fit_acne:         resolvedIntel.fit_acne          || 0,
+      fit_pigmentation: resolvedIntel.fit_pigmentation  || 0,
+    };
+    excel_safety     = resolvedIntel.safety_final;
+    excel_pm_only    = resolvedIntel.personalization_rule === 'use_only_at_night';
+    excel_phase      = resolvedIntel.phase;
+    excel_archetype  = resolvedIntel.product_archetype;
+    excel_am_routine = resolvedIntel.am_routine;
+    excel_pm_routine = resolvedIntel.pm_routine;
+
+    // Promote score_base if intel editorial is stronger
+    if (excel_score > score_base) score_base = excel_score;
+
+    // Enforce PM-only if intel says so
+    if (excel_pm_only && momento !== 'pm') momento = 'pm';
+
+    // Safety sync: add no_pregnant if intel says NO_PREGNANCY
+    if (excel_safety === 'NO_PREGNANCY' && !risk.includes('no_pregnant')) {
+      risk.push('no_pregnant');
+    }
+    // Safety correction: remove no_pregnant if intel explicitly says SAFE
+    // (corrects false positives from tag inference on peptide products)
+    if (excel_safety === 'SAFE' && risk.includes('no_pregnant')) {
+      const hasActualRetinol = ingredientes.includes('retinol') || ingredientes.includes('retinal');
+      if (!hasActualRetinol) risk = risk.filter(r => r !== 'no_pregnant');
+    }
+  }
+
   return {
-    id:         p.handle,
-    nombre:     p.title,
-    handle:     p.handle,
+    id:           p.handle,
+    nombre:       p.title,
+    handle:       p.handle,
     precio,
     precio_num,
     badge,
-    emoji:      EMOJI_MAP[categoria] || '🌿',
-    desc:       p.body_html
-                  ? p.body_html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160) + '…'
-                  : p.title,
+    emoji:        EMOJI_MAP[categoria] || '🌿',
+    desc:         p.body_html
+                    ? p.body_html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160) + '…'
+                    : p.title,
     tipo_piel,
     categoria,
     concerns,
     sensible,
-    imagen:     p.images?.[0]?.src || null,
+    imagen:       p.images?.[0]?.src || null,
+    // ── SHATO SKIN OS v4.0 fields ──────────────────────────────
+    momento,
+    score_base,
+    ingredientes,
+    risk,
+    fit,
+    // ── EXCEL_INTEL v5.1 fields ────────────────────────────────
+    excel_score,
+    excel_tier,
+    excel_fit,
+    excel_safety,
+    excel_pm_only,
+    excel_phase,
+    excel_archetype,
+    excel_am_routine,
+    excel_pm_routine,
+    excel_auto,        // true = auto-classified (not from Excel dataset)
   };
 }
 
@@ -525,11 +949,19 @@ async function shatokbFetchCatalogo() {
 
   // ── Attempt 1: live store absolute URL ────────────────────────
   try {
-    const raw     = await shatokbFetchAllPages(LIVE_STORE);
+    const raw      = await shatokbFetchAllPages(LIVE_STORE);
     const mapeados = raw.map(shatokbMapProduct).filter(Boolean);
     SHATOKB_CATALOGO = mapeados;
     shatokbCatalogoCargado = true;
-    console.log(`[SHATOKB] ✅ Live catalogue from shatokb.com: ${mapeados.length} products (from ${raw.length} total).`);
+    const autoCount = mapeados.filter(p => p.excel_auto).length;
+    console.log(`[SHATOKB] ✅ Live catalogue: ${mapeados.length} products active` +
+      ` (${mapeados.length - autoCount} editorial, ${autoCount} auto-classified)` +
+      ` — ${raw.length - mapeados.length} excluded (non-facial / score-gated).`);
+    if (autoCount > 0) {
+      console.info('[SHATOKB] 📋 Auto-classified products pending editorial review:',
+        window.SHATOKB_INTEL_PENDING.length,
+        '— run: copy(window.SHATOKB_INTEL_PENDING.join("\\n")) to export list.');
+    }
     return;
   } catch (err) {
     console.warn('[SHATOKB] shatokb.com fetch failed — trying relative URL:', err.message);
@@ -537,12 +969,14 @@ async function shatokbFetchCatalogo() {
 
   // ── Attempt 2: relative URL (Shopify CLI / theme preview) ─────
   try {
-    const raw     = await shatokbFetchAllPages('');
+    const raw      = await shatokbFetchAllPages('');
     const mapeados = raw.map(shatokbMapProduct).filter(Boolean);
     SHATOKB_CATALOGO = mapeados.length > 0 ? mapeados : SHATOKB_FALLBACK;
     shatokbCatalogoCargado = true;
     if (mapeados.length > 0) {
-      console.log(`[SHATOKB] ✅ Catalogue via relative URL: ${mapeados.length} products (from ${raw.length} total).`);
+      const autoCount = mapeados.filter(p => p.excel_auto).length;
+      console.log(`[SHATOKB] ✅ Catalogue via relative URL: ${mapeados.length} products` +
+        ` (${mapeados.length - autoCount} editorial, ${autoCount} auto-classified).`);
     } else {
       console.warn('[SHATOKB] No tagged products found — using static fallback.');
     }
@@ -559,9 +993,18 @@ async function shatokbFetchCatalogo() {
 
 
 /* ============================================================
-   4. FALLBACK CATALOGUE  —  used only when /products.json is
-   unavailable (local preview, dev environment).
-   All handles, names and prices are REAL products from shatokb.com.
+   4. FALLBACK CATALOGUE  —  SHATO SKIN OS v5.0
+   Complete fields from Shato_Skin_OS_Master_Project.xlsx:
+     momento:       'am' | 'pm' | 'both'
+     score_base:    0-100 editorial score (Excel)
+     ingredientes:  key active ingredients array
+     risk:          safety flags array
+     fit:           explicit skin profile matches from Excel
+     subcategoria:  specific subcategory (serum_brightening, etc.)
+     nivel_usuario: 'beginner' | 'intermediate' | 'advanced'
+     posicion_am:   step position in AM routine (1-10)
+     posicion_pm:   step position in PM routine (1-10)
+   
    In production Shopify this array is never used — the live
    catalogue from /products.json takes over automatically.
 ============================================================ */
@@ -574,7 +1017,13 @@ const SHATOKB_FALLBACK = [
     precio:'$12.99', precio_num:12.99, badge:'Best Seller', emoji:'🫧',
     desc:'Low-pH gel that cleanses without disrupting your barrier. Salicylic acid controls sebum and minimises pores without stripping.',
     tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'cleanser',
-    concerns:['acne','poros','rojeces'], sensible:true
+    concerns:['acne','poros','rojeces'], sensible:true,
+    // ── SHATO SKIN OS v5.0 ──────────────────────────────────────
+    momento:'both', score_base:90,
+    ingredientes:['salicylic_acid','tea_tree','low_ph'],
+    risk:[], fit:['grasa_acne','grasa_poros'],
+    subcategoria:'cleanser_gel', nivel_usuario:'beginner',
+    posicion_am:1, posicion_pm:2
   },
   {
     id:'anua-foam-cleanser', handle:'anua-heartleaf-quercetinol-pore-deep-cleansing-foam-150ml-5-07-fl-oz',
@@ -582,7 +1031,12 @@ const SHATOKB_FALLBACK = [
     precio:'$16.99', precio_num:16.99, badge:null, emoji:'🫧',
     desc:'BHA + heartleaf foam that dissolves sebum plugs while calming inflammation. Ideal for oily and acne-prone skin.',
     tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'cleanser',
-    concerns:['acne','poros','rojeces'], sensible:true
+    concerns:['acne','poros','rojeces'], sensible:true,
+    momento:'both', score_base:85,
+    ingredientes:['heartleaf_extract','quercetinol','bha'],
+    risk:[], fit:['grasa_acne','grasa_poros','sensible_rojeces'],
+    subcategoria:'cleanser_foam', nivel_usuario:'beginner',
+    posicion_am:1, posicion_pm:2
   },
   {
     id:'anua-cleansing-oil', handle:'anua-heartleaf-pore-control-cleansing-oil-6-76-fl-oz-200ml',
@@ -590,7 +1044,12 @@ const SHATOKB_FALLBACK = [
     precio:'$19.99', precio_num:19.99, badge:'Best Seller', emoji:'🫧',
     desc:'Glass-skin cleansing oil that dissolves SPF and makeup on contact. Fragrance-free, non-comedogenic — even for sensitive skin.',
     tipo_piel:['grasa','mixta','sensible','seca','nolose'], categoria:'cleanser',
-    concerns:['acne','poros','deshidratacion'], sensible:true
+    concerns:['acne','poros','deshidratacion'], sensible:true,
+    momento:'pm', score_base:88,
+    ingredientes:['heartleaf_extract','sunflower_oil','non_comedogenic'],
+    risk:[], fit:['grasa_acne','sensible_rojeces','mixta_general'],
+    subcategoria:'cleanser_oil', nivel_usuario:'intermediate',
+    posicion_am:null, posicion_pm:1
   },
   {
     id:'dearklairs-black-cleanser', handle:'dearklairs-gentle-black-facial-cleanser-4-73-fl-oz-vegan-low-ph-hydrating-finish',
@@ -598,7 +1057,12 @@ const SHATOKB_FALLBACK = [
     precio:'$18.00', precio_num:18.00, badge:'Best Seller', emoji:'🫧',
     desc:'Low pH antioxidant cleanser with black bean and truffle. Hydrating finish — no tight feeling after washing.',
     tipo_piel:['seca','mixta','sensible','nolose'], categoria:'cleanser',
-    concerns:['deshidratacion','rojeces','antiaging'], sensible:true
+    concerns:['deshidratacion','rojeces','antiaging'], sensible:true,
+    momento:'both', score_base:83,
+    ingredientes:['black_bean_extract','truffle','glycerin'],
+    risk:[], fit:['seca_hidratacion','seca_antiaging','sensible_rojeces'],
+    subcategoria:'cleanser_foam', nivel_usuario:'beginner',
+    posicion_am:1, posicion_pm:2
   },
   {
     id:'pyunkang-foam', handle:'pyunkang-yul-cleansing-foam-5-1-fl-oz',
@@ -606,7 +1070,12 @@ const SHATOKB_FALLBACK = [
     precio:'$14.00', precio_num:14.00, badge:null, emoji:'🫧',
     desc:'Zero-irritation foam for dry and sensitive skin. Minimal ingredients, maximum gentleness.',
     tipo_piel:['seca','sensible','nolose'], categoria:'cleanser',
-    concerns:['rojeces','deshidratacion'], sensible:true
+    concerns:['rojeces','deshidratacion'], sensible:true,
+    momento:'both', score_base:79,
+    ingredientes:['minimal_ingredients','glycerin'],
+    risk:[], fit:['sensible_rojeces','seca_hidratacion'],
+    subcategoria:'cleanser_foam', nivel_usuario:'beginner',
+    posicion_am:1, posicion_pm:2
   },
   {
     id:'skin1004-foam', handle:'skin1004-madagascar-centella-ampoule-foam-4-22-fl-oz-125ml',
@@ -614,7 +1083,12 @@ const SHATOKB_FALLBACK = [
     precio:'$14.00', precio_num:14.00, badge:'Best Seller', emoji:'🫧',
     desc:'Baking soda + centella foam that deep-cleans pores and soothes breakout-prone skin. EWG certified.',
     tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'cleanser',
-    concerns:['acne','poros','rojeces'], sensible:true
+    concerns:['acne','poros','rojeces'], sensible:true,
+    momento:'both', score_base:84,
+    ingredientes:['centella_asiatica','baking_soda','low_ph'],
+    risk:[], fit:['grasa_acne','sensible_rojeces','mixta_general'],
+    subcategoria:'cleanser_foam', nivel_usuario:'beginner',
+    posicion_am:1, posicion_pm:2
   },
   {
     id:'heimish-balm', handle:'heimish-all-clean-balm-4-0fl-oz-120ml-multi-purpose-cleansing-balm',
@@ -622,7 +1096,12 @@ const SHATOKB_FALLBACK = [
     precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'🫧',
     desc:'Cult-status balm that melts makeup, SPF and impurities without residue. Perfect first cleanse.',
     tipo_piel:['grasa','mixta','seca','sensible','nolose'], categoria:'cleanser',
-    concerns:['acne','manchas','deshidratacion'], sensible:true
+    concerns:['acne','manchas','deshidratacion'], sensible:true,
+    momento:'pm', score_base:87,
+    ingredientes:['beeswax','shea_butter','jojoba_oil'],
+    risk:[], fit:['general_glow','seca_hidratacion','mixta_manchas'],
+    subcategoria:'cleanser_balm', nivel_usuario:'intermediate',
+    posicion_am:null, posicion_pm:1
   },
   {
     id:'beauty-joseon-balm', handle:'beauty-of-joseon-radiance-cleansing-balm-makeup-sunscreen-pore-cleanser-for-sensitive-acne-skin-korean-skincare-for-men-and-women-100ml-3-38-fl-oz',
@@ -630,7 +1109,12 @@ const SHATOKB_FALLBACK = [
     precio:'$13.00', precio_num:13.00, badge:'Best Seller', emoji:'🫧',
     desc:'Exfoliating cleansing balm that removes SPF and makeup while brightening dull skin.',
     tipo_piel:['grasa','mixta','seca','sensible','nolose'], categoria:'cleanser',
-    concerns:['manchas','textura','deshidratacion'], sensible:true
+    concerns:['manchas','textura','deshidratacion'], sensible:true,
+    momento:'pm', score_base:85,
+    ingredientes:['rice_bran','niacinamide','beeswax'],
+    risk:[], fit:['mixta_manchas','general_glow','seca_antiaging'],
+    subcategoria:'cleanser_balm', nivel_usuario:'beginner',
+    posicion_am:null, posicion_pm:1
   },
 
   /* ── TONERS ─────────────────────────────────────────────────── */
@@ -640,7 +1124,12 @@ const SHATOKB_FALLBACK = [
     precio:'$16.99', precio_num:16.99, badge:null, emoji:'💧',
     desc:'Triple-acid toner that treats acne, dark spots and rough texture simultaneously. Visible results in 30 days.',
     tipo_piel:['grasa','mixta','nolose'], categoria:'toner',
-    concerns:['acne','poros','textura','manchas'], sensible:false
+    concerns:['acne','poros','textura','manchas'], sensible:false,
+    momento:'pm', score_base:78,
+    ingredientes:['aha','bha','pha','salicylic_acid','glycolic_acid'],
+    risk:['start_slow','spf_required'], fit:['grasa_acne','grasa_poros','mixta_manchas'],
+    subcategoria:'toner_exfoliating', nivel_usuario:'intermediate',
+    posicion_am:null, posicion_pm:3
   },
   {
     id:'dearklairs-toner', handle:'dear-klairs-supple-preparation-unscented-toner-6-08-fl-oz',
@@ -648,7 +1137,12 @@ const SHATOKB_FALLBACK = [
     precio:'$24.00', precio_num:24.00, badge:'Best Seller', emoji:'💧',
     desc:'Alcohol-free, fragrance-free hydrating toner. Beta-glucan and centella soothe redness and deeply replenish moisture.',
     tipo_piel:['seca','mixta','sensible','grasa','nolose'], categoria:'toner',
-    concerns:['deshidratacion','rojeces','antiaging'], sensible:true
+    concerns:['deshidratacion','rojeces','antiaging'], sensible:true,
+    momento:'both', score_base:88,
+    ingredientes:['beta_glucan','centella_asiatica','glycerin','hyaluronic_acid'],
+    risk:[], fit:['sensible_rojeces','seca_hidratacion','mixta_general'],
+    subcategoria:'toner_hydrating', nivel_usuario:'beginner',
+    posicion_am:2, posicion_pm:3
   },
   {
     id:'anua-soothing-toner', handle:'anua-heartleaf-77-soothing-toner-i-ph-5-5-trouble-care-calming-skin-refreshing-hydrating-purifying-cruelty-free-vegan-250ml-8-45-fl-oz',
@@ -656,7 +1150,12 @@ const SHATOKB_FALLBACK = [
     precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'💧',
     desc:'77% heartleaf extract at pH 5.5 — calms breakouts, strengthens the barrier and hydrates in one step.',
     tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'toner',
-    concerns:['acne','rojeces','deshidratacion'], sensible:true
+    concerns:['acne','rojeces','deshidratacion'], sensible:true,
+    momento:'both', score_base:87,
+    ingredientes:['heartleaf_extract','centella','hyaluronic_acid'],
+    risk:[], fit:['sensible_rojeces','grasa_acne','mixta_general'],
+    subcategoria:'toner_calming', nivel_usuario:'beginner',
+    posicion_am:2, posicion_pm:3
   },
   {
     id:'tirtir-rice-toner', handle:'tirtir-milk-skin-rice-toner-deep-moisturizing-hydrating-toner-for-face-5-07-fl-oz',
@@ -664,7 +1163,12 @@ const SHATOKB_FALLBACK = [
     precio:'$26.00', precio_num:26.00, badge:null, emoji:'💧',
     desc:'Milky rice toner with 4% niacinamide. Brightens uneven tone, hydrates deeply and leaves skin glass-smooth.',
     tipo_piel:['seca','mixta','sensible','nolose'], categoria:'toner',
-    concerns:['manchas','deshidratacion','textura'], sensible:true
+    concerns:['manchas','deshidratacion','textura'], sensible:true,
+    momento:'both', score_base:83,
+    ingredientes:['rice_extract','niacinamide','hyaluronic_acid'],
+    risk:[], fit:['mixta_manchas','seca_hidratacion','general_glow'],
+    subcategoria:'toner_brightening', nivel_usuario:'beginner',
+    posicion_am:2, posicion_pm:3
   },
   {
     id:'im-from-rice-toner', handle:'im-from-rice-toner-milky-toner-for-glowing-skin-korean-rice-glow-essence-with-niacinamide-5-07-fl-oz',
@@ -672,7 +1176,12 @@ const SHATOKB_FALLBACK = [
     precio:'$32.00', precio_num:32.00, badge:'Best Seller', emoji:'💧',
     desc:'Milky toner with rice bran extract and niacinamide for glass skin. Brightens, hydrates and evens tone.',
     tipo_piel:['seca','mixta','grasa','nolose'], categoria:'toner',
-    concerns:['manchas','deshidratacion','textura'], sensible:true
+    concerns:['manchas','deshidratacion','textura'], sensible:true,
+    momento:'both', score_base:85,
+    ingredientes:['rice_bran_extract','niacinamide','fermented_rice'],
+    risk:[], fit:['mixta_manchas','general_glow','seca_hidratacion'],
+    subcategoria:'toner_brightening', nivel_usuario:'beginner',
+    posicion_am:2, posicion_pm:3
   },
   {
     id:'medicube-collagen-toner', handle:'medicube-triple-collagen-toner',
@@ -680,7 +1189,12 @@ const SHATOKB_FALLBACK = [
     precio:'$29.00', precio_num:29.00, badge:'Best Seller', emoji:'💧',
     desc:'3-type collagen toner that deeply plumps and firms. Fast-absorbing dewy formula for visible elasticity boost.',
     tipo_piel:['seca','mixta','nolose'], categoria:'toner',
-    concerns:['antiaging','deshidratacion','textura'], sensible:true
+    concerns:['antiaging','deshidratacion','textura'], sensible:true,
+    momento:'both', score_base:80,
+    ingredientes:['collagen','hyaluronic_acid','peptide'],
+    risk:[], fit:['seca_antiaging','seca_hidratacion'],
+    subcategoria:'toner_hydrating', nivel_usuario:'beginner',
+    posicion_am:2, posicion_pm:3
   },
   {
     id:'pyunkang-toner', handle:'pyunkang-yul-calming-deep-moisture-toner-face-toner-for-women-containing-aha-and-pha-150ml-5-07-fl-oz',
@@ -688,7 +1202,12 @@ const SHATOKB_FALLBACK = [
     precio:'$18.00', precio_num:18.00, badge:null, emoji:'💧',
     desc:'AHA + PHA toner that gently exfoliates while intensely hydrating. For dry, sensitive and acne-prone skin.',
     tipo_piel:['seca','sensible','grasa','nolose'], categoria:'toner',
-    concerns:['deshidratacion','textura','acne','rojeces'], sensible:true
+    concerns:['deshidratacion','textura','acne','rojeces'], sensible:true,
+    momento:'pm', score_base:81,
+    ingredientes:['aha','pha','glycerin','centella'],
+    risk:['start_slow'], fit:['seca_hidratacion','sensible_rojeces','grasa_acne'],
+    subcategoria:'toner_exfoliating', nivel_usuario:'intermediate',
+    posicion_am:null, posicion_pm:3
   },
 
   /* ── ESSENCES ───────────────────────────────────────────────── */
@@ -698,7 +1217,12 @@ const SHATOKB_FALLBACK = [
     precio:'$25.00', precio_num:25.00, badge:'Best Seller', emoji:'🐌',
     desc:'The most iconic K-Beauty essence. 96% snail secretion repairs the barrier, fades marks and hydrates every skin type.',
     tipo_piel:['grasa','mixta','seca','sensible','nolose'], categoria:'essence',
-    concerns:['deshidratacion','manchas','rojeces','antiaging','textura'], sensible:true
+    concerns:['deshidratacion','manchas','rojeces','antiaging','textura'], sensible:true,
+    momento:'both', score_base:95,
+    ingredientes:['snail_mucin','hyaluronic_acid','glycerin'],
+    risk:[], fit:['general_glow','seca_hidratacion','mixta_general','sensible_rojeces'],
+    subcategoria:'essence_treatment', nivel_usuario:'beginner',
+    posicion_am:3, posicion_pm:4
   },
   {
     id:'haruharu-essence', handle:'haruharu-wonder-black-rice-probiotics-barrier-essence-4-05-fl-oz',
@@ -706,7 +1230,12 @@ const SHATOKB_FALLBACK = [
     precio:'$32.00', precio_num:32.00, badge:null, emoji:'🌿',
     desc:'Fermented black rice + probiotics essence that rebuilds the barrier, adds glow and soothes redness.',
     tipo_piel:['seca','mixta','sensible','nolose'], categoria:'essence',
-    concerns:['deshidratacion','rojeces','manchas','antiaging'], sensible:true
+    concerns:['deshidratacion','rojeces','manchas','antiaging'], sensible:true,
+    momento:'both', score_base:85,
+    ingredientes:['fermented_black_rice','probiotics','hyaluronic_acid'],
+    risk:[], fit:['seca_hidratacion','sensible_rojeces','mixta_general'],
+    subcategoria:'essence_barrier', nivel_usuario:'beginner',
+    posicion_am:3, posicion_pm:4
   },
   {
     id:'abib-heartleaf-essence', handle:'abib-heartleaf-essence-calming-pump-1-69-fl-oz-50ml-i-essence-for-face',
@@ -714,7 +1243,12 @@ const SHATOKB_FALLBACK = [
     precio:'$29.00', precio_num:29.00, badge:'Best Seller', emoji:'🌿',
     desc:'Houttuynia cordata essence that instantly calms redness and soothes post-breakout inflammation.',
     tipo_piel:['sensible','mixta','seca','nolose'], categoria:'essence',
-    concerns:['rojeces','deshidratacion','acne'], sensible:true
+    concerns:['rojeces','deshidratacion','acne'], sensible:true,
+    momento:'both', score_base:82,
+    ingredientes:['heartleaf_extract','panthenol','hyaluronic_acid'],
+    risk:[], fit:['sensible_rojeces','grasa_acne','mixta_general'],
+    subcategoria:'essence_calming', nivel_usuario:'beginner',
+    posicion_am:3, posicion_pm:4
   },
   {
     id:'haruharu-hyaluronic-toner-essence', handle:'haruharu-wonder-black-rice-hyaluronic-toner-for-all-skin-types-5-1-fl-oz-150ml',
@@ -722,7 +1256,12 @@ const SHATOKB_FALLBACK = [
     precio:'$28.00', precio_num:28.00, badge:'Best Seller', emoji:'🌿',
     desc:'EWG-safe fermented black rice toner-essence that delivers 72-hour hydration and restores skin elasticity.',
     tipo_piel:['seca','mixta','sensible','nolose'], categoria:'essence',
-    concerns:['deshidratacion','antiaging','rojeces'], sensible:true
+    concerns:['deshidratacion','antiaging','rojeces'], sensible:true,
+    momento:'both', score_base:84,
+    ingredientes:['fermented_black_rice','hyaluronic_acid','glycerin'],
+    risk:[], fit:['seca_hidratacion','mixta_general','sensible_rojeces'],
+    subcategoria:'essence_hydrating', nivel_usuario:'beginner',
+    posicion_am:3, posicion_pm:4
   },
   {
     id:'vt-pdrn-essence', handle:'vt-cosmetics-pdrn-100-essence-intensive-glow-serum-vegan-pdrn-100-000ppm-1-01-fl-oz',
@@ -730,7 +1269,12 @@ const SHATOKB_FALLBACK = [
     precio:'$34.00', precio_num:34.00, badge:'Best Seller', emoji:'💊',
     desc:'100,000ppm PDRN essence that repairs skin elasticity, boosts collagen and delivers an intense glow.',
     tipo_piel:['seca','mixta','nolose'], categoria:'essence',
-    concerns:['antiaging','deshidratacion','textura'], sensible:true
+    concerns:['antiaging','deshidratacion','textura'], sensible:true,
+    momento:'both', score_base:88,
+    ingredientes:['pdrn','hyaluronic_acid','peptide'],
+    risk:[], fit:['seca_antiaging','general_glow','mixta_general'],
+    subcategoria:'essence_treatment', nivel_usuario:'intermediate',
+    posicion_am:3, posicion_pm:4
   },
 
   /* ── SERUMS ─────────────────────────────────────────────────── */
@@ -740,7 +1284,12 @@ const SHATOKB_FALLBACK = [
     precio:'$17.99', precio_num:17.99, badge:'Best Seller', emoji:'💊',
     desc:'15% niacinamide minimises pores, controls sebum, fades dark spots and evens skin tone — visibly in 2 weeks.',
     tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'serum',
-    concerns:['poros','acne','manchas','textura'], sensible:true
+    concerns:['poros','acne','manchas','textura'], sensible:true,
+    momento:'both', score_base:82,
+    ingredientes:['niacinamide','zinc'],
+    risk:[], fit:['grasa_acne','grasa_poros','mixta_manchas'],
+    subcategoria:'serum_niacinamide', nivel_usuario:'beginner',
+    posicion_am:4, posicion_pm:5
   },
   {
     id:'anua-niacinamide-serum', handle:'anua-niacinamide-10-txa-4-serum-hyaluronic-acid-tranexamic-acid-vitamin-b12-30ml-1-01-fl-oz',
@@ -748,7 +1297,12 @@ const SHATOKB_FALLBACK = [
     precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'💊',
     desc:'Niacinamide + tranexamic acid serum that fades spots, evens tone and tightens pores. A daily brightening essential.',
     tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'serum',
-    concerns:['manchas','poros','textura','deshidratacion'], sensible:true
+    concerns:['manchas','poros','textura','deshidratacion'], sensible:true,
+    momento:'both', score_base:88,
+    ingredientes:['niacinamide','tranexamic_acid','hyaluronic_acid'],
+    risk:[], fit:['mixta_manchas','grasa_acne','grasa_poros'],
+    subcategoria:'serum_brightening', nivel_usuario:'intermediate',
+    posicion_am:4, posicion_pm:5
   },
   {
     id:'some-by-mi-retinol', handle:'some-by-mi-retinol-intense-reactivating-serum-1-69oz-50ml',
@@ -756,7 +1310,12 @@ const SHATOKB_FALLBACK = [
     precio:'$24.00', precio_num:24.00, badge:null, emoji:'💊',
     desc:'Gentle encapsulated retinol that stimulates collagen and speeds cell renewal. Start 2–3 nights per week.',
     tipo_piel:['seca','mixta','grasa','nolose'], categoria:'serum',
-    concerns:['antiaging','textura','manchas'], sensible:false
+    concerns:['antiaging','textura','manchas'], sensible:false,
+    momento:'pm', score_base:80,
+    ingredientes:['retinol','ceramide'],
+    risk:['pm_only','start_slow','no_pregnant','spf_required'], fit:['seca_antiaging','mixta_manchas'],
+    subcategoria:'serum_retinol', nivel_usuario:'intermediate',
+    posicion_am:null, posicion_pm:5
   },
   {
     id:'beauty-joseon-calming-serum', handle:'beauty-of-joseon-calming-serum-green-tea-panthenol-soothing-moisturizing-sensitive-acne-prone-uv-irritated-skin-daily-korean-skin-care-for-men-and-women-30ml-1-fl-oz',
@@ -764,7 +1323,12 @@ const SHATOKB_FALLBACK = [
     precio:'$15.00', precio_num:15.00, badge:'Best Seller', emoji:'💊',
     desc:'Green tea + panthenol calming serum that soothes breakouts, hydrates and strengthens the skin barrier.',
     tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'serum',
-    concerns:['acne','rojeces','deshidratacion'], sensible:true
+    concerns:['acne','rojeces','deshidratacion'], sensible:true,
+    momento:'both', score_base:83,
+    ingredientes:['green_tea','panthenol','centella'],
+    risk:[], fit:['sensible_rojeces','grasa_acne','mixta_general'],
+    subcategoria:'serum_calming', nivel_usuario:'beginner',
+    posicion_am:4, posicion_pm:5
   },
   {
     id:'beauty-joseon-glow-serum', handle:'beauty-of-joseon-glow-deep-serum-rice-alpha-arbutin-30ml',
@@ -772,7 +1336,12 @@ const SHATOKB_FALLBACK = [
     precio:'$15.00', precio_num:15.00, badge:'Best Seller', emoji:'💊',
     desc:'Rice water + alpha-arbutin serum that fades hyperpigmentation and delivers a glass-skin glow.',
     tipo_piel:['seca','mixta','grasa','nolose'], categoria:'serum',
-    concerns:['manchas','textura','deshidratacion'], sensible:true
+    concerns:['manchas','textura','deshidratacion'], sensible:true,
+    momento:'am', score_base:85,
+    ingredientes:['rice_water','alpha_arbutin','niacinamide'],
+    risk:[], fit:['mixta_manchas','general_glow','seca_antiaging'],
+    subcategoria:'serum_brightening', nivel_usuario:'beginner',
+    posicion_am:4, posicion_pm:null
   },
   {
     id:'skin1004-centella-ampoule', handle:'skin1004-madagascar-centella-asiatica-ampoule-facial-serum-3-38-fl-oz100ml',
@@ -780,7 +1349,12 @@ const SHATOKB_FALLBACK = [
     precio:'$18.00', precio_num:18.00, badge:'Best Seller', emoji:'💊',
     desc:'100% Madagascar centella serum that calms redness, repairs the barrier and soothes sensitised skin.',
     tipo_piel:['sensible','mixta','seca','nolose'], categoria:'serum',
-    concerns:['rojeces','deshidratacion','acne'], sensible:true
+    concerns:['rojeces','deshidratacion','acne'], sensible:true,
+    momento:'both', score_base:84,
+    ingredientes:['centella_asiatica','madecassoside','asiaticoside'],
+    risk:[], fit:['sensible_rojeces','mixta_general','grasa_acne'],
+    subcategoria:'serum_calming', nivel_usuario:'beginner',
+    posicion_am:4, posicion_pm:5
   },
   {
     id:'cosrx-vitamin-c-13', handle:'cosrx-pure-vitamin-c-13-serum-with-vitamin-e-hyaluronic-acid-0-67fl-oz-20ml',
@@ -788,7 +1362,12 @@ const SHATOKB_FALLBACK = [
     precio:'$19.99', precio_num:19.99, badge:'Best Seller', emoji:'💊',
     desc:'Pure 13% L-ascorbic acid with vitamin E and HA. Brightens, fades spots and protects against free radicals.',
     tipo_piel:['mixta','seca','grasa','nolose'], categoria:'serum',
-    concerns:['manchas','antiaging','textura'], sensible:false
+    concerns:['manchas','antiaging','textura'], sensible:false,
+    momento:'am', score_base:83,
+    ingredientes:['l_ascorbic_acid','vitamin_e','hyaluronic_acid'],
+    risk:['am_only','spf_required','no_beginner'], fit:['mixta_manchas','seca_antiaging','general_glow'],
+    subcategoria:'serum_vitamin_c', nivel_usuario:'advanced',
+    posicion_am:4, posicion_pm:null
   },
   {
     id:'anua-azelaic-serum', handle:'anua-azelaic-acid-10-hyaluron-redness-soothing-serum-30ml-1-01-fl-oz',
@@ -796,7 +1375,12 @@ const SHATOKB_FALLBACK = [
     precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'💊',
     desc:'Azelaic acid 10% + HA serum for redness, rosacea and blemishes. Calms, brightens and hydrates simultaneously.',
     tipo_piel:['sensible','mixta','grasa','nolose'], categoria:'serum',
-    concerns:['rojeces','acne','manchas','deshidratacion'], sensible:true
+    concerns:['rojeces','acne','manchas','deshidratacion'], sensible:true,
+    momento:'both', score_base:82,
+    ingredientes:['azelaic_acid','hyaluronic_acid','panthenol'],
+    risk:[], fit:['sensible_rojeces','mixta_manchas','grasa_acne'],
+    subcategoria:'serum_calming', nivel_usuario:'intermediate',
+    posicion_am:4, posicion_pm:5
   },
   {
     id:'medicube-vita-c-serum', handle:'medicube-deep-vita-c-serum-2-0-14-5-pure-vitamin-c',
@@ -804,7 +1388,12 @@ const SHATOKB_FALLBACK = [
     precio:'$38.00', precio_num:38.00, badge:'Best Seller', emoji:'💊',
     desc:'14.5% pure vitamin C for intense brightening, dark spot correction and elasticity boosting.',
     tipo_piel:['mixta','seca','grasa','nolose'], categoria:'serum',
-    concerns:['manchas','antiaging','textura'], sensible:false
+    concerns:['manchas','antiaging','textura'], sensible:false,
+    momento:'am', score_base:85,
+    ingredientes:['l_ascorbic_acid','niacinamide','vitamin_e'],
+    risk:['am_only','spf_required','no_beginner','high_potency'], fit:['mixta_manchas','seca_antiaging'],
+    subcategoria:'serum_vitamin_c', nivel_usuario:'advanced',
+    posicion_am:4, posicion_pm:null
   },
   {
     id:'frankly-retinol', handle:'frankly-retinol-0-1-cream-1-01-fl-oz-beginner-retinol-night-cream-with-ceramides',
@@ -812,7 +1401,12 @@ const SHATOKB_FALLBACK = [
     precio:'$24.00', precio_num:24.00, badge:'Best Seller', emoji:'💊',
     desc:'Beginner retinol night cream with ceramides. Smooths texture, fades dark spots and builds collagen.',
     tipo_piel:['seca','mixta','grasa','nolose'], categoria:'serum',
-    concerns:['antiaging','textura','manchas'], sensible:false
+    concerns:['antiaging','textura','manchas'], sensible:false,
+    momento:'pm', score_base:79,
+    ingredientes:['retinol','ceramide','squalane'],
+    risk:['pm_only','start_slow','no_pregnant','spf_required'], fit:['seca_antiaging','mixta_manchas'],
+    subcategoria:'serum_retinol', nivel_usuario:'intermediate',
+    posicion_am:null, posicion_pm:5
   },
   {
     id:'cosrx-retinol-oil', handle:'cosrx-retinol-0-5-oil-anti-aging-serum-with-0-5-retinoid-treatment-for-face',
@@ -820,7 +1414,12 @@ const SHATOKB_FALLBACK = [
     precio:'$21.99', precio_num:21.99, badge:'Best Seller', emoji:'💊',
     desc:'0.5% retinol in a squalane-rich oil base. Renews skin, fades fine lines and improves texture overnight.',
     tipo_piel:['seca','mixta','nolose'], categoria:'serum',
-    concerns:['antiaging','textura','manchas'], sensible:false
+    concerns:['antiaging','textura','manchas'], sensible:false,
+    momento:'pm', score_base:81,
+    ingredientes:['retinol','squalane'],
+    risk:['pm_only','no_pregnant','no_beginner','start_slow','spf_required'], fit:['seca_antiaging'],
+    subcategoria:'serum_retinol', nivel_usuario:'advanced',
+    posicion_am:null, posicion_pm:5
   },
   {
     id:'abib-dark-spot-serum', handle:'abib-glutathiosome-dark-spot-serum-vita-drop-1-69-fl-oz',
@@ -828,7 +1427,12 @@ const SHATOKB_FALLBACK = [
     precio:'$38.00', precio_num:38.00, badge:'Best Seller', emoji:'💊',
     desc:'Glutathione + vitamin C encapsulated serum for deep dark spot correction and luminous, even skin tone.',
     tipo_piel:['mixta','seca','grasa','sensible','nolose'], categoria:'serum',
-    concerns:['manchas','antiaging','textura'], sensible:true
+    concerns:['manchas','antiaging','textura'], sensible:true,
+    momento:'am', score_base:86,
+    ingredientes:['glutathione','vitamin_c_encapsulated','niacinamide'],
+    risk:['spf_required'], fit:['mixta_manchas','seca_antiaging','general_glow'],
+    subcategoria:'serum_brightening', nivel_usuario:'intermediate',
+    posicion_am:4, posicion_pm:null
   },
 
   /* ── MOISTURIZERS ───────────────────────────────────────────── */
@@ -838,7 +1442,12 @@ const SHATOKB_FALLBACK = [
     precio:'$18.00', precio_num:18.00, badge:'Best Seller', emoji:'🧴',
     desc:'Oil-free gel moisturizer with birch sap. Non-comedogenic hydration for oily and acne-prone skin.',
     tipo_piel:['grasa','mixta','nolose'], categoria:'moisturizer',
-    concerns:['acne','poros','deshidratacion'], sensible:true
+    concerns:['acne','poros','deshidratacion'], sensible:true,
+    momento:'both', score_base:82,
+    ingredientes:['birch_sap','niacinamide','salicylic_acid'],
+    risk:[], fit:['grasa_acne','grasa_poros'],
+    subcategoria:'moisturizer_gel', nivel_usuario:'beginner',
+    posicion_am:6, posicion_pm:7
   },
   {
     id:'dearklairs-calming-cream', handle:'dearklairs-midnight-blue-calming-cream-2oz',
@@ -846,7 +1455,12 @@ const SHATOKB_FALLBACK = [
     precio:'$21.00', precio_num:21.00, badge:'Best Seller', emoji:'🧴',
     desc:'Guaiazulene + centella cream that reduces active redness and repairs the barrier. The go-to for reactive skin.',
     tipo_piel:['sensible','mixta','seca','nolose'], categoria:'moisturizer',
-    concerns:['rojeces','deshidratacion','acne'], sensible:true
+    concerns:['rojeces','deshidratacion','acne'], sensible:true,
+    momento:'both', score_base:88,
+    ingredientes:['guaiazulene','centella_asiatica','ectoin'],
+    risk:[], fit:['sensible_rojeces','mixta_general','seca_hidratacion'],
+    subcategoria:'moisturizer_barrier', nivel_usuario:'beginner',
+    posicion_am:6, posicion_pm:7
   },
   {
     id:'skin1004-soothing-cream', handle:'skin1004-madagascar-centella-soothing-cream-2-53-fl-oz-75ml',
@@ -854,7 +1468,12 @@ const SHATOKB_FALLBACK = [
     precio:'$18.00', precio_num:18.00, badge:'Best Seller', emoji:'🧴',
     desc:'Pure centella cream that calms sensitised skin, repairs the barrier and locks in long-lasting hydration.',
     tipo_piel:['sensible','mixta','seca','nolose'], categoria:'moisturizer',
-    concerns:['rojeces','deshidratacion','antiaging'], sensible:true
+    concerns:['rojeces','deshidratacion','antiaging'], sensible:true,
+    momento:'both', score_base:85,
+    ingredientes:['centella_asiatica','madecassoside','ceramide'],
+    risk:[], fit:['sensible_rojeces','seca_hidratacion'],
+    subcategoria:'moisturizer_barrier', nivel_usuario:'beginner',
+    posicion_am:6, posicion_pm:7
   },
   {
     id:'pyunkang-moisture-cream', handle:'pyunkang-yul-moisture-cream-3-4-fl-oz',
@@ -862,7 +1481,12 @@ const SHATOKB_FALLBACK = [
     precio:'$28.00', precio_num:28.00, badge:'Best Seller', emoji:'🧴',
     desc:'Minimal-ingredient barrier cream with shea butter and jojoba oil. Intensely nourishes dry and damaged skin.',
     tipo_piel:['seca','sensible','mixta','nolose'], categoria:'moisturizer',
-    concerns:['deshidratacion','rojeces','antiaging'], sensible:true
+    concerns:['deshidratacion','rojeces','antiaging'], sensible:true,
+    momento:'both', score_base:87,
+    ingredientes:['shea_butter','jojoba_oil','ceramide'],
+    risk:[], fit:['seca_hidratacion','sensible_rojeces','seca_antiaging'],
+    subcategoria:'moisturizer_cream', nivel_usuario:'beginner',
+    posicion_am:6, posicion_pm:7
   },
   {
     id:'cosrx-snail-moisturizer', handle:'cosrx-snail-mucin-92-face-moisturizer-3-52-oz',
@@ -870,7 +1494,12 @@ const SHATOKB_FALLBACK = [
     precio:'$24.00', precio_num:24.00, badge:'Best Seller', emoji:'🧴',
     desc:'92% snail secretion lightweight cream. Repairs, hydrates and brightens — ideal for dry and dull skin.',
     tipo_piel:['seca','mixta','sensible','nolose'], categoria:'moisturizer',
-    concerns:['deshidratacion','manchas','antiaging','rojeces'], sensible:true
+    concerns:['deshidratacion','manchas','antiaging','rojeces'], sensible:true,
+    momento:'both', score_base:86,
+    ingredientes:['snail_mucin','ceramide','hyaluronic_acid'],
+    risk:[], fit:['seca_hidratacion','general_glow','mixta_manchas'],
+    subcategoria:'moisturizer_barrier', nivel_usuario:'beginner',
+    posicion_am:6, posicion_pm:7
   },
   {
     id:'tirtir-ceramide-cream', handle:'tirtir-natural-ceramide-cream-deep-moisturizer-for-glass-skin',
@@ -878,7 +1507,12 @@ const SHATOKB_FALLBACK = [
     precio:'$28.00', precio_num:28.00, badge:null, emoji:'🧴',
     desc:'Ceramide-rich deep moisturizer for glass skin. Strengthens the barrier, soothes and delivers all-day hydration.',
     tipo_piel:['seca','mixta','sensible','nolose'], categoria:'moisturizer',
-    concerns:['deshidratacion','antiaging','rojeces'], sensible:true
+    concerns:['deshidratacion','antiaging','rojeces'], sensible:true,
+    momento:'both', score_base:84,
+    ingredientes:['ceramide_np','ceramide_ap','ceramide_eop','hyaluronic_acid'],
+    risk:[], fit:['seca_hidratacion','seca_antiaging','sensible_rojeces'],
+    subcategoria:'moisturizer_barrier', nivel_usuario:'beginner',
+    posicion_am:6, posicion_pm:7
   },
   {
     id:'medicube-zero-pore-cream', handle:'zero-pore-one-day-cream',
@@ -886,7 +1520,12 @@ const SHATOKB_FALLBACK = [
     precio:'$32.00', precio_num:32.00, badge:'Best Seller', emoji:'🧴',
     desc:'Niacinamide + salicylic acid cream that tightens pores, controls sebum and hydrates — all in one step.',
     tipo_piel:['grasa','mixta','nolose'], categoria:'moisturizer',
-    concerns:['poros','acne','deshidratacion'], sensible:true
+    concerns:['poros','acne','deshidratacion'], sensible:true,
+    momento:'both', score_base:83,
+    ingredientes:['niacinamide','salicylic_acid','hyaluronic_acid'],
+    risk:[], fit:['grasa_poros','grasa_acne'],
+    subcategoria:'moisturizer_oil_free', nivel_usuario:'beginner',
+    posicion_am:6, posicion_pm:7
   },
   {
     id:'numbuzin-cream', handle:'numbuzin-no-4-cream-full-nutrient-firming-cream-2-02-fl-oz',
@@ -894,7 +1533,12 @@ const SHATOKB_FALLBACK = [
     precio:'$34.00', precio_num:34.00, badge:null, emoji:'🧴',
     desc:'Red ginseng + niacinamide firming cream. Revitalises, plumps and improves elasticity for mature or dry skin.',
     tipo_piel:['seca','mixta','nolose'], categoria:'moisturizer',
-    concerns:['antiaging','deshidratacion','manchas'], sensible:true
+    concerns:['antiaging','deshidratacion','manchas'], sensible:true,
+    momento:'both', score_base:80,
+    ingredientes:['red_ginseng','niacinamide','peptide'],
+    risk:[], fit:['seca_antiaging','mixta_manchas'],
+    subcategoria:'moisturizer_cream', nivel_usuario:'intermediate',
+    posicion_am:6, posicion_pm:7
   },
 
   /* ── SPF ────────────────────────────────────────────────────── */
@@ -904,7 +1548,12 @@ const SHATOKB_FALLBACK = [
     precio:'$16.00', precio_num:16.00, badge:'Best Seller', emoji:'☀️',
     desc:'The most beloved K-Beauty SPF. Rice extract + probiotics, zero white cast, deeply calming for sensitive skin.',
     tipo_piel:['grasa','mixta','sensible','seca','nolose'], categoria:'spf',
-    concerns:['manchas','rojeces','deshidratacion'], sensible:true
+    concerns:['manchas','rojeces','deshidratacion'], sensible:true,
+    momento:'am', score_base:93,
+    ingredientes:['rice_extract','probiotics','zinc_oxide'],
+    risk:['am_only'], fit:['sensible_rojeces','general_glow','grasa_acne','mixta_manchas'],
+    subcategoria:'spf_mineral', nivel_usuario:'beginner',
+    posicion_am:7, posicion_pm:null
   },
   {
     id:'haruharu-mineral-spf', handle:'haruharu-wonder-black-rice-pure-mineral-relief-daily-sunscreen-spf50-pa-50ml-1-69fl-oz',
@@ -912,7 +1561,12 @@ const SHATOKB_FALLBACK = [
     precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'☀️',
     desc:'Reef-safe mineral SPF50+ with black rice and niacinamide. Anti-pollution, anti-pigmentation, sensitive-skin safe.',
     tipo_piel:['sensible','seca','mixta','nolose'], categoria:'spf',
-    concerns:['manchas','rojeces','deshidratacion'], sensible:true
+    concerns:['manchas','rojeces','deshidratacion'], sensible:true,
+    momento:'am', score_base:88,
+    ingredientes:['black_rice','niacinamide','titanium_dioxide','zinc_oxide'],
+    risk:['am_only'], fit:['sensible_rojeces','seca_hidratacion','mixta_manchas'],
+    subcategoria:'spf_mineral', nivel_usuario:'beginner',
+    posicion_am:7, posicion_pm:null
   },
   {
     id:'abib-sunstick', handle:'abib-airy-sunstick-protection-bar-broad-spectrum-spf50-0-81-oz-23-g-semi-matte',
@@ -920,7 +1574,12 @@ const SHATOKB_FALLBACK = [
     precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'☀️',
     desc:'Hybrid SPF50+ stick with ceramides and peptides. Semi-matte finish — no white cast, makeup-friendly.',
     tipo_piel:['grasa','mixta','nolose'], categoria:'spf',
-    concerns:['manchas','acne','poros'], sensible:true
+    concerns:['manchas','acne','poros'], sensible:true,
+    momento:'am', score_base:85,
+    ingredientes:['ceramide','peptide','hybrid_filter'],
+    risk:['am_only'], fit:['grasa_acne','grasa_poros','mixta_manchas'],
+    subcategoria:'spf_hybrid', nivel_usuario:'beginner',
+    posicion_am:7, posicion_pm:null
   },
   {
     id:'purito-spf', handle:'purito-sun-day-adventure-korean-sunscreen-50ml-1-69-fl-oz',
@@ -928,7 +1587,12 @@ const SHATOKB_FALLBACK = [
     precio:'$18.00', precio_num:18.00, badge:'Best Seller', emoji:'☀️',
     desc:'Hybrid SPF50+ that is oil-free and non-comedogenic. Smooth texture that works perfectly under makeup.',
     tipo_piel:['grasa','mixta','sensible','nolose'], categoria:'spf',
-    concerns:['acne','poros','manchas'], sensible:true
+    concerns:['acne','poros','manchas'], sensible:true,
+    momento:'am', score_base:84,
+    ingredientes:['hybrid_filter','centella','oil_free'],
+    risk:['am_only'], fit:['grasa_acne','grasa_poros','sensible_rojeces'],
+    subcategoria:'spf_hybrid', nivel_usuario:'beginner',
+    posicion_am:7, posicion_pm:null
   },
   {
     id:'haruharu-airyfit-spf', handle:'haruharu-wonder-black-rice-moisture-airyfit-daily-sunscreen-50ml-1-69fl-oz',
@@ -936,7 +1600,12 @@ const SHATOKB_FALLBACK = [
     precio:'$24.00', precio_num:24.00, badge:'Best Seller', emoji:'☀️',
     desc:'Antioxidant-rich black rice SPF50+ with niacinamide. Fragrance-free, ultra-light finish for sensitive skin.',
     tipo_piel:['sensible','seca','mixta','nolose'], categoria:'spf',
-    concerns:['manchas','rojeces','deshidratacion'], sensible:true
+    concerns:['manchas','rojeces','deshidratacion'], sensible:true,
+    momento:'am', score_base:87,
+    ingredientes:['black_rice','niacinamide','hybrid_filter'],
+    risk:['am_only'], fit:['sensible_rojeces','seca_hidratacion','general_glow'],
+    subcategoria:'spf_hybrid', nivel_usuario:'beginner',
+    posicion_am:7, posicion_pm:null
   },
   {
     id:'dalba-spf', handle:'dalba-piedmont-waterfull-tone-up-sunscreen-serum-broad-spectrum-spf-50-1-7fl-oz',
@@ -944,7 +1613,12 @@ const SHATOKB_FALLBACK = [
     precio:'$28.00', precio_num:28.00, badge:'Best Seller', emoji:'☀️',
     desc:'Hybrid sunscreen-serum with white truffle. Tone-up effect, dewy glow finish — perfect base for makeup.',
     tipo_piel:['seca','mixta','nolose'], categoria:'spf',
-    concerns:['manchas','deshidratacion','textura'], sensible:true
+    concerns:['manchas','deshidratacion','textura'], sensible:true,
+    momento:'am', score_base:82,
+    ingredientes:['white_truffle','niacinamide','hybrid_filter'],
+    risk:['am_only'], fit:['general_glow','seca_antiaging','mixta_manchas'],
+    subcategoria:'spf_hybrid', nivel_usuario:'beginner',
+    posicion_am:7, posicion_pm:null
   },
 
   /* ── MASKS ──────────────────────────────────────────────────── */
@@ -954,7 +1628,12 @@ const SHATOKB_FALLBACK = [
     precio:'$12.00', precio_num:12.00, badge:null, emoji:'🩵',
     desc:'Snail mucin hydrogel masks for glass skin. 25% snail secretion + collagen for deep hydration and brightening.',
     tipo_piel:['grasa','mixta','seca','sensible','nolose'], categoria:'mask',
-    concerns:['deshidratacion','manchas','antiaging'], sensible:true
+    concerns:['deshidratacion','manchas','antiaging'], sensible:true,
+    momento:'pm', score_base:82,
+    ingredientes:['snail_mucin','collagen','hyaluronic_acid'],
+    risk:[], fit:['general_glow','seca_hidratacion','mixta_manchas'],
+    subcategoria:'mask_sheet', nivel_usuario:'beginner',
+    posicion_am:null, posicion_pm:6
   },
   {
     id:'vt-soothing-mask', handle:'vt-cosmetics-daily-soothing-mask-30ea-facial-sheet-mask-for-moist-hydrating',
@@ -962,7 +1641,12 @@ const SHATOKB_FALLBACK = [
     precio:'$29.00', precio_num:29.00, badge:'Best Seller', emoji:'🩵',
     desc:'Daily centella sheet mask for instant hydration and soothing. Non-sticky, fast-absorbing ampoule essence.',
     tipo_piel:['sensible','mixta','seca','nolose'], categoria:'mask',
-    concerns:['deshidratacion','rojeces','textura'], sensible:true
+    concerns:['deshidratacion','rojeces','textura'], sensible:true,
+    momento:'pm', score_base:88,
+    ingredientes:['centella_asiatica','hyaluronic_acid','panthenol'],
+    risk:[], fit:['sensible_rojeces','seca_hidratacion','mixta_general'],
+    subcategoria:'mask_sheet', nivel_usuario:'beginner',
+    posicion_am:null, posicion_pm:6
   },
   {
     id:'pyunkang-mask', handle:'pyunkang-yul-highly-moisturizing-mask-pack-10-pcs',
@@ -970,7 +1654,12 @@ const SHATOKB_FALLBACK = [
     precio:'$14.00', precio_num:14.00, badge:null, emoji:'🩵',
     desc:'10-pack ceramide + hyaluronic acid sheet mask for dry, sensitised skin. Fragrance-free, dermatologist tested.',
     tipo_piel:['seca','sensible','mixta','nolose'], categoria:'mask',
-    concerns:['deshidratacion','rojeces','antiaging'], sensible:true
+    concerns:['deshidratacion','rojeces','antiaging'], sensible:true,
+    momento:'pm', score_base:80,
+    ingredientes:['ceramide','hyaluronic_acid','panthenol'],
+    risk:[], fit:['seca_hidratacion','sensible_rojeces'],
+    subcategoria:'mask_sheet', nivel_usuario:'beginner',
+    posicion_am:null, posicion_pm:6
   },
   {
     id:'abib-overnight-mask', handle:'abib-rice-probiotics-overnight-mask-barrier-jelly-2-7-fl-oz',
@@ -978,7 +1667,12 @@ const SHATOKB_FALLBACK = [
     precio:'$26.00', precio_num:26.00, badge:'Best Seller', emoji:'🩵',
     desc:'Overnight jelly sleeping mask with rice probiotics. Wakes up skin radiant, plump and barrier-strong.',
     tipo_piel:['seca','mixta','nolose'], categoria:'mask',
-    concerns:['deshidratacion','manchas','antiaging'], sensible:true
+    concerns:['deshidratacion','manchas','antiaging'], sensible:true,
+    momento:'pm', score_base:85,
+    ingredientes:['rice_probiotics','hyaluronic_acid','niacinamide'],
+    risk:[], fit:['seca_hidratacion','mixta_manchas','general_glow'],
+    subcategoria:'mask_sleeping', nivel_usuario:'beginner',
+    posicion_am:null, posicion_pm:8
   },
   {
     id:'medicube-clay-mask', handle:'medicube-zero-pore-blackhead-mud-facial-mask-3-52-oz',
@@ -986,7 +1680,12 @@ const SHATOKB_FALLBACK = [
     precio:'$24.00', precio_num:24.00, badge:'Best Seller', emoji:'🩵',
     desc:'AHA + BHA + PHA clay mask that deep-cleans pores and removes blackheads in 3 minutes.',
     tipo_piel:['grasa','mixta','nolose'], categoria:'mask',
-    concerns:['acne','poros','textura'], sensible:false
+    concerns:['acne','poros','textura'], sensible:false,
+    momento:'pm', score_base:83,
+    ingredientes:['aha','bha','pha','kaolin_clay'],
+    risk:['start_slow','spf_required'], fit:['grasa_acne','grasa_poros'],
+    subcategoria:'mask_clay', nivel_usuario:'intermediate',
+    posicion_am:null, posicion_pm:6
   },
 
   /* ── EYE CARE ───────────────────────────────────────────────── */
@@ -996,7 +1695,12 @@ const SHATOKB_FALLBACK = [
     precio:'$38.00', precio_num:38.00, badge:'Best Seller', emoji:'👁️',
     desc:'PDRN + peptide + retinol eye serum that brightens dark circles, firms and reduces fine lines around the eyes.',
     tipo_piel:['seca','mixta','nolose'], categoria:'eye',
-    concerns:['antiaging','manchas','deshidratacion'], sensible:true
+    concerns:['antiaging','manchas','deshidratacion'], sensible:true,
+    momento:'pm', score_base:86,
+    ingredientes:['pdrn','peptide','retinol'],
+    risk:['pm_only','no_pregnant'], fit:['seca_antiaging','mixta_manchas'],
+    subcategoria:'eye_serum', nivel_usuario:'intermediate',
+    posicion_am:null, posicion_pm:6
   },
   {
     id:'haruharu-eye-cream', handle:'haruharu-wonder-black-rice-bakuchiol-eye-cream-0-67-fl-oz-20ml-anti-aging-wrinkle-care-natural-retinol-alternative-cruelty-free-ewg-green',
@@ -1004,7 +1708,12 @@ const SHATOKB_FALLBACK = [
     precio:'$28.00', precio_num:28.00, badge:'Best Seller', emoji:'👁️',
     desc:'Natural retinol-alternative bakuchiol eye cream. Firms, brightens dark circles and reduces fine lines gently.',
     tipo_piel:['seca','mixta','sensible','nolose'], categoria:'eye',
-    concerns:['antiaging','manchas','deshidratacion'], sensible:true
+    concerns:['antiaging','manchas','deshidratacion'], sensible:true,
+    momento:'pm', score_base:84,
+    ingredientes:['bakuchiol','black_rice','collagen'],
+    risk:[], fit:['seca_antiaging','sensible_rojeces','mixta_manchas'],
+    subcategoria:'eye_cream', nivel_usuario:'beginner',
+    posicion_am:5, posicion_pm:6
   },
   {
     id:'beauty-joseon-eye-serum', handle:'beauty-of-joseon-revive-eye-serum-with-retinal-niacinamide-correction-for-puffy-eye-bags-fine-lines-dark-circles-wrinkles-korean-skin-care-30ml-1-fl-oz',
@@ -1012,7 +1721,12 @@ const SHATOKB_FALLBACK = [
     precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'👁️',
     desc:'Retinal + niacinamide eye serum for dark circles, puffiness and fine lines. Results from week 2.',
     tipo_piel:['seca','mixta','nolose'], categoria:'eye',
-    concerns:['antiaging','manchas','deshidratacion'], sensible:true
+    concerns:['antiaging','manchas','deshidratacion'], sensible:true,
+    momento:'pm', score_base:87,
+    ingredientes:['retinal','niacinamide','peptide'],
+    risk:['pm_only','no_pregnant'], fit:['seca_antiaging','mixta_manchas'],
+    subcategoria:'eye_serum', nivel_usuario:'advanced',
+    posicion_am:null, posicion_pm:6
   },
   {
     id:'goodal-eye-patch', handle:'goodal-green-tangerine-vitamin-c-moisturizing-eye-patch-5-minute-hydrating-gel-patch-60-sheets',
@@ -1020,7 +1734,12 @@ const SHATOKB_FALLBACK = [
     precio:'$22.00', precio_num:22.00, badge:'Best Seller', emoji:'👁️',
     desc:'5-minute vitamin C hydrogel eye patches that brighten dark circles, firm and instantly plump the eye area.',
     tipo_piel:['grasa','mixta','seca','sensible','nolose'], categoria:'eye',
-    concerns:['manchas','antiaging','deshidratacion'], sensible:true
+    concerns:['manchas','antiaging','deshidratacion'], sensible:true,
+    momento:'am', score_base:80,
+    ingredientes:['vitamin_c','hyaluronic_acid','green_tangerine'],
+    risk:[], fit:['mixta_manchas','general_glow','seca_antiaging'],
+    subcategoria:'eye_patch', nivel_usuario:'beginner',
+    posicion_am:5, posicion_pm:null
   }
 ];
 
@@ -1029,105 +1748,239 @@ const SHATOKB_FALLBACK = [
    5. SKIN PROFILES
    Defines routine steps per profile.
    Products are found dynamically — nothing is hardcoded here.
+   v5.0: Each profile now has a `hero_product` ID from Excel
+         and expanded `pasos` with subcategoria hints.
 ============================================================ */
 const SHATOKB_PERFILES = {
   grasa_acne: {
     titulo: 'The Oily Skin Overachiever',
     descripcion: "Your skin works overtime — producing more oil than it needs, which clogs pores and keeps breakouts coming back. The good news? K-Beauty was practically invented for this. These routines don't just mask the problem. They retrain your skin.",
     resumen: ['🫧 Oily & breakout-prone', '🎯 Active treatment', '⚡ Fast visible results'],
+    hero_product: 'cosrx-low-ph-cleanser',
     pasos: [
-      { categoria: 'cleanser',    nombre: 'Cleanser',          por_que: 'A low pH cleanser removes oil and impurities without triggering more sebum production. Your pores can finally breathe.' },
-      { categoria: 'toner',       nombre: 'Exfoliating Toner', por_que: 'AHA/BHA dissolves the sebum trapped inside pores. This is the step most people skip — and the one that makes the biggest difference.' },
-      { categoria: 'moisturizer', nombre: 'Moisturizer',       por_que: 'Skipping moisturizer makes oily skin produce even more oil. A lightweight, non-comedogenic formula tells your skin to stop overcompensating.' },
-      { categoria: 'spf',         nombre: 'SPF 50+',           por_que: "Non-negotiable. Your acne-fighting actives make skin photosensitive — skipping SPF undoes everything else you're doing." }
+      { categoria: 'cleanser',    nombre: 'Cleanser',          subcategoria_pref: 'cleanser_gel', por_que: 'A low pH cleanser removes oil and impurities without triggering more sebum production. Your pores can finally breathe.' },
+      { categoria: 'toner',       nombre: 'Exfoliating Toner', subcategoria_pref: 'toner_exfoliating', por_que: 'AHA/BHA dissolves the sebum trapped inside pores. This is the step most people skip — and the one that makes the biggest difference.' },
+      { categoria: 'moisturizer', nombre: 'Moisturizer',       subcategoria_pref: 'moisturizer_oil_free', por_que: 'Skipping moisturizer makes oily skin produce even more oil. A lightweight, non-comedogenic formula tells your skin to stop overcompensating.' },
+      { categoria: 'spf',         nombre: 'SPF 50+',           subcategoria_pref: 'spf_hybrid', por_que: "Non-negotiable. Your acne-fighting actives make skin photosensitive — skipping SPF undoes everything else you're doing." }
     ]
   },
   grasa_poros: {
     titulo: 'The Pore Minimizer',
     descripcion: "Enlarged pores aren't just genetic — they're caused by excess oil and dead skin cells stretching them out over time. Korean chemical exfoliation is the most effective method in the world for gradually refining pore appearance. And it works.",
     resumen: ['🫧 Oily skin', '🔬 Visible pores', '✨ Texture refinement'],
+    hero_product: 'medicube-zero-pore-cream',
     pasos: [
-      { categoria: 'cleanser',    nombre: 'Cleanser',          por_que: "Clears away the oil that keeps pores stretched and clogged — without sending your sebaceous glands into overdrive." },
-      { categoria: 'toner',       nombre: 'Exfoliating Toner', por_que: "This is where the magic happens. AHA/BHA acids break down the buildup inside pores. Weekly use visibly shrinks them." },
-      { categoria: 'moisturizer', nombre: 'Moisturizer',       por_que: "Light hydration locks in your routine's results without adding weight or blocking pores." },
-      { categoria: 'spf',         nombre: 'SPF 50+',           por_que: 'An oil-free formula keeps you matte all day. UV damage worsens pore appearance — SPF stops that from happening.' }
+      { categoria: 'cleanser',    nombre: 'Cleanser',          subcategoria_pref: 'cleanser_foam', por_que: "Clears away the oil that keeps pores stretched and clogged — without sending your sebaceous glands into overdrive." },
+      { categoria: 'toner',       nombre: 'Exfoliating Toner', subcategoria_pref: 'toner_exfoliating', por_que: "This is where the magic happens. AHA/BHA acids break down the buildup inside pores. Weekly use visibly shrinks them." },
+      { categoria: 'serum',       nombre: 'Niacinamide Serum', subcategoria_pref: 'serum_niacinamide', por_que: 'Niacinamide at 10-15% visibly minimises pore appearance and regulates sebum in 2 weeks of consistent use.' },
+      { categoria: 'moisturizer', nombre: 'Moisturizer',       subcategoria_pref: 'moisturizer_gel', por_que: "Light hydration locks in your routine's results without adding weight or blocking pores." },
+      { categoria: 'spf',         nombre: 'SPF 50+',           subcategoria_pref: 'spf_hybrid', por_que: 'An oil-free formula keeps you matte all day. UV damage worsens pore appearance — SPF stops that from happening.' }
     ]
   },
   mixta_general: {
     titulo: 'The Balancing Act',
     descripcion: "Combination skin is tricky because it has contradictory needs in different zones. Products that fix one area often make another worse. K-Beauty's layering method solves this — you hydrate where you need it and control where you don't.",
     resumen: ['☯️ Combination skin', '💧 Needs balance', '🎯 Zone-specific results'],
+    hero_product: 'cosrx-snail-essence',
     pasos: [
-      { categoria: 'cleanser',    nombre: 'Cleanser',        por_que: 'Gently cleanses without drying out your cheeks or over-stimulating the T-zone. Balance starts here.' },
-      { categoria: 'toner',       nombre: 'Hydrating Toner', por_que: 'Hydration delivered in layers absorbs evenly across all zones — no greasy patches, no tight areas.' },
-      { categoria: 'essence',     nombre: 'Essence',         por_que: "The K-Beauty secret weapon. Replenishes moisture where it's needed while keeping oily areas in check." },
-      { categoria: 'spf',         nombre: 'SPF 50+',         por_que: 'Daily sun protection without the greasy residue. Your skin stays balanced all day.' }
+      { categoria: 'cleanser',    nombre: 'Cleanser',        subcategoria_pref: 'cleanser_foam', por_que: 'Gently cleanses without drying out your cheeks or over-stimulating the T-zone. Balance starts here.' },
+      { categoria: 'toner',       nombre: 'Hydrating Toner', subcategoria_pref: 'toner_hydrating', por_que: 'Hydration delivered in layers absorbs evenly across all zones — no greasy patches, no tight areas.' },
+      { categoria: 'essence',     nombre: 'Essence',         subcategoria_pref: 'essence_treatment', por_que: "The K-Beauty secret weapon. Replenishes moisture where it's needed while keeping oily areas in check." },
+      { categoria: 'spf',         nombre: 'SPF 50+',         subcategoria_pref: 'spf_hybrid', por_que: 'Daily sun protection without the greasy residue. Your skin stays balanced all day.' }
     ]
   },
   mixta_manchas: {
     titulo: 'The Spot Eraser',
     descripcion: "You're fighting two battles at once — excess sebum and hyperpigmentation. The breakthrough? Korean brightening actives like vitamin C, niacinamide and tranexamic acid work on both simultaneously. Your even tone is closer than you think.",
     resumen: ['☯️ Combination skin', '🟤 Dark spots & marks', '✨ Even tone incoming'],
+    hero_product: 'anua-niacinamide-serum',
     pasos: [
-      { categoria: 'cleanser', nombre: 'Cleanser',          por_que: 'A clean, pH-balanced canvas ensures your brightening actives penetrate deeply instead of sitting on top of dead skin.' },
-      { categoria: 'serum',    nombre: 'Brightening Serum', por_que: 'Vitamin C in the morning is the gold standard for fading spots and blocking future pigmentation. This step changes faces.' },
-      { categoria: 'essence',  nombre: 'Essence',           por_que: 'Accelerates cell renewal and progressively evens out skin tone from layer one.' },
-      { categoria: 'spf',      nombre: 'SPF 50+',           por_que: "Without SPF, your brightening actives are fighting a losing battle. UV exposure is the #1 cause of new dark spots." }
+      { categoria: 'cleanser', nombre: 'Cleanser',          subcategoria_pref: 'cleanser_balm', por_que: 'A clean, pH-balanced canvas ensures your brightening actives penetrate deeply instead of sitting on top of dead skin.' },
+      { categoria: 'serum',    nombre: 'Brightening Serum', subcategoria_pref: 'serum_brightening', por_que: 'Vitamin C in the morning is the gold standard for fading spots and blocking future pigmentation. This step changes faces.' },
+      { categoria: 'essence',  nombre: 'Essence',           subcategoria_pref: 'essence_treatment', por_que: 'Accelerates cell renewal and progressively evens out skin tone from layer one.' },
+      { categoria: 'spf',      nombre: 'SPF 50+',           subcategoria_pref: 'spf_hybrid', por_que: "Without SPF, your brightening actives are fighting a losing battle. UV exposure is the #1 cause of new dark spots." }
     ]
   },
   seca_hidratacion: {
     titulo: 'The Deep Hydration Protocol',
     descripcion: "Your skin is thirsty at a cellular level — and a single moisturizer isn't enough. K-Beauty invented layered hydration for exactly this: you build water content from the deepest layer outward, locking each one in before adding the next. The result is skin that stays plump for hours.",
     resumen: ['🌵 Dry skin', '💧 Hydration is everything', '🛡️ Barrier restoration'],
+    hero_product: 'cosrx-snail-essence',
     pasos: [
-      { categoria: 'cleanser',    nombre: 'Cleanser',        por_que: "A sulfate-free, creamy formula cleanses without stealing the little moisture your skin has left. Never skip this." },
-      { categoria: 'toner',       nombre: 'Hydrating Toner', por_que: 'First layer of water. Apply while your face is still slightly damp — absorption increases by 40%.' },
-      { categoria: 'essence',     nombre: 'Essence',         por_que: "Second layer. This is where K-Beauty separates itself. The essence penetrates deeper than a moisturizer ever could." },
-      { categoria: 'moisturizer', nombre: 'Moisturizer',     por_que: 'Seals everything in. Without this final step, all that hydration evaporates within the hour.' },
-      { categoria: 'spf',         nombre: 'SPF 50+',         por_que: 'A hydrating SPF with a dewy finish adds one last layer of protection. UV damage is the #1 cause of skin dryness.' }
+      { categoria: 'cleanser',    nombre: 'Cleanser',        subcategoria_pref: 'cleanser_foam', por_que: "A sulfate-free, creamy formula cleanses without stealing the little moisture your skin has left. Never skip this." },
+      { categoria: 'toner',       nombre: 'Hydrating Toner', subcategoria_pref: 'toner_hydrating', por_que: 'First layer of water. Apply while your face is still slightly damp — absorption increases by 40%.' },
+      { categoria: 'essence',     nombre: 'Essence',         subcategoria_pref: 'essence_barrier', por_que: "Second layer. This is where K-Beauty separates itself. The essence penetrates deeper than a moisturizer ever could." },
+      { categoria: 'moisturizer', nombre: 'Moisturizer',     subcategoria_pref: 'moisturizer_cream', por_que: 'Seals everything in. Without this final step, all that hydration evaporates within the hour.' },
+      { categoria: 'spf',         nombre: 'SPF 50+',         subcategoria_pref: 'spf_mineral', por_que: 'A hydrating SPF with a dewy finish adds one last layer of protection. UV damage is the #1 cause of skin dryness.' }
     ]
   },
   seca_antiaging: {
     titulo: 'The Age-Defying Ritual',
     descripcion: "Dry skin ages faster — that's not an opinion, it's biology. When your barrier is weakened, collagen breaks down faster and fine lines deepen. The solution is intense, consistent hydration paired with proven actives. K-Beauty does this better than anything else in the world.",
     resumen: ['🌵 Dry skin', '⏳ Anti-aging focus', '🔬 Clinically proven actives'],
+    hero_product: 'haruharu-eye-cream',
     pasos: [
-      { categoria: 'cleanser',    nombre: 'Cleanser',        por_que: "Sulfate-free is non-negotiable for you. Harsh cleansers accelerate aging by stripping your skin's natural lipid barrier." },
-      { categoria: 'toner',       nombre: 'Hydrating Toner', por_que: 'Preps skin before actives. Hydrated skin absorbs serums more effectively — this step multiplies everything that comes after.' },
-      { categoria: 'serum',       nombre: 'Active Serum',    por_que: 'Vitamin C (morning) brightens and protects. Retinol (evening) rebuilds collagen from within. Two serums. Transformative results.' },
-      { categoria: 'moisturizer', nombre: 'Moisturizer',     por_que: 'Rich, barrier-repairing hydration. While you sleep, your skin repairs itself — this gives it everything it needs to do that.' },
-      { categoria: 'spf',         nombre: 'SPF 50+',         por_que: 'UV damage is responsible for 90% of visible aging. This one step protects all the work everything else is doing.' }
+      { categoria: 'cleanser',    nombre: 'Cleanser',        subcategoria_pref: 'cleanser_foam', por_que: "Sulfate-free is non-negotiable for you. Harsh cleansers accelerate aging by stripping your skin's natural lipid barrier." },
+      { categoria: 'toner',       nombre: 'Hydrating Toner', subcategoria_pref: 'toner_hydrating', por_que: 'Preps skin before actives. Hydrated skin absorbs serums more effectively — this step multiplies everything that comes after.' },
+      { categoria: 'serum',       nombre: 'Active Serum',    subcategoria_pref: 'serum_vitamin_c', por_que: 'Vitamin C (morning) brightens and protects. Retinol (evening) rebuilds collagen from within. Two serums. Transformative results.' },
+      { categoria: 'eye',         nombre: 'Eye Treatment',   subcategoria_pref: 'eye_cream', por_que: 'The eye area has the thinnest skin on the face. Targeted treatment here slows fine lines and dark circles faster than any other step.' },
+      { categoria: 'moisturizer', nombre: 'Moisturizer',     subcategoria_pref: 'moisturizer_cream', por_que: 'Rich, barrier-repairing hydration. While you sleep, your skin repairs itself — this gives it everything it needs to do that.' },
+      { categoria: 'spf',         nombre: 'SPF 50+',         subcategoria_pref: 'spf_hybrid', por_que: 'UV damage is responsible for 90% of visible aging. This one step protects all the work everything else is doing.' }
     ]
   },
   sensible_rojeces: {
     titulo: 'The Calm-Down Routine',
     descripcion: "Your skin isn't high-maintenance — it's just been treated with the wrong products. Most skincare is too aggressive for reactive skin. K-Beauty's calming philosophy was built around ingredients like Centella asiatica, panthenol and mugwort — gentle enough for the most sensitive skin, powerful enough to actually repair it.",
     resumen: ['🌸 Sensitive & reactive', '🔴 Redness relief', '🛡️ Barrier repair mode'],
+    hero_product: 'skin1004-centella-ampoule',
     pasos: [
-      { categoria: 'cleanser',    nombre: 'Cleanser',      por_que: 'Fragrance-free, SLS-free, minimal ingredients. Every unnecessary ingredient is a potential trigger — this step removes all of them.' },
-      { categoria: 'toner',       nombre: 'Calming Toner', por_que: 'Alcohol-free, centella or aloe-based. Cools down redness on contact and starts repairing your skin barrier immediately.' },
-      { categoria: 'serum',       nombre: 'Calming Serum', por_que: "Centella asiatica is Korea's #1 skin-calming ingredient. Clinical studies show 70% redness reduction in 4 weeks of consistent use." },
-      { categoria: 'moisturizer', nombre: 'Repair Cream',  por_que: 'A stronger barrier means less reactivity. Every time you use this, your skin gets a little tougher — in the best possible way.' },
-      { categoria: 'spf',         nombre: 'SPF 50+',       por_que: 'Mineral (physical) sunscreens sit on top of the skin instead of being absorbed — far gentler for reactive skin types.' }
+      { categoria: 'cleanser',    nombre: 'Cleanser',      subcategoria_pref: 'cleanser_foam', por_que: 'Fragrance-free, SLS-free, minimal ingredients. Every unnecessary ingredient is a potential trigger — this step removes all of them.' },
+      { categoria: 'toner',       nombre: 'Calming Toner', subcategoria_pref: 'toner_calming', por_que: 'Alcohol-free, centella or aloe-based. Cools down redness on contact and starts repairing your skin barrier immediately.' },
+      { categoria: 'serum',       nombre: 'Calming Serum', subcategoria_pref: 'serum_calming', por_que: "Centella asiatica is Korea's #1 skin-calming ingredient. Clinical studies show 70% redness reduction in 4 weeks of consistent use." },
+      { categoria: 'moisturizer', nombre: 'Repair Cream',  subcategoria_pref: 'moisturizer_barrier', por_que: 'A stronger barrier means less reactivity. Every time you use this, your skin gets a little tougher — in the best possible way.' },
+      { categoria: 'spf',         nombre: 'SPF 50+',       subcategoria_pref: 'spf_mineral', por_que: 'Mineral (physical) sunscreens sit on top of the skin instead of being absorbed — far gentler for reactive skin types.' }
     ]
   },
   general_glow: {
     titulo: 'The Glow Starter Kit',
     descripcion: "You don't need an 18-step routine to get results. You need the right products, in the right order, for your skin. This is the routine that introduces your skin to K-Beauty — and once you feel the difference, you'll never go back.",
     resumen: ['✨ Glow is the goal', '💧 Hydration first', '🌟 Simple but powerful'],
+    hero_product: 'beauty-joseon-spf',
     pasos: [
-      { categoria: 'cleanser',    nombre: 'Cleanser',    por_que: "Every great routine starts with a clean canvas. The right cleanser doesn't just clean — it sets the pH your other products need to work." },
-      { categoria: 'essence',     nombre: 'Essence',     por_que: "The step that makes K-Beauty different from everything else. One bottle of snail mucin or fermented yeast changed millions of people's skin. It will change yours." },
-      { categoria: 'moisturizer', nombre: 'Moisturizer', por_que: 'Locks in everything. Keeps your barrier intact. Gives you that "I just woke up like this" glow that lasts all day.' },
-      { categoria: 'spf',         nombre: 'SPF 50+',     por_que: "If you're only going to do one thing for your skin, make it SPF. It's the single most powerful anti-aging, anti-damage step in existence." }
+      { categoria: 'cleanser',    nombre: 'Cleanser',    subcategoria_pref: 'cleanser_balm', por_que: "Every great routine starts with a clean canvas. The right cleanser doesn't just clean — it sets the pH your other products need to work." },
+      { categoria: 'essence',     nombre: 'Essence',     subcategoria_pref: 'essence_treatment', por_que: "The step that makes K-Beauty different from everything else. One bottle of snail mucin or fermented yeast changed millions of people's skin. It will change yours." },
+      { categoria: 'moisturizer', nombre: 'Moisturizer', subcategoria_pref: 'moisturizer_barrier', por_que: 'Locks in everything. Keeps your barrier intact. Gives you that "I just woke up like this" glow that lasts all day.' },
+      { categoria: 'spf',         nombre: 'SPF 50+',     subcategoria_pref: 'spf_hybrid', por_que: "If you're only going to do one thing for your skin, make it SPF. It's the single most powerful anti-aging, anti-damage step in existence." }
     ]
   }
 };
 
 
 /* ============================================================
-   6. SCORING ENGINE
+   6. INGREDIENT INTEL  v5.0
+   Conflict/synergy matrix from Shato_Skin_OS_Master_Project.xlsx
 ============================================================ */
+
+const SHATOKB_INGREDIENT_CONFLICTS = {
+  'retinol':          ['l_ascorbic_acid','vitamin_c','aha','bha','glycolic_acid','benzoyl_peroxide'],
+  'retinal':          ['l_ascorbic_acid','vitamin_c','aha','bha','glycolic_acid'],
+  'l_ascorbic_acid':  ['niacinamide'],
+  'aha':              ['retinol','retinal','benzoyl_peroxide'],
+  'glycolic_acid':    ['retinol','retinal'],
+  'bha':              ['retinol','retinal'],
+  'salicylic_acid':   ['retinol','retinal'],
+  'benzoyl_peroxide': ['retinol','l_ascorbic_acid','vitamin_c'],
+};
+
+const SHATOKB_INGREDIENT_SYNERGIES = {
+  'l_ascorbic_acid':       ['vitamin_e','ferulic_acid','hyaluronic_acid'],
+  'vitamin_c':             ['vitamin_e','ferulic_acid'],
+  'vitamin_c_encapsulated':['niacinamide','hyaluronic_acid'],
+  'retinol':               ['ceramide','squalane','peptide','hyaluronic_acid'],
+  'retinal':               ['niacinamide','ceramide','peptide'],
+  'niacinamide':           ['zinc','hyaluronic_acid','centella','centella_asiatica'],
+  'centella_asiatica':     ['panthenol','beta_glucan','hyaluronic_acid','madecassoside'],
+  'madecassoside':         ['centella_asiatica','asiaticoside','panthenol'],
+  'snail_mucin':           ['hyaluronic_acid','ceramide','glycerin'],
+  'fermented_black_rice':  ['probiotics','hyaluronic_acid'],
+  'pdrn':                  ['peptide','hyaluronic_acid'],
+  'alpha_arbutin':         ['niacinamide','vitamin_c_encapsulated','hyaluronic_acid'],
+  'azelaic_acid':          ['hyaluronic_acid','niacinamide','centella_asiatica'],
+  'bakuchiol':             ['hyaluronic_acid','peptide','niacinamide'],
+};
+
+function shatokbSynergyBonus(prod, otherProds) {
+  const ings = prod.ingredientes || [];
+  let bonus = 0;
+  for (const other of otherProds) {
+    const otherIngs = other.ingredientes || [];
+    for (const ing of ings) {
+      const syn = SHATOKB_INGREDIENT_SYNERGIES[ing] || [];
+      for (const s of syn) {
+        if (otherIngs.includes(s)) bonus += 3;
+      }
+    }
+  }
+  return Math.min(bonus, 15);
+}
+
+function shatokbDetectarConflictos(pasosProd) {
+  const warnings = [];
+  const todos = pasosProd.map(p => p.opciones[0]).filter(Boolean);
+  for (let i = 0; i < todos.length; i++) {
+    for (let j = i + 1; j < todos.length; j++) {
+      const a = todos[i]; const b = todos[j];
+      if (!a || !b) continue;
+      const ingsA = a.ingredientes || [];
+      const ingsB = b.ingredientes || [];
+      const conflictos = [];
+      for (const ing of ingsA) {
+        const cf = SHATOKB_INGREDIENT_CONFLICTS[ing] || [];
+        for (const c of cf) { if (ingsB.includes(c)) conflictos.push({ from: ing, to: c }); }
+      }
+      if (conflictos.length > 0) {
+        const ampmSplit = (a.momento === 'am' && b.momento === 'pm') ||
+                          (a.momento === 'pm' && b.momento === 'am');
+        warnings.push({ prodA: a.nombre, prodB: b.nombre, conflictos, ampmSplit,
+          severidad: ampmSplit ? 'info' : 'warning' });
+      }
+    }
+  }
+  return warnings;
+}
+
+
+/* ============================================================
+   7. SCORING ENGINE  v5.1  —  EXCEL_INTEL INTEGRATED
+   
+   7a. PROFILE CALCULATOR — maps quiz answers → skin profile ID
+   7b. PRODUCT SCORER — multi-layer scoring with Excel intelligence
+   
+   Score formula (per product candidate):
+   ┌─────────────────────────────────────────────────────────┐
+   │  BASE LAYER (tag-derived)                               │
+   │    score_base       (Excel editorial, 0-100) — floor    │
+   │  + tipo_piel        (0–20)                              │
+   │  + concern match    (0–32, up to 4 × 8pts)              │
+   │  + objetivo match   (0–10, up to 2 × 5pts)              │
+   │  + sensibilidad     (±10)                               │
+   │  + presupuesto      (±6)                                │
+   │  + subcategoria     (+8 if preferred subcat matches)    │
+   │  + fit_tags         (+15 if tag-fit matches profile)    │
+   │  + nivel_usuario    (+10 match / −10 mismatch)          │
+   │  + synergy_bonus    (0–15 ingredient synergies)         │
+   │  + risk penalties   (−10 to −20)                        │
+   ├─────────────────────────────────────────────────────────┤
+   │  EXCEL_INTEL LAYER  v5.1  (NEW — dominant layer)        │
+   │  + vector_fit       (dot product 0-6 × 5 = 0–30 pts)   │
+   │    Each matched dimension: dry/oily/combo/              │
+   │    sensitive/acne/pigmentation → +5 pts each            │
+   │  + tier_boost       CORE_MATCH   → +25 pts              │
+   │                     GOOD_MATCH   → +10 pts              │
+   │                     SECONDARY    →  +0 pts              │
+   │  + phase_bonus      user repair phase match → +8 pts   │
+   │  - safety_penalty   NO_PREGNANCY + sensitive user → -15 │
+   │  - pm_night_penalty pm_only product scored for AM → -10 │
+   └─────────────────────────────────────────────────────────┘
+   Maximum raw: ~251 pts → normalised to 0-100 in UI display
+   
+   IMPORTANT: Products not in the EXCEL_INTEL map (score-gated)
+   are already filtered out by shatokbMapProduct() before
+   reaching the scorer. This scorer only sees the ~107 classified
+   facial skincare products.
+============================================================ */
+
+// ── 7a. Profile Calculator v6.0 ──────────────────────────────────
+/**
+ * Maps quiz v6.0 answers → skin profile ID.
+ *
+ * New fields in v6.0:
+ *   r.sensibilidad === 'damaged'      → barrier repair mode
+ *   r.ingredient_tolerance            → 'none'|'basic'|'intermediate'|'advanced'
+ *   r.preocupacion_secundaria[]       → secondary concerns array
+ *   r.tipo_piel === 'normal'          → new skin type (maps to general_glow)
+ *   r.objetivo                        → updated goal values (v6.0 labels)
+ */
 function shatokbCalcularPerfil(resp) {
   const puntos = {};
   Object.keys(SHATOKB_PERFILES).forEach(p => { puntos[p] = 0; });
@@ -1138,50 +1991,272 @@ function shatokbCalcularPerfil(resp) {
   if (r.tipo_piel === 'mixta')    { puntos.mixta_general += 3; puntos.mixta_manchas += 2; }
   if (r.tipo_piel === 'seca')     { puntos.seca_hidratacion += 3; puntos.seca_antiaging += 2; }
   if (r.tipo_piel === 'sensible') { puntos.sensible_rojeces += 5; }
+  if (r.tipo_piel === 'normal')   { puntos.general_glow += 3; puntos.mixta_general += 1; }
   if (r.tipo_piel === 'nolose')   { puntos.general_glow += 3; }
 
-  // ── Preocupacion — puede ser string (legacy) o array (multi-select) ──
-  const preocupaciones = Array.isArray(r.preocupacion)
-    ? r.preocupacion
-    : (r.preocupacion ? [r.preocupacion] : []);
+  // ── Primary concern (single value in v6.0) ────────────────────
+  const primary = r.preocupacion || '';
+  if (primary === 'acne')           { puntos.grasa_acne += 5; }
+  if (primary === 'manchas')        { puntos.mixta_manchas += 5; puntos.seca_antiaging += 1; }
+  if (primary === 'antiaging')      { puntos.seca_antiaging += 5; }
+  if (primary === 'rojeces')        { puntos.sensible_rojeces += 5; }
+  if (primary === 'deshidratacion') { puntos.seca_hidratacion += 5; puntos.mixta_general += 2; }
+  if (primary === 'textura')        { puntos.grasa_poros += 5; puntos.mixta_general += 2; }
 
-  preocupaciones.forEach(p => {
-    if (p === 'acne')           { puntos.grasa_acne += 4; }
-    if (p === 'poros')          { puntos.grasa_poros += 4; }
-    if (p === 'manchas')        { puntos.mixta_manchas += 4; puntos.seca_antiaging += 1; }
-    if (p === 'deshidratacion') { puntos.seca_hidratacion += 4; puntos.mixta_general += 2; }
-    if (p === 'rojeces')        { puntos.sensible_rojeces += 4; }
-    if (p === 'antiaging')      { puntos.seca_antiaging += 4; }
-    if (p === 'textura')        { puntos.grasa_poros += 2; puntos.mixta_general += 2; }
+  // ── Secondary concerns (multi-select, max 2) ──────────────────
+  const secundarias = Array.isArray(r.preocupacion_secundaria)
+    ? r.preocupacion_secundaria.filter(c => c !== 'ninguna')
+    : (r.preocupacion_secundaria && r.preocupacion_secundaria !== 'ninguna'
+        ? [r.preocupacion_secundaria] : []);
+
+  secundarias.forEach(c => {
+    if (c === 'acne')           { puntos.grasa_acne += 2; puntos.grasa_poros += 1; }
+    if (c === 'manchas')        { puntos.mixta_manchas += 2; }
+    if (c === 'antiaging')      { puntos.seca_antiaging += 2; }
+    if (c === 'rojeces')        { puntos.sensible_rojeces += 2; }
+    if (c === 'deshidratacion') { puntos.seca_hidratacion += 2; puntos.mixta_general += 1; }
+    if (c === 'textura')        { puntos.grasa_poros += 2; puntos.mixta_general += 1; }
   });
 
-  // ── Objetivo — puede ser string (legacy) o array (multi-select, max 2) ──
-  const objetivos = Array.isArray(r.objetivo)
-    ? r.objetivo
-    : (r.objetivo ? [r.objetivo] : []);
+  // ── Barrier status — 'damaged' pushes strongly to repair profiles ─
+  if (r.sensibilidad === 'damaged') {
+    puntos.sensible_rojeces += 5;
+    puntos.seca_hidratacion += 2;
+  }
+  if (r.sensibilidad === 'alta') { puntos.sensible_rojeces += 3; }
 
-  objetivos.forEach(o => {
-    if (o === 'calmar')    { puntos.sensible_rojeces += 3; }
-    if (o === 'controlar') { puntos.grasa_acne += 2; puntos.grasa_poros += 2; }
-    if (o === 'hidratar')  { puntos.seca_hidratacion += 3; puntos.mixta_general += 2; }
-    if (o === 'unificar')  { puntos.mixta_manchas += 3; }
-    if (o === 'glow')      { puntos.general_glow += 2; puntos.seca_hidratacion += 1; }
-    if (o === 'limpiar')   { puntos.grasa_acne += 2; puntos.grasa_poros += 3; }
-  });
+  // ── Ingredient tolerance — advanced users pushed to treatment profiles ─
+  if (r.ingredient_tolerance === 'advanced') {
+    puntos.seca_antiaging  += 2;   // likely ready for retinoids
+    puntos.mixta_manchas   += 1;   // likely ready for strong brighteners
+  }
+  if (r.ingredient_tolerance === 'none') {
+    puntos.sensible_rojeces += 1;  // needs gentler route
+    puntos.general_glow     += 1;
+  }
 
-  if (r.sensibilidad === 'alta')  { puntos.sensible_rojeces += 3; }
+  // ── Goal (v6.0 values) ────────────────────────────────────────
+  const objetivo = r.objetivo || '';
+  if (objetivo === 'clear')     { puntos.grasa_acne += 3; puntos.grasa_poros += 2; }
+  if (objetivo === 'unificar')  { puntos.mixta_manchas += 3; }
+  if (objetivo === 'calmar')    { puntos.sensible_rojeces += 3; }
+  if (objetivo === 'antiaging') { puntos.seca_antiaging += 3; }
+  if (objetivo === 'glow')      { puntos.general_glow += 3; puntos.seca_hidratacion += 1; }
+  if (objetivo === 'controlar') { puntos.grasa_acne += 2; puntos.grasa_poros += 3; }
+  // Legacy v5.x goal values (backward compatibility)
+  if (objetivo === 'limpiar')   { puntos.grasa_acne += 2; puntos.grasa_poros += 3; }
+  if (objetivo === 'hidratar')  { puntos.seca_hidratacion += 3; puntos.mixta_general += 2; }
 
   let mejor = 'general_glow', max = 0;
   Object.entries(puntos).forEach(([k, v]) => { if (v > max) { max = v; mejor = k; } });
   return mejor;
 }
 
+// ── 7b. Product Scorer v6.0 — EXCEL_INTEL + barrier + ingredient_tolerance ──
+/**
+ * Calculates a relevance score for a product.
+ *
+ * v6.0 NEW signals on top of v5.1:
+ *   barrier_status       — 'damaged' mode: boosts repair products, blocks actives
+ *   ingredient_tolerance — 'none'/'basic'/'intermediate'/'advanced':
+ *                          gates high-potency products, boosts matched level
+ *   preocupacion_secundaria — secondary concerns now also score
+ *
+ * @param {object}   p               — product from catalogue (with excel_* fields)
+ * @param {string}   tipoPiel        — user skin type
+ * @param {string[]} preocupaciones  — ALL user concerns (primary + secondary merged)
+ * @param {string[]} objetivos       — user goals (array for legacy compat)
+ * @param {string}   sensibilidad    — 'baja'|'media'|'alta'|'damaged'
+ * @param {string}   presupuesto     — 'bajo'|'medio'|'alto'
+ * @param {string}   perfilId        — calculated profile ID
+ * @param {string}   [subcategoriaPref] — preferred subcategory for this step
+ * @param {object[]} [otrosProductos]   — other top products for synergy calc
+ * @param {object}   [respuestas]       — full quiz state for vector build
+ * @returns {number} score 0+
+ */
+function shatokbScoreProducto(p, tipoPiel, preocupaciones, objetivos, sensibilidad, presupuesto, perfilId, subcategoriaPref, otrosProductos, respuestas) {
+  let score = p.score_base || 50;
+
+  // Extract v6.0 fields from respuestas if available
+  const ingredientTolerance = respuestas?.ingredient_tolerance || 'basic';
+  const barrierDamaged      = sensibilidad === 'damaged';
+  // For internal logic, treat 'damaged' as 'alta' sensitivity
+  const sensibilidadEfectiva = barrierDamaged ? 'alta' : sensibilidad;
+
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║  BASE LAYER — tag-derived scoring                        ║
+  // ╚══════════════════════════════════════════════════════════╝
+
+  // ── Tipo de piel ─────────────────────────────────────────── (+0–20) ──
+  if (p.tipo_piel.includes(tipoPiel))               score += 20;
+  else if (tipoPiel === 'normal')                    score += 12;  // normal fits most
+  else if (tipoPiel === 'nolose')                    score += 8;
+  else if (p.tipo_piel.includes('nolose'))           score += 5;
+
+  // ── Concerns — primary (×8) + secondary (×5) ─────────────── (+0–40) ──
+  const primaryConcern    = respuestas?.preocupacion || '';
+  const secondaryConcerns = Array.isArray(respuestas?.preocupacion_secundaria)
+    ? respuestas.preocupacion_secundaria.filter(c => c !== 'ninguna')
+    : [];
+
+  if (primaryConcern && p.concerns.includes(primaryConcern)) score += 8;
+  secondaryConcerns.forEach(c => {
+    if (p.concerns.includes(c)) score += 5;
+  });
+  // Legacy: also score from merged preocupaciones array
+  preocupaciones.forEach(concern => {
+    if (concern !== primaryConcern && !secondaryConcerns.includes(concern)) {
+      if (p.concerns.includes(concern)) score += 3;
+    }
+  });
+
+  // ── Objetivos ────────────────────────────────────────────── (+0–10) ──
+  objetivos.forEach(obj => {
+    if (p.concerns.includes(obj)) score += 5;
+  });
+
+  // ── Sensibilidad ─────────────────────────────────────────── (±12) ────
+  if (sensibilidadEfectiva === 'alta') {
+    if (p.sensible)  score += 12;
+    else             score -= 8;
+    const hasHighRisk = p.risk && (p.risk.includes('high_potency') || p.risk.includes('no_beginner'));
+    if (hasHighRisk) score -= 8;
+  } else if (sensibilidadEfectiva === 'media') {
+    if (p.sensible)  score += 5;
+    if (p.risk && p.risk.includes('no_beginner')) score -= 4;
+  }
+
+  // ── Presupuesto ──────────────────────────────────────────── (±6) ─────
+  const BUDGET = { bajo: 40, medio: 80, alto: Infinity };
+  const budgetMax = BUDGET[presupuesto] || Infinity;
+  if (p.precio_num <= budgetMax) score += 6;
+  else                           score -= 5;
+
+  // ── Subcategoría match ───────────────────────────────────── (+8) ─────
+  if (subcategoriaPref && p.subcategoria && p.subcategoria === subcategoriaPref) {
+    score += 8;
+  }
+
+  // ── Fit explícito de tags ────────────────────────────────── (+15) ────
+  if (p.fit && p.fit.includes(perfilId)) score += 15;
+
+  // ── Nivel usuario — from ingredient_tolerance (v6.0) ─────── (±12) ───
+  // ingredient_tolerance directly maps to nivel_usuario — more precise than
+  // inferring from sensitivity in v5.x
+  const toleranceToNivel = {
+    none: 'beginner', basic: 'beginner',
+    intermediate: 'intermediate', advanced: 'advanced',
+  };
+  const nivelUsuario = toleranceToNivel[ingredientTolerance] || 'intermediate';
+  if (p.nivel_usuario) {
+    if (p.nivel_usuario === nivelUsuario)                               score += 12;
+    else if (p.nivel_usuario === 'advanced' && nivelUsuario === 'beginner') score -= 15;
+    else if (p.nivel_usuario === 'beginner' && nivelUsuario === 'advanced') score -= 3;
+    else if (p.nivel_usuario === 'intermediate')                        score += 4;
+  }
+
+  // ── Synergy bonus ────────────────────────────────────────── (0–15) ──
+  if (otrosProductos && otrosProductos.length > 0) {
+    score += shatokbSynergyBonus(p, otrosProductos);
+  }
+
+  // ── Risk penalties (base) ────────────────────────────────── (−6 a −20) ──
+  if (p.risk && p.risk.length > 0) {
+    if (p.risk.includes('no_beginner') && nivelUsuario === 'beginner') score -= 15;
+    if (p.risk.includes('high_potency') && nivelUsuario === 'beginner') score -= 8;
+    if (p.risk.includes('high_potency') && nivelUsuario === 'intermediate') score -= 3;
+  }
+
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║  BARRIER DAMAGED MODE  v6.0  (new — hard gate)          ║
+  // ╚══════════════════════════════════════════════════════════╝
+  // When barrier is damaged: heavily boost repair-phase products,
+  // heavily penalise treatment-phase actives (AHAs, retinol, etc.)
+  if (barrierDamaged) {
+    if (p.excel_phase === 'repair')                    score += 18;
+    if (p.excel_phase === 'treat')                     score -= 20;
+    if (p.excel_phase === 'optimize')                  score -= 25;
+    // Hard gate: no_beginner products hidden from damaged barrier users
+    if (p.risk && p.risk.includes('no_beginner'))      score -= 20;
+    // High-potency actives get extra penalty
+    if (p.ingredientes && (
+      p.ingredientes.includes('retinol')  ||
+      p.ingredientes.includes('retinal')  ||
+      p.ingredientes.includes('aha')      ||
+      p.ingredientes.includes('glycolic_acid')
+    )) score -= 15;
+  }
+
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║  EXCEL_INTEL LAYER  v6.0  (dominant scoring signals)    ║
+  // ╚══════════════════════════════════════════════════════════╝
+
+  if (p.excel_fit && p.excel_tier) {
+
+    // ── Vector dot-product fit score ─────────────────── (+0–30) ──────
+    const userVec = (typeof shatokbBuildUserVector === 'function' && respuestas)
+      ? shatokbBuildUserVector(respuestas)
+      : {
+          fit_dry:          tipoPiel === 'seca'    ? 1 : 0,
+          fit_oily:         (tipoPiel === 'grasa' || tipoPiel === 'mixta') ? 1 : 0,
+          fit_combination:  tipoPiel === 'mixta'   ? 1 : 0,
+          fit_sensitive:    (tipoPiel === 'sensible' || sensibilidadEfectiva === 'alta') ? 1 : 0,
+          fit_acne:         preocupaciones.includes('acne')    ? 1 : 0,
+          fit_pigmentation: preocupaciones.includes('manchas') ? 1 : 0,
+        };
+
+    const dotProduct = (typeof shatokbVectorFitScore === 'function')
+      ? shatokbVectorFitScore(userVec, p.excel_fit)
+      : (
+          userVec.fit_dry          * (p.excel_fit.fit_dry          || 0) +
+          userVec.fit_oily         * (p.excel_fit.fit_oily         || 0) +
+          userVec.fit_combination  * (p.excel_fit.fit_combination  || 0) +
+          userVec.fit_sensitive    * (p.excel_fit.fit_sensitive    || 0) +
+          userVec.fit_acne         * (p.excel_fit.fit_acne         || 0) +
+          userVec.fit_pigmentation * (p.excel_fit.fit_pigmentation || 0)
+        );
+    score += dotProduct * 5;
+
+    // ── Tier boost ────────────────────────────────────────────────────
+    if      (p.excel_tier === 'CORE_MATCH')  score += 25;
+    else if (p.excel_tier === 'GOOD_MATCH')  score += 10;
+
+    // ── Phase coherence bonus ─────────────────────────────── (+8) ────
+    if (p.excel_phase === 'repair' && (sensibilidadEfectiva === 'alta' || tipoPiel === 'sensible')) {
+      score += 8;
+    }
+    if (p.excel_phase === 'treat' && preocupaciones.length >= 2 && !barrierDamaged) {
+      score += 4;
+    }
+
+    // ── Safety penalty ────────────────────────────────────── (−4 to −15) ──
+    if (p.excel_safety === 'NO_PREGNANCY') {
+      if (sensibilidadEfectiva === 'alta' || tipoPiel === 'sensible') score -= 15;
+      else                                                             score -= 4;
+    }
+
+    // ── PM-only penalty ───────────────────────────────────── (−10) ───
+    if (p.excel_pm_only && tipoPiel !== 'seca') score -= 10;
+
+  } // end EXCEL_INTEL layer
+
+  return Math.max(0, Math.round(score));
+}
+
 
 /* ============================================================
-   7. RECOMMENDATION ENGINE
+   8. RECOMMENDATION ENGINE  v5.0
+   
+   Uses shatokbScoreProducto() v5.0 with ALL Excel fields.
+   Returns routine steps with scored product options.
+   Each step includes `momento` (am/pm/both) for AM/PM split.
+   Passes subcategoria_pref + synergy context to scorer.
 ============================================================ */
 const SHATOKB_BUDGET_LIMITS = { bajo: 40, medio: 80, alto: Infinity };
 const SHATOKB_MAX_OPTIONS   = 3;
+
+// Routine step order for sorting
+const SHATOKB_STEP_ORDER = ['cleanser', 'toner', 'essence', 'serum', 'moisturizer', 'eye', 'spf', 'mask', 'exfoliator'];
 
 function shatokbRecomendarProductos(perfilId, respuestas) {
   const perfil       = SHATOKB_PERFILES[perfilId];
@@ -1189,64 +2264,97 @@ function shatokbRecomendarProductos(perfilId, respuestas) {
   const sensibilidad = respuestas.sensibilidad;
   const nivelRutina  = respuestas.nivel_rutina;
   const presupuesto  = respuestas.presupuesto;
-  const budgetMax    = SHATOKB_BUDGET_LIMITS[presupuesto] || Infinity;
 
-  // Normalizar preocupacion y objetivo como arrays (backward-compatible con string)
-  const preocupaciones = Array.isArray(respuestas.preocupacion)
-    ? respuestas.preocupacion
-    : (respuestas.preocupacion ? [respuestas.preocupacion] : []);
+  // ── v6.0: merge primary + secondary concerns into one array ──────────
+  // The scorer receives the full concern list for signal richness.
+  // Primary concern is accessed directly via respuestas.preocupacion.
+  const primaryConcern = respuestas.preocupacion
+    ? [respuestas.preocupacion]
+    : [];
+  const secondaryConcerns = Array.isArray(respuestas.preocupacion_secundaria)
+    ? respuestas.preocupacion_secundaria.filter(c => c !== 'ninguna')
+    : (respuestas.preocupacion_secundaria && respuestas.preocupacion_secundaria !== 'ninguna'
+        ? [respuestas.preocupacion_secundaria] : []);
+  // Merged deduped concerns — primary first
+  const preocupaciones = [...new Set([...primaryConcern, ...secondaryConcerns])];
 
-  const objetivos = Array.isArray(respuestas.objetivo)
-    ? respuestas.objetivo
-    : (respuestas.objetivo ? [respuestas.objetivo] : []);
+  // ── v6.0: objetivo as array (single value, kept as array for scorer) ──
+  const objetivos = respuestas.objetivo
+    ? [respuestas.objetivo]
+    : (Array.isArray(respuestas.objetivo) ? respuestas.objetivo : []);
 
   // Trim steps based on routine level
   let pasos = [...perfil.pasos];
   if (nivelRutina === 'basica' && pasos.length > 4) {
-    const order     = ['cleanser', 'toner', 'essence', 'serum', 'moisturizer', 'spf'];
     const essential = ['cleanser', 'moisturizer', 'spf'];
     const actives   = pasos.filter(p => !essential.includes(p.categoria));
     const base      = pasos.filter(p => essential.includes(p.categoria));
     pasos = [...base, ...actives.slice(0, 1)]
-      .sort((a, b) => order.indexOf(a.categoria) - order.indexOf(b.categoria));
+      .sort((a, b) => SHATOKB_STEP_ORDER.indexOf(a.categoria) - SHATOKB_STEP_ORDER.indexOf(b.categoria));
   }
 
-  return pasos.map(paso => {
+  // ── First pass: get top product per step for synergy calc ──────
+  const topProductosPorPaso = pasos.map(paso => {
+    const candidatos = SHATOKB_CATALOGO.filter(p => p.categoria === paso.categoria);
+    candidatos.sort((a, b) => (b.score_base || 50) - (a.score_base || 50));
+    return candidatos[0] || null;
+  }).filter(Boolean);
+
+  return pasos.map((paso, pasoIdx) => {
     let candidatos = SHATOKB_CATALOGO.filter(p => p.categoria === paso.categoria);
 
+    // Others = top products of OTHER steps (for synergy detection)
+    const otrosTops = topProductosPorPaso.filter((_, i) => i !== pasoIdx);
+
+    // ── Score each candidate with v5.1 engine ───────────────────
     candidatos = candidatos.map(p => {
-      let score = 0;
-
-      // ── Tipo de piel ────────────────────────────────────────────
-      if (p.tipo_piel.includes(tipoPiel))  score += 10;
-      else if (tipoPiel === 'nolose')       score += 5;
-
-      // ── Preocupacion — suma por cada concern que coincida (array) ─
-      preocupaciones.forEach(concern => {
-        if (p.concerns.includes(concern)) score += 8;
-      });
-
-      // ── Objetivo — suma por cada objetivo que coincida (array) ───
-      objetivos.forEach(obj => {
-        if (p.concerns.includes(obj)) score += 5;
-      });
-
-      // ── Sensibilidad ─────────────────────────────────────────────
-      if (sensibilidad === 'alta' && p.sensible)   score += 6;
-      if (sensibilidad === 'alta' && !p.sensible)  score -= 4;
-
-      // ── Presupuesto ──────────────────────────────────────────────
-      if (p.precio_num <= budgetMax)  score += 4;
-      else                            score -= 3;
-
-      return { ...p, _score: score };
+      const _score = shatokbScoreProducto(
+        p, tipoPiel, preocupaciones, objetivos, sensibilidad, presupuesto, perfilId,
+        paso.subcategoria_pref,   // ← subcategoria preference from profile
+        otrosTops,                // ← synergy context
+        respuestas                // ← NEW v5.1: full respuestas for EXCEL vector build
+      );
+      return { ...p, _score };
     });
 
     candidatos.sort((a, b) => b._score - a._score);
     const opciones = candidatos.slice(0, SHATOKB_MAX_OPTIONS);
 
-    return { paso: paso.nombre, por_que: paso.por_que, opciones };
+    // Determine the predominant momento for this step
+    const topMomento = opciones[0]?.momento || 'both';
+
+    // Hero product flag — mark if this is the Excel-designated hero for this profile
+    const heroId = perfil.hero_product;
+    opciones.forEach(op => {
+      op._isHero = (op.id === heroId || op.handle === heroId);
+    });
+
+    return {
+      paso:            paso.nombre,
+      por_que:         paso.por_que,
+      momento:         topMomento,
+      subcategoria:    paso.subcategoria_pref || null,
+      opciones,
+    };
   });
+}
+
+/**
+ * Split recommended steps into AM and PM blocks.
+ * Used by the result display to show two separate routine lists.
+ * @param {Array} pasos — result of shatokbRecomendarProductos()
+ * @returns {{ am: Array, pm: Array }}
+ */
+function shatokbSplitAMPM(pasos) {
+  const am = pasos.filter(s => s.momento === 'am' || s.momento === 'both' || !s.momento);
+  const pm = pasos.filter(s => s.momento === 'pm');
+  // Sort each block by natural routine order
+  const sortFn = (a, b) => {
+    const catA = a.opciones[0]?.categoria || '';
+    const catB = b.opciones[0]?.categoria || '';
+    return SHATOKB_STEP_ORDER.indexOf(catA) - SHATOKB_STEP_ORDER.indexOf(catB);
+  };
+  return { am: am.sort(sortFn), pm: pm.sort(sortFn) };
 }
 
 
@@ -1299,11 +2407,25 @@ function shatokbRenderPregunta(idx) {
     ? (Array.isArray(respActual) ? respActual : (respActual ? [respActual] : []))
     : [];
 
+  // ── v6.0: excludeFrom — filtra dinámicamente opciones de P3 ──
+  // Si la pregunta tiene `excludeFrom`, oculta la opción cuyo valor
+  // coincida con la respuesta de la pregunta referenciada (ej: P2→P3).
+  const excludedValue = q.excludeFrom
+    ? (shatokbState.respuestas[q.excludeFrom] || null)
+    : null;
+
+  // Filtrar opciones visible (excluir la que choca con P2)
+  const opcionesVisibles = excludedValue
+    ? q.opciones.filter(op => op.valor !== excludedValue)
+    : q.opciones;
+
   // Etiqueta del botón Next
   const esFinal   = idx === total - 1;
   const labelNext = esFinal ? 'See My Routine →' : 'Next →';
 
-  // Indicador de multi-select
+  // Indicador de multi-select — muestra hint dinámico para "ninguna"
+  const hasNinguna = esMulti && opcionesVisibles.some(op => op.valor === 'ninguna');
+  const maxSelectEfectivo = hasNinguna ? maxSelect : maxSelect; // reservado para futuro ajuste
   const multiHint = esMulti
     ? `<p class="shatokb-multi-hint">${
         maxSelect
@@ -1315,11 +2437,12 @@ function shatokbRenderPregunta(idx) {
     : '';
 
   // ¿Tiene ya respuesta válida para habilitar el botón?
+  // Para multi-select con "ninguna": seleccionar "ninguna" cuenta como respuesta válida
   const tieneRespuesta = esMulti
     ? seleccionados.length > 0
     : !!respActual;
 
-  // ── Momento 1: Tip contextual de KOI ────────────────────────
+  // ── Tip contextual de KOI ────────────────────────────────────
   const koiTipHTML = q.koiTip ? `
     <div class="shatokb-koi-tip" role="note" aria-label="KOI tip">
       <span class="shatokb-koi-tip__avatar" aria-hidden="true">🌸</span>
@@ -1329,6 +2452,16 @@ function shatokbRenderPregunta(idx) {
       </div>
     </div>` : '';
 
+  // ── Nota dinámica de exclusión (P3) ──────────────────────────
+  // Informa al usuario por qué hay una opción menos disponible
+  const exclusionNoteHTML = excludedValue ? (() => {
+    const excludedOp = q.opciones.find(op => op.valor === excludedValue);
+    const excludedLabel = excludedOp ? excludedOp.label.replace(/^[^\w]*/, '').split(' ')[0] + '…' : excludedValue;
+    return `<p class="shatokb-exclusion-note" aria-live="polite">
+      ✓ <strong>${excludedLabel}</strong> is already your primary concern — pick something different here.
+    </p>`;
+  })() : '';
+
   container.innerHTML = `
     <div class="shatokb-pregunta">
       ${koiTipHTML}
@@ -1337,18 +2470,22 @@ function shatokbRenderPregunta(idx) {
         <div>
           <h3 class="shatokb-pregunta__titulo">${q.titulo}</h3>
           ${q.subtitulo ? `<p class="shatokb-pregunta__subtitulo">${q.subtitulo}</p>` : ''}
+          ${exclusionNoteHTML}
           ${multiHint}
         </div>
       </div>
       <div class="shatokb-opciones${esMulti ? ' shatokb-opciones--multi' : ''}" id="stk-opciones-wrap">
-        ${q.opciones.map(op => {
+        ${opcionesVisibles.map(op => {
           const isSelected = esMulti
             ? seleccionados.includes(op.valor)
             : respActual === op.valor;
+          // "ninguna" tiene estilo visual diferenciado
+          const esNinguna = op.valor === 'ninguna';
           return `
           <button
-            class="shatokb-opcion${isSelected ? ' shatokb-opcion--selected' : ''}"
+            class="shatokb-opcion${isSelected ? ' shatokb-opcion--selected' : ''}${esNinguna ? ' shatokb-opcion--ninguna' : ''}"
             type="button"
+            data-valor="${op.valor}"
             onclick="event.stopPropagation();shatokbElegirRespuesta('${q.id}','${op.valor}',this,${esMulti},${maxSelect || 'null'})">
             ${esMulti ? '<span class="shatokb-opcion__check" aria-hidden="true"></span>' : ''}
             <span class="shatokb-opcion__label">${op.label}</span>
@@ -1381,34 +2518,63 @@ function shatokbElegirRespuesta(qId, valor, btn, esMulti, maxSelect) {
     const yaSeleccionado = actual.includes(valor);
 
     if (yaSeleccionado) {
-      // Deseleccionar
+      // ── Deseleccionar ──────────────────────────────────────
       actual = actual.filter(v => v !== valor);
       btn.classList.remove('shatokb-opcion--selected');
+
     } else {
-      // Seleccionar — respetar límite si hay maxSelect
-      if (maxSelect && actual.length >= maxSelect) {
-        // Quitar el primero seleccionado para hacer espacio (FIFO)
-        const quitado = actual.shift();
-        const btnQuitado = document.querySelector(
-          `.shatokb-opcion[data-valor="${quitado}"]`
-        );
-        if (btnQuitado) btnQuitado.classList.remove('shatokb-opcion--selected');
+      // ── Seleccionar ────────────────────────────────────────
+
+      // v6.0: lógica mutual-exclusion para "ninguna"
+      // • Si el usuario pulsa "ninguna" → desseleccionar todo lo demás
+      // • Si el usuario pulsa cualquier otra cosa → deseleccionar "ninguna"
+      if (valor === 'ninguna') {
+        // Deseleccionar todas las demás opciones
+        actual.forEach(v => {
+          const otroBtn = document.querySelector(`#stk-opciones-wrap .shatokb-opcion[data-valor="${v}"]`);
+          if (otroBtn) otroBtn.classList.remove('shatokb-opcion--selected');
+        });
+        actual = ['ninguna'];
+        btn.classList.add('shatokb-opcion--selected');
+
+      } else {
+        // Eliminar "ninguna" del array si existía
+        if (actual.includes('ninguna')) {
+          actual = actual.filter(v => v !== 'ninguna');
+          const ningunaBtn = document.querySelector('#stk-opciones-wrap .shatokb-opcion[data-valor="ninguna"]');
+          if (ningunaBtn) ningunaBtn.classList.remove('shatokb-opcion--selected');
+        }
+
+        // Respetar límite maxSelect (FIFO — quita el más antiguo)
+        if (maxSelect && actual.length >= maxSelect) {
+          const quitado = actual.shift();
+          const btnQuitado = document.querySelector(
+            `#stk-opciones-wrap .shatokb-opcion[data-valor="${quitado}"]`
+          );
+          if (btnQuitado) btnQuitado.classList.remove('shatokb-opcion--selected');
+        }
+
+        actual = [...actual, valor];
+        btn.classList.add('shatokb-opcion--selected');
       }
-      actual = [...actual, valor];
-      btn.classList.add('shatokb-opcion--selected');
     }
 
     shatokbState.respuestas[qId] = actual;
 
-    // Actualizar contador
+    // Actualizar contador — "ninguna" no suma al display numérico
     const countEl = document.getElementById('stk-multi-count');
-    if (countEl) countEl.textContent = actual.length > 0 ? actual.length + ' selected' : '';
+    if (countEl) {
+      const countable = actual.filter(v => v !== 'ninguna');
+      countEl.textContent = countable.length > 0 ? countable.length + ' selected' : '';
+    }
 
     // Mostrar u ocultar el slot del botón Next según haya selección
+    // "ninguna" cuenta como selección válida (usuario eligió explícitamente "ninguna")
     shatokbActualizarBtnNext(actual.length > 0, shatokbState.preguntaActual);
 
   } else {
     // ── Single-select ─────────────────────────────────────────────
+    // ingredient_tolerance y demás single-selects fluyen igual.
     shatokbState.respuestas[qId] = valor;
     document.querySelectorAll('.shatokb-opcion').forEach(b => b.classList.remove('shatokb-opcion--selected'));
     btn.classList.add('shatokb-opcion--selected');
@@ -1588,6 +2754,27 @@ async function shatokbMostrarResultado() {
   const budgetLabel  = { bajo: 'under $40', medio: '$40–$80', alto: 'premium' }[presupuesto] || '';
   const hasOverBudget = pasosProd.some(p => p.opciones.length > 0 && p.opciones[0].precio_num > budgetMax);
 
+  // ── v6.0: campos nuevos para el summary card ──────────────
+  const barrierStatus      = shatokbState.respuestas.sensibilidad      || '';
+  const ingredientTolerance = shatokbState.respuestas.ingredient_tolerance || '';
+
+  // Labels legibles para el usuario
+  const BARRIER_LABELS = {
+    baja:    { icon: '💪', label: 'Resilient',         desc: 'Your barrier handles new products well.' },
+    media:   { icon: '🌤️', label: 'Moderate',          desc: 'Occasionally reacts — some caution needed.' },
+    alta:    { icon: '⚡', label: 'Very Reactive',      desc: 'Sensitive to new ingredients and textures.' },
+    damaged: { icon: '🚨', label: 'Barrier Damaged',    desc: 'Repair mode active — actives are on pause.' },
+  };
+  const TOLERANCE_LABELS = {
+    none:         { icon: '🌱', label: 'Beginner',           desc: 'Starting fresh — gentle formulas only.' },
+    basic:        { icon: '🧴', label: 'Some Experience',    desc: 'Ready for niacinamide, gentle acids, light Vit-C.' },
+    intermediate: { icon: '💊', label: 'Comfortable',        desc: 'Handles AHAs, BHAs, and Vitamin C routinely.' },
+    advanced:     { icon: '🔬', label: 'Advanced',           desc: 'Adapted skin ready for retinol & high-strength actives.' },
+  };
+
+  const barrierInfo    = BARRIER_LABELS[barrierStatus]       || { icon: '🌸', label: barrierStatus,       desc: '' };
+  const toleranceInfo  = TOLERANCE_LABELS[ingredientTolerance] || { icon: '🧪', label: ingredientTolerance, desc: '' };
+
   const inner = resultadoEl.querySelector('.shatokb-resultado__inner') || resultadoEl;
   inner.innerHTML = `
 
@@ -1600,6 +2787,36 @@ async function shatokbMostrarResultado() {
         ${tags.map(t => `<span class="shatokb-resultado__badge">${t}</span>`).join('')}
       </div>
       <p class="shatokb-resultado__desc">${perfil.descripcion}</p>
+
+      <!-- v6.0: Skin Analysis Summary — barrier + tolerance cards -->
+      ${(barrierStatus || ingredientTolerance) ? `
+      <div class="stk-skin-analysis" aria-label="Skin analysis summary">
+        <p class="stk-skin-analysis__title">Your Skin Analysis</p>
+        <div class="stk-skin-analysis__grid">
+          ${barrierStatus ? `
+          <div class="stk-skin-analysis__card stk-skin-analysis__card--barrier${barrierStatus === 'damaged' ? ' stk-skin-analysis__card--alert' : ''}">
+            <span class="stk-skin-analysis__icon" aria-hidden="true">${barrierInfo.icon}</span>
+            <div class="stk-skin-analysis__info">
+              <span class="stk-skin-analysis__label">Barrier Status</span>
+              <strong class="stk-skin-analysis__value">${barrierInfo.label}</strong>
+              <span class="stk-skin-analysis__sub">${barrierInfo.desc}</span>
+            </div>
+          </div>` : ''}
+          ${ingredientTolerance ? `
+          <div class="stk-skin-analysis__card stk-skin-analysis__card--tolerance">
+            <span class="stk-skin-analysis__icon" aria-hidden="true">${toleranceInfo.icon}</span>
+            <div class="stk-skin-analysis__info">
+              <span class="stk-skin-analysis__label">Ingredient Level</span>
+              <strong class="stk-skin-analysis__value">${toleranceInfo.label}</strong>
+              <span class="stk-skin-analysis__sub">${toleranceInfo.desc}</span>
+            </div>
+          </div>` : ''}
+        </div>
+        ${barrierStatus === 'damaged' ? `
+        <div class="stk-skin-analysis__damaged-note" role="alert">
+          🚨 <strong>Barrier Repair Mode active.</strong> We've prioritized repair products and held back all exfoliating actives until your barrier recovers. Ask KOI when you can reintroduce them.
+        </div>` : ''}
+      </div>` : ''}
     </div>
 
     ${hasOverBudget ? `
@@ -1633,8 +2850,58 @@ async function shatokbMostrarResultado() {
 
       <!-- Productos sombreados -->
       <div class="stk-routine-blurred" id="stk-routine-blurred">
+
+        <!-- ── AM/PM split ─────────────────────────────────── -->
         <div id="shatokb-routine-steps">
-          ${pasosProd.map((paso, stepIdx) => shatokbRenderPasoHTML(paso, stepIdx, budgetMax)).join('')}
+          ${(function() {
+            const { am, pm } = shatokbSplitAMPM(pasosProd);
+            let html = '';
+
+            // ── AM block ─────────────────────────────────────
+            if (am.length > 0) {
+              html += `<div class="stk-ampm-block stk-ampm-block--am">
+                <div class="stk-ampm-header">
+                  <span class="stk-ampm-icon">☀️</span>
+                  <div>
+                    <h3 class="stk-ampm-title">Morning Routine</h3>
+                    <p class="stk-ampm-sub">${am.length} step${am.length !== 1 ? 's' : ''} · Apply in this order for maximum absorption</p>
+                  </div>
+                </div>`;
+              am.forEach((paso, i) => { html += shatokbRenderPasoHTML(paso, pasosProd.indexOf(paso), budgetMax); });
+              html += '</div>';
+            }
+
+            // ── PM block ─────────────────────────────────────
+            if (pm.length > 0) {
+              html += `<div class="stk-ampm-block stk-ampm-block--pm">
+                <div class="stk-ampm-header">
+                  <span class="stk-ampm-icon">🌙</span>
+                  <div>
+                    <h3 class="stk-ampm-title">Night Routine</h3>
+                    <p class="stk-ampm-sub">${pm.length} step${pm.length !== 1 ? 's' : ''} · PM-only actives work while you sleep</p>
+                  </div>
+                </div>`;
+              pm.forEach((paso, i) => { html += shatokbRenderPasoHTML(paso, pasosProd.indexOf(paso), budgetMax); });
+              html += '</div>';
+            }
+
+            // ── Conflict warnings ─────────────────────────────
+            const conflictos = shatokbDetectarConflictos(pasosProd);
+            if (conflictos.length > 0) {
+              html += '<div class="stk-conflict-warnings">';
+              conflictos.forEach(w => {
+                const icon = w.ampmSplit ? 'ℹ️' : '⚠️';
+                const cls  = w.ampmSplit ? 'stk-conflict--info' : 'stk-conflict--warning';
+                const msg  = w.ampmSplit
+                  ? `<strong>Good news:</strong> <em>${w.prodA}</em> and <em>${w.prodB}</em> contain conflicting actives (${w.conflictos.map(c => c.from + ' + ' + c.to).join(', ')}), but they're already split — AM and PM. ✅`
+                  : `<strong>Heads up:</strong> <em>${w.prodA}</em> and <em>${w.prodB}</em> contain actives that shouldn't be layered together (${w.conflictos.map(c => c.from + ' + ' + c.to).join(', ')}). Ask KOI how to use them safely.`;
+                html += '<div class="stk-conflict-item ' + cls + '">' + icon + ' ' + msg + '</div>';
+              });
+              html += '</div>';
+            }
+
+            return html;
+          })()}
         </div>
 
         <!-- CTAs — rendered dynamically from Theme Editor config -->
@@ -1706,19 +2973,22 @@ async function shatokbMostrarResultado() {
     // Respuestas completas del quiz — KOI las usa para entender
     // el análisis de piel y tener contexto del diagnóstico
     respuestas: {
-      tipo_piel:    shatokbState.respuestas.tipo_piel    || '',
-      sensibilidad: shatokbState.respuestas.sensibilidad || '',
-      preocupacion: shatokbState.respuestas.preocupacion || '',
-      rutina:       shatokbState.respuestas.rutina       || '',
-      presupuesto:  shatokbState.respuestas.presupuesto  || '',
-      experiencia:  shatokbState.respuestas.experiencia  || '',
-      // Incluir cualquier otra respuesta disponible
-      ...Object.fromEntries(
-        Object.entries(shatokbState.respuestas || {})
-          .filter(([k]) => !['tipo_piel','sensibilidad','preocupacion','rutina','presupuesto','experiencia'].includes(k))
-      ),
+      tipo_piel:              shatokbState.respuestas.tipo_piel              || '',
+      sensibilidad:           shatokbState.respuestas.sensibilidad           || '',
+      preocupacion:           shatokbState.respuestas.preocupacion           || '',
+      preocupacion_secundaria: shatokbState.respuestas.preocupacion_secundaria || [],
+      objetivo:               shatokbState.respuestas.objetivo               || '',
+      nivel_rutina:           shatokbState.respuestas.nivel_rutina           || '',
+      presupuesto:            shatokbState.respuestas.presupuesto            || '',
+      // v6.0: nuevos campos explícitos para KOI
+      barrier_status:         shatokbState.respuestas.sensibilidad           || '',
+      ingredient_tolerance:   shatokbState.respuestas.ingredient_tolerance   || '',
     },
-    presupuesto:   shatokbState.respuestas.presupuesto  || '',
+    // v6.0: campos de análisis de piel al nivel raíz del evento
+    // (KOI puede acceder como detail.barrier_status directamente)
+    barrier_status:       shatokbState.respuestas.sensibilidad         || '',
+    ingredient_tolerance: shatokbState.respuestas.ingredient_tolerance || '',
+    presupuesto:          shatokbState.respuestas.presupuesto          || '',
     experiencia:   shatokbState.respuestas.experiencia  || '',
     totalCarrito:  Object.values(shatokbState.selectedProducts).reduce((t, id) => {
       const p = SHATOKB_CATALOGO.find(x => x.id === id);
@@ -1856,7 +3126,37 @@ async function shatokbCargarReviewsTodos(pasosProd) {
 /* ============================================================
    12. PRODUCT RENDERING
 ============================================================ */
+// Momento badge labels
+const SHATOKB_MOMENTO_BADGE = {
+  am:   { icon: '☀️', label: 'Morning',    cls: 'stk-momento--am' },
+  pm:   { icon: '🌙', label: 'Night',      cls: 'stk-momento--pm' },
+  both: { icon: '🔄', label: 'AM & PM',    cls: 'stk-momento--both' },
+};
+
+/**
+ * Returns a contextual icon for each product archetype.
+ * Used in the product card archetype pill.
+ * @param {string} archetype — from excel_archetype field
+ * @returns {string} emoji icon
+ */
+function shatokbArchetypeIcon(archetype) {
+  const ICONS = {
+    'Barrier Specialist':      '🛡️',
+    'Acne Specialist':         '🎯',
+    'Pigmentation Specialist': '✨',
+    'Aging Specialist':        '⏳',
+  };
+  return ICONS[archetype] || '🌿';
+}
+
 function shatokbRenderPasoHTML(paso, stepIdx, budgetMax) {
+  // ── Momento badge for the step ───────────────────────────────
+  const momentoData = SHATOKB_MOMENTO_BADGE[paso.momento] || SHATOKB_MOMENTO_BADGE.both;
+  const momentoBadge = `
+    <span class="stk-momento-badge ${momentoData.cls}" title="When to use: ${momentoData.label}">
+      ${momentoData.icon} ${momentoData.label}
+    </span>`;
+
   const opcionesHTML = paso.opciones.map(prod => {
     const isSelected  = shatokbState.selectedProducts[stepIdx] === prod.id;
     const overBudget  = prod.precio_num > budgetMax;
@@ -1866,15 +3166,85 @@ function shatokbRenderPasoHTML(paso, stepIdx, budgetMax) {
     const pasoSafe    = paso.paso.replace(/'/g, '&#39;');
     const precioSafe  = String(prod.precio).replace(/'/g, '&#39;');
 
+    // ── EXCEL_INTEL badge logic ──────────────────────────────────
+    // CORE_MATCH  = ⭐ Expert Pick  (highest editorial priority)
+    // auto        = ✦ New Arrival  (auto-classified, not yet in Excel)
+    // NO_PREGNANCY = 🤰 safety warning (prominent, always shown)
+    // Archetype tag = subtle category signal
+    const isCoreMatch   = prod.excel_tier === 'CORE_MATCH';
+    const isAutoClass   = prod.excel_auto === true;
+    const archetype     = prod.excel_archetype || null;
+
+    // Build primary badge HTML — priority order:
+    //   1. CORE_MATCH ⭐   (premium editorial pick)
+    //   2. Budget warning  (critical UX signal)
+    //   3. Auto-classified ✦ New Arrival (subtle — recently added to store)
+    //   4. Generic badge   (Best Seller, Trending, etc.)
     let badgeHtml = '';
-    if (overBudget)  badgeHtml = `<div class="stk-prod-option__badge">⚠️ Above your budget</div>`;
-    else if (prod.badge) badgeHtml = `<div class="stk-prod-option__badge stk-prod-option__badge--neutral">${prod.badge}</div>`;
+    if (isCoreMatch) {
+      badgeHtml = `<div class="stk-prod-option__badge stk-prod-option__badge--core">⭐ Expert Pick</div>`;
+    } else if (overBudget) {
+      badgeHtml = `<div class="stk-prod-option__badge">⚠️ Above your budget</div>`;
+    } else if (isAutoClass) {
+      badgeHtml = `<div class="stk-prod-option__badge stk-prod-option__badge--new">✦ New Arrival</div>`;
+    } else if (prod.badge) {
+      badgeHtml = `<div class="stk-prod-option__badge stk-prod-option__badge--neutral">${prod.badge}</div>`;
+    }
+
+    // Archetype tag — small metadata pill below name
+    // Auto-classified products show archetype too (inferred) but with muted style
+    const archetypeHtml = archetype
+      ? `<div class="stk-prod-archetype${isAutoClass ? ' stk-prod-archetype--auto' : ''}">${shatokbArchetypeIcon(archetype)} ${archetype}</div>`
+      : '';
+
+    // ── Risk flags badges ────────────────────────────────────────
+    // NO_PREGNANCY from Excel is authoritative and shown prominently.
+    const riskBadges = (prod.risk || []).map(r => {
+      const RISK_LABELS = {
+        'pm_only':      '🌙 Night use only',
+        'am_only':      '☀️ Morning use only',
+        'no_pregnant':  '🤰 Avoid during pregnancy',
+        'start_slow':   '⏱️ Introduce gradually',
+        'high_potency': '💪 High potency',
+        'spf_required': '☀️ Always pair with SPF',
+        'patch_test':   '🧪 Patch test first',
+      };
+      return RISK_LABELS[r]
+        ? `<span class="stk-risk-badge${r === 'no_pregnant' ? ' stk-risk-badge--pregnancy' : ''}">${RISK_LABELS[r]}</span>`
+        : '';
+    }).join('');
+
+    // Extra: budget warning as a risk badge if it wasn't the main badge
+    const budgetWarning = (overBudget && isCoreMatch)
+      ? `<span class="stk-risk-badge stk-risk-badge--budget">⚠️ Above your budget</span>`
+      : '';
+
+    // Key ingredients badges (top 2)
+    const ingBadges = (prod.ingredientes || []).slice(0, 2).map(ing => {
+      const label = ing.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      return `<span class="stk-ing-badge">${label}</span>`;
+    }).join('');
+
+    // CORE_MATCH: editorial explainer. Auto-classified: soft disclaimer.
+    const coreMatchExplainer = isCoreMatch
+      ? `<div class="stk-core-match-explainer">
+           <span class="stk-core-match-explainer__icon">✦</span>
+           Editorially selected as best-in-class for your profile — validated across multiple skin types.
+         </div>`
+      : isAutoClass
+        ? `<div class="stk-auto-class-note">
+             Recently added to our store — full editorial review coming soon.
+           </div>`
+        : '';
 
     return `
-      <div class="stk-prod-option${isSelected ? ' selected' : ''}"
+      <div class="stk-prod-option${isSelected ? ' selected' : ''}${isCoreMatch ? ' stk-prod-option--core-match' : ''}${isAutoClass ? ' stk-prod-option--auto' : ''}"
            onclick="shatokbSeleccionarProducto(${stepIdx},'${prod.id}',this)"
            role="radio" aria-checked="${isSelected}" tabindex="0"
-           data-handle="${prod.handle || prod.id}">
+           data-handle="${prod.handle || prod.id}"
+           data-tier="${prod.excel_tier || 'auto'}"
+           data-archetype="${archetype || ''}"
+           data-auto="${isAutoClass}">
         ${badgeHtml}
         <div class="stk-prod-option__img">
           ${prod.imagen
@@ -1883,6 +3253,7 @@ function shatokbRenderPasoHTML(paso, stepIdx, budgetMax) {
           }
         </div>
         <div class="stk-prod-option__name">${prod.nombre}</div>
+        ${archetypeHtml}
         <div class="stk-prod-reviews" id="rev-${prod.id}">
           <span style="color:#f0a500;">★★★★★</span>
           <span style="font-size:11px;color:#9ca3af">loading…</span>
@@ -1891,6 +3262,9 @@ function shatokbRenderPasoHTML(paso, stepIdx, budgetMax) {
           <span class="stk-prod-urgency__viewers">👀 ${viewers} people viewing now</span>
           <span class="stk-prod-urgency__stock">⚡ Only ${stock} left in stock</span>
         </div>
+        ${ingBadges ? `<div class="stk-prod-ing-badges">${ingBadges}</div>` : ''}
+        ${(riskBadges || budgetWarning) ? `<div class="stk-prod-risk-badges">${riskBadges}${budgetWarning}</div>` : ''}
+        ${coreMatchExplainer}
         <div class="stk-prod-option__desc">${prod.desc}</div>
         <div class="stk-prod-option__price">${prod.precio}</div>
         <button
@@ -1907,11 +3281,14 @@ function shatokbRenderPasoHTML(paso, stepIdx, budgetMax) {
   }).join('');
 
   return `
-    <div class="stk-routine-step" data-step="${stepIdx}">
+    <div class="stk-routine-step shatokb-paso" data-step="${stepIdx}" data-momento="${paso.momento || 'both'}">
       <div class="stk-routine-step__header">
         <div class="stk-routine-step__num">${stepIdx + 1}</div>
-        <div>
-          <div class="stk-routine-step__name">${paso.paso}</div>
+        <div style="flex:1">
+          <div class="stk-routine-step__name">
+            ${paso.paso}
+            ${momentoBadge}
+          </div>
           <div class="stk-routine-step__why">${paso.por_que}</div>
         </div>
       </div>
