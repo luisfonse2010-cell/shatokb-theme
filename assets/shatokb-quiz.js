@@ -1346,70 +1346,30 @@ function shatokbRenderPregunta(idx) {
             ? seleccionados.includes(op.valor)
             : respActual === op.valor;
           return `
-          <div
+          <button
             class="shatokb-opcion${isSelected ? ' shatokb-opcion--selected' : ''}"
-            data-qid="${q.id}"
-            data-valor="${op.valor}"
-            data-multi="${esMulti}"
-            data-maxselect="${maxSelect || ''}"
-            role="option"
-            aria-selected="${isSelected}"
-            tabindex="0">
+            type="button"
+            onclick="event.stopPropagation();shatokbElegirRespuesta('${q.id}','${op.valor}',this,${esMulti},${maxSelect || 'null'})">
             ${esMulti ? '<span class="shatokb-opcion__check" aria-hidden="true"></span>' : ''}
             <span class="shatokb-opcion__label">${op.label}</span>
             <span class="shatokb-opcion__desc">${op.desc || ''}</span>
-          </div>`;
+          </button>`;
         }).join('')}
       </div>
       <div class="shatokb-quiz-nav" id="stk-nav-wrap">
         ${idx > 0
-          ? `<div class="shatokb-btn shatokb-btn--ghost" data-action="back" data-idx="${idx - 1}" role="button" tabindex="0">← Back</div>`
+          ? `<button class="shatokb-btn shatokb-btn--ghost" type="button" onclick="event.stopPropagation();shatokbRenderPregunta(${idx - 1})">← Back</button>`
           : `<span></span>`}
         <div id="stk-next-slot" style="display:${tieneRespuesta ? 'block' : 'none'};">
-          ${tieneRespuesta ? `<div
+          ${tieneRespuesta ? `<button
             class="shatokb-btn shatokb-btn--primary shatokb-btn--ready"
             id="shatokb-btn-siguiente"
-            data-action="next"
-            data-idx="${idx}"
-            role="button"
-            tabindex="0">${labelNext}</div>` : ''}
+            type="button"
+            onclick="event.stopPropagation();shatokbSiguientePregunta(${idx})"
+            >${labelNext}</button>` : ''}
         </div>
       </div>
     </div>`;
-
-  // ── Listeners en capture phase — ganan a cualquier listener del tema Halo ──
-  container.querySelectorAll('.shatokb-opcion').forEach(function(opBtn) {
-    opBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      var qid    = opBtn.dataset.qid;
-      var valor  = opBtn.dataset.valor;
-      var multi  = opBtn.dataset.multi === 'true';
-      var maxSel = opBtn.dataset.maxselect ? parseInt(opBtn.dataset.maxselect) : null;
-      shatokbElegirRespuesta(qid, valor, opBtn, multi, maxSel);
-    }, true);
-  });
-
-  // Botón Next — se añade el listener solo si ya existe en el DOM
-  function shatokbBindNext() {
-    var btnNext = container.querySelector('[data-action="next"]');
-    if (!btnNext) return;
-    btnNext.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      shatokbSiguientePregunta(parseInt(btnNext.dataset.idx));
-    }, true);
-  }
-  shatokbBindNext();
-
-  var btnBack = container.querySelector('[data-action="back"]');
-  if (btnBack) {
-    btnBack.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      shatokbRenderPregunta(parseInt(btnBack.dataset.idx));
-    }, true);
-  }
 }
 
 function shatokbElegirRespuesta(qId, valor, btn, esMulti, maxSelect) {
@@ -1452,8 +1412,9 @@ function shatokbElegirRespuesta(qId, valor, btn, esMulti, maxSelect) {
     shatokbState.respuestas[qId] = valor;
     document.querySelectorAll('.shatokb-opcion').forEach(b => b.classList.remove('shatokb-opcion--selected'));
     btn.classList.add('shatokb-opcion--selected');
-    // Mostrar el botón Next (aparece por primera vez)
+    // Mostrar botón Next y auto-avanzar tras breve pausa visual
     shatokbActualizarBtnNext(true, shatokbState.preguntaActual);
+    setTimeout(function() { shatokbSiguientePregunta(shatokbState.preguntaActual); }, 420);
   }
 }
 
@@ -1472,22 +1433,12 @@ function shatokbActualizarBtnNext(mostrar, idx) {
     // Si ya existe el botón, solo actualizar visibilidad
     slot.style.display = 'block';
     if (!document.getElementById('shatokb-btn-siguiente')) {
-      slot.innerHTML = `<div
+      slot.innerHTML = `<button
         class="shatokb-btn shatokb-btn--primary shatokb-btn--ready"
         id="shatokb-btn-siguiente"
-        data-action="next"
-        data-idx="${idx}"
-        role="button"
-        tabindex="0">${label}</div>`;
-      // Re-adjuntar listener en capture
-      var btn = slot.querySelector('[data-action="next"]');
-      if (btn) {
-        btn.addEventListener('click', function(e) {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-          shatokbSiguientePregunta(parseInt(btn.dataset.idx));
-        }, true);
-      }
+        type="button"
+        onclick="event.stopPropagation();shatokbSiguientePregunta(${idx})"
+        >${label}</button>`;
     }
   } else {
     slot.style.display = 'none';
@@ -2297,22 +2248,9 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 /* ============================================================
-   INTERCEPTOR GLOBAL — bloquea que el tema Shopify procese
-   clicks dentro del quiz. Se registra en window con capture:true
-   (nivel más alto posible — corre antes que cualquier listener
-   del tema Halo, incluso los registrados en document).
+   NOTA: El interceptor global de clicks fue eliminado.
+   El bloqueo del tema Halo se maneja con stopPropagation()
+   directamente en el listener delegado del container, lo que
+   es más quirúrgico y evita bloquear los propios listeners
+   del quiz en la fase de capture.
 ============================================================ */
-window.addEventListener('click', function(e) {
-  // Solo actuar si el quiz está activo (form visible)
-  var form = document.getElementById('shatokb-quiz-form');
-  if (!form || form.style.display === 'none') return;
-
-  // Solo actuar si el click viene de dentro del form
-  if (!form.contains(e.target)) return;
-
-  // Bloquear propagación hacia arriba (hacia el tema Halo)
-  e.stopPropagation();
-
-  // Si el click NO es en una shatokb-opcion ni en los botones
-  // de nav del quiz, no hacer nada más
-}, true); // capture:true = el más temprano posible
