@@ -851,13 +851,48 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     KOI_STATE.historial.push({ role: 'assistant', content: msg });
     guardarHistorialLocal();
 
-    // REVELAR PRODUCTOS — llamar a la función en quiz.js
-    if (typeof window.shatokbRevelarProductos === 'function') {
-      window.shatokbRevelarProductos();
-    }
+    // ── v6.0: Botón "Ver mi rutina ↑" — el usuario debe hacer clic.
+    // NO hacer scroll / reveal automático. El usuario lee el mensaje de KOI
+    // y decide cuándo subir a ver los productos.
+    const scrollBtns = {
+      es: '👆 Ver mi rutina',
+      en: '👆 See my routine',
+      fr: '👆 Voir ma routine',
+      pt: '👆 Ver minha rotina',
+      de: '👆 Routine ansehen',
+      it: '👆 Vedi la mia routine',
+    };
+    const btnLabel = scrollBtns[idioma] || scrollBtns['en'];
 
-    // Chips de exploración de rutina después de la revelación
-    setTimeout(() => mostrarChips('bienvenida'), 800);
+    // Inyectar botón de reveal dentro del mensaje de KOI
+    setTimeout(() => {
+      const chipsEl = document.getElementById('koi-chips');
+      if (!chipsEl) return;
+      chipsEl.innerHTML = '';
+
+      // Botón prominente de reveal
+      const revealBtn = document.createElement('button');
+      revealBtn.className = 'koi-chip koi-chip--reveal-cta';
+      revealBtn.textContent = btnLabel;
+      revealBtn.addEventListener('click', () => {
+        chipsEl.innerHTML = '';
+        // Revelar productos y hacer scroll suave
+        if (typeof window.shatokbRevelarProductos === 'function') {
+          window.shatokbRevelarProductos();
+        }
+        // Scroll suave hacia los productos (arriba del chat)
+        const rutinaEl = document.getElementById('stk-reveal-section') ||
+                         document.getElementById('shatokb-resultado');
+        if (rutinaEl) {
+          setTimeout(() => {
+            rutinaEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 400);
+        }
+        // Chips post-reveal para seguir explorando con KOI
+        setTimeout(() => mostrarChips('bienvenida'), 1200);
+      });
+      chipsEl.appendChild(revealBtn);
+    }, 600);
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -909,13 +944,17 @@ async function manejarResultadoVision (data) {
   const { result, image, ctx } = data || {};
   const idioma = detectarIdioma();
 
-  // El mensaje del usuario ya fue añadido por enviarDesdeChip / manejarChipPostCamara.
-  // Solo guardamos en historial si aún no está (llamada directa sin chip, ej: evento global).
-  const chipTexto = idioma === 'es' ? '📸 Analicé mi piel con la cámara' : '📸 I analyzed my skin with the camera';
+  // El mensaje del usuario YA fue añadido por enviarDesdeChip / manejarChipPostCamara
+  // cuando el usuario pulsó el chip. NO añadir de nuevo — evita duplicados.
+  // Solo añadir al historial si llegamos aquí via evento global (sin chip previo).
   const ultimoMsgUser = KOI_STATE.historial.filter(m => m.role === 'user').slice(-1)[0];
-  if (!ultimoMsgUser || !ultimoMsgUser.content.includes('📸')) {
+  const yaEstaEnHistorial = ultimoMsgUser && ultimoMsgUser.content.includes('📸');
+  const yaEstaEnDOM = !!document.querySelector('#koi-messages .koi-msg--user:last-child');
+  if (!yaEstaEnHistorial) {
+    const chipTexto = idioma === 'es' ? '📸 Analicé mi piel con la cámara' : '📸 I analyzed my skin with the camera';
     KOI_STATE.historial.push({ role: 'user', content: chipTexto });
-    agregarMensaje('user', chipTexto);
+    // Solo añadir al DOM si no fue el chip quien ya lo hizo
+    if (!yaEstaEnDOM) agregarMensaje('user', chipTexto);
   }
 
   // Mostrar typing mientras KOI procesa
@@ -976,21 +1015,13 @@ async function manejarResultadoVision (data) {
 
   } else {
     // ── Fallback: sin resultado del Worker ────────────────────
+    // En lugar de mostrar un mensaje intermedio + chip → ir directo al reveal.
+    // Esto evita: fallback msg → usuario pulsa chip → reveal msg (duplicado).
     await new Promise(r => setTimeout(r, 1200));
     ocultarTyping();
 
-    const fallbackMsgs = {
-      en: `Analysis complete ✨\n\nMy visual read confirms your quiz profile. The routine I built for **${perfilNombre}** is calibrated correctly.\n\nReady to see it?`,
-      es: `Análisis completado ✨\n\nMi lectura visual confirma tu perfil del quiz. La rutina que construí para **${perfilNombre}** está calibrada correctamente.\n\n¿Lista para verla?`,
-    };
-    const msg     = fallbackMsgs[idioma] || fallbackMsgs.en;
-    const textEl2 = agregarMensaje('koi', '', false);
-    await escribirConEfecto(textEl2, msg);
-    KOI_STATE.historial.push({ role: 'koi', content: msg });
-    guardarHistorialLocal();
-
-    KOI_STATE.revealPhase = 'post_vision';
-    setTimeout(() => mostrarChips('post_vision'), 500);
+    KOI_STATE.revealPhase = 'email';
+    await revelarRutinaConKOI('');
   }
 
   scrollAlFinal();
