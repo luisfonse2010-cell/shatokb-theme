@@ -38,7 +38,7 @@ const SHATOKB_PREGUNTAS = [
     emoji: '🪞',
     subtitulo: 'Be honest with yourself. This is where everything starts.',
     // ── Momento 1: Tip contextual de KOI ──────────────────────
-    koiTip: 'The way your skin feels 30 minutes after cleansing — before any products — is the most accurate indicator of your real skin type. That morning texture you feel when you first wake up? That's the data point I use.',
+    koiTip: "The way your skin feels 30 minutes after cleansing \u2014 before any products \u2014 is the most accurate indicator of your real skin type. That morning texture you feel when you first wake up? That's the data point I use.",
     opciones: [
       { valor: 'grasa',    label: '🫧 Oily',          desc: 'Shiny by midday. Visible pores. Breakout-prone.' },
       { valor: 'mixta',    label: '☯️ Combination',   desc: 'Oily T-zone, dry or normal everywhere else.' },
