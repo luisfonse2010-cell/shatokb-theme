@@ -79,6 +79,9 @@
       loading:        'Requesting camera access…',
       guide_idle:     '👆 Position your face in the oval',
       guide_found:    '✓ Perfect — hold still',
+      glasses_tip:    'For best results, remove glasses if you wear them — the eye area is key',
+      glasses_ok:     'Continue with glasses',
+      glasses_remove: 'I removed them ✓',
       status_live:    'Camera live',
       status_found:   'Face detected',
       status_capture: 'Capturing…',
@@ -112,6 +115,9 @@
       loading:        'Solicitando acceso a la cámara…',
       guide_idle:     '👆 Coloca tu rostro en el óvalo',
       guide_found:    '✓ Perfecto — mantente quieta',
+      glasses_tip:    'Para un análisis más preciso, quítate las gafas si las llevas — la zona de ojos es clave',
+      glasses_ok:     'Continuar con gafas',
+      glasses_remove: 'Me las quité ✓',
       status_live:    'Cámara activa',
       status_found:   'Rostro detectado',
       status_capture: 'Capturando…',
@@ -140,9 +146,36 @@
     },
   };
 
+  // Textos de gafas para idiomas adicionales (fallback a EN para el resto)
+  const KV_I18N_GLASSES = {
+    fr: {
+      glasses_tip:    'Pour un meilleur résultat, retirez vos lunettes si vous en portez — la zone des yeux est essentielle',
+      glasses_ok:     'Continuer avec les lunettes',
+      glasses_remove: 'Je les ai retirées ✓',
+    },
+    pt: {
+      glasses_tip:    'Para um resultado mais preciso, tire os óculos se os usar — a área dos olhos é fundamental',
+      glasses_ok:     'Continuar com óculos',
+      glasses_remove: 'Já os tirei ✓',
+    },
+    de: {
+      glasses_tip:    'Für ein genaueres Ergebnis: Brille abnehmen, falls vorhanden — die Augenpartie ist entscheidend',
+      glasses_ok:     'Mit Brille fortfahren',
+      glasses_remove: 'Brille abgenommen ✓',
+    },
+    it: {
+      glasses_tip:    'Per un\'analisi più precisa, togli gli occhiali se li porti — l\'area occhi è fondamentale',
+      glasses_ok:     'Continua con occhiali',
+      glasses_remove: 'Li ho tolti ✓',
+    },
+  };
+
   function getT() {
     const lang = (navigator.language || 'en').split('-')[0].toLowerCase();
-    return KV_I18N[lang] || KV_I18N.en;
+    const base  = KV_I18N[lang] || KV_I18N.en;
+    // Merge glasses texts para idiomas extra (fr, pt, de, it)
+    const extra = KV_I18N_GLASSES[lang];
+    return extra ? Object.assign({}, base, extra) : base;
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -161,12 +194,10 @@
     modal.innerHTML = `
       <div class="kv-panel">
 
-        <!-- Aurora border via CSS ::before -->
-
-        <!-- HEADER -->
+        <!-- ─── HEADER ─── -->
         <div class="kv-header">
           <div class="kv-header__koi">
-            <div class="kv-header__avatar">🌸</div>
+            <div class="kv-header__avatar"><span>🌸</span></div>
             <div>
               <div class="kv-header__name">KOI</div>
               <div class="kv-header__subtitle">${t.subtitle}</div>
@@ -178,13 +209,13 @@
           </div>
         </div>
 
-        <!-- LOADING STATE -->
+        <!-- ─── LOADING ─── -->
         <div class="kv-loading-state kv--active" id="kv-loading-state">
           <div class="kv-spinner"></div>
           <div class="kv-loading-state__text">${t.loading}</div>
         </div>
 
-        <!-- VIEWFINDER (cámara) -->
+        <!-- ─── VIEWFINDER ─── -->
         <div class="kv-viewfinder" id="kv-viewfinder" style="display:none;">
           <video id="koi-vision-video" autoplay playsinline muted></video>
           <canvas id="koi-vision-canvas" style="display:none;"></canvas>
@@ -198,18 +229,41 @@
           <!-- Guía de texto -->
           <div class="kv-guide-text" id="kv-guide-text">${t.guide_idle}</div>
 
-          <!-- Guía oval -->
+          <!-- Guía oval + rings de rotación via CSS -->
           <div class="kv-face-guide">
             <div class="kv-face-guide__oval" id="kv-face-oval"></div>
           </div>
 
-          <!-- Partículas de datos -->
+          <!-- Face Mesh SVG — puntos biométricos -->
+          <div class="kv-face-mesh" id="kv-face-mesh">
+            <svg class="kv-mesh-svg" id="kv-mesh-svg" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+          </div>
+
+          <!-- Tip de gafas — aparece tras detectar rostro -->
+          <div class="kv-glasses-tip" id="kv-glasses-tip">
+            <div class="kv-glasses-tip__icon">👓</div>
+            <div class="kv-glasses-tip__body">
+              <p class="kv-glasses-tip__text" id="kv-glasses-text">${t.glasses_tip}</p>
+              <div class="kv-glasses-tip__actions">
+                <button class="kv-glasses-btn kv-glasses-btn--ok"     id="kv-glasses-ok">${t.glasses_ok}</button>
+                <button class="kv-glasses-btn kv-glasses-btn--remove" id="kv-glasses-remove">${t.glasses_remove}</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Partículas de datos flotantes -->
           <div class="kv-particles" id="kv-particles"></div>
 
-          <!-- Línea de scan -->
-          <div class="kv-scan-line" id="kv-scan-line"></div>
+          <!-- Líneas de scan duales -->
+          <div class="kv-scan-line"   id="kv-scan-line"></div>
+          <div class="kv-scan-line-2" id="kv-scan-line-2"></div>
 
-          <!-- Countdown -->
+          <!-- Countdown con sonar -->
+          <div class="kv-sonar" id="kv-sonar" style="display:none;">
+            <div class="kv-sonar__ring"></div>
+            <div class="kv-sonar__ring"></div>
+            <div class="kv-sonar__ring"></div>
+          </div>
           <div class="kv-countdown" id="kv-countdown">
             <svg class="kv-countdown__ring" viewBox="0 0 72 72">
               <circle class="kv-ring-track" cx="36" cy="36" r="30"/>
@@ -218,10 +272,10 @@
             <div class="kv-countdown__num" id="kv-countdown-num">3</div>
           </div>
 
-          <!-- Flash de captura -->
+          <!-- Flash cromático -->
           <div class="kv-capture-flash" id="kv-capture-flash"></div>
 
-          <!-- HUD inferior -->
+          <!-- HUD -->
           <div class="kv-hud">
             <div class="kv-hud__status">
               <div class="kv-hud__dot kv--live" id="kv-hud-dot"></div>
@@ -230,32 +284,42 @@
             <div class="kv-hud__quality" id="kv-hud-quality">${t.quality_ready}</div>
           </div>
 
-          <!-- Overlay FX -->
-          <div class="kv-fx-overlay" id="kv-fx-overlay"></div>
+          <!-- Overlay FX (viñeta) -->
+          <div class="kv-fx-overlay"></div>
         </div>
 
-        <!-- PANTALLA DE ANÁLISIS -->
+        <!-- ─── PANTALLA DE ANÁLISIS ─── -->
         <div class="kv-analyzing" id="kv-analyzing">
-          <img class="kv-captured-img" id="kv-captured-img" alt="Captured frame" />
-          <div class="kv-analysis-progress">
-            <span class="kv-analysis-progress__label">${t.analysis_title}</span>
-            <div class="kv-progress-track">
-              <div class="kv-progress-fill" id="kv-progress-fill"></div>
+          <div class="kv-analyzing-inner">
+
+            <!-- Imagen capturada con efecto scan -->
+            <div class="kv-captured-wrap">
+              <img class="kv-captured-img" id="kv-captured-img" alt="Captured frame" />
+            </div>
+
+            <!-- Info / Progreso -->
+            <div class="kv-analyzing-info">
+              <div class="kv-analysis-progress">
+                <span class="kv-analysis-progress__label">${t.analysis_title}</span>
+                <div class="kv-progress-track">
+                  <div class="kv-progress-fill" id="kv-progress-fill"></div>
+                </div>
+              </div>
+              <div class="kv-analysis-items" id="kv-analysis-items">
+                ${t.items.map((item, i) => `
+                  <div class="kv-analysis-item" id="kv-item-${i}">
+                    <span class="kv-analysis-item__icon">${item.icon}</span>
+                    <span class="kv-analysis-item__text">${item.text}</span>
+                    <span class="kv-analysis-item__check">✓</span>
+                  </div>
+                `).join('')}
+              </div>
+              <p class="kv-analyzing__subtitle" id="kv-analyzing-sub"></p>
             </div>
           </div>
-          <div class="kv-analysis-items" id="kv-analysis-items">
-            ${t.items.map((item, i) => `
-              <div class="kv-analysis-item" id="kv-item-${i}">
-                <span class="kv-analysis-item__icon">${item.icon}</span>
-                <span class="kv-analysis-item__text">${item.text}</span>
-                <span class="kv-analysis-item__check">✓</span>
-              </div>
-            `).join('')}
-          </div>
-          <p class="kv-analyzing__subtitle" id="kv-analyzing-sub"></p>
         </div>
 
-        <!-- RESULTADO PREVIEW -->
+        <!-- ─── RESULTADO PREVIEW ─── -->
         <div class="kv-result-preview" id="kv-result-preview">
           <div class="kv-result-preview__title">${t.result_title}</div>
           <div class="kv-zones" id="kv-zones">
@@ -273,7 +337,7 @@
           <div class="kv-privacy-note">${t.privacy}</div>
         </div>
 
-        <!-- ERROR STATE -->
+        <!-- ─── ERROR STATE ─── -->
         <div class="kv-error-state" id="kv-error-state">
           <span class="kv-error-state__icon">📷</span>
           <div class="kv-error-state__title" id="kv-error-title">${t.error_title}</div>
@@ -346,6 +410,10 @@
       }
     });
 
+    // Ocultar sonar si existe
+    const sonarEl = document.getElementById('kv-sonar');
+    if (sonarEl && phase !== 'countdown') sonarEl.style.display = 'none';
+
     const map = {
       loading:   'kv-loading-state',
       camera:    'kv-viewfinder',
@@ -407,6 +475,16 @@
     if (KV_STATE.countdownTimer) {
       clearInterval(KV_STATE.countdownTimer);
       KV_STATE.countdownTimer = null;
+    }
+
+    // Parar animación de zonas del mesh
+    if (_zoneScanTimer) {
+      clearTimeout(_zoneScanTimer);
+      _zoneScanTimer = null;
+    }
+    if (_faceDetectionTimer) {
+      clearTimeout(_faceDetectionTimer);
+      _faceDetectionTimer = null;
     }
 
     // Restaurar scroll
@@ -497,23 +575,100 @@
       _faceDetected = true;
       marcarRostroDetectado();
 
-      // Paso 3: Countdown a los 0.8s de la detección
+      // Paso 3: Mostrar tip de gafas — esperar decisión antes del countdown
       setTimeout(() => {
         if (KV_STATE.isOpen && KV_STATE.phase === 'camera') {
-          iniciarCountdown();
+          mostrarGlassesTip();
         }
-      }, 800);
+      }, 600);
 
     }, 2200);
   }
 
+  /* ══════════════════════════════════════════════════════════
+     TIP DE GAFAS — pausa entre detección y countdown
+     Aparece 0.6s después de detectar el rostro.
+     El usuario elige: continuar con gafas o sin ellas.
+     En ambos casos → continúa al countdown.
+     Si elige quitárselas → esperamos 3s extra para que lo haga.
+     ══════════════════════════════════════════════════════════ */
+  function mostrarGlassesTip() {
+    const tipEl    = document.getElementById('kv-glasses-tip');
+    const okBtn    = document.getElementById('kv-glasses-ok');
+    const removeBtn = document.getElementById('kv-glasses-remove');
+    if (!tipEl) {
+      // Si el elemento no existe, ir directo al countdown
+      iniciarCountdown();
+      return;
+    }
+
+    // Mostrar con animación
+    tipEl.classList.add('kv--active');
+
+    // Auto-continuar a los 12s si el usuario no toca nada
+    // (suficiente para leer + decidir sin sentirse presionado)
+    const autoTimer = setTimeout(() => {
+      cerrarGlassesTip();
+      if (KV_STATE.isOpen && KV_STATE.phase === 'camera') iniciarCountdown();
+    }, 12000);
+
+    // Botón "Continuar con gafas" → pequeña pausa de cortesía y luego countdown
+    if (okBtn) {
+      okBtn.addEventListener('click', () => {
+        clearTimeout(autoTimer);
+        cerrarGlassesTip();
+        // 800ms de pausa para que el usuario se recoloque antes de la cuenta
+        setTimeout(() => {
+          if (KV_STATE.isOpen && KV_STATE.phase === 'camera') iniciarCountdown();
+        }, 800);
+      }, { once: true });
+    }
+
+    // Botón "Me las quité ✓" → espera real para quitarse las gafas
+    if (removeBtn) {
+      removeBtn.addEventListener('click', () => {
+        clearTimeout(autoTimer);
+        // Cambiar texto del tip para confirmar que esperamos
+        const textEl = document.getElementById('kv-glasses-text');
+        if (textEl) {
+          textEl.textContent = '✓ Perfecto — ya estás lista. Capturando en 4 segundos…';
+          // Ajustar texto al idioma
+          const lang = (navigator.language || 'en').split('-')[0];
+          const waitMsgs = {
+            es: '✓ Perfecto — ya estás lista. Capturando en 4 segundos…',
+            en: '✓ Great — you\'re all set. Capturing in 4 seconds…',
+            fr: '✓ Parfait — c\'est bon. Capture dans 4 secondes…',
+            pt: '✓ Perfeito — pronta. Capturando em 4 segundos…',
+            de: '✓ Super — bereit. Aufnahme in 4 Sekunden…',
+            it: '✓ Perfetto — pronta. Scatto tra 4 secondi…',
+          };
+          if (textEl) textEl.textContent = waitMsgs[lang] || waitMsgs.en;
+        }
+        // Ocultar botones — ya no hacen falta
+        const actionsEl = tipEl.querySelector('.kv-glasses-tip__actions');
+        if (actionsEl) actionsEl.style.display = 'none';
+
+        // 4 segundos reales para quitarse las gafas con calma y recolocarse
+        setTimeout(() => {
+          cerrarGlassesTip();
+          if (KV_STATE.isOpen && KV_STATE.phase === 'camera') iniciarCountdown();
+        }, 4000);
+      }, { once: true });
+    }
+  }
+
+  function cerrarGlassesTip() {
+    const tipEl = document.getElementById('kv-glasses-tip');
+    if (tipEl) tipEl.classList.remove('kv--active');
+  }
+
   function marcarRostroDetectado() {
-    const oval     = document.getElementById('kv-face-oval');
+    const oval      = document.getElementById('kv-face-oval');
     const guideText = document.getElementById('kv-guide-text');
-    const hudDot   = document.getElementById('kv-hud-dot');
-    const hudText  = document.getElementById('kv-hud-text');
-    const quality  = document.getElementById('kv-hud-quality');
-    const t        = getT();
+    const hudDot    = document.getElementById('kv-hud-dot');
+    const hudText   = document.getElementById('kv-hud-text');
+    const quality   = document.getElementById('kv-hud-quality');
+    const t         = getT();
 
     if (oval)      oval.classList.add('kv--detected');
     if (guideText) { guideText.textContent = t.guide_found; guideText.classList.add('kv--green'); }
@@ -521,9 +676,147 @@
     if (hudText)   hudText.textContent = t.status_found;
     if (quality)   quality.classList.add('kv--visible');
 
-    // Activar línea de scan
-    const scanLine = document.getElementById('kv-scan-line');
-    if (scanLine) scanLine.classList.add('kv--scanning');
+    // Activar líneas de scan duales
+    const scanLine  = document.getElementById('kv-scan-line');
+    const scanLine2 = document.getElementById('kv-scan-line-2');
+    if (scanLine)  scanLine.classList.add('kv--scanning');
+    if (scanLine2) scanLine2.classList.add('kv--scanning');
+
+    // Activar face mesh SVG
+    activarFaceMesh();
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     FACE MESH SVG — puntos biométricos animados
+     Simula los puntos de tracking de MediaPipe Face Mesh
+     (468 puntos en producción — aquí 32 puntos estratégicos)
+     ══════════════════════════════════════════════════════════ */
+  function activarFaceMesh() {
+    const meshEl = document.getElementById('kv-face-mesh');
+    const svg    = document.getElementById('kv-mesh-svg');
+    if (!meshEl || !svg) return;
+
+    // 32 puntos clave del rostro en coordenadas relativas (0-100 en viewBox)
+    // Distribuidos en: frente, arcos ciliares, ojos, nariz, boca, jaw, mejillas
+    const MESH_POINTS = [
+      // Frente
+      { x: 50, y: 18 }, { x: 38, y: 20 }, { x: 62, y: 20 },
+      // Arcos ciliares
+      { x: 32, y: 30 }, { x: 40, y: 28 }, { x: 50, y: 29 }, { x: 60, y: 28 }, { x: 68, y: 30 },
+      // Ojos
+      { x: 35, y: 36 }, { x: 42, y: 35 }, { x: 37, y: 39 }, { x: 43, y: 38 },
+      { x: 57, y: 35 }, { x: 64, y: 36 }, { x: 58, y: 38 }, { x: 63, y: 39 },
+      // Nariz
+      { x: 50, y: 44 }, { x: 46, y: 50 }, { x: 54, y: 50 }, { x: 50, y: 53 },
+      // Mejillas
+      { x: 28, y: 48 }, { x: 72, y: 48 }, { x: 30, y: 56 }, { x: 70, y: 56 },
+      // Boca
+      { x: 42, y: 62 }, { x: 50, y: 60 }, { x: 58, y: 62 },
+      { x: 44, y: 67 }, { x: 50, y: 68 }, { x: 56, y: 67 },
+      // Jaw
+      { x: 35, y: 74 }, { x: 50, y: 78 }, { x: 65, y: 74 },
+    ];
+
+    // Conexiones entre puntos (indices)
+    const CONNECTIONS = [
+      [0,1],[0,2],[1,3],[2,7],[3,4],[4,5],[5,6],[6,7],
+      [3,8],[4,9],[6,12],[7,13],
+      [8,9],[12,13],
+      [16,17],[16,18],[17,19],[18,19],
+      [20,22],[21,23],
+      [24,25],[25,26],[27,28],[28,29],
+      [24,27],[26,29],[25,28],
+      [30,31],[31,32],
+    ];
+
+    svg.innerHTML = '';
+
+    // Añadir zonas de análisis primero (debajo de los puntos)
+    const ZONES_SVG = [
+      // Frente (T-zone top)
+      { d: 'M 35,18 Q 50,14 65,18 L 65,32 Q 50,30 35,32 Z', id: 'zone-forehead' },
+      // Nariz + centrofrente (T-zone center)
+      { d: 'M 44,32 Q 50,30 56,32 L 54,55 Q 50,57 46,55 Z', id: 'zone-tzone' },
+      // Mejilla izquierda
+      { d: 'M 28,38 Q 35,35 44,40 L 42,62 Q 32,65 26,58 Z', id: 'zone-cheek-l' },
+      // Mejilla derecha
+      { d: 'M 72,38 Q 65,35 56,40 L 58,62 Q 68,65 74,58 Z', id: 'zone-cheek-r' },
+      // Contorno ojos
+      { d: 'M 30,31 Q 50,28 70,31 L 68,42 Q 50,39 32,42 Z', id: 'zone-eyes' },
+    ];
+
+    ZONES_SVG.forEach(z => {
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', z.d);
+      path.setAttribute('id', z.id);
+      path.setAttribute('class', 'kv-mesh-zone');
+      svg.appendChild(path);
+    });
+
+    // Dibujar líneas de conexión
+    CONNECTIONS.forEach((conn, idx) => {
+      const p1 = MESH_POINTS[conn[0]];
+      const p2 = MESH_POINTS[conn[1]];
+      if (!p1 || !p2) return;
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
+      line.setAttribute('x2', p2.x); line.setAttribute('y2', p2.y);
+      line.setAttribute('class', 'kv-mesh-line');
+      line.style.animationDelay = (idx * 0.02) + 's';
+      svg.appendChild(line);
+    });
+
+    // Dibujar puntos
+    MESH_POINTS.forEach((pt, idx) => {
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', pt.x);
+      circle.setAttribute('cy', pt.y);
+      circle.setAttribute('r', idx < 3 ? '0.8' : '0.6');
+      circle.setAttribute('class', 'kv-mesh-point');
+      circle.style.animationDelay = (idx * 0.025) + 's';
+      svg.appendChild(circle);
+    });
+
+    meshEl.classList.add('kv--active');
+
+    // Animar zonas secuencialmente mientras escanea
+    _animarZonasMesh();
+  }
+
+  const ZONE_SCAN_ORDER = ['zone-forehead','zone-eyes','zone-cheek-l','zone-cheek-r','zone-tzone'];
+  let _zoneScanIdx = 0;
+  let _zoneScanTimer = null;
+
+  function _animarZonasMesh() {
+    if (!KV_STATE.isOpen || KV_STATE.phase !== 'camera') return;
+
+    const zoneIds = ZONE_SCAN_ORDER;
+    _zoneScanIdx = 0;
+
+    const scanNext = () => {
+      if (!KV_STATE.isOpen || KV_STATE.phase !== 'camera') return;
+
+      // Quitar scanning de la anterior
+      const prev = document.getElementById(zoneIds[(_zoneScanIdx - 1 + zoneIds.length) % zoneIds.length]);
+      if (prev) { prev.classList.remove('kv--scanning'); prev.classList.add('kv--done'); }
+
+      const current = document.getElementById(zoneIds[_zoneScanIdx]);
+      if (current) current.classList.add('kv--scanning');
+
+      _zoneScanIdx = (_zoneScanIdx + 1) % zoneIds.length;
+
+      // Reset todas al completar ciclo
+      if (_zoneScanIdx === 0) {
+        zoneIds.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) { el.classList.remove('kv--scanning', 'kv--done'); }
+        });
+      }
+
+      _zoneScanTimer = setTimeout(scanNext, 700);
+    };
+
+    _zoneScanTimer = setTimeout(scanNext, 300);
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -542,18 +835,20 @@
 
     container.classList.add('kv--active');
 
-    // Crear 12 partículas con delays y posiciones aleatorias
-    for (let i = 0; i < 12; i++) {
+    // Crear 16 partículas con delays y posiciones aleatorias
+    // Alternas: rosa (KOI) y cyan (data)
+    for (let i = 0; i < 16; i++) {
       const p = document.createElement('div');
-      p.className = 'kv-particle';
+      const isBlue = i % 3 === 2; // cada 3 partículas, una azul
+      p.className = 'kv-particle' + (isBlue ? ' kv--blue' : '');
       p.textContent = PARTICLE_DATA[Math.floor(Math.random() * PARTICLE_DATA.length)];
 
-      const left     = 8 + Math.random() * 84;    // 8% – 92%
-      const delay    = Math.random() * 4;           // 0–4s
-      const duration = 2.5 + Math.random() * 2;    // 2.5–4.5s
+      const left     = 5 + Math.random() * 90;    // 5% – 95%
+      const delay    = Math.random() * 4.5;        // 0–4.5s
+      const duration = 2.2 + Math.random() * 2.5; // 2.2–4.7s
 
       p.style.left              = left + '%';
-      p.style.bottom            = (10 + Math.random() * 70) + '%';
+      p.style.bottom            = (5 + Math.random() * 75) + '%';
       p.style.animationDelay    = delay + 's';
       p.style.animationDuration = duration + 's';
 
@@ -577,9 +872,16 @@
     const numEl     = document.getElementById('kv-countdown-num');
     const ringFill  = document.getElementById('kv-ring-fill');
     const hudDot    = document.getElementById('kv-hud-dot');
+    const sonarEl   = document.getElementById('kv-sonar');
     const t         = getT();
 
     if (!countdown || !numEl) return;
+
+    // Parar el scan de zonas del mesh
+    if (_zoneScanTimer) { clearTimeout(_zoneScanTimer); _zoneScanTimer = null; }
+
+    // Activar sonar
+    if (sonarEl) sonarEl.style.display = 'flex';
 
     countdown.classList.add('kv--active');
 
@@ -595,19 +897,33 @@
     updateRing(remaining);
     numEl.textContent = remaining;
 
+    // Forzar re-render del número para trigger de animación
+    numEl.style.animation = 'none';
+    numEl.offsetHeight; // reflow
+    numEl.style.animation = '';
+
     KV_STATE.countdownTimer = setInterval(() => {
       remaining--;
       if (remaining <= 0) {
         clearInterval(KV_STATE.countdownTimer);
         KV_STATE.countdownTimer = null;
 
+        // Ocultar sonar
+        if (sonarEl) sonarEl.style.display = 'none';
+
         // HUD: capturando
         if (hudDot) hudDot.className = 'kv-hud__dot kv--capture';
 
-        // Flash + captura
+        // Flash cromático + captura
         flash().then(() => capturar());
         return;
       }
+
+      // Animar número
+      numEl.style.animation = 'none';
+      numEl.offsetHeight;
+      numEl.style.animation = 'kvNumPop 0.25s cubic-bezier(0.34,1.56,0.64,1)';
+
       numEl.textContent = remaining;
       updateRing(remaining);
     }, 1000);
@@ -621,11 +937,20 @@
       const flashEl = document.getElementById('kv-capture-flash');
       if (!flashEl) { resolve(); return; }
 
+      // Ocultar scan lines y mesh durante el flash
+      const scanLine  = document.getElementById('kv-scan-line');
+      const scanLine2 = document.getElementById('kv-scan-line-2');
+      const meshEl    = document.getElementById('kv-face-mesh');
+      if (scanLine)  scanLine.style.display  = 'none';
+      if (scanLine2) scanLine2.style.display = 'none';
+      if (meshEl)    meshEl.style.opacity    = '0';
+
       flashEl.classList.add('kv--flash');
+
       setTimeout(() => {
         flashEl.classList.remove('kv--flash');
         resolve();
-      }, 350);
+      }, 450);
     });
   }
 
@@ -671,11 +996,20 @@
 
     const t = getT();
 
-    // Mostrar imagen capturada
+    // Mostrar imagen capturada — con saturación progresiva
     const imgEl = document.getElementById('kv-captured-img');
     if (imgEl && imageBase64) {
       imgEl.src = imageBase64;
-      setTimeout(() => imgEl.classList.add('kv--visible'), 100);
+      setTimeout(() => {
+        imgEl.classList.add('kv--visible');
+        // Recuperar color progresivamente
+        let sat = 0;
+        const saturateTimer = setInterval(() => {
+          sat = Math.min(sat + 8, 100);
+          imgEl.style.filter = `saturate(${sat}%) brightness(${0.6 + (sat / 100) * 0.4})`;
+          if (sat >= 100) clearInterval(saturateTimer);
+        }, 60);
+      }, 200);
     }
 
     // Animar items progresivamente
