@@ -28,6 +28,9 @@
 /* ============================================================
    1. QUIZ QUESTIONS
 ============================================================ */
+// Preguntas que permiten selección múltiple
+const SHATOKB_MULTI_SELECT = ['preocupacion', 'objetivo'];
+
 const SHATOKB_PREGUNTAS = [
   {
     id: 'tipo_piel',
@@ -57,7 +60,8 @@ const SHATOKB_PREGUNTAS = [
     id: 'preocupacion',
     titulo: 'What does your skin make you most self-conscious about?',
     emoji: '😔',
-    subtitulo: 'The one thing you wish you could fix tomorrow.',
+    subtitulo: 'Select all that apply — we treat every concern.',
+    multiSelect: true,
     opciones: [
       { valor: 'acne',           label: '😤 Acne & breakouts',     desc: 'Blackheads, pimples, cysts. It never fully clears.' },
       { valor: 'manchas',        label: '🟤 Dark spots',           desc: 'Post-acne marks, sun damage, uneven patches.' },
@@ -72,7 +76,9 @@ const SHATOKB_PREGUNTAS = [
     id: 'objetivo',
     titulo: 'Close your eyes. What does your dream skin look like?',
     emoji: '💭',
-    subtitulo: 'Pick the transformation you want most.',
+    subtitulo: 'Pick up to 2 — we build around what matters most to you.',
+    multiSelect: true,
+    maxSelect: 2,
     opciones: [
       { valor: 'glow',      label: '✨ That glass-skin glow',   desc: 'Lit from within. Dewy, radiant, luminous.' },
       { valor: 'calmar',    label: '🧘 Calm, quiet skin',       desc: 'No redness. No reactions. Just peace.' },
@@ -1121,25 +1127,42 @@ function shatokbCalcularPerfil(resp) {
   Object.keys(SHATOKB_PERFILES).forEach(p => { puntos[p] = 0; });
   const r = resp;
 
+  // ── Tipo de piel ──────────────────────────────────────────────
   if (r.tipo_piel === 'grasa')    { puntos.grasa_acne += 3; puntos.grasa_poros += 3; }
   if (r.tipo_piel === 'mixta')    { puntos.mixta_general += 3; puntos.mixta_manchas += 2; }
   if (r.tipo_piel === 'seca')     { puntos.seca_hidratacion += 3; puntos.seca_antiaging += 2; }
   if (r.tipo_piel === 'sensible') { puntos.sensible_rojeces += 5; }
   if (r.tipo_piel === 'nolose')   { puntos.general_glow += 3; }
 
-  if (r.preocupacion === 'acne')           { puntos.grasa_acne += 4; }
-  if (r.preocupacion === 'poros')          { puntos.grasa_poros += 4; }
-  if (r.preocupacion === 'manchas')        { puntos.mixta_manchas += 4; puntos.seca_antiaging += 1; }
-  if (r.preocupacion === 'deshidratacion') { puntos.seca_hidratacion += 4; puntos.mixta_general += 2; }
-  if (r.preocupacion === 'rojeces')        { puntos.sensible_rojeces += 4; }
-  if (r.preocupacion === 'antiaging')      { puntos.seca_antiaging += 4; }
-  if (r.preocupacion === 'textura')        { puntos.grasa_poros += 2; puntos.mixta_general += 2; }
+  // ── Preocupacion — puede ser string (legacy) o array (multi-select) ──
+  const preocupaciones = Array.isArray(r.preocupacion)
+    ? r.preocupacion
+    : (r.preocupacion ? [r.preocupacion] : []);
 
-  if (r.objetivo === 'calmar')    { puntos.sensible_rojeces += 3; }
-  if (r.objetivo === 'controlar') { puntos.grasa_acne += 2; puntos.grasa_poros += 2; }
-  if (r.objetivo === 'hidratar')  { puntos.seca_hidratacion += 3; puntos.mixta_general += 2; }
-  if (r.objetivo === 'unificar')  { puntos.mixta_manchas += 3; }
-  if (r.objetivo === 'glow')      { puntos.general_glow += 2; puntos.seca_hidratacion += 1; }
+  preocupaciones.forEach(p => {
+    if (p === 'acne')           { puntos.grasa_acne += 4; }
+    if (p === 'poros')          { puntos.grasa_poros += 4; }
+    if (p === 'manchas')        { puntos.mixta_manchas += 4; puntos.seca_antiaging += 1; }
+    if (p === 'deshidratacion') { puntos.seca_hidratacion += 4; puntos.mixta_general += 2; }
+    if (p === 'rojeces')        { puntos.sensible_rojeces += 4; }
+    if (p === 'antiaging')      { puntos.seca_antiaging += 4; }
+    if (p === 'textura')        { puntos.grasa_poros += 2; puntos.mixta_general += 2; }
+  });
+
+  // ── Objetivo — puede ser string (legacy) o array (multi-select, max 2) ──
+  const objetivos = Array.isArray(r.objetivo)
+    ? r.objetivo
+    : (r.objetivo ? [r.objetivo] : []);
+
+  objetivos.forEach(o => {
+    if (o === 'calmar')    { puntos.sensible_rojeces += 3; }
+    if (o === 'controlar') { puntos.grasa_acne += 2; puntos.grasa_poros += 2; }
+    if (o === 'hidratar')  { puntos.seca_hidratacion += 3; puntos.mixta_general += 2; }
+    if (o === 'unificar')  { puntos.mixta_manchas += 3; }
+    if (o === 'glow')      { puntos.general_glow += 2; puntos.seca_hidratacion += 1; }
+    if (o === 'limpiar')   { puntos.grasa_acne += 2; puntos.grasa_poros += 3; }
+  });
+
   if (r.sensibilidad === 'alta')  { puntos.sensible_rojeces += 3; }
 
   let mejor = 'general_glow', max = 0;
@@ -1158,11 +1181,18 @@ function shatokbRecomendarProductos(perfilId, respuestas) {
   const perfil       = SHATOKB_PERFILES[perfilId];
   const tipoPiel     = respuestas.tipo_piel;
   const sensibilidad = respuestas.sensibilidad;
-  const preocupacion = respuestas.preocupacion;
-  const objetivo     = respuestas.objetivo;
   const nivelRutina  = respuestas.nivel_rutina;
   const presupuesto  = respuestas.presupuesto;
   const budgetMax    = SHATOKB_BUDGET_LIMITS[presupuesto] || Infinity;
+
+  // Normalizar preocupacion y objetivo como arrays (backward-compatible con string)
+  const preocupaciones = Array.isArray(respuestas.preocupacion)
+    ? respuestas.preocupacion
+    : (respuestas.preocupacion ? [respuestas.preocupacion] : []);
+
+  const objetivos = Array.isArray(respuestas.objetivo)
+    ? respuestas.objetivo
+    : (respuestas.objetivo ? [respuestas.objetivo] : []);
 
   // Trim steps based on routine level
   let pasos = [...perfil.pasos];
@@ -1180,14 +1210,29 @@ function shatokbRecomendarProductos(perfilId, respuestas) {
 
     candidatos = candidatos.map(p => {
       let score = 0;
-      if (p.tipo_piel.includes(tipoPiel))         score += 10;
-      else if (tipoPiel === 'nolose')              score += 5;
-      if (p.concerns.includes(preocupacion))       score += 8;
-      if (p.concerns.includes(objetivo))           score += 5;
+
+      // ── Tipo de piel ────────────────────────────────────────────
+      if (p.tipo_piel.includes(tipoPiel))  score += 10;
+      else if (tipoPiel === 'nolose')       score += 5;
+
+      // ── Preocupacion — suma por cada concern que coincida (array) ─
+      preocupaciones.forEach(concern => {
+        if (p.concerns.includes(concern)) score += 8;
+      });
+
+      // ── Objetivo — suma por cada objetivo que coincida (array) ───
+      objetivos.forEach(obj => {
+        if (p.concerns.includes(obj)) score += 5;
+      });
+
+      // ── Sensibilidad ─────────────────────────────────────────────
       if (sensibilidad === 'alta' && p.sensible)   score += 6;
       if (sensibilidad === 'alta' && !p.sensible)  score -= 4;
-      if (p.precio_num <= budgetMax)               score += 4;
-      else                                         score -= 3;
+
+      // ── Presupuesto ──────────────────────────────────────────────
+      if (p.precio_num <= budgetMax)  score += 4;
+      else                            score -= 3;
+
       return { ...p, _score: score };
     });
 
@@ -1240,6 +1285,34 @@ function shatokbRenderPregunta(idx) {
   const container = document.getElementById('shatokb-quiz-form');
   if (!container) return;
 
+  const esMulti     = !!q.multiSelect;
+  const maxSelect   = q.maxSelect || null;
+  const respActual  = shatokbState.respuestas[q.id];
+  // Normalizar respuesta actual como array para comparación
+  const seleccionados = esMulti
+    ? (Array.isArray(respActual) ? respActual : (respActual ? [respActual] : []))
+    : [];
+
+  // Etiqueta del botón Next
+  const esFinal   = idx === total - 1;
+  const labelNext = esFinal ? 'See My Routine →' : 'Next →';
+
+  // Indicador de multi-select
+  const multiHint = esMulti
+    ? `<p class="shatokb-multi-hint">${
+        maxSelect
+          ? `Select up to ${maxSelect}`
+          : 'Select all that apply'
+      } <span class="shatokb-multi-count" id="stk-multi-count">${
+          seleccionados.length > 0 ? seleccionados.length + ' selected' : ''
+      }</span></p>`
+    : '';
+
+  // ¿Tiene ya respuesta válida para habilitar el botón?
+  const tieneRespuesta = esMulti
+    ? seleccionados.length > 0
+    : !!respActual;
+
   container.innerHTML = `
     <div class="shatokb-pregunta">
       <div class="shatokb-pregunta__header">
@@ -1247,47 +1320,172 @@ function shatokbRenderPregunta(idx) {
         <div>
           <h3 class="shatokb-pregunta__titulo">${q.titulo}</h3>
           ${q.subtitulo ? `<p class="shatokb-pregunta__subtitulo">${q.subtitulo}</p>` : ''}
+          ${multiHint}
         </div>
       </div>
-      <div class="shatokb-opciones">
-        ${q.opciones.map(op => `
+      <div class="shatokb-opciones${esMulti ? ' shatokb-opciones--multi' : ''}" id="stk-opciones-wrap">
+        ${q.opciones.map(op => {
+          const isSelected = esMulti
+            ? seleccionados.includes(op.valor)
+            : respActual === op.valor;
+          return `
           <button
-            class="shatokb-opcion${shatokbState.respuestas[q.id] === op.valor ? ' shatokb-opcion--selected' : ''}"
-            onclick="shatokbElegirRespuesta('${q.id}','${op.valor}',this)"
+            class="shatokb-opcion${isSelected ? ' shatokb-opcion--selected' : ''}"
+            data-qid="${q.id}"
+            data-valor="${op.valor}"
+            data-multi="${esMulti}"
+            data-maxselect="${maxSelect || ''}"
             type="button">
+            ${esMulti ? '<span class="shatokb-opcion__check" aria-hidden="true"></span>' : ''}
             <span class="shatokb-opcion__label">${op.label}</span>
             <span class="shatokb-opcion__desc">${op.desc || ''}</span>
-          </button>
-        `).join('')}
+          </button>`;
+        }).join('')}
       </div>
-      <div class="shatokb-quiz-nav">
+      <div class="shatokb-quiz-nav" id="stk-nav-wrap">
         ${idx > 0
-          ? `<button class="shatokb-btn shatokb-btn--ghost" onclick="shatokbRenderPregunta(${idx - 1})" type="button">← Back</button>`
+          ? `<button class="shatokb-btn shatokb-btn--ghost" data-action="back" data-idx="${idx - 1}" type="button">← Back</button>`
           : `<span></span>`}
-        <button
-          class="shatokb-btn shatokb-btn--primary"
-          id="shatokb-btn-siguiente"
-          onclick="shatokbSiguientePregunta(${idx})"
-          type="button"
-          ${shatokbState.respuestas[q.id] ? '' : 'disabled'}>
-          ${idx === total - 1 ? 'See My Routine →' : 'Next →'}
-        </button>
+        <div id="stk-next-slot" style="display:${tieneRespuesta ? 'block' : 'none'};">
+          ${tieneRespuesta ? `<button
+            class="shatokb-btn shatokb-btn--primary shatokb-btn--ready"
+            id="shatokb-btn-siguiente"
+            data-action="next"
+            data-idx="${idx}"
+            type="button">${labelNext}</button>` : ''}
+        </div>
       </div>
     </div>`;
+
+  // ── Listeners en capture phase — ganan a cualquier listener del tema Halo ──
+  container.querySelectorAll('.shatokb-opcion').forEach(function(opBtn) {
+    opBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      var qid    = opBtn.dataset.qid;
+      var valor  = opBtn.dataset.valor;
+      var multi  = opBtn.dataset.multi === 'true';
+      var maxSel = opBtn.dataset.maxselect ? parseInt(opBtn.dataset.maxselect) : null;
+      shatokbElegirRespuesta(qid, valor, opBtn, multi, maxSel);
+    }, true);
+  });
+
+  // Botón Next — se añade el listener solo si ya existe en el DOM
+  function shatokbBindNext() {
+    var btnNext = container.querySelector('[data-action="next"]');
+    if (!btnNext) return;
+    btnNext.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      shatokbSiguientePregunta(parseInt(btnNext.dataset.idx));
+    }, true);
+  }
+  shatokbBindNext();
+
+  var btnBack = container.querySelector('[data-action="back"]');
+  if (btnBack) {
+    btnBack.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      shatokbRenderPregunta(parseInt(btnBack.dataset.idx));
+    }, true);
+  }
 }
 
-function shatokbElegirRespuesta(qId, valor, btn) {
-  shatokbState.respuestas[qId] = valor;
-  document.querySelectorAll('.shatokb-opcion').forEach(b => b.classList.remove('shatokb-opcion--selected'));
-  btn.classList.add('shatokb-opcion--selected');
-  const sig = document.getElementById('shatokb-btn-siguiente');
-  if (sig) sig.disabled = false;
-  setTimeout(() => shatokbSiguientePregunta(shatokbState.preguntaActual), 420);
+function shatokbElegirRespuesta(qId, valor, btn, esMulti, maxSelect) {
+  if (esMulti) {
+    // ── Multi-select: toggle el valor en el array ──────────────
+    let actual = shatokbState.respuestas[qId];
+    if (!Array.isArray(actual)) actual = actual ? [actual] : [];
+
+    const yaSeleccionado = actual.includes(valor);
+
+    if (yaSeleccionado) {
+      // Deseleccionar
+      actual = actual.filter(v => v !== valor);
+      btn.classList.remove('shatokb-opcion--selected');
+    } else {
+      // Seleccionar — respetar límite si hay maxSelect
+      if (maxSelect && actual.length >= maxSelect) {
+        // Quitar el primero seleccionado para hacer espacio (FIFO)
+        const quitado = actual.shift();
+        const btnQuitado = document.querySelector(
+          `.shatokb-opcion[data-valor="${quitado}"]`
+        );
+        if (btnQuitado) btnQuitado.classList.remove('shatokb-opcion--selected');
+      }
+      actual = [...actual, valor];
+      btn.classList.add('shatokb-opcion--selected');
+    }
+
+    shatokbState.respuestas[qId] = actual;
+
+    // Actualizar contador
+    const countEl = document.getElementById('stk-multi-count');
+    if (countEl) countEl.textContent = actual.length > 0 ? actual.length + ' selected' : '';
+
+    // Mostrar u ocultar el slot del botón Next según haya selección
+    shatokbActualizarBtnNext(actual.length > 0, shatokbState.preguntaActual);
+
+  } else {
+    // ── Single-select ─────────────────────────────────────────────
+    shatokbState.respuestas[qId] = valor;
+    document.querySelectorAll('.shatokb-opcion').forEach(b => b.classList.remove('shatokb-opcion--selected'));
+    btn.classList.add('shatokb-opcion--selected');
+    // Mostrar el botón Next (aparece por primera vez)
+    shatokbActualizarBtnNext(true, shatokbState.preguntaActual);
+  }
+}
+
+// Muestra u oculta el botón Next inyectándolo/retirándolo del DOM.
+// Al no existir en el DOM cuando está "deshabilitado", el tema Halo
+// no puede hacerle click automático al detectar un botón en el form.
+function shatokbActualizarBtnNext(mostrar, idx) {
+  var slot = document.getElementById('stk-next-slot');
+  if (!slot) return;
+
+  var total    = SHATOKB_PREGUNTAS.length;
+  var esFinal  = idx === total - 1;
+  var label    = esFinal ? 'See My Routine →' : 'Next →';
+
+  if (mostrar) {
+    // Si ya existe el botón, solo actualizar visibilidad
+    slot.style.display = 'block';
+    if (!document.getElementById('shatokb-btn-siguiente')) {
+      slot.innerHTML = `<button
+        class="shatokb-btn shatokb-btn--primary shatokb-btn--ready"
+        id="shatokb-btn-siguiente"
+        data-action="next"
+        data-idx="${idx}"
+        type="button">${label}</button>`;
+      // Re-adjuntar listener en capture
+      var btn = slot.querySelector('[data-action="next"]');
+      if (btn) {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          shatokbSiguientePregunta(parseInt(btn.dataset.idx));
+        }, true);
+      }
+    }
+  } else {
+    slot.style.display = 'none';
+    slot.innerHTML = '';
+  }
 }
 
 function shatokbSiguientePregunta(idx) {
-  const q = SHATOKB_PREGUNTAS[idx];
-  if (!shatokbState.respuestas[q.id]) return;
+  const q       = SHATOKB_PREGUNTAS[idx];
+  const resp    = shatokbState.respuestas[q.id];
+  const esMulti = !!q.multiSelect;
+
+  // Validar que haya respuesta
+  const tieneRespuesta = esMulti
+    ? (Array.isArray(resp) && resp.length > 0)
+    : !!resp;
+
+  if (!tieneRespuesta) return;
+
   if (idx + 1 < SHATOKB_PREGUNTAS.length) {
     shatokbRenderPregunta(idx + 1);
   } else {
