@@ -2574,13 +2574,12 @@ function shatokbElegirRespuesta(qId, valor, btn, esMulti, maxSelect) {
 
   } else {
     // ── Single-select ─────────────────────────────────────────────
-    // ingredient_tolerance y demás single-selects fluyen igual.
+    // Guarda la respuesta, marca la opción y muestra el botón Next.
+    // El usuario debe hacer clic en Next para avanzar — sin auto-avance.
     shatokbState.respuestas[qId] = valor;
     document.querySelectorAll('.shatokb-opcion').forEach(b => b.classList.remove('shatokb-opcion--selected'));
     btn.classList.add('shatokb-opcion--selected');
-    // Mostrar botón Next y auto-avanzar tras breve pausa visual
     shatokbActualizarBtnNext(true, shatokbState.preguntaActual);
-    setTimeout(function() { shatokbSiguientePregunta(shatokbState.preguntaActual); }, 420);
   }
 }
 
