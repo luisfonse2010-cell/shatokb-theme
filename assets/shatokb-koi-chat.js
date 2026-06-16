@@ -893,7 +893,118 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     }
   }
 
-  async function enviarDesdeChip (texto) {
+  /* ══════════════════════════════════════════════════════════
+   SPRINT 2 — KOI VISION: manejar resultado del análisis facial
+   Llamado desde window.koiVision.onResultado() cuando el
+   usuario confirma "Ver análisis completo en el chat"
+   ══════════════════════════════════════════════════════════ */
+async function manejarResultadoVision (data) {
+  const { result, image, ctx } = data || {};
+  const idioma = detectarIdioma();
+
+  // Añadir a historial como mensaje del usuario (chip)
+  const chipTexto = idioma === 'es' ? '📸 Analicé mi piel con la cámara' : '📸 I analyzed my skin with the camera';
+  KOI_STATE.historial.push({ role: 'user', content: chipTexto });
+  agregarMensaje('user', chipTexto);
+
+  // Mostrar typing mientras KOI procesa
+  mostrarTyping();
+
+  const perfilId    = KOI_STATE.contexto?.perfil?.id || '';
+  const perfilNombre = KOI_STATE.contexto?.perfil?.nombre || 'your profile';
+
+  // ── Si tenemos resultado real del Worker ───────────────────
+  if (result && result.mensaje_koi) {
+    await new Promise(r => setTimeout(r, 800));
+    ocultarTyping();
+
+    const textEl = agregarMensaje('koi', '', false);
+
+    // Construir el mensaje completo con el análisis de zonas
+    let mensajeKOI = result.mensaje_koi;
+
+    // Card visual con las zonas — incrustada en el bubble
+    if (result.zonas) {
+      const z      = result.zonas;
+      const labels = {
+        en: { tzone: 'T-Zone', cheeks: 'Cheeks', eyes: 'Eye Area' },
+        es: { tzone: 'Zona T', cheeks: 'Mejillas', eyes: 'Contorno ojos' },
+      };
+      const l = labels[idioma] || labels.en;
+      const cardHTML = `
+        <div class="koi-vision-card">
+          <div class="koi-vision-card__header">📍 ${idioma === 'es' ? 'Análisis por zona' : 'Zone Analysis'}</div>
+          <div class="koi-vision-card__zone">
+            <span class="koi-vision-card__zone-pin">💦</span>
+            <span class="koi-vision-card__zone-text"><span class="koi-vision-card__zone-label">${l.tzone} —</span> ${z.tzone || '—'}</span>
+          </div>
+          <div class="koi-vision-card__zone">
+            <span class="koi-vision-card__zone-pin">🌸</span>
+            <span class="koi-vision-card__zone-text"><span class="koi-vision-card__zone-label">${l.cheeks} —</span> ${z.cheeks || '—'}</span>
+          </div>
+          <div class="koi-vision-card__zone">
+            <span class="koi-vision-card__zone-pin">👁️</span>
+            <span class="koi-vision-card__zone-text"><span class="koi-vision-card__zone-label">${l.eyes} —</span> ${z.eyes || '—'}</span>
+          </div>
+        </div>`;
+
+      // Añadir la card después del texto KOI
+      if (textEl && textEl.parentElement) {
+        const cardDiv = document.createElement('div');
+        cardDiv.innerHTML = cardHTML;
+        textEl.parentElement.appendChild(cardDiv.firstElementChild);
+      }
+    }
+
+    // Si la rutina debe ajustarse
+    if (result.ajuste && result.ajuste !== 'null') {
+      const ajusteLabel = idioma === 'es' ? '🔄 Ajuste en tu rutina' : '🔄 Routine adjustment';
+      mensajeKOI += `\n\n**${ajusteLabel}:** ${result.ajuste}`;
+    }
+
+    // Efecto de escritura para el mensaje principal
+    await escribirConEfecto(textEl, mensajeKOI);
+    KOI_STATE.historial.push({ role: 'koi', content: mensajeKOI });
+    guardarHistorialLocal();
+
+    // Ir a la fase de email gate / reveal
+    KOI_STATE.revealPhase = 'email';
+    setTimeout(() => {
+      mostrarChips('reveal');
+    }, 600);
+
+  } else {
+    // ── Fallback: sin resultado del Worker → KOI confirma con el quiz ──
+    await new Promise(r => setTimeout(r, 1200));
+    ocultarTyping();
+
+    const fallbackMsgs = {
+      en: `Analysis complete ✨\n\nMy visual read confirms your quiz profile. The routine I built for **${perfilNombre}** is calibrated correctly.\n\nReady to see it?`,
+      es: `Análisis completado ✨\n\nMi lectura visual confirma tu perfil del quiz. La rutina que construí para **${perfilNombre}** está calibrada correctamente.\n\n¿Lista para verla?`,
+    };
+    const msg     = fallbackMsgs[idioma] || fallbackMsgs.en;
+    const textEl2 = agregarMensaje('koi', '', false);
+    await escribirConEfecto(textEl2, msg);
+    KOI_STATE.historial.push({ role: 'koi', content: msg });
+    guardarHistorialLocal();
+
+    KOI_STATE.revealPhase = 'email';
+    setTimeout(() => mostrarChips('reveal'), 500);
+  }
+
+  scrollAlFinal();
+}
+
+/* ══════════════════════════════════════════════════════════
+   ESCUCHAR EVENTO GLOBAL de KOI Vision (alternativo al callback)
+   ══════════════════════════════════════════════════════════ */
+window.addEventListener('koi-vision-result', function(e) {
+  if (e.detail) {
+    manejarResultadoVision(e.detail);
+  }
+});
+
+async function enviarDesdeChip (texto) {
     // ── Chips de bifurcación "The Reveal" ─────────────────────
     // Se interceptan aquí antes de ir al Worker — tienen lógica
     // propia que no debe pasar por GPT-4o
@@ -942,13 +1053,36 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     const idioma = detectarIdioma();
     ocultarChips();
 
-    const esAnalisis = texto.includes('📸') ||
+    // ── Sprint 2: Chip "📸 Analyze my skin" → abrir KOI Vision ──
+    const esAnalisis = texto.startsWith('📸') || texto.includes('📸') ||
                        texto.toLowerCase().includes('rostro') ||
                        texto.toLowerCase().includes('face')   ||
                        texto.toLowerCase().includes('visage') ||
                        texto.toLowerCase().includes('rosto')  ||
                        texto.toLowerCase().includes('gesicht')||
                        texto.toLowerCase().includes('viso');
+
+    if (esAnalisis && typeof window.koiVision !== 'undefined') {
+      // ── KOI Vision está disponible — abrir el módulo de cámara ──
+      // Exponer la URL del Worker al módulo de visión
+      window.KOI_VISION_WORKER_URL = KOI_CONFIG.workerUrl.replace('/chat', '/vision');
+
+      // Registrar el callback ANTES de abrir (el modal lo llama al cerrar)
+      window.koiVision.onResultado(function(data) {
+        manejarResultadoVision(data);
+      });
+
+      // Fallback alternativo (si el usuario cancela la cámara)
+      window.koiVisionAlternativo = function() {
+        // Ir directo al flujo de reveal
+        KOI_STATE.revealPhase = 'email';
+        manejarChipDescubrirRutina(idioma);
+      };
+
+      // Abrir el modal de cámara con el contexto del quiz
+      window.koiVision.abrir(KOI_STATE.contexto);
+      return;
+    }
 
     if (esAnalisis) {
       // ── Coming soon — pero con entusiasmo, no disculpa
