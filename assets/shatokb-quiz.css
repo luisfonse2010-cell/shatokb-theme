@@ -1843,3 +1843,120 @@
     font-size: 12px !important;
   }
 }
+
+
+/* ══════════════════════════════════════════════════════════
+   SPRINT 2 — MOMENTO 1: KOI TIP CONTEXTUAL
+   Burbuja de chat de KOI que aparece en preguntas clave.
+   No interactiva — introduce el personaje, genera confianza.
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Contenedor principal ─────────────────────────────────── */
+.stk-koi-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #fff;
+  border: 1.5px solid rgba(236, 149, 184, 0.35);
+  border-radius: 16px 16px 16px 4px;  /* burbuja chat — cola abajo-izq */
+  padding: 16px 18px;
+  margin: 0 0 22px 0;
+  box-shadow: 0 2px 18px rgba(236, 149, 184, 0.14),
+              0 1px 4px rgba(0,0,0,0.06);
+  position: relative;
+
+  /* Animación de entrada — aparece desde abajo con fade */
+  animation: stk-koi-tip-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ── Keyframe entrada ─────────────────────────────────────── */
+@keyframes stk-koi-tip-in {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Línea de acento izquierda — color KOI pink ──────────── */
+.stk-koi-tip::before {
+  content: '';
+  position: absolute;
+  left: -1.5px;
+  top: 20px;
+  bottom: 20px;
+  width: 3px;
+  background: linear-gradient(180deg, #ec95b8, #e75480);
+  border-radius: 4px;
+}
+
+/* ── Avatar 🌸 ────────────────────────────────────────────── */
+.stk-koi-tip__avatar {
+  font-size: 26px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+  /* Pulso sutil — como un "respira" */
+  animation: stk-koi-tip-pulse 3s ease-in-out infinite;
+}
+
+@keyframes stk-koi-tip-pulse {
+  0%, 100% { transform: scale(1);    }
+  50%       { transform: scale(1.08); }
+}
+
+/* ── Cuerpo del mensaje ───────────────────────────────────── */
+.stk-koi-tip__body {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Nombre "KOI · K-Beauty Expert" ──────────────────────── */
+.stk-koi-tip__name {
+  font-family: var(--stk-font-body);
+  font-size: 11px;
+  font-weight: 700;
+  color: #ec95b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 6px 0;
+}
+
+/* ── Texto del tip ────────────────────────────────────────── */
+.stk-koi-tip__text {
+  font-family: var(--stk-font-body);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--stk-text);
+  line-height: 1.6;
+  margin: 0 0 6px 0;
+}
+
+/* ── Subtexto — dato extra / refuerzo ────────────────────── */
+.stk-koi-tip__sub {
+  font-family: var(--stk-font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--stk-text-muted);
+  line-height: 1.45;
+  margin: 0;
+  font-style: italic;
+}
+
+/* ── Responsive: mobile ───────────────────────────────────── */
+@media (max-width: 480px) {
+  .stk-koi-tip {
+    padding: 14px 14px;
+    gap: 10px;
+    border-radius: 12px 12px 12px 3px;
+  }
+  .stk-koi-tip__avatar {
+    font-size: 22px;
+  }
+  .stk-koi-tip__text {
+    font-size: 13px;
+  }
+}
