@@ -2275,9 +2275,25 @@ function shatokbScrollAKOI() {
    2. Start fetching the live catalogue in the background so
       it's ready by the time the user finishes all 6 questions.
 ============================================================ */
+// ── Exponer función en window para garantizar scope global ──────
+// (necesario por 'use strict' + posibles iframes/shadow DOM en Halo)
+window.shatokbIniciarQuiz = shatokbIniciarQuiz;
+
 document.addEventListener('DOMContentLoaded', function () {
   shatokbApplyConfigToUI();
   shatokbFetchCatalogo();   // runs silently — no await needed here
+
+  // ── Listener robusto en botón de inicio ─────────────────────
+  // Refuerzo del onclick inline por si el tema Halo intercepta
+  // clicks en <button> dentro de sections antes del inline handler.
+  var btnInicio = document.getElementById('shatokb-btn-inicio');
+  if (btnInicio) {
+    btnInicio.addEventListener('click', function (e) {
+      e.stopPropagation();
+      e.preventDefault();
+      shatokbIniciarQuiz();
+    }, true); // capture:true — corre antes que cualquier listener del tema
+  }
 });
 
 /* ============================================================
