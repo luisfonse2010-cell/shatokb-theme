@@ -2424,7 +2424,7 @@
   font-family: var(--stk-font-heading);
   font-size: 11px;
   font-weight: 800;
-  color: var(--stk-text-muted);
+  color: #374151 !important;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin: 0 0 10px;
@@ -2492,7 +2492,7 @@
   font-family: var(--stk-font-body);
   font-size: 10px;
   font-weight: 700;
-  color: var(--stk-text-muted);
+  color: #374151 !important;
   text-transform: uppercase;
   letter-spacing: 0.07em;
   line-height: 1.2;
@@ -2502,14 +2502,14 @@
   font-family: var(--stk-font-heading);
   font-size: 14px;
   font-weight: 800;
-  color: var(--stk-navy);
+  color: #111827 !important;
   line-height: 1.2;
 }
 
 .stk-skin-analysis__sub {
   font-family: var(--stk-font-body);
   font-size: 11px;
-  color: var(--stk-text-muted);
+  color: #4b5563 !important;
   line-height: 1.4;
 }
 
