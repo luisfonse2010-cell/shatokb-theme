@@ -855,12 +855,12 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     // NO hacer scroll / reveal automático. El usuario lee el mensaje de KOI
     // y decide cuándo subir a ver los productos.
     const scrollBtns = {
-      es: '👆 Ver mi rutina',
-      en: '👆 See my routine',
-      fr: '👆 Voir ma routine',
-      pt: '👆 Ver minha rotina',
-      de: '👆 Routine ansehen',
-      it: '👆 Vedi la mia routine',
+      es: '✨ Ver mi rutina ahora',
+      en: '✨ Show me my routine',
+      fr: '✨ Voir ma routine',
+      pt: '✨ Ver minha rotina agora',
+      de: '✨ Routine jetzt ansehen',
+      it: '✨ Vedi la mia routine',
     };
     const btnLabel = scrollBtns[idioma] || scrollBtns['en'];
 
@@ -876,20 +876,24 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       revealBtn.textContent = btnLabel;
       revealBtn.addEventListener('click', () => {
         chipsEl.innerHTML = '';
-        // Revelar productos y hacer scroll suave
-        if (typeof window.shatokbRevelarProductos === 'function') {
-          window.shatokbRevelarProductos();
-        }
-        // Scroll suave hacia los productos (arriba del chat)
-        const rutinaEl = document.getElementById('stk-reveal-section') ||
-                         document.getElementById('shatokb-resultado');
+
+        // 1. Scroll inmediato hacia los productos (ANTES del reveal)
+        //    para que el usuario vea la animación de desbloqueo en pantalla.
+        const rutinaEl = document.getElementById('shatokb-resultado') ||
+                         document.getElementById('stk-reveal-section');
         if (rutinaEl) {
-          setTimeout(() => {
-            rutinaEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }, 400);
+          rutinaEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-        // Chips post-reveal para seguir explorando con KOI
-        setTimeout(() => mostrarChips('bienvenida'), 1200);
+
+        // 2. Revelar productos tras ~300ms (cuando el scroll ya empezó)
+        setTimeout(() => {
+          if (typeof window.shatokbRevelarProductos === 'function') {
+            window.shatokbRevelarProductos();
+          }
+        }, 300);
+
+        // 3. Chips post-reveal cuando las animaciones de card terminaron
+        setTimeout(() => mostrarChips('bienvenida'), 1800);
       });
       chipsEl.appendChild(revealBtn);
     }, 600);
