@@ -924,44 +924,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     await revelarRutinaConKOI(email);
   }
 
-  /* ── Cart CTA helper — genera el botón grande de carrito ── */
-  function _crearCartCTA (idioma) {
-    const LABELS = {
-      es: { btn: '🛒 Añadir al carrito', sub: 'Tu rutina K-Beauty personalizada' },
-      en: { btn: '🛒 Add to cart',       sub: 'Your personalized K-Beauty routine' },
-      fr: { btn: '🛒 Ajouter au panier', sub: 'Votre routine K-Beauty personnalisée' },
-      pt: { btn: '🛒 Adicionar ao carrinho', sub: 'Sua rotina K-Beauty personalizada' },
-      de: { btn: '🛒 In den Warenkorb',  sub: 'Deine personalisierte K-Beauty-Routine' },
-      it: { btn: '🛒 Aggiungi al carrello', sub: 'La tua routine K-Beauty personalizzata' },
-    };
-    const lbl = LABELS[idioma] || LABELS['en'];
 
-    const cta = document.createElement('div');
-    cta.className = 'koi-cart-cta';
-    cta.innerHTML = `
-      <button class="koi-cart-cta__btn">
-        ${lbl.btn}
-      </button>
-      <div class="koi-cart-cta__sub">${lbl.sub}</div>
-    `;
-
-    const btnEl = cta.querySelector('.koi-cart-cta__btn');
-    if (btnEl) {
-      btnEl.addEventListener('click', () => {
-        const rutinaEl = document.getElementById('shatokb-resultado') ||
-                         document.getElementById('stk-reveal-section');
-        if (rutinaEl) rutinaEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        setTimeout(() => {
-          if (typeof window.shatokbAbrirCarrito === 'function') {
-            window.shatokbAbrirCarrito();
-          } else {
-            window.location.href = '/cart';
-          }
-        }, 400);
-      });
-    }
-    return cta;
-  }
 
   function shatokbEnviarEmailShopify (email) {
     // POST silencioso al endpoint de Shopify /contact
@@ -1128,53 +1091,11 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     }, 700);
   }
 
-  /* ── Momento 5: CTA compacto anclado al final de cada respuesta ── */
-  function _inyectarCartCTAAnclado () {
-    const container = document.getElementById('koi-messages');
-    if (!container) return;
-
-    const idioma = detectarIdioma();
-    const LABELS = {
-      es: { btn: 'Añadir al carrito 🛒' },
-      en: { btn: 'Add to cart 🛒'      },
-      fr: { btn: 'Ajouter au panier 🛒' },
-      pt: { btn: 'Adicionar 🛒'         },
-      de: { btn: 'In den Warenkorb 🛒'  },
-      it: { btn: 'Aggiungi 🛒'          },
-    };
-    const lbl = LABELS[idioma] || LABELS['en'];
-
-    // Eliminar CTA anclado anterior si existe
-    const prev = document.getElementById('koi-cart-cta-anchored');
-    if (prev) prev.remove();
-
-    const cta = document.createElement('div');
-    cta.id        = 'koi-cart-cta-anchored';
-    cta.className = 'koi-cart-cta-anchored';
-    cta.innerHTML = `
-      <div class="koi-cart-cta-anchored__divider"></div>
-      <button class="koi-cart-cta-anchored__btn">${lbl.btn}</button>
-    `;
-
-    const btnEl = cta.querySelector('.koi-cart-cta-anchored__btn');
-    if (btnEl) {
-      btnEl.addEventListener('click', () => {
-        const rutinaEl = document.getElementById('shatokb-resultado') ||
-                         document.getElementById('stk-reveal-section');
-        if (rutinaEl) rutinaEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        setTimeout(() => {
-          if (typeof window.shatokbAbrirCarrito === 'function') {
-            window.shatokbAbrirCarrito();
-          } else {
-            window.location.href = '/cart';
-          }
-        }, 400);
-      });
-    }
-
-    container.appendChild(cta);
-    scrollAlFinal();
-  }
+  // Momento 5 eliminado — el cuadro sticky "Add my full routine to cart"
+  // que aparece encima del chat ya cumple esta función correctamente y
+  // siempre está visible. Un segundo botón dentro del chat es redundante
+  // y además llevaría a /cart vacío (los productos se añaden desde los
+  // cards de la rutina, no desde el chat).
 
   /* ══════════════════════════════════════════════════════════
      ENVÍO DE MENSAJES
@@ -1788,13 +1709,6 @@ async function enviarDesdeChip (texto) {
       // Guardar en historial
       KOI_STATE.historial.push({ role: 'assistant', content: respuesta });
       guardarHistorialLocal();
-
-      // ── Momento 5: Cart CTA anclado post-email ───────────────
-      // Después de CADA respuesta de KOI, si la rutina ya fue revelada,
-      // inyectar CTA compacto al final de los chips.
-      if (KOI_STATE.revealPhase === 'revealed') {
-        setTimeout(() => _inyectarCartCTAAnclado(), 700);
-      }
 
       // Mostrar chips de objeciones si el historial es largo
       if (KOI_STATE.msgCount >= 4) {
