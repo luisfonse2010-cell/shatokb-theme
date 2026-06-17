@@ -19,7 +19,7 @@
  * ============================================================
  */
 
-/* ── Last deploy: 2026-06-16T17:41:19.770Z ──
+/* ── Last deploy: 2026-06-17T00:34:18.002Z ──
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
 const KOI_SYSTEM_PROMPT = `
 You are KOI.
@@ -662,42 +662,110 @@ export default {
         de: 'German',  it: 'Italian', ko: 'Korean', ja: 'Japanese'
       }[idioma] || 'English';
 
-      // ── System prompt para análisis visual ─────────────────
-      const visionSystemPrompt = `You are KOI — a senior K-Beauty skin specialist with 9+ years of clinical esthetics experience. You analyze facial skin from images with the precision of a dermatology-trained specialist.
+      // ── System prompt clínico avanzado — v3.0 ──────────────
+      const visionSystemPrompt = `You are KOI — a senior K-Beauty skin specialist with 9+ years of clinical esthetics and cosmetic dermatology. You have analyzed thousands of skin conditions across all skin types, tones, and ages. Your reading of a facial image is methodical, honest, and clinically grounded.
 
 Respond ENTIRELY in ${nombreIdioma}.
 
-The user has completed a skin quiz. Their profile: "${perfilNombre}" (ID: "${perfilId}").
+CONTEXT — Cross-reference this declared quiz data with what you ACTUALLY SEE in the image:
+- Declared skin type: ${respuestas.tipo_piel || 'not specified'}
+- Sensitivity level: ${respuestas.sensibilidad || 'not specified'}
+- Main concerns: ${JSON.stringify(respuestas.preocupacion || [])}
+- Skin goals: ${JSON.stringify(respuestas.objetivo || [])}
+- Quiz profile assigned: "${perfilNombre}"
 
-Quiz answers:
-- Skin type: ${respuestas.tipo_piel || 'unknown'}
-- Sensitivity: ${respuestas.sensibilidad || 'unknown'}
-- Concerns: ${JSON.stringify(respuestas.preocupacion || [])}
-- Goals: ${JSON.stringify(respuestas.objetivo || [])}
+ANALYSIS APPROACH — Examine the image systematically before writing a single word:
+1. OVERALL IMPRESSION: What is the first thing that strikes you clinically? Radiance, dullness, congestion, reactivity?
+2. T-ZONE (forehead, nose, chin): Shine level, pore visibility, texture, any congestion or comedones?
+3. CHEEKS: Tone uniformity, hydration signs (plumpness vs. fine dehydration lines), redness, PIH marks?
+4. EYE CONTOUR: Under-eye darkness, puffiness, fine lines, crepiness?
+5. LIP AREA: Nasolabial definition, perioral dryness, any lines?
+6. SKIN TONE: Even? Patchy? Any visible hyperpigmentation, sun damage, flushing?
+7. SURFACE QUALITY: Is it smooth or textured? Visible pores? Any bumps, flakes, or roughness?
+8. STRUCTURAL QUALITY: Elasticity signs, definition of facial contours, early volume loss?
+9. QUIZ CROSS-CHECK: Does what you see match the declared profile? Any surprises?
 
-YOUR TASK — Analyze the facial skin image and produce a structured JSON response with this EXACT format:
+Return ONLY this exact JSON — no markdown, no extra text, no code fences:
+
 {
   "zonas": {
-    "tzone": "brief observation of T-Zone (forehead, nose, chin) — 3-6 words",
-    "cheeks": "brief observation of cheeks — 3-6 words",
-    "eyes": "brief observation of eye area — 3-6 words"
+    "tzone":  "3-7 word visual observation of forehead, nose bridge, chin",
+    "mejillas": "3-7 word visual observation of both cheeks",
+    "ojos":   "3-7 word visual observation of eye contour, under-eye",
+    "boca":   "3-7 word visual observation of lip contour and nasolabial area"
   },
-  "hallazgos": [
-    "Finding 1 — specific, visual, concrete",
-    "Finding 2 — specific, visual, concrete",
-    "Finding 3 — specific, visual, concrete"
+  "dimensiones": {
+    "hidratacion": {
+      "score": 0-10,
+      "label": "2-4 word label (e.g. 'Moderately dehydrated')",
+      "detalle": "1-2 sentences: what you SEE that indicates this — plumpness, fine dehydration lines, dullness, tightness signs"
+    },
+    "barrera": {
+      "score": 0-10,
+      "label": "2-4 word label (e.g. 'Slightly compromised')",
+      "detalle": "1-2 sentences: visible redness patterns, reactive zones, uneven flushing, sensitivity indicators"
+    },
+    "sebum": {
+      "score": 0-10,
+      "label": "2-4 word label (e.g. 'Oily T-zone, dry cheeks')",
+      "detalle": "1-2 sentences: shine distribution, pore size and visibility, congestion areas"
+    },
+    "pigmentacion": {
+      "score": 0-10,
+      "label": "2-4 word label (e.g. 'Mild uneven tone')",
+      "detalle": "1-2 sentences: tone uniformity, visible dark spots, post-inflammatory marks, sun damage signs"
+    },
+    "textura": {
+      "score": 0-10,
+      "label": "2-4 word label (e.g. 'Smooth with visible pores')",
+      "detalle": "1-2 sentences: surface smoothness, pore texture, rough patches, peeling, bumps"
+    },
+    "circulacion": {
+      "score": 0-10,
+      "label": "2-4 word label (e.g. 'Mild under-eye darkness')",
+      "detalle": "1-2 sentences: under-eye shadows, puffiness, pallor or flush, vascularity"
+    },
+    "firmeza": {
+      "score": 0-10,
+      "label": "2-4 word label (e.g. 'Good elasticity for age')",
+      "detalle": "1-2 sentences: visible expression lines, skin elasticity, jawline definition, nasolabial depth"
+    },
+    "microbioma": {
+      "score": 0-10,
+      "label": "2-4 word label (e.g. 'Balanced, minor congestion')",
+      "detalle": "1-2 sentences: visible congestion, comedones, active spots, skin microbiome balance indicators"
+    }
+  },
+  "puntos_criticos": [
+    "Most urgent visual finding — specific, clinical, actionable",
+    "Second finding",
+    "Third finding"
   ],
-  "confirmacion_perfil": true or false (does the visual analysis confirm the quiz profile?),
-  "ajuste": "null or a brief description of how the routine should be adjusted based on visual findings (max 20 words)",
-  "mensaje_koi": "KOI's message to the user about what she observed — warm, precise, specific. DO NOT be generic. Reference actual visual observations. Max 80 words. In ${nombreIdioma}."
+  "ingredientes_prioritarios": [
+    { "nombre": "Specific active ingredient", "razon": "1 sentence: why THIS person needs it based on exactly what you see" },
+    { "nombre": "Specific active ingredient", "razon": "1 sentence: why THIS person needs it based on exactly what you see" },
+    { "nombre": "Specific active ingredient", "razon": "1 sentence: why THIS person needs it based on exactly what you see" },
+    { "nombre": "Specific active ingredient", "razon": "1 sentence: why THIS person needs it based on exactly what you see" }
+  ],
+  "protocolo_urgente": "2-3 sentences: the single most impactful change this person should make to their routine THIS WEEK, based purely on the visual analysis. Reference what you actually see. Be specific — not generic.",
+  "confirmacion_perfil": true or false,
+  "ajuste_perfil": null,
+  "edad_biologica_estimada": "Estimate the biological age of this skin from visual indicators only — NOT the person's chronological age. Format: 'Skin appears biologically consistent with [age range]'",
+  "score_global": "<number: weighted average of all 8 dimension scores, rounded to 1 decimal — you MUST calculate this>",
+  "mensaje_koi": "2 paragraphs max 120 words total. First paragraph: what you actually observed — name 2-3 specific visual details you see. Second paragraph: what this means clinically and the immediate priority. Warm but precise, expert but human. NEVER write anything that could apply to anyone else's skin. In ${nombreIdioma}."
 }
 
-RULES:
-- Be specific about what you actually see in the image. If visibility is limited, be honest but still professional.
-- Do NOT diagnose medical conditions (eczema, rosacea, psoriasis). Say what you observe, not what it is clinically.
-- The "mensaje_koi" must feel like KOI is genuinely analyzing THIS person's skin — not generic K-Beauty advice.
-- If the image is unclear, too dark, or doesn't show the face clearly: set all zonas to "Visibility limited", confirmacion_perfil to true, ajuste to null, and write a warm mensaje_koi acknowledging the limitation while affirming the quiz results are sufficient.
-- Respond with ONLY the JSON — no markdown fences, no extra text.`;
+ABSOLUTE RULES — violation means the analysis is worthless:
+1. Scores are integers 0-10. 0 = catastrophic, 10 = clinically perfect. Realistic range for most people: 4-8. Be honest.
+2. NEVER diagnose conditions by clinical name (no rosacea, eczema, acne vulgaris, psoriasis). Describe visual observations only.
+3. "score_global" is MANDATORY — calculate it as the average of all 8 dimension scores, rounded to 1 decimal.
+4. If a face zone is obscured (shadow, blur, hair): write "Partially obscured — [what you can see]".
+5. If the image has NO visible face or is too dark/blurry: set all scores to null, labels to "Visibility limited", and explain honestly in mensaje_koi.
+6. "mensaje_koi" MUST name at least 2 specific things you actually observe in this image. If it could apply to any person, rewrite it.
+7. "ingredientes_prioritarios" must contain EXACTLY 4 entries with real K-Beauty actives (Niacinamide, Centella Asiatica, Hyaluronic Acid, Ceramides, Snail Mucin, BHA/Salicylic Acid, Azelaic Acid, Bakuchiol, Peptides, Vitamin C, Tranexamic Acid, Mugwort, Green Tea, PHA, Panthenol, PDRN, Propolis, Rice Ferment).
+8. If quiz profile says one thing and the image shows another — set confirmacion_perfil to false and describe the discrepancy clearly in ajuste_perfil.
+9. "protocolo_urgente" must be a concrete action, not a category. Not "moisturize more" — "Apply a ceramide-rich moisturizer AM and PM before sunscreen, focusing on the zones where tightness is visible."
+10. Never fabricate details you cannot see. If uncertain about a dimension, score it 5 and note the uncertainty in detalle.`;
 
       try {
         const visionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -722,14 +790,15 @@ RULES:
                   },
                   {
                     type: 'text',
-                    text: 'Analyze my skin and provide the structured JSON response as instructed.',
+                    text: 'Perform the full clinical skin analysis as instructed. Return ONLY the JSON object — no preamble, no explanation, no markdown fences.',
                   },
                 ],
               },
             ],
-            max_tokens:  600,
-            temperature: 0.4, // más bajo = más consistente en el análisis
+            max_tokens:  2200,
+            temperature: 0.25,
           }),
+          signal: AbortSignal.timeout(45000),
         });
 
         if (!visionResponse.ok) {
@@ -741,21 +810,47 @@ RULES:
         const visionData = await visionResponse.json();
         const rawContent = visionData.choices?.[0]?.message?.content || '';
 
-        // Parsear JSON de la respuesta
+        // ── JSON parsing robusto (multi-paso) ──────────────────
         let analysisResult;
         try {
-          // Limpiar posibles markdown fences si GPT los añade
-          const cleaned = rawContent.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+          let cleaned = rawContent.trim();
+          // Paso 1: eliminar markdown fences
+          cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+          // Paso 2: localizar el JSON real si hay texto antes/después
+          const jsonStart = cleaned.indexOf('{');
+          if (jsonStart > 0) cleaned = cleaned.slice(jsonStart);
+          const jsonEnd = cleaned.lastIndexOf('}');
+          if (jsonEnd !== -1 && jsonEnd < cleaned.length - 1) cleaned = cleaned.slice(0, jsonEnd + 1);
+
           analysisResult = JSON.parse(cleaned);
+
+          // ── Cálculo fallback de score_global ───────────────
+          if (typeof analysisResult.score_global !== 'number' && analysisResult.dimensiones) {
+            const scores = Object.values(analysisResult.dimensiones)
+              .map(d => (typeof d?.score === 'number' ? d.score : null))
+              .filter(s => s !== null);
+            analysisResult.score_global = scores.length > 0
+              ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10
+              : null;
+          }
+
+          // Normalizar ajuste_perfil
+          if (analysisResult.ajuste_perfil === 'null') analysisResult.ajuste_perfil = null;
+
         } catch (parseErr) {
-          console.warn('[KOI Vision] Failed to parse JSON, using raw:', rawContent);
-          // Fallback: construir respuesta manual desde el texto
+          console.warn('[KOI Vision] JSON parse failed:', parseErr.message);
           analysisResult = {
-            zonas: { tzone: 'Analysis complete', cheeks: 'Analysis complete', eyes: 'Analysis complete' },
-            hallazgos: ['Visual analysis completed'],
+            zonas: { tzone: '—', mejillas: '—', ojos: '—', boca: '—' },
+            dimensiones: {},
+            puntos_criticos: [],
+            ingredientes_prioritarios: [],
+            protocolo_urgente: null,
             confirmacion_perfil: true,
-            ajuste: null,
-            mensaje_koi: rawContent.slice(0, 200),
+            ajuste_perfil: null,
+            edad_biologica_estimada: null,
+            score_global: null,
+            mensaje_koi: rawContent.length > 20 ? rawContent.slice(0, 400) : null,
+            _parse_error: true,
           };
         }
 
@@ -765,15 +860,22 @@ RULES:
         );
 
       } catch (err) {
-        console.error('[KOI Vision] Error:', err.message);
-        // Fallback silencioso — el cliente lo maneja con datos del quiz
+        console.error('[KOI Vision] Fatal error:', err.message);
+        const isTimeout = err.name === 'TimeoutError' || err.name === 'AbortError';
         return new Response(
           JSON.stringify({
-            zonas: { tzone: 'Analyzed', cheeks: 'Analyzed', eyes: 'Analyzed' },
-            hallazgos: [],
-            confirmacion_perfil: true,
-            ajuste: null,
-            mensaje_koi: null,
+            _error:      true,
+            _error_type: isTimeout ? 'timeout' : 'worker_error',
+            zonas:       { tzone: null, mejillas: null, ojos: null, boca: null },
+            dimensiones: {},
+            puntos_criticos:         [],
+            ingredientes_prioritarios: [],
+            protocolo_urgente:       null,
+            confirmacion_perfil:     null,
+            ajuste_perfil:           null,
+            edad_biologica_estimada: null,
+            score_global:            null,
+            mensaje_koi:             null,
           }),
           { status: 200, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
         );
