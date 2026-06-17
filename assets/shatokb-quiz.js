@@ -3830,6 +3830,115 @@ function shatokbScrollAKOI() {
 
 
 /* ============================================================
+   15c. CAMBIAR PERFIL DINÁMICAMENTE — KOI Vision Override
+   Llamado por KOI cuando el análisis de la foto revela que
+   el perfil del quiz NO coincide con lo que se ve en la imagen.
+   Re-renderiza la rutina completa con el perfil corregido.
+============================================================ */
+window.shatokbCambiarPerfil = async function (nuevoPerfilId) {
+  const PERFILES_VALIDOS = [
+    'grasa_acne','grasa_poros','mixta_general','mixta_manchas',
+    'seca_hidratacion','seca_antiaging','sensible_rojeces','general_glow'
+  ];
+
+  if (!PERFILES_VALIDOS.includes(nuevoPerfilId)) {
+    console.warn('[KOI Vision] Perfil inválido ignorado:', nuevoPerfilId);
+    return false;
+  }
+
+  const perfilActual = shatokbState.perfilOverride || shatokbCalcularPerfil(shatokbState.respuestas);
+  if (perfilActual === nuevoPerfilId) {
+    console.log('[KOI Vision] Perfil ya asignado, sin cambios:', nuevoPerfilId);
+    return false;
+  }
+
+  // 1. Guardar override — para que el resto del sistema lo sepa
+  shatokbState.perfilOverride = nuevoPerfilId;
+
+  // 2. Obtener datos del nuevo perfil y productos
+  const nuevoPerfil = SHATOKB_PERFILES[nuevoPerfilId];
+  if (!nuevoPerfil) return false;
+
+  // Esperar catálogo si aún cargando
+  if (!shatokbCatalogoCargado) {
+    await new Promise(resolve => {
+      const check = setInterval(() => {
+        if (shatokbCatalogoCargado) { clearInterval(check); resolve(); }
+      }, 100);
+    });
+  }
+
+  const pasosProd = shatokbRecomendarProductos(nuevoPerfilId, shatokbState.respuestas);
+
+  // 3. Pre-select top option para cada paso
+  shatokbState.selectedProducts = {};
+  pasosProd.forEach((paso, i) => {
+    if (paso.opciones.length > 0) shatokbState.selectedProducts[i] = paso.opciones[0].id;
+  });
+
+  // 4. Re-renderizar header del resultado con nuevo perfil
+  const nombreEl = document.querySelector('.shatokb-resultado__perfil-nombre');
+  if (nombreEl) {
+    nombreEl.style.transition = 'opacity 0.3s ease';
+    nombreEl.style.opacity = '0';
+    setTimeout(() => {
+      nombreEl.textContent = nuevoPerfil.titulo;
+      nombreEl.style.opacity = '1';
+    }, 300);
+  }
+
+  // 5. Re-renderizar badges
+  const badgesEl = document.querySelector('.shatokb-resultado__badges');
+  if (badgesEl && nuevoPerfil.resumen) {
+    badgesEl.style.opacity = '0';
+    setTimeout(() => {
+      badgesEl.innerHTML = nuevoPerfil.resumen
+        .map(t => `<span class="shatokb-resultado__badge">${t}</span>`).join('');
+      badgesEl.style.transition = 'opacity 0.3s ease';
+      badgesEl.style.opacity = '1';
+    }, 400);
+  }
+
+  // 6. Re-renderizar descripción
+  const descEl = document.querySelector('.shatokb-resultado__desc');
+  if (descEl) {
+    descEl.style.opacity = '0';
+    setTimeout(() => {
+      descEl.textContent = nuevoPerfil.descripcion;
+      descEl.style.transition = 'opacity 0.3s ease';
+      descEl.style.opacity = '1';
+    }, 450);
+  }
+
+  // 7. Re-renderizar pasos de rutina
+  const stepsContainer = document.getElementById('shatokb-routine-steps');
+  if (stepsContainer && pasosProd.length > 0) {
+    const presupuesto  = shatokbState.respuestas.presupuesto;
+    const budgetMax    = SHATOKB_BUDGET_LIMITS[presupuesto] || Infinity;
+    stepsContainer.style.transition = 'opacity 0.3s ease';
+    stepsContainer.style.opacity = '0';
+    setTimeout(() => {
+      stepsContainer.innerHTML = pasosProd.map((paso, i) =>
+        shatokbRenderPasoHTML(paso, i, budgetMax, i + 1)
+      ).join('');
+      stepsContainer.style.opacity = '1';
+      // Disparar reviews y urgency en los nuevos elementos
+      try { shatokbActualizarReviewsDOM(); } catch(_) {}
+      try { shatokbActualizarUrgencyDOM(); } catch(_) {}
+    }, 500);
+  }
+
+  // 8. Emitir evento para que otros módulos (KOI cart, etc.) se enteren
+  document.dispatchEvent(new CustomEvent('koi:perfil-actualizado', {
+    detail: { perfilAnterior: perfilActual, perfilNuevo: nuevoPerfilId, perfil: nuevoPerfil }
+  }));
+
+  console.log(`[KOI Vision] ✅ Perfil cambiado: ${perfilActual} → ${nuevoPerfilId}`);
+  return true;
+};
+
+
+/* ============================================================
    16. INIT
    1. Apply config to hero immediately on DOMContentLoaded.
    2. Start fetching the live catalogue in the background so
