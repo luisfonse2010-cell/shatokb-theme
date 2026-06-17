@@ -828,3 +828,305 @@
   transform: none !important;
   box-shadow: none !important;
 }
+
+/* ══════════════════════════════════════════════════════════
+   WOW EMAIL GATE v7.0 — 5 MOMENTOS
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Momento 1: Preparing Card ───────────────────────────── */
+.koi-preparing-card {
+  margin: 4px 0 8px 42px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 14px;
+  padding: 18px 20px;
+  animation: koiPrepCardIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes koiPrepCardIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.koi-preparing-card--out {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.97);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.koi-preparing__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 14px;
+  letter-spacing: 0.01em;
+}
+
+.koi-preparing__steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.koi-preparing__step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.koi-preparing__step--active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.koi-preparing__step-icon {
+  font-size: 16px;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.koi-preparing__step-text {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
+  flex: 1;
+  transition: color 0.3s ease;
+}
+
+.koi-preparing__step--active .koi-preparing__step-text {
+  color: rgba(255, 255, 255, 0.80);
+}
+
+.koi-preparing__step-check {
+  font-size: 13px;
+  color: #4ade80;
+  font-weight: 700;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.koi-preparing__step--done .koi-preparing__step-check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Barra de progreso animada en la parte superior de la card */
+.koi-preparing-card::before {
+  content: '';
+  display: block;
+  height: 2px;
+  background: linear-gradient(90deg, var(--koi-rose, #ec95b8), #a855f7);
+  border-radius: 2px;
+  margin-bottom: 16px;
+  animation: koiPrepProgress 3.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  transform-origin: left;
+}
+
+@keyframes koiPrepProgress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* ── Momento 2: Envelope Card (koi-email-gate--wow) ─────── */
+.koi-email-gate--wow {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(236, 149, 184, 0.30) !important;
+  border-radius: 16px !important;
+  padding: 20px !important;
+  animation: koiEnvelopeIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both !important;
+}
+
+@keyframes koiEnvelopeIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.koi-envelope__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 14px;
+  letter-spacing: -0.01em;
+}
+
+/* Checkmarks con stagger */
+.koi-envelope__checks {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.koi-envelope__check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.65);
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.koi-envelope__check--visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.koi-envelope__check-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: rgba(74, 222, 128, 0.15);
+  border: 1px solid rgba(74, 222, 128, 0.35);
+  border-radius: 50%;
+  font-size: 10px;
+  color: #4ade80;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.koi-envelope__subtitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.60);
+  margin-bottom: 10px;
+}
+
+/* ── Momento 3: Cart CTA grande (post-email) ─────────────── */
+.koi-cart-cta {
+  margin: 6px 0 8px 42px;
+  animation: koiCartCTAIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes koiCartCTAIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.koi-cart-cta__btn {
+  width: 100%;
+  background: linear-gradient(135deg, #ec95b8 0%, #d97baa 100%);
+  color: #1c181a;
+  border: none;
+  border-radius: 12px;
+  padding: 15px 24px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: -0.01em;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  box-shadow: 0 4px 16px rgba(236, 149, 184, 0.35);
+  font-family: var(--koi-font-body, sans-serif);
+  display: block;
+}
+
+.koi-cart-cta__btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(236, 149, 184, 0.50);
+  filter: brightness(1.05);
+}
+
+.koi-cart-cta__btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(236, 149, 184, 0.30);
+}
+
+.koi-cart-cta__sub {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+  text-align: center;
+  margin-top: 6px;
+  letter-spacing: 0.01em;
+}
+
+/* Pulso sutil en el botón para llamar atención */
+@keyframes koiCartBtnPulse {
+  0%, 100% { box-shadow: 0 4px 16px rgba(236, 149, 184, 0.35); }
+  50%       { box-shadow: 0 4px 26px rgba(236, 149, 184, 0.60); }
+}
+
+.koi-cart-cta__btn {
+  animation: koiCartBtnPulse 2.5s ease-in-out 1s infinite;
+}
+
+.koi-cart-cta__btn:hover,
+.koi-cart-cta__btn:active {
+  animation: none;
+}
+
+/* ── Momento 5: Cart CTA compacto anclado ────────────────── */
+.koi-cart-cta-anchored {
+  margin: 4px 0 6px 42px;
+  animation: koiAnchoredIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes koiAnchoredIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.koi-cart-cta-anchored__divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin-bottom: 10px;
+}
+
+.koi-cart-cta-anchored__btn {
+  width: 100%;
+  background: rgba(236, 149, 184, 0.12);
+  border: 1px solid rgba(236, 149, 184, 0.35);
+  border-radius: 10px;
+  padding: 11px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--koi-rose, #ec95b8);
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  font-family: var(--koi-font-body, sans-serif);
+  display: block;
+  text-align: center;
+}
+
+.koi-cart-cta-anchored__btn:hover {
+  background: rgba(236, 149, 184, 0.22);
+  border-color: rgba(236, 149, 184, 0.60);
+  transform: translateY(-1px);
+}
+
+.koi-cart-cta-anchored__btn:active {
+  transform: translateY(0);
+}
+
+/* ── Responsive mobile ───────────────────────────────────── */
+@media (max-width: 640px) {
+  .koi-preparing-card,
+  .koi-cart-cta,
+  .koi-cart-cta-anchored {
+    margin-left: 0;
+  }
+
+  .koi-cart-cta__btn {
+    font-size: 14px;
+    padding: 13px 20px;
+  }
+
+  .koi-cart-cta-anchored__btn {
+    font-size: 13px;
+    padding: 10px 16px;
+  }
+}
