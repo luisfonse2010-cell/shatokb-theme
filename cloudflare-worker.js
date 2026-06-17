@@ -19,7 +19,7 @@
  * ============================================================
  */
 
-/* ── Last deploy: 2026-06-17T00:46:31.549Z ──
+/* ── Last deploy: 2026-06-17T20:27:25.506Z ──
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
 const KOI_SYSTEM_PROMPT = `
 You are KOI.
@@ -749,10 +749,11 @@ Return ONLY this exact JSON — no markdown, no extra text, no code fences:
   ],
   "protocolo_urgente": "2-3 sentences: the single most impactful change this person should make to their routine THIS WEEK, based purely on the visual analysis. Reference what you actually see. Be specific — not generic.",
   "confirmacion_perfil": true or false,
-  "ajuste_perfil": null,
+  "ajuste_perfil": null or { "nuevo_perfil_id": "one of: grasa_acne | grasa_poros | mixta_general | mixta_manchas | seca_hidratacion | seca_antiaging | sensible_rojeces | general_glow", "razon_visual": "1-2 sentences: what you actually SEE that contradicts the quiz — be specific about the visual evidence", "diferencia_clave": "3-8 words: the single most important visual finding that changes everything" },
   "edad_biologica_estimada": "Estimate the biological age of this skin from visual indicators only — NOT the person's chronological age. Format: 'Skin appears biologically consistent with [age range]'",
   "score_global": "<number: weighted average of all 8 dimension scores, rounded to 1 decimal — you MUST calculate this>",
-  "mensaje_koi": "2 paragraphs max 120 words total. First paragraph: what you actually observed — name 2-3 specific visual details you see. Second paragraph: what this means clinically and the immediate priority. Warm but precise, expert but human. NEVER write anything that could apply to anyone else's skin. In ${nombreIdioma}."
+  "mensaje_koi": "2 paragraphs max 120 words total. First paragraph: what you actually observed — name 2-3 specific visual details you see. Second paragraph: what this means clinically and the immediate priority. Warm but precise, expert but human. NEVER write anything that could apply to anyone else's skin. In ${nombreIdioma}.",
+  "mensaje_reveal": "THE MOST CRITICAL FIELD — this is the WOW moment. KOI speaks directly to the user the instant before she sees her personalized routine for the very first time. She has never seen any routine before this moment. Your job: make her feel that what she's about to see was built ONLY for her specific skin — not a generic recommendation. You MUST include: (A) 2 HYPER-SPECIFIC visual observations you actually see in her photo — use concrete, sensory language: 'the congestion I see concentrated in your T-zone', 'the dehydration lines visible along your cheekbones', 'the oxidative dullness I notice around your eye contour', 'the texture irregularity across your nose bridge' — name what you literally observe. (B) Connect those observations to her declared concerns (${JSON.stringify(respuestas.preocupacion || [])}) and goals (${JSON.stringify(respuestas.objetivo || [])}) — explain in ONE sentence exactly why the routine was built for THIS specific combination. The message must be impossible to apply to any other person — if it could, rewrite it. NEVER mention 'profile', 'quiz', or 'changed'. NEVER say the routine is 'ready' or 'done'. Tone: warm, confident, expert — like a trusted specialist who genuinely sees her. End with one sentence that creates desire and anticipation. 80-100 words MAXIMUM. In ${nombreIdioma}."
 }
 
 ABSOLUTE RULES — violation means the analysis is worthless:
@@ -762,8 +763,9 @@ ABSOLUTE RULES — violation means the analysis is worthless:
 4. If a face zone is obscured (shadow, blur, hair): write "Partially obscured — [what you can see]".
 5. If the image has NO visible face or is too dark/blurry: set all scores to null, labels to "Visibility limited", and explain honestly in mensaje_koi.
 6. "mensaje_koi" MUST name at least 2 specific things you actually observe in this image. If it could apply to any person, rewrite it.
+11. "mensaje_reveal" is MANDATORY and is the highest-priority field. It MUST contain at least 2 visual observations from the photo AND reference the user's quiz concerns. If it could apply to any other person, it is wrong — rewrite it. 70-90 words maximum. Do NOT mention that the routine is "ready" or "done". Create anticipation.
 7. "ingredientes_prioritarios" must contain EXACTLY 4 entries with real K-Beauty actives (Niacinamide, Centella Asiatica, Hyaluronic Acid, Ceramides, Snail Mucin, BHA/Salicylic Acid, Azelaic Acid, Bakuchiol, Peptides, Vitamin C, Tranexamic Acid, Mugwort, Green Tea, PHA, Panthenol, PDRN, Propolis, Rice Ferment).
-8. If quiz profile says one thing and the image shows another — set confirmacion_perfil to false and describe the discrepancy clearly in ajuste_perfil.
+8. If quiz profile says one thing and the image shows another — set confirmacion_perfil to false AND set ajuste_perfil to a JSON object with: nuevo_perfil_id (MUST be one of the 8 valid IDs listed), razon_visual (specific visual evidence you see), diferencia_clave (3-8 word summary). If the quiz profile IS confirmed by the image, set confirmacion_perfil to true and ajuste_perfil to null. NEVER invent a profile ID — only use the 8 valid ones listed.
 9. "protocolo_urgente" must be a concrete action, not a category. Not "moisturize more" — "Apply a ceramide-rich moisturizer AM and PM before sunscreen, focusing on the zones where tightness is visible."
 10. Never fabricate details you cannot see. If uncertain about a dimension, score it 5 and note the uncertainty in detalle.`;
 
@@ -795,7 +797,7 @@ ABSOLUTE RULES — violation means the analysis is worthless:
                 ],
               },
             ],
-            max_tokens:  2200,
+            max_tokens:  2600,
             temperature: 0.25,
           }),
           signal: AbortSignal.timeout(45000),
