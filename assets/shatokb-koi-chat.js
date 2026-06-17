@@ -2380,10 +2380,94 @@ async function enviarDesdeChip (texto) {
     if (!bar.dataset.bound) {
       bar.dataset.bound = '1';
       btnEl.addEventListener('click', function () {
-        if (typeof window.shatokbAddAllToCart === 'function') {
-          window.shatokbAddAllToCart();
-        }
+        _miniCartEjecutarCompra(btnEl);
       });
+    }
+  }
+
+  // ── Ejecutar compra desde la mini barra ───────────────────
+  // Versión robusta que no depende del botón #stk-add-btn externo
+  // (que puede estar oculto o deshabilitado).
+  // Flujo: interceptar email si no capturado → luego añadir al carrito.
+  function _miniCartEjecutarCompra (btnEl) {
+    var textoOriginal = btnEl.textContent;
+    btnEl.disabled    = true;
+    btnEl.textContent = '⏳ Un momento...';
+
+    var _procederAlCarrito = function () {
+      // Obtener handles de los productos seleccionados directamente
+      // desde shatokbState — fuente de verdad del quiz
+      var handles = [];
+      if (window.shatokbState && window.SHATOKB_CATALOGO) {
+        handles = Object.values(window.shatokbState.selectedProducts || {})
+          .map(function (prodId) {
+            var prod = window.SHATOKB_CATALOGO.find(function (p) { return p.id === prodId; });
+            return prod ? prod.handle : null;
+          })
+          .filter(Boolean);
+      }
+
+      if (handles.length === 0) {
+        // Fallback: si no hay acceso a shatokbState, usar shatokbAddAllToCart del quiz
+        // pero asegurando que el botón externo exista temporalmente
+        if (typeof window.shatokbAddAllToCart === 'function') {
+          // Restaurar el botón externo momentáneamente para que la función lo use
+          var btnExterno = document.getElementById('stk-add-btn');
+          if (btnExterno) {
+            btnExterno.disabled    = false;
+            btnExterno.textContent = '🛒 Add my full routine to cart';
+          }
+          window.shatokbAddAllToCart();
+        } else {
+          btnEl.disabled    = false;
+          btnEl.textContent = textoOriginal;
+        }
+        return;
+      }
+
+      // Añadir productos directamente via Shopify Cart API
+      btnEl.textContent = '⏳ Adding to cart...';
+      var variantRequests = handles.map(function (handle) {
+        return fetch('/products/' + handle + '.js')
+          .then(function (res) { return res.ok ? res.json() : Promise.reject(handle); })
+          .then(function (data) { return data.variants && data.variants[0] ? data.variants[0].id : null; })
+          .catch(function ()    { return null; });
+      });
+
+      Promise.all(variantRequests).then(function (variantIds) {
+        var items = variantIds
+          .filter(function (id) { return id !== null; })
+          .map(function (id) { return { id: id, quantity: 1 }; });
+
+        if (items.length === 0) {
+          btnEl.disabled    = false;
+          btnEl.textContent = textoOriginal;
+          return;
+        }
+
+        return fetch('/cart/add.js', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ items: items })
+        });
+      }).then(function (res) {
+        if (res && res.ok) {
+          btnEl.textContent = '✅ ¡Añadido! Redirigiendo...';
+          setTimeout(function () { window.location.href = '/cart'; }, 800);
+        } else {
+          throw new Error('Cart error');
+        }
+      }).catch(function () {
+        btnEl.disabled    = false;
+        btnEl.textContent = textoOriginal;
+      });
+    };
+
+    // Interceptar email si aún no fue capturado
+    if (typeof window.shatokbInterceptarCarrito === 'function') {
+      window.shatokbInterceptarCarrito(_procederAlCarrito);
+    } else {
+      _procederAlCarrito();
     }
   }
 
@@ -2400,113 +2484,116 @@ async function enviarDesdeChip (texto) {
     _actualizarMiniCartBar(total, label, cta);
   });
 
-  // ── Ocultar barra sticky superior ────────────────────────
-  // Guarda referencia al elemento de la barra externa para
-  // poder ocultarlo con transición suave cuando KOI está activo.
-  // La mini barra dentro del chat reemplaza su función.
-  var _barraExternaEl = null;
+  // ── Ocultar barra sticky superior del quiz ───────────────
+  // La mini barra dentro del chat la reemplaza completamente.
+  // Se busca por ID exacto (#stk-total-bar) y por selectores
+  // de fallback. Se oculta con transición suave al encontrarla.
+  var _barraExternaEl       = null;
+  var _barraExternaOculta   = false;
 
   function _ocultarBarraExterna () {
-    if (!_barraExternaEl) return;
-    // Transición suave — no un display:none brusco
-    _barraExternaEl.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-    _barraExternaEl.style.opacity    = '0';
-    _barraExternaEl.style.transform  = 'translateY(-8px)';
+    if (!_barraExternaEl || _barraExternaOculta) return;
+    _barraExternaOculta = true;
+    _barraExternaEl.style.transition    = 'opacity 0.4s ease, transform 0.4s ease';
+    _barraExternaEl.style.opacity       = '0';
+    _barraExternaEl.style.transform     = 'translateY(-8px)';
     _barraExternaEl.style.pointerEvents = 'none';
-    // Después de la transición, retirar del flujo visual
     setTimeout(function () {
-      if (_barraExternaEl) {
-        _barraExternaEl.style.display = 'none';
-      }
+      if (_barraExternaEl) _barraExternaEl.style.display = 'none';
     }, 420);
   }
 
-  // Ruta 2: polling — lee la barra real del DOM cada 800ms hasta encontrarla.
-  // Busca por múltiples estrategias porque el selector exacto vive en el tema
-  // de Shopify y puede variar. Al encontrarla: lee el precio Y la oculta
-  // (la mini barra dentro del chat reemplaza su función completamente).
-  (function _pollBarExterna () {
-    const MAX_INTENTOS = 45; // 45 × 800ms = 36s máx
-    let intentos = 0;
+  // ── Polling continuo de precio ────────────────────────────
+  // Lee #stk-total-amount cada 600ms — fuente de verdad directa
+  // del quiz (shatokbActualizarTotal() escribe ahí).
+  // NO para nunca: detecta cambios cuando el usuario cambia producto.
+  // También encuentra y oculta la barra sticky externa la primera vez.
+  (function _pollPrecioQuiz () {
+    var _precioAnterior = '';
 
-    const interval = setInterval(function () {
-      intentos++;
-      if (intentos > MAX_INTENTOS) { clearInterval(interval); return; }
+    setInterval(function () {
 
-      // Estrategia A: buscar por clases conocidas del quiz
-      // Excluimos explícitamente nuestra propia mini barra para no auto-detectarla
-      let barraEl = document.querySelector(
-        '.stk-total-bar, .shatokb-total-bar, .stk-cart-bar, ' +
-        '[class*="total-bar"], [id*="total-bar"], ' +
-        '[class*="routine-bar"], [class*="routineBar"]'
-      );
-      // Verificar que no sea nuestra propia mini barra
-      if (barraEl && (barraEl.id === 'koi-mini-cart-bar' || barraEl.closest('#koi-mini-cart-bar'))) {
-        barraEl = null;
-      }
+      // ── 1. Ocultar barra externa (solo la primera vez) ──────
+      if (!_barraExternaOculta) {
+        // Estrategia 1: ID exacto del quiz
+        var barraCandidata = document.getElementById('stk-total-bar');
 
-      // Estrategia B: buscar botón que contenga "Add my full routine"
-      // IMPORTANTE: excluir la propia mini barra (#koi-mini-cart-bar) para
-      // evitar que el polling se detecte a sí mismo como fuente de datos.
-      if (!barraEl) {
-        const allBtns = document.querySelectorAll('button, a');
-        for (const btn of allBtns) {
-          // Saltar si el botón pertenece a nuestra propia mini barra
-          if (btn.id === 'koi-mini-cart-btn' || btn.closest('#koi-mini-cart-bar')) continue;
-          const t = btn.textContent || '';
-          if (t.includes('Add my full routine') || t.includes('routine to cart')) {
-            barraEl = btn.closest('div, section, header') || btn.parentElement;
-            break;
-          }
+        // Estrategia 2: selectores de clase conocidos
+        if (!barraCandidata) {
+          barraCandidata = document.querySelector(
+            '.stk-total-bar, .shatokb-total-bar, ' +
+            '[class*="total-bar"]:not(#koi-mini-cart-bar), ' +
+            '[id*="total-bar"]:not(#koi-mini-cart-bar)'
+          );
+        }
+
+        // Validar que no sea nuestra propia mini barra
+        if (barraCandidata &&
+            barraCandidata.id !== 'koi-mini-cart-bar' &&
+            !barraCandidata.closest('#koi-mini-cart-bar') &&
+            !barraCandidata.closest('#shatokb-koi-wrapper')) {
+          _barraExternaEl = barraCandidata;
+          _ocultarBarraExterna();
         }
       }
 
-      if (!barraEl) return;
+      // ── 2. Leer precio actual del quiz ───────────────────────
+      // Fuente primaria: #stk-total-amount (escrito por shatokbActualizarTotal())
+      var totalEl = document.getElementById('stk-total-amount');
+      var precioActual = totalEl ? totalEl.textContent.trim() : '';
 
-      // Leer precio: busca patrón $XX.XX en el contenido de texto del elemento
-      const textoCompleto = barraEl.textContent || '';
-      const matchPrecio   = textoCompleto.match(/\$[\d,]+\.?\d*/);
-      if (!matchPrecio) return;
+      // Fuente secundaria: window.shatokbState.selectedProducts → calcular en vivo
+      if (!precioActual && window.shatokbState && window.SHATOKB_CATALOGO) {
+        var total = 0;
+        Object.values(window.shatokbState.selectedProducts || {}).forEach(function (prodId) {
+          var prod = window.SHATOKB_CATALOGO.find(function (p) { return p.id === prodId; });
+          if (prod) total += prod.precio_num || 0;
+        });
+        if (total > 0) precioActual = '$' + total.toFixed(2);
+      }
 
-      const total = matchPrecio[0];
-      const label = 'Estimated total for your routine';
-      // Intentar leer el texto del botón de la barra real
-      const ctaEl = barraEl.querySelector('button, [class*="btn"]');
-      const cta   = ctaEl ? ctaEl.textContent.trim() : '🛒 Add my full routine to cart';
+      // Fuente terciaria: buscar cualquier elemento con precio en el DOM del quiz
+      if (!precioActual) {
+        var posiblesPrecios = document.querySelectorAll(
+          '#stk-total-bar [class*="amount"], #stk-total-bar [class*="price"], ' +
+          '#stk-total-bar [class*="total"], .stk-total-bar__amount'
+        );
+        posiblesPrecios.forEach(function (el) {
+          if (!precioActual) {
+            var match = (el.textContent || '').match(/\$[\d,]+\.?\d*/);
+            if (match) precioActual = match[0];
+          }
+        });
+      }
 
-      // Guardar referencia y ocultar la barra externa — la mini barra la reemplaza
-      _barraExternaEl = barraEl;
-      _ocultarBarraExterna();
+      // Solo actualizar si el precio cambió (evita renders innecesarios)
+      if (!precioActual || precioActual === _precioAnterior) return;
+      _precioAnterior = precioActual;
 
-      _actualizarMiniCartBar(total, label, cta);
-      clearInterval(interval); // encontrada — detener polling
-    }, 800);
+      var label = 'Estimated total for your routine';
+      var cta   = '🛒 Add my full routine to cart';
+      _actualizarMiniCartBar(precioActual, label, cta);
+
+    }, 600);
   })();
 
-  // Ruta 3: si window.shatokbActualizarTotalBar existe, wrappearla para
-  // capturar sus llamadas y sincronizar la barra mini automáticamente.
-  // Al mismo tiempo, oculta la barra externa si aún no se ha ocultado.
-  // Se hace con setTimeout para esperar a que el quiz cargue.
+  // ── Wrap de shatokbActualizarTotal ───────────────────────
+  // Captura cada vez que el quiz actualiza el total (al cambiar
+  // producto) y fuerza sincronización inmediata sin esperar al
+  // próximo tick del polling.
   setTimeout(function () {
-    const fnOriginal = window.shatokbActualizarTotalBar;
-    if (typeof fnOriginal === 'function') {
-      window.shatokbActualizarTotalBar = function (total, label, cta) {
-        fnOriginal.apply(this, arguments); // ejecutar original primero
-        _actualizarMiniCartBar(total, label, cta);
-        // Intentar ocultar la barra externa si aún no se hizo via polling
-        if (!_barraExternaEl) {
-          const posibleBarra = document.querySelector(
-            '.stk-total-bar, .shatokb-total-bar, .stk-cart-bar, ' +
-            '[class*="total-bar"], [id*="total-bar"], ' +
-            '[class*="routine-bar"], [class*="routineBar"]'
-          );
-          if (posibleBarra && posibleBarra.id !== 'koi-mini-cart-bar' && !posibleBarra.closest('#koi-mini-cart-bar')) {
-            _barraExternaEl = posibleBarra;
-            _ocultarBarraExterna();
-          }
-        }
+    if (typeof window.shatokbActualizarTotal === 'function') {
+      var _fnOriginalTotal = window.shatokbActualizarTotal;
+      window.shatokbActualizarTotal = function () {
+        _fnOriginalTotal.apply(this, arguments);
+        // Leer el precio recién escrito por la función original
+        setTimeout(function () {
+          var totalEl = document.getElementById('stk-total-amount');
+          var precio  = totalEl ? totalEl.textContent.trim() : '';
+          if (precio) _actualizarMiniCartBar(precio, 'Estimated total for your routine', '🛒 Add my full routine to cart');
+        }, 50);
       };
     }
-  }, 2000);
+  }, 1500);
 
 })();
