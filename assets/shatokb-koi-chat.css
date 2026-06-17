@@ -1080,3 +1080,12 @@
     margin-left: 0;
   }
 }
+
+/* ══════════════════════════════════════════════════════════
+   NOTA v7.2: La reasignación de perfil es silenciosa.
+   El usuario nunca ve la rutina antes del reveal,
+   así que el cambio de perfil se ejecuta en background
+   sin mostrar ninguna card ni mensaje de "cambio".
+   El mensaje_reveal del Worker ya incorpora la foto
+   y el perfil correcto de forma natural.
+   ══════════════════════════════════════════════════════════ */
