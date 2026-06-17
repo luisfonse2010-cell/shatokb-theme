@@ -1046,11 +1046,9 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     KOI_STATE.historial.push({ role: 'assistant', content: msg });
     guardarHistorialLocal();
 
-    // ── Momento 4: Solo el botón de reveal — sin CTA de carrito todavía.
-    // El usuario aún no ha visto ni elegido ningún producto. El Cart CTA
-    // aparece en el Momento 5, después de que KOI responde preguntas y
-    // el usuario ya conoce su rutina completa.
-    //
+    // ── Botón "Ver mi rutina" — inyectado en #koi-messages, NO en chips.
+    // Al estar en el flujo de mensajes es PERSISTENTE: no desaparece si
+    // el usuario escribe una pregunta antes de hacer clic.
     const scrollBtns = {
       es: '✨ Ver mi rutina ahora',
       en: '✨ Show me my routine',
@@ -1062,15 +1060,20 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     const btnLabel = scrollBtns[idioma] || scrollBtns['en'];
 
     setTimeout(() => {
-      const chipsEl = document.getElementById('koi-chips');
-      if (!chipsEl) return;
-      chipsEl.innerHTML = '';
+      const container = document.getElementById('koi-messages');
+      if (!container || document.getElementById('koi-reveal-btn-persistent')) return;
 
-      const revealBtn = document.createElement('button');
-      revealBtn.className = 'koi-chip koi-chip--reveal-cta';
-      revealBtn.textContent = btnLabel;
-      revealBtn.addEventListener('click', () => {
-        chipsEl.innerHTML = '';
+      const wrapper = document.createElement('div');
+      wrapper.id        = 'koi-reveal-btn-persistent';
+      wrapper.className = 'koi-reveal-btn-persistent';
+
+      const btn = document.createElement('button');
+      btn.className   = 'koi-reveal-btn-persistent__btn';
+      btn.textContent = btnLabel;
+      btn.addEventListener('click', () => {
+        // Ocultar el botón una vez usado
+        wrapper.classList.add('koi-reveal-btn-persistent--used');
+        setTimeout(() => { if (wrapper.parentNode) wrapper.remove(); }, 300);
 
         // 1. Scroll hacia los productos
         const rutinaEl = document.getElementById('shatokb-resultado') ||
@@ -1084,10 +1087,13 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
           }
         }, 300);
 
-        // 3. Momento 4: chips de bienvenida DESPUÉS del CTA (ya visible)
+        // 3. Chips de bienvenida tras las animaciones de reveal
         setTimeout(() => mostrarChips('bienvenida'), 1800);
       });
-      chipsEl.appendChild(revealBtn);
+
+      wrapper.appendChild(btn);
+      container.appendChild(wrapper);
+      scrollAlFinal();
     }, 700);
   }
 
