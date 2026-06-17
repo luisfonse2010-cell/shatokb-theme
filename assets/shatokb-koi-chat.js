@@ -2372,17 +2372,25 @@ async function enviarDesdeChip (texto) {
       if (intentos > MAX_INTENTOS) { clearInterval(interval); return; }
 
       // Estrategia A: buscar por clases conocidas del quiz
+      // Excluimos explícitamente nuestra propia mini barra para no auto-detectarla
       let barraEl = document.querySelector(
         '.stk-total-bar, .shatokb-total-bar, .stk-cart-bar, ' +
         '[class*="total-bar"], [id*="total-bar"], ' +
-        '[class*="cart-bar"], [id*="cart-bar"], ' +
         '[class*="routine-bar"], [class*="routineBar"]'
       );
+      // Verificar que no sea nuestra propia mini barra
+      if (barraEl && (barraEl.id === 'koi-mini-cart-bar' || barraEl.closest('#koi-mini-cart-bar'))) {
+        barraEl = null;
+      }
 
       // Estrategia B: buscar botón que contenga "Add my full routine"
+      // IMPORTANTE: excluir la propia mini barra (#koi-mini-cart-bar) para
+      // evitar que el polling se detecte a sí mismo como fuente de datos.
       if (!barraEl) {
         const allBtns = document.querySelectorAll('button, a');
         for (const btn of allBtns) {
+          // Saltar si el botón pertenece a nuestra propia mini barra
+          if (btn.id === 'koi-mini-cart-btn' || btn.closest('#koi-mini-cart-bar')) continue;
           const t = btn.textContent || '';
           if (t.includes('Add my full routine') || t.includes('routine to cart')) {
             barraEl = btn.closest('div, section, header') || btn.parentElement;
