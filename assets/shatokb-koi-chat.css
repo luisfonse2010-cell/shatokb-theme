@@ -1010,9 +1010,56 @@
    El cuadro sticky "Add my full routine to cart" encima del chat
    cumple esa función correctamente y siempre está visible. */
 
+/* ── Botón "Ver mi rutina" persistente (en #koi-messages) ── */
+/* Vive en el flujo de mensajes, NO en los chips, por eso     */
+/* sobrevive si el usuario escribe antes de hacer clic.       */
+.koi-reveal-btn-persistent {
+  margin: 6px 0 10px 42px;
+  animation: koiRevealBtnIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes koiRevealBtnIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.koi-reveal-btn-persistent--used {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.koi-reveal-btn-persistent__btn {
+  width: 100%;
+  background: rgba(58, 122, 245, 0.12);
+  border: 1.5px solid rgba(58, 122, 245, 0.40);
+  border-radius: 12px;
+  padding: 14px 24px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #a8ccff;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  font-family: var(--koi-font-body, sans-serif);
+  display: block;
+  text-align: center;
+}
+
+.koi-reveal-btn-persistent__btn:hover {
+  background: rgba(58, 122, 245, 0.22);
+  border-color: rgba(58, 122, 245, 0.65);
+  transform: translateY(-1px);
+}
+
+.koi-reveal-btn-persistent__btn:active {
+  transform: translateY(0);
+}
+
 /* ── Responsive mobile ───────────────────────────────────── */
 @media (max-width: 640px) {
-  .koi-preparing-card {
+  .koi-preparing-card,
+  .koi-reveal-btn-persistent {
     margin-left: 0;
   }
 }
