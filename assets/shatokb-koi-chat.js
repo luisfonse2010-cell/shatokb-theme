@@ -2432,10 +2432,20 @@ async function enviarDesdeChip (texto) {
     btnEl.textContent = '⏳ Un momento...';
 
     var _procederAlCarrito = function () {
-      // Obtener handles de los productos seleccionados directamente
-      // desde shatokbState — fuente de verdad del quiz
+      // ── Estrategia 1: leer handles directamente del DOM ──────────────────
+      // Cada producto seleccionado en el quiz tiene class "selected" y
+      // atributo data-handle. Esto no depende de window.shatokbState (local).
       var handles = [];
-      if (window.shatokbState && window.SHATOKB_CATALOGO) {
+      var selectedEls = document.querySelectorAll('.stk-prod-option.selected[data-handle]');
+      selectedEls.forEach(function (el) {
+        var h = el.getAttribute('data-handle');
+        if (h && h.trim() && handles.indexOf(h.trim()) === -1) {
+          handles.push(h.trim());
+        }
+      });
+
+      // ── Estrategia 2 (fallback): window.shatokbState si está expuesto ────
+      if (handles.length === 0 && window.shatokbState && window.SHATOKB_CATALOGO) {
         handles = Object.values(window.shatokbState.selectedProducts || {})
           .map(function (prodId) {
             var prod = window.SHATOKB_CATALOGO.find(function (p) { return p.id === prodId; });
@@ -2444,60 +2454,45 @@ async function enviarDesdeChip (texto) {
           .filter(Boolean);
       }
 
-      if (handles.length === 0) {
-        // Fallback: si no hay acceso a shatokbState, usar shatokbAddAllToCart del quiz
-        // pero asegurando que el botón externo exista temporalmente
-        if (typeof window.shatokbAddAllToCart === 'function') {
-          // Restaurar el botón externo momentáneamente para que la función lo use
-          var btnExterno = document.getElementById('stk-add-btn');
-          if (btnExterno) {
-            btnExterno.disabled    = false;
-            btnExterno.textContent = '🛒 Add my full routine to cart';
-          }
-          window.shatokbAddAllToCart();
-        } else {
-          btnEl.disabled    = false;
-          btnEl.textContent = textoOriginal;
-        }
+      // ── Con handles obtenidos, ejecutar directamente shatokbEjecutarAddToCart ──
+      // Esta función global en quiz.js hace fetch a /products/handle.js
+      // luego /cart/add.js y redirige a /cart. No depende de ningún botón.
+      // IMPORTANTE: usamos window.shatokbEjecutarAddToCart porque koi-chat.js
+      // corre dentro de una IIFE y no tiene acceso al scope global sin window.
+      if (handles.length > 0 && typeof window.shatokbEjecutarAddToCart === 'function') {
+        btnEl.textContent = '⏳ Añadiendo al carrito...';
+        // Creamos un objeto botón proxy para recibir los cambios de texto/estado
+        // sin afectar ningún elemento real del DOM externo.
+        var btnProxy = {
+          _el: btnEl,
+          _textoOriginal: textoOriginal,
+          get disabled () { return this._el.disabled; },
+          set disabled (v) { this._el.disabled = v; },
+          get textContent () { return this._el.textContent; },
+          set textContent (v) { this._el.textContent = v; }
+        };
+        window.shatokbEjecutarAddToCart(handles, btnProxy);
         return;
       }
 
-      // Añadir productos directamente via Shopify Cart API
-      btnEl.textContent = '⏳ Adding to cart...';
-      var variantRequests = handles.map(function (handle) {
-        return fetch('/products/' + handle + '.js')
-          .then(function (res) { return res.ok ? res.json() : Promise.reject(handle); })
-          .then(function (data) { return data.variants && data.variants[0] ? data.variants[0].id : null; })
-          .catch(function ()    { return null; });
-      });
-
-      Promise.all(variantRequests).then(function (variantIds) {
-        var items = variantIds
-          .filter(function (id) { return id !== null; })
-          .map(function (id) { return { id: id, quantity: 1 }; });
-
-        if (items.length === 0) {
-          btnEl.disabled    = false;
-          btnEl.textContent = textoOriginal;
-          return;
+      // ── Último fallback: restaurar #stk-add-btn y llamar shatokbAddAllToCart ──
+      // Solo se llega aquí si no encontramos ningún producto seleccionado en el DOM.
+      if (typeof window.shatokbAddAllToCart === 'function') {
+        var btnExterno = document.getElementById('stk-add-btn');
+        if (!btnExterno) {
+          // Crear un botón fantasma en el DOM para que shatokbAddAllToCart lo encuentre
+          btnExterno = document.createElement('button');
+          btnExterno.id = 'stk-add-btn';
+          btnExterno.style.cssText = 'position:absolute;width:0;height:0;opacity:0;pointer-events:none;overflow:hidden;';
+          document.body.appendChild(btnExterno);
         }
-
-        return fetch('/cart/add.js', {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ items: items })
-        });
-      }).then(function (res) {
-        if (res && res.ok) {
-          btnEl.textContent = '✅ ¡Añadido! Redirigiendo...';
-          setTimeout(function () { window.location.href = '/cart'; }, 800);
-        } else {
-          throw new Error('Cart error');
-        }
-      }).catch(function () {
+        btnExterno.disabled    = false;
+        btnExterno.textContent = '🛒 Add my full routine to cart';
+        window.shatokbAddAllToCart();
+      } else {
         btnEl.disabled    = false;
         btnEl.textContent = textoOriginal;
-      });
+      }
     };
 
     // Interceptar email si aún no fue capturado
