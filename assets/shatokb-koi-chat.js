@@ -828,6 +828,10 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
   }
 
   async function revelarRutinaConKOI (email) {
+    // Guard: evitar doble ejecución si ya se reveló
+    if (KOI_STATE.revealPhase === 'revealed') return;
+    KOI_STATE.revealPhase = 'revealed';
+
     const idioma       = detectarIdioma();
     const perfilNombre = KOI_STATE.contexto?.perfil?.nombre || '';
 
@@ -1047,51 +1051,75 @@ function _construirCardAnalisis(result, idioma) {
   // Labels por idioma
   const L = {
     es: {
-      titulo:        '🔬 Análisis Cutáneo Completo',
-      zonas:         'Por zonas',
-      dimensiones:   'Dimensiones analizadas',
-      criticos:      'Puntos críticos',
-      ingredientes:  'Activos recomendados',
-      protocolo:     '⚡ Prioridad esta semana',
-      edadBio:       'Edad biológica de tu piel',
-      perfil:        'Perfil confirmado visualmente',
-      perfilNo:      'Perfil requiere ajuste',
+      titulo:        'Análisis Cutáneo KOI',
+      scoreGlobal:   'Salud global de piel',
+      scoreLabel:    (s) => s >= 8 ? 'Piel en excelente estado' : s >= 6 ? 'Piel en buen estado' : s >= 4 ? 'Piel con áreas de mejora' : 'Piel requiere atención urgente',
+      zonas:         'Diagnóstico por zonas',
+      dimensiones:   'Análisis dimensional',
+      criticos:      'Hallazgos críticos',
+      ingredientes:  'Activos prioritarios',
+      protocolo:     'Protocolo urgente',
+      edadBio:       'Edad biológica estimada',
+      perfil:        'Perfil confirmado',
+      perfilNo:      'Ajuste de perfil detectado',
       dim_labels: {
         hidratacion:  'Hidratación',
         barrera:      'Barrera cutánea',
-        sebum:        'Producción sebo',
+        sebum:        'Control sebáceo',
         pigmentacion: 'Pigmentación',
         textura:      'Textura',
         circulacion:  'Circulación',
         firmeza:      'Firmeza',
         microbioma:   'Microbioma',
       },
+      dim_icons: {
+        hidratacion:  '💧',
+        barrera:      '🛡️',
+        sebum:        '✨',
+        pigmentacion: '🌗',
+        textura:      '🔎',
+        circulacion:  '❤️',
+        firmeza:      '💪',
+        microbioma:   '🦠',
+      },
     },
     en: {
-      titulo:        '🔬 Full Skin Analysis',
-      zonas:         'By zone',
-      dimensiones:   'Analyzed dimensions',
+      titulo:        'KOI Skin Analysis',
+      scoreGlobal:   'Overall skin health',
+      scoreLabel:    (s) => s >= 8 ? 'Excellent skin condition' : s >= 6 ? 'Good skin condition' : s >= 4 ? 'Skin has areas to improve' : 'Skin needs urgent attention',
+      zonas:         'Zone-by-zone diagnosis',
+      dimensiones:   'Dimensional analysis',
       criticos:      'Critical findings',
-      ingredientes:  'Recommended actives',
-      protocolo:     '⚡ Priority this week',
-      edadBio:       'Skin biological age',
-      perfil:        'Profile visually confirmed',
-      perfilNo:      'Profile needs adjustment',
+      ingredientes:  'Priority actives',
+      protocolo:     'Urgent protocol',
+      edadBio:       'Estimated biological age',
+      perfil:        'Profile confirmed',
+      perfilNo:      'Profile adjustment detected',
       dim_labels: {
         hidratacion:  'Hydration',
         barrera:      'Skin barrier',
-        sebum:        'Sebum production',
+        sebum:        'Sebum control',
         pigmentacion: 'Pigmentation',
         textura:      'Texture',
         circulacion:  'Circulation',
         firmeza:      'Firmness',
         microbioma:   'Microbiome',
       },
+      dim_icons: {
+        hidratacion:  '💧',
+        barrera:      '🛡️',
+        sebum:        '✨',
+        pigmentacion: '🌗',
+        textura:      '🔎',
+        circulacion:  '❤️',
+        firmeza:      '💪',
+        microbioma:   '🦠',
+      },
     },
   };
   const lbl = L[idioma] || L.en;
 
-  // Colores por score
+  // ── Helpers de color y barra ──────────────────────────────
   function scoreColor(s) {
     if (s === null || s === undefined) return '#6b7280';
     if (s >= 8) return '#22c55e';
@@ -1099,24 +1127,64 @@ function _construirCardAnalisis(result, idioma) {
     if (s >= 4) return '#f59e0b';
     return '#ef4444';
   }
-
+  function scoreGrade(s) {
+    if (s === null || s === undefined) return '—';
+    if (s >= 9) return 'A+';
+    if (s >= 8) return 'A';
+    if (s >= 7) return 'B+';
+    if (s >= 6) return 'B';
+    if (s >= 5) return 'C+';
+    if (s >= 4) return 'C';
+    return 'D';
+  }
   function scoreBar(s) {
     if (s === null || s === undefined) return '';
     const pct   = Math.round((s / 10) * 100);
     const color = scoreColor(s);
-    return `<div class="kva-score-bar"><div class="kva-score-fill" style="width:${pct}%;background:${color};box-shadow:0 0 6px ${color}40;"></div></div>`;
+    return `<div class="kva-score-bar"><div class="kva-score-fill" style="width:${pct}%;background:${color};box-shadow:0 0 8px ${color}55;"></div></div>`;
   }
 
-  // Zonas
-  const zonaEntries = [
-    { emoji: '💦', key: 'tzone',    label: 'T-Zone'   },
-    { emoji: '🌸', key: 'mejillas', label: idioma === 'es' ? 'Mejillas' : 'Cheeks' },
-    { emoji: '👁️', key: 'ojos',    label: idioma === 'es' ? 'Contorno ojos' : 'Eye Area' },
-    { emoji: '💋', key: 'boca',     label: idioma === 'es' ? 'Contorno boca' : 'Lip Area' },
-  ];
+  // ── Score global (hero section) ───────────────────────────
+  const sg = (typeof result.score_global === 'number') ? result.score_global : null;
+  const sgColor = scoreColor(sg);
+  const sgGrade = scoreGrade(sg);
+  // SVG arc gauge
+  const radius = 36;
+  const circ   = 2 * Math.PI * radius;
+  const pct    = sg !== null ? Math.round((sg / 10) * 100) : 0;
+  const dash   = (pct / 100) * circ;
+  const scoreGlobalHTML = sg !== null ? `
+    <div class="kva-score-global">
+      <div class="kva-sg__gauge-wrap">
+        <svg class="kva-sg__svg" viewBox="0 0 88 88" width="88" height="88">
+          <circle cx="44" cy="44" r="${radius}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="6"/>
+          <circle cx="44" cy="44" r="${radius}" fill="none"
+            stroke="${sgColor}" stroke-width="6"
+            stroke-linecap="round"
+            stroke-dasharray="${dash} ${circ}"
+            stroke-dashoffset="${circ * 0.25}"
+            style="filter:drop-shadow(0 0 6px ${sgColor}99);transition:stroke-dasharray 1.2s cubic-bezier(0.4,0,0.2,1);"
+          />
+        </svg>
+        <div class="kva-sg__number" style="color:${sgColor}">${sg.toFixed(1)}</div>
+        <div class="kva-sg__denom">/10</div>
+      </div>
+      <div class="kva-sg__right">
+        <div class="kva-sg__label">${lbl.scoreGlobal}</div>
+        <div class="kva-sg__grade" style="color:${sgColor}">${sgGrade}</div>
+        <div class="kva-sg__sublabel">${lbl.scoreLabel(sg)}</div>
+      </div>
+    </div>` : '';
 
+  // ── Zonas ─────────────────────────────────────────────────
+  const zonaEntries = [
+    { emoji: '🏔️', key: 'tzone',    label: 'T-Zone'   },
+    { emoji: '🌸', key: 'mejillas', label: idioma === 'es' ? 'Mejillas' : 'Cheeks' },
+    { emoji: '👁️', key: 'ojos',    label: idioma === 'es' ? 'Contorno ojos' : 'Eye area' },
+    { emoji: '💋', key: 'boca',     label: idioma === 'es' ? 'Contorno boca' : 'Lip area' },
+  ];
   const zonasHTML = zonaEntries.map(z => {
-    const val = zona[z.key] || zona.tzone || '—';
+    const val = zona[z.key] || '—';
     return `<div class="kva-zone">
       <span class="kva-zone__emoji">${z.emoji}</span>
       <div class="kva-zone__info">
@@ -1126,74 +1194,91 @@ function _construirCardAnalisis(result, idioma) {
     </div>`;
   }).join('');
 
-  // Dimensiones
+  // ── Dimensiones ───────────────────────────────────────────
   const dimKeys = ['hidratacion','barrera','sebum','pigmentacion','textura','circulacion','firmeza','microbioma'];
   const dimHTML = dimKeys.map(key => {
-    const d     = dim[key];
+    const d = dim[key];
     if (!d) return '';
     const score = d.score;
     const color = scoreColor(score);
+    const icon  = lbl.dim_icons[key] || '';
+    const scoreDisplay = (score !== null && score !== undefined) ? score + '/10' : '—';
     return `<div class="kva-dim">
       <div class="kva-dim__top">
-        <span class="kva-dim__name">${lbl.dim_labels[key] || key}</span>
-        <span class="kva-dim__score" style="color:${color}">${score !== null && score !== undefined ? score + '/10' : '—'}</span>
+        <span class="kva-dim__name"><span class="kva-dim__icon">${icon}</span>${lbl.dim_labels[key] || key}</span>
+        <span class="kva-dim__score" style="color:${color}">${scoreDisplay}</span>
       </div>
       ${scoreBar(score)}
-      <div class="kva-dim__label">${d.label || ''}</div>
-      <div class="kva-dim__detail">${d.detalle || ''}</div>
+      ${d.label ? `<div class="kva-dim__label">${d.label}</div>` : ''}
+      ${d.detalle ? `<div class="kva-dim__detail">${d.detalle}</div>` : ''}
     </div>`;
   }).join('');
 
-  // Puntos críticos
+  // ── Puntos críticos ───────────────────────────────────────
   const ptsHTML = pts.length
     ? `<div class="kva-section">
         <div class="kva-section__title">${lbl.criticos}</div>
         <ul class="kva-findings">
-          ${pts.map(p => `<li class="kva-finding"><span class="kva-finding__arrow">→</span>${p}</li>`).join('')}
+          ${pts.map(p => `<li class="kva-finding"><span class="kva-finding__arrow">→</span><span>${p}</span></li>`).join('')}
         </ul>
       </div>` : '';
 
-  // Ingredientes recomendados
+  // ── Ingredientes (hasta 4) ────────────────────────────────
   const ingsHTML = ings.length
     ? `<div class="kva-section">
         <div class="kva-section__title">${lbl.ingredientes}</div>
         <div class="kva-ingredients">
-          ${ings.map(i => `
+          ${ings.slice(0, 4).map((ing, idx) => `
             <div class="kva-ingredient">
-              <span class="kva-ingredient__name">${i.nombre}</span>
-              <span class="kva-ingredient__reason">${i.razon}</span>
+              <span class="kva-ingredient__num">${idx + 1}</span>
+              <div class="kva-ingredient__body">
+                <span class="kva-ingredient__name">${ing.nombre}</span>
+                <span class="kva-ingredient__reason">${ing.razon}</span>
+              </div>
             </div>`).join('')}
         </div>
       </div>` : '';
 
-  // Protocolo urgente
+  // ── Protocolo urgente ─────────────────────────────────────
   const protHTML = result.protocolo_urgente
     ? `<div class="kva-protocolo">
-        <div class="kva-protocolo__label">${lbl.protocolo}</div>
+        <div class="kva-protocolo__label">⚡ ${lbl.protocolo}</div>
         <p class="kva-protocolo__text">${result.protocolo_urgente}</p>
       </div>` : '';
 
-  // Edad biológica + confirmación perfil
-  const metaHTML = `
-    <div class="kva-meta">
-      ${result.edad_biologica_estimada
-        ? `<div class="kva-meta__item"><span class="kva-meta__key">${lbl.edadBio}</span><span class="kva-meta__val">${result.edad_biologica_estimada}</span></div>`
-        : ''}
-      <div class="kva-meta__item">
-        <span class="kva-meta__key">${result.confirmacion_perfil ? lbl.perfil : lbl.perfilNo}</span>
-        <span class="kva-meta__badge ${result.confirmacion_perfil ? 'kva-meta__badge--ok' : 'kva-meta__badge--warn'}">
-          ${result.confirmacion_perfil ? '✓' : '⚠'}
-        </span>
+  // ── Meta (edad bio + confirmación perfil) ─────────────────
+  const edadBioHTML = result.edad_biologica_estimada
+    ? `<div class="kva-meta__item">
+        <span class="kva-meta__icon">🔬</span>
+        <div class="kva-meta__body">
+          <span class="kva-meta__key">${lbl.edadBio}</span>
+          <span class="kva-meta__val">${result.edad_biologica_estimada}</span>
+        </div>
+      </div>` : '';
+
+  const perfilOk = result.confirmacion_perfil;
+  const perfilHTML = `<div class="kva-meta__item">
+      <span class="kva-meta__icon">${perfilOk ? '✅' : '⚠️'}</span>
+      <div class="kva-meta__body">
+        <span class="kva-meta__key">${perfilOk ? lbl.perfil : lbl.perfilNo}</span>
+        ${!perfilOk && result.ajuste_perfil && result.ajuste_perfil !== 'null'
+          ? `<span class="kva-meta__val">${result.ajuste_perfil}</span>` : ''}
       </div>
     </div>`;
 
-  // Ensamblar card completa
+  const metaHTML = (edadBioHTML || perfilHTML)
+    ? `<div class="kva-meta">${edadBioHTML}${perfilHTML}</div>` : '';
+
+  // ── Ensamblar ─────────────────────────────────────────────
   const wrapper = document.createElement('div');
   wrapper.className = 'kva-card';
   wrapper.innerHTML = `
     <div class="kva-card__header">
+      <span class="kva-card__badge">🔬 KOI</span>
       <span class="kva-card__title">${lbl.titulo}</span>
     </div>
+
+    ${scoreGlobalHTML}
 
     <div class="kva-section kva-section--zones">
       <div class="kva-section__title">${lbl.zonas}</div>
