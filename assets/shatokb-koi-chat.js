@@ -1083,17 +1083,11 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     KOI_STATE.historial.push({ role: 'assistant', content: msg });
     guardarHistorialLocal();
 
-    // ── Momento 3b: Cart CTA grande e inmediato ───────────────
-    setTimeout(() => {
-      const container = document.getElementById('koi-messages');
-      if (!container) return;
-      const cta = _crearCartCTA(idioma);
-      cta.id = 'koi-cart-cta-reveal';
-      container.appendChild(cta);
-      scrollAlFinal();
-    }, 400);
-
-    // ── Momento 4: Botón reveal + chips DEBAJO del CTA ───────
+    // ── Momento 4: Solo el botón de reveal — sin CTA de carrito todavía.
+    // El usuario aún no ha visto ni elegido ningún producto. El Cart CTA
+    // aparece en el Momento 5, después de que KOI responde preguntas y
+    // el usuario ya conoce su rutina completa.
+    //
     const scrollBtns = {
       es: '✨ Ver mi rutina ahora',
       en: '✨ Show me my routine',
