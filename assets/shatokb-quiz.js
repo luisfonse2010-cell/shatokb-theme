@@ -2818,6 +2818,8 @@ function shatokbMostrarTransicion(callback) {
   });
 
   // Animar steps secuencialmente
+  // Cada step: aparece → se lee (~1200ms) → check → siguiente
+  // Total visible: ~5.5s antes del fade out
   const steps = [
     document.getElementById('stk-bs-1'),
     document.getElementById('stk-bs-2'),
@@ -2827,18 +2829,18 @@ function shatokbMostrarTransicion(callback) {
     if (!el) return;
     setTimeout(function() {
       el.classList.add('stk-building__step--active');
-      setTimeout(function() { el.classList.add('stk-building__step--done'); }, 600);
-    }, 400 + i * 700);
+      setTimeout(function() { el.classList.add('stk-building__step--done'); }, 1400);
+    }, 600 + i * 2000);
   });
 
-  // Tras ~2.6s, fade out y ejecutar callback
+  // Tras ~8s, fade out y ejecutar callback
   setTimeout(function() {
     overlay.classList.add('stk-building--exit');
     setTimeout(function() {
       overlay.remove();
       if (typeof callback === 'function') callback();
-    }, 500);
-  }, 2800);
+    }, 600);
+  }, 8000);
 }
 
 async function shatokbSubmitEmail(e) {
