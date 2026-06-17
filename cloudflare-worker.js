@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * SHATOKB · KOI — Cloudflare Worker  (v2.1 — Multilingual Intelligence)
+ * SHATOKB · KOI — Cloudflare Worker  (v2.1 — Multilingual Intelligence) · SHA-sync fix Jun 2026
  * Archivo: cloudflare-worker.js
  *
  * ⚠️  DEPLOY INSTRUCTIONS:
@@ -19,7 +19,7 @@
  * ============================================================
  */
 
-/* ── Last deploy: 2026-06-17T20:27:25.506Z ──
+/* ── Last deploy: 2026-06-17T20:28:56.908Z ──
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
 const KOI_SYSTEM_PROMPT = `
 You are KOI.
