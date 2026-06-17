@@ -1046,9 +1046,9 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     KOI_STATE.historial.push({ role: 'assistant', content: msg });
     guardarHistorialLocal();
 
-    // ── Botón "Ver mi rutina" — inyectado en #koi-messages, NO en chips.
-    // Al estar en el flujo de mensajes es PERSISTENTE: no desaparece si
-    // el usuario escribe una pregunta antes de hacer clic.
+    // ── Botón "Ver mi rutina" — en #koi-messages, debajo del mensaje de KOI.
+    // El input queda BLOQUEADO hasta que el usuario haga clic y vea la rutina.
+    // Así el usuario lee el mensaje completo de KOI antes de poder escribir.
     const scrollBtns = {
       es: '✨ Ver mi rutina ahora',
       en: '✨ Show me my routine',
@@ -1058,6 +1058,9 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       it: '✨ Vedi la mia routine',
     };
     const btnLabel = scrollBtns[idioma] || scrollBtns['en'];
+
+    // Bloquear input — el usuario no puede escribir hasta ver la rutina
+    setInputHabilitado(false);
 
     setTimeout(() => {
       const container = document.getElementById('koi-messages');
@@ -1087,8 +1090,11 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
           }
         }, 300);
 
-        // 3. Chips de bienvenida tras las animaciones de reveal
-        setTimeout(() => mostrarChips('bienvenida'), 1800);
+        // 3. Habilitar input + chips de bienvenida cuando el reveal termina
+        setTimeout(() => {
+          setInputHabilitado(true);
+          mostrarChips('bienvenida');
+        }, 1800);
       });
 
       wrapper.appendChild(btn);
