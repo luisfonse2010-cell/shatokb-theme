@@ -429,6 +429,12 @@
      directo. Luego ofrece los dos chips de bifurcación.
      ══════════════════════════════════════════════════════════ */
   async function enviarMensajeKOI_proactivo () {
+    // ── Ocultar barra de input mientras KOI escribe los mensajes
+    //    de apertura (insight + oferta cámara). Se restaura cuando
+    //    mostrarChips('post_camara') muestra los chips de bifurcación.
+    setInputAreaVisible(false);
+    setInputHabilitado(false);
+
     const ctx          = KOI_STATE.contexto;
     const perfilId     = ctx?.perfil?.id     || '';
     const perfilNombre = ctx?.perfil?.nombre || 'your skin profile';
