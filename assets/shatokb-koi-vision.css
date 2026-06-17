@@ -2257,11 +2257,97 @@
 }
 
 /* ══════════════════════════════════════════════════════════
-   RESPONSIVE
+   RESPONSIVE — MOBILE FULLSCREEN
    ══════════════════════════════════════════════════════════ */
-@media (max-width: 480px) {
+@media (max-width: 640px) {
+
+  /* Modal ocupa toda la pantalla — sin márgenes, sin padding */
+  #koi-vision-modal {
+    padding: 0;
+    align-items: stretch;
+    justify-content: stretch;
+  }
+
+  /* Panel = 100% de la pantalla, sin border-radius */
   .kv-panel {
-    border-radius: 14px;
+    max-width: 100%;
+    width: 100%;
+    height: 100%;
+    min-height: 100dvh;   /* dynamic viewport height — evita el problema de la barra del navegador */
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Viewfinder ocupa todo el espacio restante */
+  .kv-viewfinder {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .kv-viewfinder video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Header más compacto */
+  .kv-header {
+    padding: 12px 16px 10px;
+  }
+
+  /* Pantalla de análisis también fullscreen */
+  .kv-analyzing {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .kv-analyzing.kv--active {
+    display: flex;
+  }
+
+  .kv-analyzing-inner {
+    flex: 1;
+    flex-direction: column;
+  }
+
+  /* Foto capturada — ocupa la mitad superior */
+  .kv-captured-wrap {
+    width: 100%;
+    height: 45vw;
+    max-height: 260px;
+    flex-shrink: 0;
+  }
+
+  .kv-captured-wrap::before {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 40%;
+    background: linear-gradient(to bottom, transparent, var(--kv-bg));
+  }
+
+  /* Info/progreso — mitad inferior */
+  .kv-analyzing-info {
+    flex: 1;
+    padding: 12px 14px;
+    overflow-y: auto;
+  }
+
+  /* Items de análisis más compactos en mobile */
+  .kv-analysis-item {
+    padding: 5px 8px;
+  }
+
+  .kv-analysis-item__text {
+    font-size: 10px;
+  }
+
+  /* Resultado preview */
+  .kv-result-preview {
+    padding: 16px;
   }
 
   .kv-zones {
@@ -2276,30 +2362,13 @@
     font-size: 9px;
   }
 
-  .kv-analyzing-inner {
-    flex-direction: column;
-  }
-
-  .kv-captured-wrap {
-    width: 100%;
-    height: 160px;
-  }
-
-  .kv-captured-wrap::before {
-    top: auto;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    height: 40%;
-    background: linear-gradient(to bottom, transparent, var(--kv-bg));
-  }
-
-  .kv-analyzing-info {
-    padding: 16px;
-  }
-
+  /* Countdown */
   .kv-countdown__num {
     font-size: 30px;
+  }
+
+  /* Error state */
+  .kv-error-state {
+    padding: 40px 24px;
   }
 }
