@@ -49,6 +49,8 @@
     // ── The Reveal ──
     revealPhase:    'insight', // 'insight' | 'email' | 'revealed'
     emailCaptured:  '',     // email capturado en el chat
+    // ── Vision Analysis ──
+    visionResult:   null,   // resultado del Worker /vision {mensaje_koi, mensaje_reveal, dimensiones, ...}
   };
 
   /* ── Chips localizados por idioma ───────────────────────── */
@@ -1042,21 +1044,39 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     const idioma       = detectarIdioma();
     const perfilNombre = KOI_STATE.contexto?.perfil?.nombre || '';
 
-    // ── Momento 3a: Mensaje de confirmación de KOI ───────────
-    const mensajesReveal = {
-      es: `Listo ✨ Aquí está tu rutina para **${perfilNombre}**.\n\nEn cada paso te doy **3 opciones de productos** — los tres son igualmente efectivos para tu problema, así que puedes elegir cualquiera según tu preferencia o disponibilidad.\n\nCada producto tiene un botón ❓ — si quieres saber exactamente por qué lo elegí para ti, solo toca.`,
-      en: `Done ✨ Here's your **${perfilNombre}** routine.\n\nFor each step I'm giving you **3 product options** — all three are equally effective for your concern, so pick whichever you prefer or have access to.\n\nEach product has a ❓ button — if you want to know exactly why I chose that one for you, just tap it.`,
-      fr: `C'est fait ✨ Voici votre routine **${perfilNombre}**.\n\nPour chaque étape, je vous propose **3 options de produits** — les trois sont tout aussi efficaces pour votre problème, choisissez celui que vous préférez.\n\nChaque produit a un bouton ❓ — si vous voulez savoir exactement pourquoi je l'ai choisi pour vous, appuyez dessus.`,
-      pt: `Pronto ✨ Aqui está sua rotina **${perfilNombre}**.\n\nEm cada etapa te dou **3 opções de produtos** — os três são igualmente eficazes para o seu problema, então escolha o que preferir.\n\nCada produto tem um botão ❓ — se quiser saber exatamente por que escolhi esse para você, é só tocar.`,
-      de: `Fertig ✨ Hier ist deine **${perfilNombre}** Routine.\n\nFür jeden Schritt gebe ich dir **3 Produktoptionen** — alle drei sind gleich wirksam für dein Anliegen, wähle also einfach die, die du bevorzugst.\n\nJedes Produkt hat einen ❓ Button — wenn du wissen möchtest, warum ich es genau für dich gewählt habe, tippe einfach darauf.`,
-      it: `Fatto ✨ Ecco la tua routine **${perfilNombre}**.\n\nPer ogni step ti do **3 opzioni di prodotti** — tutti e tre sono ugualmente efficaci per il tuo problema, quindi scegli quello che preferisci.\n\nOgni prodotto ha un pulsante ❓ — se vuoi sapere esattamente perché l'ho scelto per te, toccalo.`,
+    // ── Momento 3a: Mensaje de reveal ────────────────────────
+    // Si hay resultado de visión con mensaje_reveal personalizado, usarlo.
+    // El Worker GPT-4o lo generó fusionando foto + quiz → texto único para esta piel.
+    // Fallback: texto genérico localizado cuando no hubo foto (solo quiz).
+    const mensajesRevealFallback = {
+      es: `He cruzado tus respuestas con los patrones de piel más comunes para el perfil **${perfilNombre}** y diseñé tu rutina paso a paso.\n\nEn cada paso te doy **3 opciones de productos** — los tres son igualmente efectivos, elige el que más se adapte a ti.\n\nCada producto tiene un botón ❓ — tócalo para saber exactamente por qué lo elegí para tu piel.`,
+      en: `I've matched your quiz answers to the most common patterns for the **${perfilNombre}** profile and built your routine step by step.\n\nFor each step I give you **3 product options** — all equally effective, pick whichever fits you best.\n\nEach product has a ❓ button — tap it to learn exactly why I chose it for your skin.`,
+      fr: `J'ai croisé vos réponses avec les profils les plus courants pour **${perfilNombre}** et j'ai conçu votre routine étape par étape.\n\nPour chaque étape, je vous propose **3 options** — toutes aussi efficaces, choisissez celle qui vous convient.\n\nChaque produit a un bouton ❓ — appuyez dessus pour savoir exactement pourquoi je l'ai choisi pour vous.`,
+      pt: `Cruzei suas respostas com os padrões mais comuns do perfil **${perfilNombre}** e montei sua rotina passo a passo.\n\nEm cada etapa te dou **3 opções de produtos** — todas igualmente eficazes, escolha a que melhor se adapta a você.\n\nCada produto tem um botão ❓ — toque para saber exatamente por que escolhi para a sua pele.`,
+      de: `Ich habe deine Antworten mit den häufigsten Mustern des **${perfilNombre}**-Profils abgeglichen und deine Routine Schritt für Schritt aufgebaut.\n\nFür jeden Schritt gebe ich dir **3 Produktoptionen** — alle gleich wirksam, wähle einfach die passende.\n\nJedes Produkt hat einen ❓ Button — tippe darauf, um zu erfahren, warum ich es genau für dich gewählt habe.`,
+      it: `Ho incrociato le tue risposte con i profili più comuni per **${perfilNombre}** e ho costruito la tua routine passo dopo passo.\n\nPer ogni step ti do **3 opzioni di prodotti** — tutte ugualmente efficaci, scegli quella più adatta a te.\n\nOgni prodotto ha un pulsante ❓ — toccalo per sapere esattamente perché l'ho scelto per la tua pelle.`,
+    };
+
+    // ★ LÓGICA CENTRAL: usa mensaje_reveal del análisis visual si existe
+    const visionReveal = KOI_STATE.visionResult?.mensaje_reveal;
+    const sufijo = {
+      es: `\n\nEn cada paso te doy **3 opciones** — todas igual de efectivas. Cada producto tiene un botón ❓ para saber exactamente por qué lo elegí para ti.`,
+      en: `\n\nFor each step you'll get **3 options** — all equally effective. Each product has a ❓ button to know exactly why I chose it for you.`,
+      fr: `\n\nPour chaque étape, **3 options** — toutes aussi efficaces. Chaque produit a un bouton ❓ pour savoir exactement pourquoi je l'ai choisi.`,
+      pt: `\n\nEm cada etapa, **3 opções** — todas igualmente eficazes. Cada produto tem um botão ❓ para saber exatamente por que o escolhi.`,
+      de: `\n\nFür jeden Schritt **3 Optionen** — alle gleich wirksam. Jedes Produkt hat einen ❓ Button, um zu erfahren, warum ich es gewählt habe.`,
+      it: `\n\nPer ogni step **3 opzioni** — tutte ugualmente efficaci. Ogni prodotto ha un ❓ per sapere esattamente perché l'ho scelto.`,
     };
 
     mostrarTyping();
-    await new Promise(r => setTimeout(r, 900)); // pausa dramática
+    // Pausa más dramática cuando hay reveal personalizado — el usuario siente que KOI "leyó" su foto
+    await new Promise(r => setTimeout(r, visionReveal ? 1400 : 900));
     ocultarTyping();
 
-    const msg    = mensajesReveal[idioma] || mensajesReveal['en'];
+    // Construir mensaje final: reveal personalizado + sufijo operativo, o fallback genérico
+    const msg = visionReveal
+      ? `${visionReveal}${sufijo[idioma] || sufijo['en']}`
+      : (mensajesRevealFallback[idioma] || mensajesRevealFallback['en']);
     const textEl = agregarMensaje('koi', '', true);
     if (textEl) await escribirConEfecto(textEl, msg);
     KOI_STATE.historial.push({ role: 'assistant', content: msg });
@@ -1198,6 +1218,9 @@ async function manejarResultadoVision (data) {
 
   // ── Si tenemos resultado real del Worker ───────────────────
   if (result && result.mensaje_koi) {
+    // ★ Guardar resultado completo para que revelarRutinaConKOI() lo use
+    KOI_STATE.visionResult = result;
+
     await new Promise(r => setTimeout(r, 900));
     ocultarTyping();
 
@@ -1228,17 +1251,30 @@ async function manejarResultadoVision (data) {
 
     guardarHistorialLocal();
 
-    // 3. Si el perfil necesita ajuste, añadir nota de KOI
-    if (result.ajuste_perfil && result.ajuste_perfil !== 'null') {
-      await new Promise(r => setTimeout(r, 600));
-      const ajusteMsgs = {
-        es: `**Nota sobre tu perfil:** ${result.ajuste_perfil}`,
-        en: `**Profile note:** ${result.ajuste_perfil}`,
-      };
-      const ajusteMsg  = ajusteMsgs[idioma] || ajusteMsgs.en;
-      const ajusteEl   = agregarMensaje('koi', '', false);
-      await escribirConEfecto(ajusteEl, ajusteMsg);
-      KOI_STATE.historial.push({ role: 'koi', content: ajusteMsg });
+    // 3. ★ REASIGNACIÓN SILENCIOSA DE PERFIL ★
+    // El usuario NUNCA ha visto la rutina del quiz — la verá por primera vez en el reveal.
+    // Si la foto contradice el quiz, simplemente actualizamos el perfil en silencio
+    // ANTES de que el usuario vea cualquier producto. Para él es transparente:
+    // solo ve la rutina correcta con un mensaje_reveal que la explica perfectamente.
+    const ajuste = result.ajuste_perfil;
+    const hayReasignacion = !result.confirmacion_perfil
+      && ajuste
+      && typeof ajuste === 'object'
+      && ajuste.nuevo_perfil_id
+      && ajuste.nuevo_perfil_id !== (KOI_STATE.contexto?.perfil?.id || '');
+
+    if (hayReasignacion) {
+      // Actualizar el perfil en el DOM del quiz ANTES del reveal (silencioso)
+      if (typeof window.shatokbCambiarPerfil === 'function') {
+        await window.shatokbCambiarPerfil(ajuste.nuevo_perfil_id);
+      }
+      // Actualizar KOI_STATE.contexto para que revelarRutinaConKOI use el perfil correcto
+      if (KOI_STATE.contexto) {
+        KOI_STATE.contexto.perfil = {
+          id:     ajuste.nuevo_perfil_id,
+          nombre: ajuste.nuevo_perfil_id,
+        };
+      }
     }
 
     guardarHistorialLocal();
