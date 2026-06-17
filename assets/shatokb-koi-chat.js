@@ -2206,8 +2206,8 @@ async function enviarDesdeChip (texto) {
   };
 
   function inyectarEmailGateCarrito (callbackProcederAlCarrito) {
-    const container = document.getElementById('koi-messages');
-    if (!container || document.getElementById('koi-email-gate')) return;
+    // Evitar duplicados
+    if (document.getElementById('koi-email-gate')) return;
 
     const idioma = detectarIdioma();
     const ui = {
@@ -2219,7 +2219,6 @@ async function enviarDesdeChip (texto) {
       it: { placeholder: 'tu@email.com', btn: 'Invia e continua →',   note: '🔒 Solo per il tuo Skin Report.' },
     }[idioma] || { placeholder: 'you@email.com', btn: 'Send & continue →', note: '🔒 No spam.' };
 
-    // Texto del botón "skip" por idioma
     const skipTexts = {
       es: 'Prefiero ir directo al carrito',
       en: 'Skip, take me to cart',
@@ -2230,27 +2229,46 @@ async function enviarDesdeChip (texto) {
     };
     const skipText = skipTexts[idioma] || skipTexts['en'];
 
+    // ── Inyectar en el .koi-panel (nivel del panel, no dentro del scroll) ──
+    // Así el formulario siempre es visible aunque el usuario siga chateando.
+    // Se inserta justo antes de .koi-input-area (debajo de la mini barra).
+    const panel    = document.querySelector('#shatokb-koi-wrapper .koi-panel');
+    const inputArea = document.querySelector('#shatokb-koi-wrapper .koi-input-area');
+    if (!panel) return;
+
     const gate = document.createElement('div');
     gate.id        = 'koi-email-gate';
-    gate.className = 'koi-email-gate';
+    gate.className = 'koi-email-gate koi-email-gate--panel';
     gate.innerHTML = `
-      <input
-        type="email"
-        id="koi-email-input"
-        class="koi-email-input"
-        placeholder="${ui.placeholder}"
-        autocomplete="email"
-        inputmode="email"
-      />
-      <button class="koi-email-btn" id="koi-email-btn">${ui.btn}</button>
-      <p class="koi-email-note">${ui.note}</p>
-      <button class="koi-email-skip" id="koi-email-skip">${skipText}</button>
+      <div class="koi-email-gate__inner">
+        <p class="koi-email-gate__hint" id="koi-email-hint"></p>
+        <input
+          type="email"
+          id="koi-email-input"
+          class="koi-email-input"
+          placeholder="${ui.placeholder}"
+          autocomplete="email"
+          inputmode="email"
+        />
+        <button class="koi-email-btn" id="koi-email-btn">${ui.btn}</button>
+        <div class="koi-email-gate__footer">
+          <p class="koi-email-note">${ui.note}</p>
+          <button class="koi-email-skip" id="koi-email-skip">${skipText}</button>
+        </div>
+      </div>
     `;
 
-    container.appendChild(gate);
-    scrollAlFinal();
-    setInputHabilitado(false);
-    setInputAreaVisible(false); // ocultar barra — el formulario la reemplaza
+    // Insertar antes del input area (o al final del panel si no hay input area)
+    if (inputArea) {
+      panel.insertBefore(gate, inputArea);
+    } else {
+      panel.appendChild(gate);
+    }
+
+    // El input sigue habilitado — el usuario puede seguir preguntando
+    // El gate no reemplaza el input, convive con él
+    setInputHabilitado(true);
+    setInputAreaVisible(true);
 
     setTimeout(() => {
       const inp = document.getElementById('koi-email-input');
@@ -2260,6 +2278,11 @@ async function enviarDesdeChip (texto) {
     const inp     = document.getElementById('koi-email-input');
     const btn     = document.getElementById('koi-email-btn');
     const skipBtn = document.getElementById('koi-email-skip');
+
+    function _cerrarGate () {
+      gate.classList.add('koi-email-gate--confirmed');
+      setTimeout(() => { if (gate.parentNode) gate.remove(); }, 350);
+    }
 
     async function confirmarEmailCarrito () {
       if (!inp) return;
@@ -2276,18 +2299,13 @@ async function enviarDesdeChip (texto) {
       KOI_STATE.emailCaptured = email;
       try { localStorage.setItem('shatokb_email', email); } catch (_) {}
       shatokbEnviarEmailShopify(email);
-
-      // ── Generar y enviar el Skin Report via Klaviyo ──────
       enviarSkinReport(email);
 
-      // Cerrar gate
-      gate.classList.add('koi-email-gate--confirmed');
-      setTimeout(() => { if (gate.parentNode) gate.remove(); }, 400);
+      // Cerrar gate con animación
+      _cerrarGate();
       agregarMensaje('user', email);
-      setInputHabilitado(true);
-      setInputAreaVisible(true);
 
-      // Mensaje de confirmación breve antes del carrito
+      // Mensaje de confirmación
       const confirmaciones = {
         es: '¡Listo! Te lo envío en breve. Ahora sí, aquí está tu carrito 🛒',
         en: 'Done! Sending it shortly. Now, here\'s your cart 🛒',
@@ -2300,15 +2318,11 @@ async function enviarDesdeChip (texto) {
       const textEl = agregarMensaje('koi', '');
       if (textEl) await escribirConEfecto(textEl, confirmMsg, 18);
 
-      // Proceder al carrito después del mensaje
       setTimeout(callbackProcederAlCarrito, 800);
     }
 
     function saltarAlCarrito () {
-      gate.classList.add('koi-email-gate--confirmed');
-      setTimeout(() => { if (gate.parentNode) gate.remove(); }, 400);
-      setInputHabilitado(true);
-      setInputAreaVisible(true);
+      _cerrarGate();
       callbackProcederAlCarrito();
     }
 
