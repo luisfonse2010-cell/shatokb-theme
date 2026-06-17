@@ -626,89 +626,266 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
   }
 
   /* ══════════════════════════════════════════════════════════
-     THE REVEAL — EMAIL GATE CONVERSACIONAL
-     KOI pide el email dentro del chat, como parte natural
-     de la conversación. No hay modal, no hay formulario
-     externo. Es una pregunta de persona a persona.
+     THE REVEAL — WOW EMAIL GATE v7.0
+     5 momentos cinematográficos en lugar de un formulario
+     estático. KOI "prepara" el reporte, luego pide el email
+     con una envelope card animada.
      ══════════════════════════════════════════════════════════ */
+
+  /* ── Momento 1: KOI está preparando tu Skin Report ──────── */
   async function pedirEmailEnChat () {
-    const idioma = detectarIdioma();
-
-    // Mensaje de KOI pidiendo el email
-    const mensajesEmail = {
-      es: `Antes de mostrarte todo — ¿a dónde te envío tu rutina? No quiero que la pierdas si cierras la página.`,
-      en: `Before I show you everything — where should I send your routine? I don't want you to lose it if you close the page.`,
-      fr: `Avant de tout vous montrer — où dois-je vous envoyer votre routine ? Je ne veux pas que vous la perdiez si vous fermez la page.`,
-      pt: `Antes de mostrar tudo — para onde envio sua rotina? Não quero que você a perca se fechar a página.`,
-      de: `Bevor ich dir alles zeige — wohin soll ich deine Routine schicken? Ich möchte nicht, dass du sie verlierst, wenn du die Seite schließt.`,
-      it: `Prima di mostrarti tutto — dove ti mando la tua routine? Non voglio che tu la perda se chiudi la pagina.`,
-    };
-
-    const textEl = agregarMensaje('koi', '');
-    if (textEl) {
-      await escribirConEfecto(textEl, mensajesEmail[idioma] || mensajesEmail['en']);
-    }
-    KOI_STATE.historial.push({ role: 'assistant', content: mensajesEmail[idioma] || mensajesEmail['en'] });
-    guardarHistorialLocal();
-
-    // Inyectar el campo de email dentro del chat
-    setTimeout(() => inyectarEmailGate(), 300);
-
     KOI_STATE.revealPhase = 'email';
+    setInputHabilitado(false);
+
+    // Pequeña pausa → typing visible
+    mostrarTyping();
+    await new Promise(r => setTimeout(r, 600));
+    ocultarTyping();
+
+    // Inyectar la tarjeta de preparación en el chat
+    _inyectarPreparandoCard();
   }
 
-  function inyectarEmailGate () {
+  function _inyectarPreparandoCard () {
+    const container = document.getElementById('koi-messages');
+    if (!container || document.getElementById('koi-preparing-card')) return;
+
+    const idioma = detectarIdioma();
+
+    const LABELS = {
+      es: {
+        title:  'KOI está preparando tu Skin Report…',
+        steps: [
+          { icon: '🔍', text: 'Analizando tu perfil de piel' },
+          { icon: '📋', text: 'Documentando tus productos' },
+          { icon: '✍️', text: 'Escribiendo tu manual de uso' },
+        ],
+      },
+      en: {
+        title:  'KOI is preparing your Skin Report…',
+        steps: [
+          { icon: '🔍', text: 'Analyzing your skin profile' },
+          { icon: '📋', text: 'Documenting your products' },
+          { icon: '✍️', text: 'Writing your usage manual' },
+        ],
+      },
+      fr: {
+        title:  'KOI prépare votre Skin Report…',
+        steps: [
+          { icon: '🔍', text: 'Analyse de votre profil de peau' },
+          { icon: '📋', text: 'Documentation de vos produits' },
+          { icon: '✍️', text: 'Rédaction de votre manuel' },
+        ],
+      },
+      pt: {
+        title:  'KOI está preparando seu Skin Report…',
+        steps: [
+          { icon: '🔍', text: 'Analisando seu perfil de pele' },
+          { icon: '📋', text: 'Documentando seus produtos' },
+          { icon: '✍️', text: 'Escrevendo seu manual de uso' },
+        ],
+      },
+      de: {
+        title:  'KOI bereitet deinen Skin Report vor…',
+        steps: [
+          { icon: '🔍', text: 'Analyse deines Hautprofils' },
+          { icon: '📋', text: 'Dokumentation deiner Produkte' },
+          { icon: '✍️', text: 'Schreiben deines Anwendungshandbuchs' },
+        ],
+      },
+      it: {
+        title:  'KOI sta preparando il tuo Skin Report…',
+        steps: [
+          { icon: '🔍', text: 'Analisi del tuo profilo pelle' },
+          { icon: '📋', text: 'Documentazione dei tuoi prodotti' },
+          { icon: '✍️', text: 'Scrittura del tuo manuale di utilizzo' },
+        ],
+      },
+    };
+    const lbl = LABELS[idioma] || LABELS['en'];
+
+    const card = document.createElement('div');
+    card.id        = 'koi-preparing-card';
+    card.className = 'koi-preparing-card';
+    card.innerHTML = `
+      <div class="koi-preparing__title">${lbl.title}</div>
+      <ul class="koi-preparing__steps">
+        ${lbl.steps.map((s, i) => `
+          <li class="koi-preparing__step" data-idx="${i}">
+            <span class="koi-preparing__step-icon">${s.icon}</span>
+            <span class="koi-preparing__step-text">${s.text}</span>
+            <span class="koi-preparing__step-check">✓</span>
+          </li>`).join('')}
+      </ul>
+    `;
+
+    container.appendChild(card);
+    scrollAlFinal();
+
+    // Animar pasos uno a uno (800ms c/u)
+    const stepEls = card.querySelectorAll('.koi-preparing__step');
+    let delay = 200;
+    stepEls.forEach((el, i) => {
+      setTimeout(() => {
+        el.classList.add('koi-preparing__step--active');
+        scrollAlFinal();
+      }, delay);
+      delay += 800;
+      setTimeout(() => {
+        el.classList.add('koi-preparing__step--done');
+        scrollAlFinal();
+      }, delay);
+      delay += 200;
+    });
+
+    // Cuando todos terminan → morph a envelope card (~3400ms)
+    const totalDelay = 200 + (3 * 800) + (3 * 200) + 400;
+    setTimeout(() => _morfar_a_envelope(card), totalDelay);
+  }
+
+  /* ── Momento 2: Envelope card con checkmarks + email input ─ */
+  function _morfar_a_envelope (preparandoCard) {
+    preparandoCard.classList.add('koi-preparing-card--out');
+    setTimeout(() => {
+      if (preparandoCard.parentNode) preparandoCard.remove();
+      _inyectarEnvelopeCard();
+    }, 350);
+  }
+
+  function _inyectarEnvelopeCard () {
     const container = document.getElementById('koi-messages');
     if (!container || document.getElementById('koi-email-gate')) return;
 
     const idioma = detectarIdioma();
-    const ui = {
-      es: { placeholder: 'tu@email.com', btn: 'Enviar →',     note: '🔒 Solo para enviarte tu rutina. Sin spam.' },
-      en: { placeholder: 'you@email.com', btn: 'Send →',      note: '🔒 Only to send you your routine. No spam.' },
-      fr: { placeholder: 'vous@email.com', btn: 'Envoyer →',  note: '🔒 Uniquement pour vous envoyer votre routine.' },
-      pt: { placeholder: 'voce@email.com', btn: 'Enviar →',   note: '🔒 Apenas para enviar sua rotina. Sem spam.' },
-      de: { placeholder: 'du@email.com', btn: 'Senden →',     note: '🔒 Nur für deine Routine. Kein Spam.' },
-      it: { placeholder: 'tu@email.com', btn: 'Invia →',      note: '🔒 Solo per inviarti la tua routine.' },
-    }[idioma] || { placeholder: 'you@email.com', btn: 'Send →', note: '🔒 No spam.' };
+
+    const LABELS = {
+      es: {
+        title:       '📩 Tu Skin Report está listo',
+        checks: [
+          'Rutina AM/PM personalizada',
+          'Por qué cada producto fue elegido',
+          'Orden de aplicación + tips',
+          'Guía de ingredientes clave',
+        ],
+        subtitle:    '¿A dónde te lo envío?',
+        placeholder: 'tu@email.com',
+        btn:         'Enviar mi rutina →',
+        note:        '🔒 Solo para enviarte tu rutina. Sin spam.',
+      },
+      en: {
+        title:       '📩 Your Skin Report is ready',
+        checks: [
+          'Personalized AM/PM routine',
+          'Why each product was chosen',
+          'Application order + tips',
+          'Key ingredients guide',
+        ],
+        subtitle:    'Where should I send it?',
+        placeholder: 'you@email.com',
+        btn:         'Send my routine →',
+        note:        '🔒 Only to send you your routine. No spam.',
+      },
+      fr: {
+        title:       '📩 Votre Skin Report est prêt',
+        checks: [
+          'Routine AM/PM personnalisée',
+          'Pourquoi chaque produit a été choisi',
+          'Ordre d\'application + conseils',
+          'Guide des ingrédients clés',
+        ],
+        subtitle:    'Où dois-je vous l\'envoyer ?',
+        placeholder: 'vous@email.com',
+        btn:         'Envoyer ma routine →',
+        note:        '🔒 Uniquement pour votre routine.',
+      },
+      pt: {
+        title:       '📩 Seu Skin Report está pronto',
+        checks: [
+          'Rotina AM/PM personalizada',
+          'Por que cada produto foi escolhido',
+          'Ordem de aplicação + dicas',
+          'Guia de ingredientes principais',
+        ],
+        subtitle:    'Para onde envio?',
+        placeholder: 'voce@email.com',
+        btn:         'Enviar minha rotina →',
+        note:        '🔒 Apenas para sua rotina. Sem spam.',
+      },
+      de: {
+        title:       '📩 Dein Skin Report ist fertig',
+        checks: [
+          'Personalisierte AM/PM-Routine',
+          'Warum jedes Produkt gewählt wurde',
+          'Anwendungsreihenfolge + Tipps',
+          'Leitfaden für wichtige Inhaltsstoffe',
+        ],
+        subtitle:    'Wohin soll ich es schicken?',
+        placeholder: 'du@email.com',
+        btn:         'Routine senden →',
+        note:        '🔒 Nur für deine Routine. Kein Spam.',
+      },
+      it: {
+        title:       '📩 Il tuo Skin Report è pronto',
+        checks: [
+          'Routine AM/PM personalizzata',
+          'Perché ogni prodotto è stato scelto',
+          'Ordine di applicazione + consigli',
+          'Guida agli ingredienti chiave',
+        ],
+        subtitle:    'Dove te lo mando?',
+        placeholder: 'tu@email.com',
+        btn:         'Invia la mia routine →',
+        note:        '🔒 Solo per inviarti la tua routine.',
+      },
+    };
+    const lbl = LABELS[idioma] || LABELS['en'];
 
     const gate = document.createElement('div');
     gate.id        = 'koi-email-gate';
-    gate.className = 'koi-email-gate';
+    gate.className = 'koi-email-gate koi-email-gate--wow';
     gate.innerHTML = `
+      <div class="koi-envelope__title">${lbl.title}</div>
+      <ul class="koi-envelope__checks">
+        ${lbl.checks.map(c => `<li class="koi-envelope__check"><span class="koi-envelope__check-icon">✓</span><span>${c}</span></li>`).join('')}
+      </ul>
+      <div class="koi-envelope__subtitle">${lbl.subtitle}</div>
       <input
         type="email"
         id="koi-email-input"
         class="koi-email-input"
-        placeholder="${ui.placeholder}"
+        placeholder="${lbl.placeholder}"
         autocomplete="email"
         inputmode="email"
       />
-      <button class="koi-email-btn" id="koi-email-btn">${ui.btn}</button>
-      <p class="koi-email-note">${ui.note}</p>
+      <button class="koi-email-btn" id="koi-email-btn">${lbl.btn}</button>
+      <p class="koi-email-note">${lbl.note}</p>
     `;
 
     container.appendChild(gate);
     scrollAlFinal();
 
-    // Deshabilitar el input principal mientras el email gate está activo
-    setInputHabilitado(false);
+    // Animar checkmarks con stagger 200ms
+    const checkEls = gate.querySelectorAll('.koi-envelope__check');
+    checkEls.forEach((el, i) => {
+      setTimeout(() => el.classList.add('koi-envelope__check--visible'), 150 + i * 200);
+    });
 
-    // Foco automático al campo email en desktop
+    // Foco automático en desktop (después del stagger)
     setTimeout(() => {
       const inp = document.getElementById('koi-email-input');
       if (inp && window.innerWidth > 768) inp.focus();
-    }, 200);
+    }, 150 + 4 * 200 + 100);
 
     // Eventos
     const inp = document.getElementById('koi-email-input');
     const btn = document.getElementById('koi-email-btn');
-
     if (btn) btn.addEventListener('click', confirmarEmail);
     if (inp) inp.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') { e.preventDefault(); confirmarEmail(); }
     });
   }
 
+  /* ── Confirmar email + Momento 3: cart CTA inmediato ───── */
   async function confirmarEmail () {
     const inp = document.getElementById('koi-email-input');
     const gate = document.getElementById('koi-email-gate');
@@ -726,7 +903,6 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
 
     // Guardar email
     KOI_STATE.emailCaptured = email;
-    KOI_STATE.revealPhase   = 'revealed';
 
     // Quitar el gate con animación
     gate.classList.add('koi-email-gate--confirmed');
@@ -744,8 +920,47 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     // Enviar email a Shopify /contact (silencioso, sin redirigir)
     shatokbEnviarEmailShopify(email);
 
-    // KOI confirma y revela
+    // KOI confirma y revela (incluye Momentos 3, 4, 5)
     await revelarRutinaConKOI(email);
+  }
+
+  /* ── Cart CTA helper — genera el botón grande de carrito ── */
+  function _crearCartCTA (idioma) {
+    const LABELS = {
+      es: { btn: '🛒 Añadir al carrito', sub: 'Tu rutina K-Beauty personalizada' },
+      en: { btn: '🛒 Add to cart',       sub: 'Your personalized K-Beauty routine' },
+      fr: { btn: '🛒 Ajouter au panier', sub: 'Votre routine K-Beauty personnalisée' },
+      pt: { btn: '🛒 Adicionar ao carrinho', sub: 'Sua rotina K-Beauty personalizada' },
+      de: { btn: '🛒 In den Warenkorb',  sub: 'Deine personalisierte K-Beauty-Routine' },
+      it: { btn: '🛒 Aggiungi al carrello', sub: 'La tua routine K-Beauty personalizzata' },
+    };
+    const lbl = LABELS[idioma] || LABELS['en'];
+
+    const cta = document.createElement('div');
+    cta.className = 'koi-cart-cta';
+    cta.innerHTML = `
+      <button class="koi-cart-cta__btn">
+        ${lbl.btn}
+      </button>
+      <div class="koi-cart-cta__sub">${lbl.sub}</div>
+    `;
+
+    const btnEl = cta.querySelector('.koi-cart-cta__btn');
+    if (btnEl) {
+      btnEl.addEventListener('click', () => {
+        const rutinaEl = document.getElementById('shatokb-resultado') ||
+                         document.getElementById('stk-reveal-section');
+        if (rutinaEl) rutinaEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => {
+          if (typeof window.shatokbAbrirCarrito === 'function') {
+            window.shatokbAbrirCarrito();
+          } else {
+            window.location.href = '/cart';
+          }
+        }, 400);
+      });
+    }
+    return cta;
   }
 
   function shatokbEnviarEmailShopify (email) {
@@ -837,16 +1052,18 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
 
   async function revelarRutinaConKOI (email) {
     // Doble guard: booleano síncrono + string de fase
-    // El booleano es la primera línea → imposible que dos llamadas simultáneas pasen
     if (_revelarEnCurso) return;
     _revelarEnCurso = true;
-    if (KOI_STATE.revealPhase === 'revealed') return;
+    if (KOI_STATE.revealPhase === 'revealed') {
+      _revelarEnCurso = false;
+      return;
+    }
     KOI_STATE.revealPhase = 'revealed';
 
     const idioma       = detectarIdioma();
     const perfilNombre = KOI_STATE.contexto?.perfil?.nombre || '';
 
-    // Mensaje de KOI confirmando y revelando
+    // ── Momento 3a: Mensaje de confirmación de KOI ───────────
     const mensajesReveal = {
       es: `Listo ✨ Aquí está tu rutina para **${perfilNombre}**.\n\nEn cada paso te doy **3 opciones de productos** — los tres son igualmente efectivos para tu problema, así que puedes elegir cualquiera según tu preferencia o disponibilidad.\n\nCada producto tiene un botón ❓ — si quieres saber exactamente por qué lo elegí para ti, solo toca.`,
       en: `Done ✨ Here's your **${perfilNombre}** routine.\n\nFor each step I'm giving you **3 product options** — all three are equally effective for your concern, so pick whichever you prefer or have access to.\n\nEach product has a ❓ button — if you want to know exactly why I chose that one for you, just tap it.`,
@@ -866,9 +1083,17 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     KOI_STATE.historial.push({ role: 'assistant', content: msg });
     guardarHistorialLocal();
 
-    // ── v6.0: Botón "Ver mi rutina ↑" — el usuario debe hacer clic.
-    // NO hacer scroll / reveal automático. El usuario lee el mensaje de KOI
-    // y decide cuándo subir a ver los productos.
+    // ── Momento 3b: Cart CTA grande e inmediato ───────────────
+    setTimeout(() => {
+      const container = document.getElementById('koi-messages');
+      if (!container) return;
+      const cta = _crearCartCTA(idioma);
+      cta.id = 'koi-cart-cta-reveal';
+      container.appendChild(cta);
+      scrollAlFinal();
+    }, 400);
+
+    // ── Momento 4: Botón reveal + chips DEBAJO del CTA ───────
     const scrollBtns = {
       es: '✨ Ver mi rutina ahora',
       en: '✨ Show me my routine',
@@ -879,39 +1104,82 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     };
     const btnLabel = scrollBtns[idioma] || scrollBtns['en'];
 
-    // Inyectar botón de reveal dentro del mensaje de KOI
     setTimeout(() => {
       const chipsEl = document.getElementById('koi-chips');
       if (!chipsEl) return;
       chipsEl.innerHTML = '';
 
-      // Botón prominente de reveal
       const revealBtn = document.createElement('button');
       revealBtn.className = 'koi-chip koi-chip--reveal-cta';
       revealBtn.textContent = btnLabel;
       revealBtn.addEventListener('click', () => {
         chipsEl.innerHTML = '';
 
-        // 1. Scroll inmediato hacia los productos (ANTES del reveal)
-        //    para que el usuario vea la animación de desbloqueo en pantalla.
+        // 1. Scroll hacia los productos
         const rutinaEl = document.getElementById('shatokb-resultado') ||
                          document.getElementById('stk-reveal-section');
-        if (rutinaEl) {
-          rutinaEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        if (rutinaEl) rutinaEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-        // 2. Revelar productos tras ~300ms (cuando el scroll ya empezó)
+        // 2. Revelar productos
         setTimeout(() => {
           if (typeof window.shatokbRevelarProductos === 'function') {
             window.shatokbRevelarProductos();
           }
         }, 300);
 
-        // 3. Chips post-reveal cuando las animaciones de card terminaron
+        // 3. Momento 4: chips de bienvenida DESPUÉS del CTA (ya visible)
         setTimeout(() => mostrarChips('bienvenida'), 1800);
       });
       chipsEl.appendChild(revealBtn);
-    }, 600);
+    }, 700);
+  }
+
+  /* ── Momento 5: CTA compacto anclado al final de cada respuesta ── */
+  function _inyectarCartCTAAnclado () {
+    const container = document.getElementById('koi-messages');
+    if (!container) return;
+
+    const idioma = detectarIdioma();
+    const LABELS = {
+      es: { btn: 'Añadir al carrito 🛒' },
+      en: { btn: 'Add to cart 🛒'      },
+      fr: { btn: 'Ajouter au panier 🛒' },
+      pt: { btn: 'Adicionar 🛒'         },
+      de: { btn: 'In den Warenkorb 🛒'  },
+      it: { btn: 'Aggiungi 🛒'          },
+    };
+    const lbl = LABELS[idioma] || LABELS['en'];
+
+    // Eliminar CTA anclado anterior si existe
+    const prev = document.getElementById('koi-cart-cta-anchored');
+    if (prev) prev.remove();
+
+    const cta = document.createElement('div');
+    cta.id        = 'koi-cart-cta-anchored';
+    cta.className = 'koi-cart-cta-anchored';
+    cta.innerHTML = `
+      <div class="koi-cart-cta-anchored__divider"></div>
+      <button class="koi-cart-cta-anchored__btn">${lbl.btn}</button>
+    `;
+
+    const btnEl = cta.querySelector('.koi-cart-cta-anchored__btn');
+    if (btnEl) {
+      btnEl.addEventListener('click', () => {
+        const rutinaEl = document.getElementById('shatokb-resultado') ||
+                         document.getElementById('stk-reveal-section');
+        if (rutinaEl) rutinaEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => {
+          if (typeof window.shatokbAbrirCarrito === 'function') {
+            window.shatokbAbrirCarrito();
+          } else {
+            window.location.href = '/cart';
+          }
+        }, 400);
+      });
+    }
+
+    container.appendChild(cta);
+    scrollAlFinal();
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -1526,6 +1794,13 @@ async function enviarDesdeChip (texto) {
       // Guardar en historial
       KOI_STATE.historial.push({ role: 'assistant', content: respuesta });
       guardarHistorialLocal();
+
+      // ── Momento 5: Cart CTA anclado post-email ───────────────
+      // Después de CADA respuesta de KOI, si la rutina ya fue revelada,
+      // inyectar CTA compacto al final de los chips.
+      if (KOI_STATE.revealPhase === 'revealed') {
+        setTimeout(() => _inyectarCartCTAAnclado(), 700);
+      }
 
       // Mostrar chips de objeciones si el historial es largo
       if (KOI_STATE.msgCount >= 4) {
