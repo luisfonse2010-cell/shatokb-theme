@@ -16,76 +16,129 @@
    MINI BARRA DE CARRITO — dentro del chat, encima del footer
    Aparece cuando la barra superior (sticky quiz) está visible.
    Mismas funciones, diseño compacto.
+   Alta especificidad + !important para neutralizar el tema Halo.
    ══════════════════════════════════════════════════════════ */
-.koi-mini-cart-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  background: #1c181a;
-  border-top: 1px solid rgba(236, 149, 184, 0.20);
-  padding: 10px 16px;
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-  pointer-events: none;
+#shatokb-koi-wrapper #koi-mini-cart-bar,
+#shatokb-koi-wrapper .koi-mini-cart-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-direction: row !important;
+  gap: 10px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  background: #1c181a !important;
+  border-top: 1px solid rgba(236, 149, 184, 0.25) !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  padding: 12px 20px !important;
+  margin: 0 !important;
+  position: relative !important;
+  z-index: 2 !important;
+  opacity: 0 !important;
+  transform: translateY(6px) !important;
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  pointer-events: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  /* Resetear cualquier estilo heredado del tema */
+  font-size: 14px !important;
+  line-height: 1.2 !important;
+  text-align: left !important;
+  float: none !important;
+  overflow: visible !important;
 }
 
-.koi-mini-cart-bar--visible {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
+#shatokb-koi-wrapper #koi-mini-cart-bar.koi-mini-cart-bar--visible,
+#shatokb-koi-wrapper .koi-mini-cart-bar.koi-mini-cart-bar--visible {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  pointer-events: auto !important;
 }
 
-.koi-mini-cart-bar__info {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
+#shatokb-koi-wrapper .koi-mini-cart-bar__info {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  min-width: 0 !important;
+  flex: 1 !important;
+  align-items: flex-start !important;
 }
 
-.koi-mini-cart-bar__label {
-  font-family: var(--koi-font-body);
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.50);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+#shatokb-koi-wrapper .koi-mini-cart-bar__label {
+  font-family: 'Arimo', 'Arial', sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 400 !important;
+  color: rgba(255, 255, 255, 0.55) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1.2 !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
 }
 
-.koi-mini-cart-bar__total {
-  font-family: var(--koi-font-head);
-  font-size: 16px;
-  font-weight: 700;
-  color: #ffffff;
-  line-height: 1;
+#shatokb-koi-wrapper .koi-mini-cart-bar__total {
+  font-family: 'Prompt', 'Arial Black', sans-serif !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  line-height: 1 !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
 }
 
-.koi-mini-cart-bar__btn {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: #ec95b8;
-  color: #1c181a;
-  border: none;
-  border-radius: 8px;
-  padding: 9px 16px;
-  font-family: var(--koi-font-body);
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.15s ease;
-  white-space: nowrap;
+#shatokb-koi-wrapper .koi-mini-cart-bar__btn {
+  flex-shrink: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  background: #ec95b8 !important;
+  color: #1c181a !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 10px 18px !important;
+  font-family: 'Arimo', 'Arial', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: background 0.2s ease, transform 0.15s ease !important;
+  white-space: nowrap !important;
+  text-decoration: none !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  line-height: 1.2 !important;
+  min-height: auto !important;
+  height: auto !important;
+  width: auto !important;
+  box-shadow: none !important;
+  outline: none !important;
+  margin: 0 !important;
+  position: static !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
 }
 
-.koi-mini-cart-bar__btn:hover {
-  background: #f0aac8;
-  transform: translateY(-1px);
+#shatokb-koi-wrapper .koi-mini-cart-bar__btn:hover {
+  background: #f0aac8 !important;
+  transform: translateY(-1px) !important;
+  color: #1c181a !important;
 }
 
-.koi-mini-cart-bar__btn:active {
-  transform: translateY(0);
+#shatokb-koi-wrapper .koi-mini-cart-bar__btn:active {
+  transform: translateY(0) !important;
 }
 
 /* ── Variables KOI ────────────────────────────────────────── */
