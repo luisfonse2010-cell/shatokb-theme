@@ -2563,3 +2563,182 @@
     grid-column: 1 / -1; /* ocupa todo el ancho en mobile */
   }
 }
+
+
+/* ══════════════════════════════════════════════════════════
+   PANTALLA DE TRANSICIÓN — "Construyendo tu rutina"
+   Overlay que aparece al finalizar el quiz, antes del resultado.
+   ══════════════════════════════════════════════════════════ */
+#stk-building-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99998;
+  background: radial-gradient(ellipse at 50% 40%,
+    rgba(11,3,53,0.97) 0%,
+    rgba(3,1,20,0.99)  70%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s ease;
+}
+
+#stk-building-overlay.stk-building--visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+#stk-building-overlay.stk-building--exit {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.stk-building__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 40px 32px;
+  text-align: center;
+  max-width: 340px;
+}
+
+/* Anillos animados */
+.stk-building__icon-wrap {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stk-building__ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  animation: stkBuildRing 2s linear infinite;
+}
+
+.stk-building__ring--1 {
+  inset: 0;
+  border-top-color: #ec95b8;
+  border-right-color: rgba(236,149,184,0.2);
+  animation-duration: 1.6s;
+}
+
+.stk-building__ring--2 {
+  inset: 10px;
+  border-top-color: #3a7af5;
+  border-left-color: rgba(58,122,245,0.2);
+  animation-duration: 2.1s;
+  animation-direction: reverse;
+}
+
+.stk-building__ring--3 {
+  inset: 20px;
+  border-top-color: rgba(236,149,184,0.5);
+  animation-duration: 2.8s;
+}
+
+@keyframes stkBuildRing {
+  to { transform: rotate(360deg); }
+}
+
+.stk-building__emoji {
+  font-size: 26px;
+  position: relative;
+  z-index: 2;
+  animation: stkBuildPulse 2s ease-in-out infinite;
+}
+
+@keyframes stkBuildPulse {
+  0%, 100% { transform: scale(1);    opacity: 1;    }
+  50%       { transform: scale(1.12); opacity: 0.85; }
+}
+
+/* Título y subtítulo */
+.stk-building__title {
+  font-family: 'Prompt', 'Arial Black', system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.stk-building__sub {
+  font-size: 13px;
+  color: rgba(255,255,255,0.45);
+  margin: -12px 0 0;
+  letter-spacing: 0.03em;
+}
+
+/* Steps */
+.stk-building__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.stk-building__step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.25);
+  font-family: 'Arimo', system-ui, sans-serif;
+  font-weight: 500;
+  transition: color 0.4s ease;
+  text-align: left;
+}
+
+.stk-building__step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  flex-shrink: 0;
+  transition: background 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* Step activo — procesando */
+.stk-building__step--active {
+  color: #ec95b8;
+}
+
+.stk-building__step--active .stk-building__step-dot {
+  background: #ec95b8;
+  box-shadow: 0 0 8px rgba(236,149,184,0.7);
+  animation: stkDotBlink 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes stkDotBlink {
+  from { opacity: 0.6; transform: scale(0.85); }
+  to   { opacity: 1;   transform: scale(1.15); }
+}
+
+/* Step completado — check verde */
+.stk-building__step--done {
+  color: rgba(134,239,172,0.8);
+}
+
+.stk-building__step--done .stk-building__step-dot {
+  background: #22c55e;
+  box-shadow: 0 0 6px rgba(34,197,94,0.6);
+  animation: none;
+}
+
+.stk-building__step--done::after {
+  content: '✓';
+  margin-left: auto;
+  font-size: 11px;
+  color: #86efac;
+  font-weight: 800;
+}
