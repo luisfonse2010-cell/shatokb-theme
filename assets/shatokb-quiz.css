@@ -2147,6 +2147,199 @@
   border-bottom: none;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   SCHEDULE — "How to use them" (AM/PM lanes)
+   Aparece debajo de la lista completa de productos.
+   ══════════════════════════════════════════════════════════════ */
+
+.stk-schedule {
+  margin: 44px 0 32px;
+  background: #ffffff;
+  border: 1.5px solid rgba(11, 3, 53, 0.10);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+}
+
+.stk-schedule__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid rgba(11, 3, 53, 0.08);
+  background: linear-gradient(135deg, #fdf2f6 0%, #f5f0ff 100%);
+}
+
+.stk-schedule__icon {
+  font-size: 26px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.stk-schedule__title {
+  font-family: var(--stk-font-heading);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--stk-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 2px;
+}
+
+.stk-schedule__sub {
+  font-size: 12px;
+  color: var(--stk-text-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Lanes AM / PM ── */
+.stk-schedule__lane {
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: nowrap;
+}
+
+.stk-schedule__lane--am {
+  background: #fffcf0;
+  border-bottom: 1px solid #fde68a;
+}
+
+.stk-schedule__lane--pm {
+  background: #f9f7ff;
+}
+
+.stk-schedule__lane-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  width: 52px;
+  font-family: var(--stk-font-heading);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--stk-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stk-schedule__lane-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* ── Step pills dentro del lane ── */
+.stk-schedule__steps {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.stk-schedule__step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1.5px solid rgba(11, 3, 53, 0.12);
+  border-radius: 50px;
+  padding: 5px 12px 5px 6px;
+  white-space: nowrap;
+}
+
+.stk-schedule__lane--pm .stk-schedule__step {
+  border-color: rgba(139, 92, 246, 0.20);
+}
+
+.stk-schedule__step--pm-only {
+  border-color: rgba(139, 92, 246, 0.35);
+  background: #f5f0ff;
+}
+
+.stk-schedule__step-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--stk-secondary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--stk-font-body);
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.stk-schedule__lane--am .stk-schedule__step-num {
+  background: #d97706;
+}
+
+.stk-schedule__lane--pm .stk-schedule__step-num {
+  background: #7c3aed;
+}
+
+.stk-schedule__step-name {
+  font-family: var(--stk-font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--stk-secondary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.stk-schedule__step-pm-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: #7c3aed;
+  background: rgba(139, 92, 246, 0.12);
+  border-radius: 4px;
+  padding: 1px 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.stk-schedule__arrow {
+  font-size: 14px;
+  color: var(--stk-text-muted);
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .stk-schedule__lane {
+    padding: 14px 16px;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .stk-schedule__lane-label {
+    flex-direction: row;
+    width: auto;
+    align-items: center;
+    min-width: 60px;
+  }
+  .stk-schedule__steps {
+    gap: 5px;
+  }
+  .stk-schedule__step {
+    padding: 4px 10px 4px 5px;
+  }
+  .stk-schedule__step-name {
+    font-size: 11px;
+  }
+  .stk-schedule__header {
+    padding: 16px 16px 14px;
+  }
+}
+
 /* ── Conflict & synergy warnings ─────────────────────────── */
 .stk-conflict-warnings {
   margin: 24px 0;
