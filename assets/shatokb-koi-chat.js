@@ -223,6 +223,15 @@
         <!-- Chips de respuesta rápida -->
         <div class="koi-chips" id="koi-chips"></div>
 
+        <!-- Mini barra de carrito — copia compacta de la barra sticky superior -->
+        <div class="koi-mini-cart-bar" id="koi-mini-cart-bar">
+          <div class="koi-mini-cart-bar__info">
+            <span class="koi-mini-cart-bar__label" id="koi-mini-cart-label"></span>
+            <span class="koi-mini-cart-bar__total" id="koi-mini-cart-total"></span>
+          </div>
+          <button class="koi-mini-cart-bar__btn" id="koi-mini-cart-btn"></button>
+        </div>
+
         <!-- Input -->
         <div class="koi-input-area">
           <textarea
@@ -2303,5 +2312,114 @@ async function enviarDesdeChip (texto) {
     if (inp)     inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); confirmarEmailCarrito(); } });
     if (skipBtn) skipBtn.addEventListener('click', saltarAlCarrito);
   }
+
+  /* ══════════════════════════════════════════════════════════
+     MINI BARRA DE CARRITO — dentro del chat
+     Replica exactamente la barra sticky superior del quiz.
+
+     Activación:
+       La barra superior del quiz dispara el evento custom
+       'shatokb:totalBar' con { total, label, cta } cada vez
+       que se actualiza (cuando el quiz muestra la rutina).
+       Si ese evento no llega (versión antigua del quiz) se
+       hace polling sobre el DOM buscando la barra real y
+       leyendo su contenido directamente.
+
+     Clic → llama window.shatokbAddAllToCart() exactamente
+     igual que el botón de la barra superior.
+     ══════════════════════════════════════════════════════════ */
+  function _actualizarMiniCartBar (total, label, cta) {
+    const bar      = document.getElementById('koi-mini-cart-bar');
+    const labelEl  = document.getElementById('koi-mini-cart-label');
+    const totalEl  = document.getElementById('koi-mini-cart-total');
+    const btnEl    = document.getElementById('koi-mini-cart-btn');
+    if (!bar || !labelEl || !totalEl || !btnEl) return;
+
+    // Rellenar contenido
+    labelEl.textContent = label || '';
+    totalEl.textContent = total || '';
+    btnEl.textContent   = cta   || '🛒 Add my full routine to cart';
+
+    // Mostrar con animación
+    bar.classList.add('koi-mini-cart-bar--visible');
+
+    // Vincular clic (una sola vez)
+    if (!bar.dataset.bound) {
+      bar.dataset.bound = '1';
+      btnEl.addEventListener('click', function () {
+        if (typeof window.shatokbAddAllToCart === 'function') {
+          window.shatokbAddAllToCart();
+        }
+      });
+    }
+  }
+
+  // Ruta 1: evento custom disparado por shatokb-quiz.js cuando actualiza la barra
+  document.addEventListener('shatokb:totalBar', function (e) {
+    const { total, label, cta } = e.detail || {};
+    _actualizarMiniCartBar(total, label, cta);
+  });
+
+  // Ruta 2: polling — lee la barra real del DOM cada 800ms hasta encontrarla.
+  // Busca por múltiples estrategias porque el selector exacto vive en el tema
+  // de Shopify y puede variar. Se detiene en cuanto encuentra precio válido.
+  (function _pollBarExterna () {
+    const MAX_INTENTOS = 45; // 45 × 800ms = 36s máx
+    let intentos = 0;
+
+    const interval = setInterval(function () {
+      intentos++;
+      if (intentos > MAX_INTENTOS) { clearInterval(interval); return; }
+
+      // Estrategia A: buscar por clases conocidas del quiz
+      let barraEl = document.querySelector(
+        '.stk-total-bar, .shatokb-total-bar, .stk-cart-bar, ' +
+        '[class*="total-bar"], [id*="total-bar"], ' +
+        '[class*="cart-bar"], [id*="cart-bar"], ' +
+        '[class*="routine-bar"], [class*="routineBar"]'
+      );
+
+      // Estrategia B: buscar botón que contenga "Add my full routine"
+      if (!barraEl) {
+        const allBtns = document.querySelectorAll('button, a');
+        for (const btn of allBtns) {
+          const t = btn.textContent || '';
+          if (t.includes('Add my full routine') || t.includes('routine to cart')) {
+            barraEl = btn.closest('div, section, header') || btn.parentElement;
+            break;
+          }
+        }
+      }
+
+      if (!barraEl) return;
+
+      // Leer precio: busca patrón $XX.XX en el contenido de texto del elemento
+      const textoCompleto = barraEl.textContent || '';
+      const matchPrecio   = textoCompleto.match(/\$[\d,]+\.?\d*/);
+      if (!matchPrecio) return;
+
+      const total = matchPrecio[0];
+      const label = 'Estimated total for your routine';
+      // Intentar leer el texto del botón de la barra real
+      const ctaEl = barraEl.querySelector('button, [class*="btn"]');
+      const cta   = ctaEl ? ctaEl.textContent.trim() : '🛒 Add my full routine to cart';
+
+      _actualizarMiniCartBar(total, label, cta);
+      clearInterval(interval); // encontrada — detener polling
+    }, 800);
+  })();
+
+  // Ruta 3: si window.shatokbActualizarTotalBar existe, wrappearla para
+  // capturar sus llamadas y sincronizar la barra mini automáticamente.
+  // Se hace con setTimeout para esperar a que el quiz cargue.
+  setTimeout(function () {
+    const fnOriginal = window.shatokbActualizarTotalBar;
+    if (typeof fnOriginal === 'function') {
+      window.shatokbActualizarTotalBar = function (total, label, cta) {
+        fnOriginal.apply(this, arguments); // ejecutar original primero
+        _actualizarMiniCartBar(total, label, cta);
+      };
+    }
+  }, 2000);
 
 })();
