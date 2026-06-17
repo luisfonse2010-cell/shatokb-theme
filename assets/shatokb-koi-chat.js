@@ -2400,9 +2400,31 @@ async function enviarDesdeChip (texto) {
     _actualizarMiniCartBar(total, label, cta);
   });
 
+  // ── Ocultar barra sticky superior ────────────────────────
+  // Guarda referencia al elemento de la barra externa para
+  // poder ocultarlo con transición suave cuando KOI está activo.
+  // La mini barra dentro del chat reemplaza su función.
+  var _barraExternaEl = null;
+
+  function _ocultarBarraExterna () {
+    if (!_barraExternaEl) return;
+    // Transición suave — no un display:none brusco
+    _barraExternaEl.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+    _barraExternaEl.style.opacity    = '0';
+    _barraExternaEl.style.transform  = 'translateY(-8px)';
+    _barraExternaEl.style.pointerEvents = 'none';
+    // Después de la transición, retirar del flujo visual
+    setTimeout(function () {
+      if (_barraExternaEl) {
+        _barraExternaEl.style.display = 'none';
+      }
+    }, 420);
+  }
+
   // Ruta 2: polling — lee la barra real del DOM cada 800ms hasta encontrarla.
   // Busca por múltiples estrategias porque el selector exacto vive en el tema
-  // de Shopify y puede variar. Se detiene en cuanto encuentra precio válido.
+  // de Shopify y puede variar. Al encontrarla: lee el precio Y la oculta
+  // (la mini barra dentro del chat reemplaza su función completamente).
   (function _pollBarExterna () {
     const MAX_INTENTOS = 45; // 45 × 800ms = 36s máx
     let intentos = 0;
@@ -2452,6 +2474,10 @@ async function enviarDesdeChip (texto) {
       const ctaEl = barraEl.querySelector('button, [class*="btn"]');
       const cta   = ctaEl ? ctaEl.textContent.trim() : '🛒 Add my full routine to cart';
 
+      // Guardar referencia y ocultar la barra externa — la mini barra la reemplaza
+      _barraExternaEl = barraEl;
+      _ocultarBarraExterna();
+
       _actualizarMiniCartBar(total, label, cta);
       clearInterval(interval); // encontrada — detener polling
     }, 800);
@@ -2459,6 +2485,7 @@ async function enviarDesdeChip (texto) {
 
   // Ruta 3: si window.shatokbActualizarTotalBar existe, wrappearla para
   // capturar sus llamadas y sincronizar la barra mini automáticamente.
+  // Al mismo tiempo, oculta la barra externa si aún no se ha ocultado.
   // Se hace con setTimeout para esperar a que el quiz cargue.
   setTimeout(function () {
     const fnOriginal = window.shatokbActualizarTotalBar;
@@ -2466,6 +2493,18 @@ async function enviarDesdeChip (texto) {
       window.shatokbActualizarTotalBar = function (total, label, cta) {
         fnOriginal.apply(this, arguments); // ejecutar original primero
         _actualizarMiniCartBar(total, label, cta);
+        // Intentar ocultar la barra externa si aún no se hizo via polling
+        if (!_barraExternaEl) {
+          const posibleBarra = document.querySelector(
+            '.stk-total-bar, .shatokb-total-bar, .stk-cart-bar, ' +
+            '[class*="total-bar"], [id*="total-bar"], ' +
+            '[class*="routine-bar"], [class*="routineBar"]'
+          );
+          if (posibleBarra && posibleBarra.id !== 'koi-mini-cart-bar' && !posibleBarra.closest('#koi-mini-cart-bar')) {
+            _barraExternaEl = posibleBarra;
+            _ocultarBarraExterna();
+          }
+        }
       };
     }
   }, 2000);
