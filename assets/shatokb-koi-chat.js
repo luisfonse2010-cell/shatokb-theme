@@ -1059,8 +1059,9 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     };
     const btnLabel = scrollBtns[idioma] || scrollBtns['en'];
 
-    // Bloquear input — el usuario no puede escribir hasta ver la rutina
-    setInputHabilitado(false);
+    // Ocultar barra de input — más claro que mostrarla deshabilitada en gris.
+    // El usuario no puede (ni debe) escribir hasta ver la rutina.
+    setInputAreaVisible(false);
 
     setTimeout(() => {
       const container = document.getElementById('koi-messages');
@@ -1090,8 +1091,9 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
           }
         }, 300);
 
-        // 3. Habilitar input + chips de bienvenida cuando el reveal termina
+        // 3. Mostrar barra de input + habilitar + chips de bienvenida
         setTimeout(() => {
+          setInputAreaVisible(true);
           setInputHabilitado(true);
           mostrarChips('bienvenida');
         }, 1800);
@@ -1682,6 +1684,19 @@ async function enviarDesdeChip (texto) {
     const sendBtn = document.getElementById('koi-send-btn');
     if (input)   input.disabled   = !habilitado;
     if (sendBtn) sendBtn.disabled = !habilitado;
+  }
+
+  // Oculta/muestra el área completa del input (barra + botón enviar).
+  // Usar cuando no tiene sentido que el usuario escriba todavía
+  // (ej: antes de ver la rutina). Más claro que deshabilitar en gris.
+  function setInputAreaVisible (visible) {
+    const area = document.querySelector('.koi-input-area');
+    if (!area) return;
+    if (visible) {
+      area.classList.remove('koi-input-area--hidden');
+    } else {
+      area.classList.add('koi-input-area--hidden');
+    }
   }
 
   /* ══════════════════════════════════════════════════════════
