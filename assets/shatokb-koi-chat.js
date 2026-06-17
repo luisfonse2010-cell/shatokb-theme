@@ -1045,50 +1045,147 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     const perfilNombre = KOI_STATE.contexto?.perfil?.nombre || '';
 
     // ── Momento 3a: Mensaje de reveal ────────────────────────
-    // Estructura en 3 partes:
-    //   1. Diagnóstico visual (mensaje_reveal del Worker si hubo foto, o intro empática si no)
-    //   2. Puente emocional — por qué ESTA rutina es para ESTA piel
-    //   3. Instrucciones operativas (cómo navegar: opciones + botón ❓)
-    //
-    // El Worker GPT-4o generó mensaje_reveal fusionando foto + quiz → descripción
-    // de lo que vio en la piel (zonas, textura, sebo, barrera, etc.).
-    // Fallback: texto empático localizado cuando no hubo foto (solo quiz).
+    // Estructura:
+    //   CON FOTO:  intro → mensaje_reveal del Worker (diagnóstico clínico GPT-4o) → cierre → instrucciones
+    //   SIN FOTO:  diagnóstico dinámico desde quiz (tono dermatológico) → cierre → instrucciones
 
     // ★ LÓGICA CENTRAL: usa mensaje_reveal del análisis visual si existe
     const visionReveal = KOI_STATE.visionResult?.mensaje_reveal;
 
-    // Parte 1b — Intro con foto: conecta el análisis visual con lo que vio KOI
-    // Se antepone al mensaje_reveal del Worker para darle contexto narrativo.
-    const introConFoto = {
-      es: `Según tus respuestas del quiz y el análisis facial, esto es lo que veo en tu piel:`,
-      en: `Based on your quiz answers and the facial analysis, here's what I see in your skin:`,
-      fr: `D'après tes réponses au quiz et l'analyse faciale, voici ce que je vois dans ta peau :`,
-      pt: `Com base nas suas respostas do quiz e na análise facial, isso é o que vejo na sua pele:`,
-      de: `Basierend auf deinen Quiz-Antworten und der Gesichtsanalyse ist das, was ich in deiner Haut sehe:`,
-      it: `In base alle tue risposte al quiz e all'analisi facciale, ecco cosa vedo nella tua pelle:`,
+    // ── Leer respuestas del quiz para construir diagnóstico sin foto ──
+    const respuestas  = KOI_STATE.contexto?.respuestas || {};
+    const perfilId    = KOI_STATE.contexto?.perfil?.id || '';
+    const tipoPiel    = respuestas.tipo_piel    || '';
+    const sensib      = respuestas.sensibilidad || '';
+    const preocupMain = Array.isArray(respuestas.preocupacion)
+      ? respuestas.preocupacion[0] || respuestas.preocupacion
+      : (respuestas.preocupacion || '');
+    const preocupAll  = Array.isArray(respuestas.preocupacion)
+      ? respuestas.preocupacion
+      : (respuestas.preocupacion ? [respuestas.preocupacion] : []);
+    const objetivo    = Array.isArray(respuestas.objetivo)
+      ? respuestas.objetivo[0] || ''
+      : (respuestas.objetivo || '');
+
+    // ── Función: construir diagnóstico clínico desde perfil del quiz ──
+    // Devuelve un párrafo de diagnóstico dermatológico según el perfil asignado.
+    // Tono: especialista que conoce esta piel, no genérico.
+    function _construirDiagnosticoQuiz (perfilId, tipoPiel, sensib, preocupAll, idioma) {
+      // Diagnósticos por perfil — tono especialista accesible:
+      // sabe mucho, explica bien, nunca abruma con jerga.
+      // Cada texto nombra qué pasa, por qué pasa, y qué significa para esta piel.
+      const dx = {
+
+        grasa_acne: {
+          es: `Tu piel produce más sebo del que necesita — y ese exceso es el que tapa los poros, genera puntos negros y alimenta los brotes. Pero hay algo que mucha gente no sabe: la piel grasa con tendencia al acné suele estar deshidratada por dentro al mismo tiempo. Produce grasa como mecanismo de defensa porque le falta agua. Es por eso que los productos que la "secan" la empeoran: le quitan lo poco que tiene y la obligan a producir todavía más sebo. Lo que necesitas no es eliminar la grasa — es equilibrarla.`,
+          en: `Your skin produces more oil than it needs — and that excess is what clogs pores, creates blackheads, and fuels breakouts. But there's something many people don't know: oily acne-prone skin is often dehydrated on the inside at the same time. It produces oil as a defense mechanism because it lacks water. That's why products that "dry it out" make it worse: they strip what little it has and force it to produce even more oil. What you need isn't to eliminate oil — it's to balance it.`,
+          fr: `Ta peau produit plus de sébum qu'elle n'en a besoin — et cet excès est ce qui bouche les pores, crée des points noirs et alimente les éruptions. Mais il y a quelque chose que beaucoup de gens ignorent : la peau grasse à tendance acnéique est souvent déshydratée en même temps. Elle produit du sébum comme mécanisme de défense parce qu'elle manque d'eau. C'est pourquoi les produits qui la "assèchent" l'aggravent. Ce dont tu as besoin, ce n'est pas d'éliminer le sébum — c'est de l'équilibrer.`,
+          pt: `Sua pele produz mais sebo do que precisa — e esse excesso é o que entope os poros, cria cravos e alimenta as crises. Mas há algo que muita gente não sabe: a pele oleosa com tendência à acne costuma estar desidratada por dentro ao mesmo tempo. Ela produz sebo como mecanismo de defesa porque falta água. É por isso que os produtos que a "secam" a pioram. O que você precisa não é eliminar a oleosidade — é equilibrá-la.`,
+          de: `Deine Haut produziert mehr Talg als nötig — und dieser Überschuss ist es, der die Poren verstopft, Mitesser erzeugt und Ausbrüche begünstigt. Aber es gibt etwas, das viele nicht wissen: ölige, zu Akne neigende Haut ist oft gleichzeitig von innen dehydriert. Sie produziert Talg als Schutzmechanismus, weil ihr Wasser fehlt. Deshalb machen Produkte, die sie "austrocknen", alles schlimmer. Was du brauchst, ist nicht die Fettigkeit zu eliminieren — sondern sie auszubalancieren.`,
+          it: `La tua pelle produce più sebo del necessario — ed è quell'eccesso che ostruisce i pori, crea i punti neri e alimenta le riacutizzazioni. Ma c'è qualcosa che molti non sanno: la pelle grassa con tendenza all'acne è spesso disidratata all'interno allo stesso tempo. Produce sebo come meccanismo di difesa perché le manca acqua. Ecco perché i prodotti che la "asciugano" la peggiorano. Quello di cui hai bisogno non è eliminare il sebo — è bilanciarlo.`,
+        },
+
+        grasa_poros: {
+          es: `Tus poros se ven abiertos porque el sebo que produce tu piel se mezcla con células muertas y tapona la abertura — con el tiempo eso estira las paredes del poro y hace que parezca más grande. Mucha gente intenta cerrarlos con agua fría o tiras adhesivas, pero eso no funciona: el poro no es un músculo que se contrae. Lo que sí funciona es mantener el interior limpio para que las paredes vuelvan a su posición natural, y proteger el colágeno alrededor para que el poro no siga agrandándose. Con la rutina correcta, la diferencia es visible.`,
+          en: `Your pores look open because the oil your skin produces mixes with dead cells and plugs the opening — over time that stretches the pore walls and makes them appear larger. Many people try to close them with cold water or strips, but that doesn't work: a pore isn't a muscle that contracts. What does work is keeping the inside clean so the walls return to their natural position, and protecting the surrounding collagen so the pore doesn't keep enlarging. With the right routine, the difference is visible.`,
+          fr: `Tes pores semblent ouverts parce que le sébum que produit ta peau se mélange aux cellules mortes et bouche l'ouverture — avec le temps, cela étire les parois du pore et le fait paraître plus grand. Beaucoup de gens essaient de les fermer avec de l'eau froide ou des strips, mais ça ne fonctionne pas : un pore n'est pas un muscle qui se contracte. Ce qui fonctionne, c'est garder l'intérieur propre pour que les parois retrouvent leur position naturelle.`,
+          pt: `Seus poros aparecem abertos porque o sebo que sua pele produz se mistura com células mortas e tapa a abertura — com o tempo isso estica as paredes do poro e faz com que pareçam maiores. Muita gente tenta fechá-los com água fria ou tiras, mas isso não funciona: o poro não é um músculo que se contrai. O que funciona é manter o interior limpo para que as paredes voltem à posição natural, e proteger o colágeno ao redor para que o poro não continue se alargando.`,
+          de: `Deine Poren sehen offen aus, weil sich der Talg deiner Haut mit abgestorbenen Zellen mischt und die Öffnung verstopft — mit der Zeit dehnt das die Porenwände und lässt sie größer erscheinen. Viele versuchen, sie mit kaltem Wasser oder Strips zu schließen, aber das funktioniert nicht: eine Pore ist kein Muskel, der sich zusammenzieht. Was funktioniert, ist das Innere sauber zu halten, damit die Wände in ihre natürliche Position zurückkehren.`,
+          it: `I tuoi pori sembrano aperti perché il sebo che produce la tua pelle si mescola con le cellule morte e ostruisce l'apertura — nel tempo questo dilata le pareti del poro e lo fa sembrare più grande. Molte persone cercano di chiuderli con acqua fredda o strip, ma non funziona: il poro non è un muscolo che si contrae. Ciò che funziona è mantenere l'interno pulito affinché le pareti tornino alla posizione naturale.`,
+        },
+
+        mixta_general: {
+          es: `Tu piel no es una sola piel — la zona central de la cara (frente, nariz, mentón) se comporta de una manera, y las mejillas de otra completamente distinta. La zona T produce más grasa, los poros se ven más, aparece brillo a las pocas horas. Las mejillas, en cambio, pueden estar tirantes o normales. El error más frecuente es usar el mismo producto en toda la cara: lo que calma la zona T puede secar las mejillas, y lo que hidrata las mejillas puede agravar el brillo. Tu piel necesita una rutina que entienda esa diferencia.`,
+          en: `Your skin isn't one skin — the central area of the face (forehead, nose, chin) behaves one way, and the cheeks behave completely differently. The T-zone produces more oil, pores look more visible, shine appears within hours. The cheeks, on the other hand, can feel tight or normal. The most common mistake is using the same product all over the face: what calms the T-zone can dry the cheeks, and what hydrates the cheeks can worsen the shine. Your skin needs a routine that understands that difference.`,
+          fr: `Ta peau n'est pas une seule peau — la zone centrale du visage (front, nez, menton) se comporte d'une façon, et les joues d'une tout autre. La zone T produit plus de sébum, les pores sont plus visibles, la brillance apparaît en quelques heures. Les joues, en revanche, peuvent être tiraillées ou normales. L'erreur la plus fréquente est d'utiliser le même produit sur tout le visage. Ta peau a besoin d'une routine qui comprend cette différence.`,
+          pt: `Sua pele não é uma pele só — a zona central do rosto (testa, nariz, queixo) se comporta de um jeito, e as bochechas de outro completamente diferente. A zona T produz mais oleosidade, os poros aparecem mais, a brilhosidade surge em poucas horas. As bochechas, por outro lado, podem ficar tensas ou normais. O erro mais frequente é usar o mesmo produto em todo o rosto. Sua pele precisa de uma rotina que entenda essa diferença.`,
+          de: `Deine Haut ist nicht eine Haut — der zentrale Bereich des Gesichts (Stirn, Nase, Kinn) verhält sich anders als die Wangen. Die T-Zone produziert mehr Fett, Poren sehen sichtbarer aus, Glanz erscheint nach wenigen Stunden. Die Wangen dagegen können sich straff oder normal anfühlen. Der häufigste Fehler ist, dasselbe Produkt auf dem ganzen Gesicht zu verwenden. Deine Haut braucht eine Routine, die diesen Unterschied versteht.`,
+          it: `La tua pelle non è una pelle sola — la zona centrale del viso (fronte, naso, mento) si comporta in un modo, e le guance in un altro completamente diverso. La zona T produce più sebo, i pori sembrano più visibili, la lucentezza appare in poche ore. Le guance, invece, possono sentirsi tese o normali. L'errore più frequente è usare lo stesso prodotto su tutto il viso. La tua pelle ha bisogno di una routine che capisca questa differenza.`,
+        },
+
+        mixta_manchas: {
+          es: `Tu piel tiene dos batallas simultáneas: la zona T produce más grasa de la que necesita, y cuando hay inflamación — aunque sea leve — la piel responde dejando una marca oscura que puede tardar meses en irse sola. Esas manchas no son cicatrices: son pigmentación que quedó atrapada después de un brote o irritación. El problema es que si no se controla la causa (el exceso de grasa y la inflamación), seguirán apareciendo. La rutina que diseñé trabaja los dos frentes a la vez: regula y aclara en paralelo.`,
+          en: `Your skin has two simultaneous battles: the T-zone produces more oil than it needs, and when there's inflammation — even mild — the skin responds by leaving a dark mark that can take months to fade on its own. Those marks aren't scars: they're pigmentation trapped after a breakout or irritation. The problem is that if the cause isn't controlled (excess oil and inflammation), they'll keep appearing. The routine I designed works both fronts at once: regulates and brightens in parallel.`,
+          fr: `Ta peau mène deux batailles simultanées : la zone T produit plus de sébum qu'elle n'en a besoin, et lorsqu'il y a une inflammation — même légère — la peau répond en laissant une tache sombre qui peut mettre des mois à s'estomper seule. Ces taches ne sont pas des cicatrices : c'est de la pigmentation piégée après une éruption ou une irritation. La routine que j'ai conçue travaille les deux fronts à la fois.`,
+          pt: `Sua pele tem duas batalhas simultâneas: a zona T produz mais oleosidade do que precisa, e quando há inflamação — mesmo leve — a pele responde deixando uma mancha escura que pode levar meses para sumir sozinha. Essas manchas não são cicatrizes: são pigmentação presa após uma crise ou irritação. O problema é que se a causa não for controlada, continuarão aparecendo. A rotina que desenhei trabalha as duas frentes ao mesmo tempo.`,
+          de: `Deine Haut kämpft an zwei Fronten gleichzeitig: Die T-Zone produziert mehr Fett als nötig, und wenn es zu Entzündungen kommt — auch leichten —, hinterlässt die Haut einen dunklen Fleck, der von alleine Monate braucht um zu verblassen. Diese Flecken sind keine Narben: Es ist Pigmentierung, die nach einem Ausbruch oder einer Reizung eingeschlossen wurde. Die Routine, die ich entworfen habe, arbeitet beide Fronten gleichzeitig.`,
+          it: `La tua pelle combatte due battaglie simultanee: la zona T produce più sebo del necessario, e quando c'è infiammazione — anche lieve — la pelle risponde lasciando una macchia scura che può impiegare mesi a scomparire da sola. Quelle macchie non sono cicatrici: è pigmentazione rimasta intrappolata dopo un'eruzione o un'irritazione. La routine che ho progettato lavora entrambi i fronti contemporaneamente.`,
+        },
+
+        seca_hidratacion: {
+          es: `Tu piel no retiene la hidratación bien. Absorbe agua, pero la pierde demasiado rápido — de ahí la tirantez que sientes después de limpiarla, la tendencia a descamarse, y las líneas finas que se marcan más cuando está seca. No es que le falte crema: es que la capa protectora que debería sellar esa hidratación dentro no está funcionando como debería. Cuando esa capa no está íntegra, cualquier hidratante dura poco porque el agua se escapa igual. Lo que necesitas es reconstruir esa barrera primero, y luego darle hidratación en capas para que se quede.`,
+          en: `Your skin doesn't retain moisture well. It absorbs water but loses it too quickly — hence the tightness you feel after cleansing, the tendency to flake, and the fine lines that become more visible when it's dry. It's not that it lacks cream: it's that the protective layer that should seal moisture inside isn't working as it should. When that layer isn't intact, any moisturizer lasts a short time because the water escapes anyway. What you need is to rebuild that barrier first, then give it layered hydration so it stays.`,
+          fr: `Ta peau ne retient pas bien l'hydratation. Elle absorbe l'eau mais la perd trop vite — d'où la sensation de tiraillement après le nettoyage, la tendance à se desquamer et les ridules qui se marquent davantage quand elle est sèche. Ce n'est pas qu'il lui manque de la crème : c'est que la couche protectrice qui devrait sceller l'hydratation à l'intérieur ne fonctionne pas comme elle devrait. Ce dont tu as besoin, c'est de reconstruire cette barrière en premier.`,
+          pt: `Sua pele não retém hidratação bem. Absorve água mas a perde rápido demais — daí a sensação de tensão que você sente depois de lavar, a tendência a descamar e as linhas finas que ficam mais marcadas quando está seca. Não é que falte creme: é que a camada protetora que deveria selar essa hidratação por dentro não está funcionando como deveria. O que você precisa é reconstruir essa barreira primeiro, depois dar hidratação em camadas para que fique.`,
+          de: `Deine Haut hält Feuchtigkeit nicht gut. Sie nimmt Wasser auf, verliert es aber zu schnell — daher das Spannungsgefühl nach der Reinigung, die Tendenz zur Schuppung und die feinen Linien, die sichtbarer werden wenn sie trocken ist. Es fehlt nicht an Creme: Die Schutzschicht, die die Feuchtigkeit innen versiegeln sollte, funktioniert nicht wie sie sollte. Was du brauchst, ist diese Barriere zuerst wieder aufzubauen, dann geschichtete Feuchtigkeit zu geben.`,
+          it: `La tua pelle non trattiene bene l'idratazione. Assorbe acqua ma la perde troppo velocemente — da qui la sensazione di tensione dopo la detersione, la tendenza a desquamarsi e le linee sottili che si marcano di più quando è secca. Non è che manchi di crema: è che lo strato protettivo che dovrebbe sigillare l'idratazione all'interno non funziona come dovrebbe. Quello di cui hai bisogno è ricostruire quella barriera prima, poi dare idratazione a strati affinché rimanga.`,
+        },
+
+        seca_antiaging: {
+          es: `Tu piel es seca y con el tiempo eso tiene un efecto directo en cómo envejece: cuando la piel no tiene suficiente hidratación y la barrera protectora está debilitada, el colágeno se degrada más rápido, las líneas de expresión se marcan antes, y la piel pierde firmeza con mayor velocidad. No es inevitable — es una consecuencia de no dar a la piel lo que necesita. La buena noticia es que la piel seca responde muy bien cuando se trabaja correctamente: con hidratación en capas, ingredientes que estimulen la renovación celular, y una protección solar constante que frene el daño que más envejece.`,
+          en: `Your skin is dry and over time that has a direct effect on how it ages: when skin doesn't have enough hydration and the protective barrier is weakened, collagen degrades faster, expression lines appear earlier, and skin loses firmness more quickly. It's not inevitable — it's a consequence of not giving skin what it needs. The good news is that dry skin responds very well when worked correctly: with layered hydration, ingredients that stimulate cell renewal, and consistent sun protection that stops the damage that ages most.`,
+          fr: `Ta peau est sèche et avec le temps cela a un effet direct sur son vieillissement : quand la peau n'a pas assez d'hydratation et que la barrière protectrice est affaiblie, le collagène se dégrade plus vite, les rides d'expression apparaissent plus tôt. Ce n'est pas inévitable — c'est la conséquence de ne pas donner à la peau ce dont elle a besoin. La bonne nouvelle est que la peau sèche répond très bien quand elle est bien prise en charge.`,
+          pt: `Sua pele é seca e com o tempo isso tem um efeito direto em como ela envelhece: quando a pele não tem hidratação suficiente e a barreira protetora está enfraquecida, o colágeno se degrada mais rápido, as linhas de expressão aparecem antes. Não é inevitável — é consequência de não dar à pele o que ela precisa. A boa notícia é que a pele seca responde muito bem quando trabalhada corretamente.`,
+          de: `Deine Haut ist trocken und das hat mit der Zeit direkte Auswirkungen darauf, wie sie altert: Wenn die Haut nicht genug Feuchtigkeit hat und die Schutzbarriere geschwächt ist, baut sich Kollagen schneller ab, Ausdruckslinien erscheinen früher. Es ist nicht unvermeidlich — es ist die Folge davon, der Haut nicht zu geben, was sie braucht. Die gute Nachricht: Trockene Haut reagiert sehr gut, wenn sie richtig gepflegt wird.`,
+          it: `La tua pelle è secca e nel tempo questo ha un effetto diretto su come invecchia: quando la pelle non ha abbastanza idratazione e la barriera protettiva è indebolita, il collagene si degrada più velocemente, le linee d'espressione appaiono prima. Non è inevitabile — è la conseguenza di non dare alla pelle ciò di cui ha bisogno. La buona notizia è che la pelle secca risponde molto bene quando è lavorata correttamente.`,
+        },
+
+        sensible_rojeces: {
+          es: `Tu piel reacciona fácilmente porque la capa que la protege del exterior es más fina de lo que debería. Cuando esa capa está comprometida, cualquier cosa — el agua caliente, el viento, un producto nuevo, el estrés — puede desencadenar enrojecimiento, ardor o irritación. No es que tu piel sea "difícil": es que nadie le ha dado lo que necesita para estar estable. Los enrojecimientos que describes no son solo estéticos — son la señal de que la piel está en modo de defensa constante. Con la rutina correcta, esa reactividad baja considerablemente en pocas semanas.`,
+          en: `Your skin reacts easily because the layer that protects it from the outside is thinner than it should be. When that layer is compromised, anything — hot water, wind, a new product, stress — can trigger redness, burning, or irritation. It's not that your skin is "difficult": it's that nobody has given it what it needs to be stable. The redness you describe isn't just aesthetic — it's the signal that your skin is in constant defense mode. With the right routine, that reactivity drops considerably within a few weeks.`,
+          fr: `Ta peau réagit facilement parce que la couche qui la protège de l'extérieur est plus fine qu'elle ne devrait l'être. Quand cette couche est compromise, n'importe quoi — l'eau chaude, le vent, un nouveau produit, le stress — peut déclencher des rougeurs, des brûlures ou des irritations. Ce n'est pas que ta peau soit "difficile" : c'est que personne ne lui a donné ce dont elle a besoin pour être stable. Avec la bonne routine, cette réactivité diminue considérablement en quelques semaines.`,
+          pt: `Sua pele reage facilmente porque a camada que a protege do exterior é mais fina do que deveria. Quando essa camada está comprometida, qualquer coisa — água quente, vento, um produto novo, estresse — pode desencadear vermelhidão, ardência ou irritação. Não é que sua pele seja "difícil": é que ninguém deu a ela o que precisa para ficar estável. Com a rotina certa, essa reatividade diminui consideravelmente em poucas semanas.`,
+          de: `Deine Haut reagiert leicht, weil die Schicht, die sie vor der Außenwelt schützt, dünner ist als sie sein sollte. Wenn diese Schicht beeinträchtigt ist, kann alles — heißes Wasser, Wind, ein neues Produkt, Stress — Rötungen, Brennen oder Reizungen auslösen. Es liegt nicht daran, dass deine Haut "schwierig" ist: Niemand hat ihr gegeben, was sie braucht, um stabil zu sein. Mit der richtigen Routine sinkt diese Reaktivität in wenigen Wochen erheblich.`,
+          it: `La tua pelle reagisce facilmente perché lo strato che la protegge dall'esterno è più sottile di quanto dovrebbe essere. Quando quello strato è compromesso, qualsiasi cosa — acqua calda, vento, un nuovo prodotto, stress — può scatenare arrossamenti, bruciore o irritazioni. Non è che la tua pelle sia "difficile": è che nessuno le ha dato ciò di cui ha bisogno per essere stabile. Con la routine giusta, quella reattività diminuisce considerevolmente in poche settimane.`,
+        },
+
+        general_glow: {
+          es: `Tu piel está bien — no hay inflamación, no hay problemas graves. Lo que describes es una piel que ha perdido luminosidad: se ve apagada, el tono no es tan uniforme como antes, y le falta ese brillo natural que debería tener. Eso pasa cuando las células de la superficie no se renuevan al ritmo que deberían — se acumulan células viejas que opacan la piel y hacen que los productos que usas no penetren bien. No es una condición difícil de mejorar: es de las que responden más rápido cuando se trabaja con los ingredientes correctos.`,
+          en: `Your skin is doing well — no inflammation, no serious problems. What you describe is skin that has lost luminosity: it looks dull, the tone isn't as even as before, and it lacks that natural glow it should have. That happens when surface cells don't renew at the rate they should — old cells accumulate, making skin look dull and preventing products from penetrating well. It's not a difficult condition to improve: it's one of those that responds fastest when worked with the right ingredients.`,
+          fr: `Ta peau va bien — pas d'inflammation, pas de problèmes graves. Ce que tu décris, c'est une peau qui a perdu en luminosité : elle paraît terne, le teint n'est plus aussi uniforme qu'avant, et il lui manque cet éclat naturel qu'elle devrait avoir. Cela arrive quand les cellules de surface ne se renouvellent pas au rythme qu'elles devraient. Ce n'est pas une condition difficile à améliorer : c'est l'une de celles qui répondent le plus vite avec les bons ingrédients.`,
+          pt: `Sua pele está bem — sem inflamação, sem problemas graves. O que você descreve é uma pele que perdeu luminosidade: parece apagada, o tom não é tão uniforme como antes, e falta aquele brilho natural que deveria ter. Isso acontece quando as células da superfície não se renovam no ritmo que deveriam — células velhas se acumulam e impedem que os produtos penetrem bem. Não é uma condição difícil de melhorar: é uma das que responde mais rápido com os ingredientes certos.`,
+          de: `Deine Haut ist in Ordnung — keine Entzündungen, keine ernsthaften Probleme. Was du beschreibst, ist eine Haut, die an Leuchtkraft verloren hat: Sie sieht matt aus, der Teint ist nicht mehr so gleichmäßig wie früher, und ihr fehlt der natürliche Glow. Das passiert, wenn sich Oberflächenzellen nicht im richtigen Rhythmus erneuern — alte Zellen häufen sich an und verhindern, dass Produkte gut eindringen. Keine schwierige Bedingung zu verbessern: eine der schnellsten Responder mit den richtigen Inhaltsstoffen.`,
+          it: `La tua pelle sta bene — nessuna infiammazione, nessun problema serio. Quello che descrivi è una pelle che ha perso luminosità: sembra spenta, il tono non è uniforme come prima, e manca quel bagliore naturale che dovrebbe avere. Succede quando le cellule in superficie non si rinnovano al ritmo che dovrebbero — le cellule vecchie si accumulano e impediscono ai prodotti di penetrare bene. Non è una condizione difficile da migliorare: è una di quelle che risponde più rapidamente con gli ingredienti giusti.`,
+        },
+
+      };
+
+      // Buscar diagnóstico por perfil, con fallback genérico
+      const diagMap = dx[perfilId || ''];
+      if (diagMap) return diagMap[idioma] || diagMap['en'];
+
+      // Fallback si el perfil no coincide con ninguno conocido
+      const fallbacks = {
+        es: `A partir de todo lo que me contaste, tengo una imagen clara de lo que está pasando con tu piel. Diseñé esta rutina pensando exactamente en eso — no en un tipo genérico, sino en lo que tú describes.`,
+        en: `From everything you've told me, I have a clear picture of what's happening with your skin. I designed this routine thinking exactly about that — not a generic type, but what you describe.`,
+        fr: `D'après tout ce que tu m'as dit, j'ai une image claire de ce qui se passe avec ta peau. J'ai conçu cette routine en pensant exactement à ça.`,
+        pt: `A partir de tudo que você me contou, tenho uma imagem clara do que está acontecendo com sua pele. Desenhei essa rotina pensando exatamente nisso.`,
+        de: `Aus allem, was du mir erzählt hast, habe ich ein klares Bild davon, was mit deiner Haut passiert. Ich habe diese Routine genau dafür entworfen.`,
+        it: `Da tutto quello che mi hai raccontato, ho un'immagine chiara di cosa sta succedendo con la tua pelle. Ho progettato questa routine pensando esattamente a quello.`,
+      };
+      return fallbacks[idioma] || fallbacks['en'];
+    }
+
+    // ── Cierre emocional — aplica tanto con foto como sin foto ──
+    const cierreConFoto = {
+      es: `**Nada en esta rutina es al azar**: cada producto fue elegido para lo que acabo de ver en tu piel hoy.`,
+      en: `**Nothing in this routine is random**: every product was chosen for what I just detected in your skin today.`,
+      fr: `**Rien dans cette routine n'est laissé au hasard** : chaque produit a été choisi pour ce que je viens de détecter dans ta peau aujourd'hui.`,
+      pt: `**Nada nesta rotina é ao acaso**: cada produto foi escolhido para o que acabei de detectar na sua pele hoje.`,
+      de: `**Nichts in dieser Routine ist zufällig**: jedes Produkt wurde für das ausgewählt, was ich heute in deiner Haut erkannt habe.`,
+      it: `**Niente in questa routine è casuale**: ogni prodotto è stato scelto per quello che ho appena rilevato nella tua pelle oggi.`,
     };
 
-    // Parte 2 — Puente emocional: tono especialista + íntimo, tanto con foto como sin foto
-    const puenteConFoto = {
-      es: `Después de ver tu piel con atención, tengo una imagen muy clara de cómo se comporta — sus zonas, sus tensiones, lo que necesita de verdad y lo que la altera.\n\nDiseñé esta rutina a partir de lo que acabo de ver. **Nada aquí es al azar**: cada producto responde a algo concreto que detecté en tu piel hoy.`,
-      en: `After looking at your skin carefully, I have a very clear picture of how it behaves — its zones, its tensions, what it truly needs and what disturbs it.\n\nI designed this routine based on what I just saw. **Nothing here is random**: every product responds to something specific I detected in your skin today.`,
-      fr: `Après avoir observé ta peau attentivement, j'ai une image très claire de son comportement — ses zones, ses tensions, ce dont elle a vraiment besoin et ce qui la perturbe.\n\nJ'ai conçu cette routine à partir de ce que je viens de voir. **Rien n'est laissé au hasard** : chaque produit répond à quelque chose de concret que j'ai détecté dans ta peau aujourd'hui.`,
-      pt: `Depois de observar sua pele com atenção, tenho uma imagem muito clara de como ela se comporta — suas zonas, suas tensões, o que ela realmente precisa e o que a altera.\n\nDesenhei essa rotina a partir do que acabei de ver. **Nada aqui é ao acaso**: cada produto responde a algo concreto que detectei na sua pele hoje.`,
-      de: `Nachdem ich deine Haut sorgfältig betrachtet habe, habe ich ein sehr klares Bild davon, wie sie sich verhält — ihre Zonen, ihre Spannungen, was sie wirklich braucht und was sie stört.\n\nIch habe diese Routine auf Basis dessen entworfen, was ich gerade gesehen habe. **Nichts hier ist zufällig**: jedes Produkt antwortet auf etwas Konkretes, das ich heute in deiner Haut erkannt habe.`,
-      it: `Dopo aver osservato attentamente la tua pelle, ho un'immagine molto chiara di come si comporta — le sue zone, le sue tensioni, ciò di cui ha davvero bisogno e ciò che la disturba.\n\nHo progettato questa routine a partire da quello che ho appena visto. **Niente qui è casuale**: ogni prodotto risponde a qualcosa di concreto che ho rilevato nella tua pelle oggi.`,
+    const cierreSinFoto = {
+      es: `**Nada aquí es al azar**: cada paso responde a algo concreto que me contaste sobre tu piel.`,
+      en: `**Nothing here is random**: every step responds to something specific you told me about your skin.`,
+      fr: `**Rien n'est laissé au hasard** : chaque étape répond à quelque chose de concret que vous m'avez dit sur votre peau.`,
+      pt: `**Nada aqui é ao acaso**: cada passo responde a algo concreto que você me contou sobre sua pele.`,
+      de: `**Nichts hier ist zufällig**: jeder Schritt antwortet auf etwas Konkretes, das Sie mir über Ihre Haut erzählt haben.`,
+      it: `**Niente qui è casuale**: ogni step risponde a qualcosa di concreto che mi hai raccontato sulla tua pelle.`,
     };
 
-    // Fallback sin foto — mismo tono especialista, cálido, sin jerga técnica fría
-    const puenteSinFoto = {
-      es: `Después de leer tus respuestas con atención, tengo una imagen muy clara de cómo se comporta tu piel — sus ritmos, sus tensiones, lo que necesita de verdad y lo que la altera.\n\nDiseñé esta rutina pensando en ese perfil específico. **Nada aquí es al azar**: cada paso responde a algo que me contaste.`,
-      en: `After reading your answers carefully, I have a very clear picture of how your skin behaves — its rhythms, its tensions, what it truly needs and what disturbs it.\n\nI designed this routine with that specific profile in mind. **Nothing here is random**: every step responds to something you told me.`,
-      fr: `Après avoir lu attentivement tes réponses, j'ai une image très claire du comportement de ta peau — ses rythmes, ses tensions, ce dont elle a vraiment besoin et ce qui la perturbe.\n\nJ'ai conçu cette routine en pensant à ce profil spécifique. **Rien n'est laissé au hasard** : chaque étape répond à quelque chose que tu m'as dit.`,
-      pt: `Depois de ler suas respostas com atenção, tenho uma imagem muito clara de como sua pele se comporta — seus ritmos, suas tensões, o que ela realmente precisa e o que a altera.\n\nDesenhei essa rotina pensando nesse perfil específico. **Nada aqui é ao acaso**: cada passo responde a algo que você me contou.`,
-      de: `Nachdem ich deine Antworten sorgfältig gelesen habe, habe ich ein sehr klares Bild davon, wie sich deine Haut verhält — ihre Rhythmen, ihre Spannungen, was sie wirklich braucht und was sie stört.\n\nIch habe diese Routine mit diesem spezifischen Profil im Sinn entworfen. **Nichts hier ist zufällig**: jeder Schritt antwortet auf etwas, das du mir erzählt hast.`,
-      it: `Dopo aver letto le tue risposte con attenzione, ho un'immagine molto chiara di come si comporta la tua pelle — i suoi ritmi, le sue tensioni, ciò di cui ha davvero bisogno e ciò che la disturba.\n\nHo progettato questa routine pensando a quel profilo specifico. **Niente qui è casuale**: ogni step risponde a qualcosa che mi hai raccontato.`,
-    };
-
-    // Parte 3 — Instrucciones operativas
+    // ── Instrucciones operativas ──
     const instrucciones = {
       es: `En cada paso de la rutina te doy **3 opciones** — todas igual de efectivas, elige la que más te resuene. Cada producto tiene un botón ❓ para saber exactamente por qué lo elegí para ti.`,
       en: `For each step of the routine you'll get **3 options** — all equally effective, pick the one that resonates most. Each product has a ❓ button to know exactly why I chose it for you.`,
@@ -1099,20 +1196,21 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     };
 
     mostrarTyping();
-    // Pausa más dramática cuando hay reveal personalizado — el usuario siente que KOI "leyó" su foto
-    await new Promise(r => setTimeout(r, visionReveal ? 1600 : 1000));
+    await new Promise(r => setTimeout(r, visionReveal ? 1600 : 1200));
     ocultarTyping();
 
-    // Construir mensaje final según si hubo foto o no
-    const intro    = introConFoto[idioma]  || introConFoto['en'];
-    const puente   = visionReveal
-      ? (puenteConFoto[idioma]  || puenteConFoto['en'])
-      : (puenteSinFoto[idioma]  || puenteSinFoto['en']);
-    const instrs   = instrucciones[idioma] || instrucciones['en'];
+    // ── Construir mensaje final ──
+    const diagnosticoQuiz = _construirDiagnosticoQuiz(perfilId, tipoPiel, sensib, preocupAll, idioma);
+    const cierre  = visionReveal
+      ? (cierreConFoto[idioma]  || cierreConFoto['en'])
+      : (cierreSinFoto[idioma]  || cierreSinFoto['en']);
+    const instrs  = instrucciones[idioma] || instrucciones['en'];
 
+    // CON FOTO: diagnóstico del quiz → diagnóstico visual del Worker → cierre → instrucciones
+    // SIN FOTO: diagnóstico del quiz →  cierre → instrucciones
     const msg = visionReveal
-      ? `${intro}\n\n${visionReveal}\n\n${puente}\n\n${instrs}`
-      : `${puente}\n\n${instrs}`;
+      ? `${diagnosticoQuiz}\n\n${visionReveal}\n\n${cierre}\n\n${instrs}`
+      : `${diagnosticoQuiz}\n\n${cierre}\n\n${instrs}`;
     const textEl = agregarMensaje('koi', '', true);
     if (textEl) await escribirConEfecto(textEl, msg);
     KOI_STATE.historial.push({ role: 'assistant', content: msg });
