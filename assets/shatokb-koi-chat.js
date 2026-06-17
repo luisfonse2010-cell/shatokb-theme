@@ -1045,38 +1045,74 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     const perfilNombre = KOI_STATE.contexto?.perfil?.nombre || '';
 
     // ── Momento 3a: Mensaje de reveal ────────────────────────
-    // Si hay resultado de visión con mensaje_reveal personalizado, usarlo.
-    // El Worker GPT-4o lo generó fusionando foto + quiz → texto único para esta piel.
-    // Fallback: texto genérico localizado cuando no hubo foto (solo quiz).
-    const mensajesRevealFallback = {
-      es: `He cruzado tus respuestas con los patrones de piel más comunes para el perfil **${perfilNombre}** y diseñé tu rutina paso a paso.\n\nEn cada paso te doy **3 opciones de productos** — los tres son igualmente efectivos, elige el que más se adapte a ti.\n\nCada producto tiene un botón ❓ — tócalo para saber exactamente por qué lo elegí para tu piel.`,
-      en: `I've matched your quiz answers to the most common patterns for the **${perfilNombre}** profile and built your routine step by step.\n\nFor each step I give you **3 product options** — all equally effective, pick whichever fits you best.\n\nEach product has a ❓ button — tap it to learn exactly why I chose it for your skin.`,
-      fr: `J'ai croisé vos réponses avec les profils les plus courants pour **${perfilNombre}** et j'ai conçu votre routine étape par étape.\n\nPour chaque étape, je vous propose **3 options** — toutes aussi efficaces, choisissez celle qui vous convient.\n\nChaque produit a un bouton ❓ — appuyez dessus pour savoir exactement pourquoi je l'ai choisi pour vous.`,
-      pt: `Cruzei suas respostas com os padrões mais comuns do perfil **${perfilNombre}** e montei sua rotina passo a passo.\n\nEm cada etapa te dou **3 opções de produtos** — todas igualmente eficazes, escolha a que melhor se adapta a você.\n\nCada produto tem um botão ❓ — toque para saber exatamente por que escolhi para a sua pele.`,
-      de: `Ich habe deine Antworten mit den häufigsten Mustern des **${perfilNombre}**-Profils abgeglichen und deine Routine Schritt für Schritt aufgebaut.\n\nFür jeden Schritt gebe ich dir **3 Produktoptionen** — alle gleich wirksam, wähle einfach die passende.\n\nJedes Produkt hat einen ❓ Button — tippe darauf, um zu erfahren, warum ich es genau für dich gewählt habe.`,
-      it: `Ho incrociato le tue risposte con i profili più comuni per **${perfilNombre}** e ho costruito la tua routine passo dopo passo.\n\nPer ogni step ti do **3 opzioni di prodotti** — tutte ugualmente efficaci, scegli quella più adatta a te.\n\nOgni prodotto ha un pulsante ❓ — toccalo per sapere esattamente perché l'ho scelto per la tua pelle.`,
-    };
+    // Estructura en 3 partes:
+    //   1. Diagnóstico visual (mensaje_reveal del Worker si hubo foto, o intro empática si no)
+    //   2. Puente emocional — por qué ESTA rutina es para ESTA piel
+    //   3. Instrucciones operativas (cómo navegar: opciones + botón ❓)
+    //
+    // El Worker GPT-4o generó mensaje_reveal fusionando foto + quiz → descripción
+    // de lo que vio en la piel (zonas, textura, sebo, barrera, etc.).
+    // Fallback: texto empático localizado cuando no hubo foto (solo quiz).
 
     // ★ LÓGICA CENTRAL: usa mensaje_reveal del análisis visual si existe
     const visionReveal = KOI_STATE.visionResult?.mensaje_reveal;
-    const sufijo = {
-      es: `\n\nEn cada paso te doy **3 opciones** — todas igual de efectivas. Cada producto tiene un botón ❓ para saber exactamente por qué lo elegí para ti.`,
-      en: `\n\nFor each step you'll get **3 options** — all equally effective. Each product has a ❓ button to know exactly why I chose it for you.`,
-      fr: `\n\nPour chaque étape, **3 options** — toutes aussi efficaces. Chaque produit a un bouton ❓ pour savoir exactement pourquoi je l'ai choisi.`,
-      pt: `\n\nEm cada etapa, **3 opções** — todas igualmente eficazes. Cada produto tem um botão ❓ para saber exatamente por que o escolhi.`,
-      de: `\n\nFür jeden Schritt **3 Optionen** — alle gleich wirksam. Jedes Produkt hat einen ❓ Button, um zu erfahren, warum ich es gewählt habe.`,
-      it: `\n\nPer ogni step **3 opzioni** — tutte ugualmente efficaci. Ogni prodotto ha un ❓ per sapere esattamente perché l'ho scelto.`,
+
+    // Parte 1b — Intro con foto: conecta el análisis visual con lo que vio KOI
+    // Se antepone al mensaje_reveal del Worker para darle contexto narrativo.
+    const introConFoto = {
+      es: `Según tus respuestas del quiz y el análisis facial, esto es lo que veo en tu piel:`,
+      en: `Based on your quiz answers and the facial analysis, here's what I see in your skin:`,
+      fr: `D'après tes réponses au quiz et l'analyse faciale, voici ce que je vois dans ta peau :`,
+      pt: `Com base nas suas respostas do quiz e na análise facial, isso é o que vejo na sua pele:`,
+      de: `Basierend auf deinen Quiz-Antworten und der Gesichtsanalyse ist das, was ich in deiner Haut sehe:`,
+      it: `In base alle tue risposte al quiz e all'analisi facciale, ecco cosa vedo nella tua pelle:`,
+    };
+
+    // Parte 2 — Puente emocional: tono especialista + íntimo, tanto con foto como sin foto
+    const puenteConFoto = {
+      es: `Después de ver tu piel con atención, tengo una imagen muy clara de cómo se comporta — sus zonas, sus tensiones, lo que necesita de verdad y lo que la altera.\n\nDiseñé esta rutina a partir de lo que acabo de ver. **Nada aquí es al azar**: cada producto responde a algo concreto que detecté en tu piel hoy.`,
+      en: `After looking at your skin carefully, I have a very clear picture of how it behaves — its zones, its tensions, what it truly needs and what disturbs it.\n\nI designed this routine based on what I just saw. **Nothing here is random**: every product responds to something specific I detected in your skin today.`,
+      fr: `Après avoir observé ta peau attentivement, j'ai une image très claire de son comportement — ses zones, ses tensions, ce dont elle a vraiment besoin et ce qui la perturbe.\n\nJ'ai conçu cette routine à partir de ce que je viens de voir. **Rien n'est laissé au hasard** : chaque produit répond à quelque chose de concret que j'ai détecté dans ta peau aujourd'hui.`,
+      pt: `Depois de observar sua pele com atenção, tenho uma imagem muito clara de como ela se comporta — suas zonas, suas tensões, o que ela realmente precisa e o que a altera.\n\nDesenhei essa rotina a partir do que acabei de ver. **Nada aqui é ao acaso**: cada produto responde a algo concreto que detectei na sua pele hoje.`,
+      de: `Nachdem ich deine Haut sorgfältig betrachtet habe, habe ich ein sehr klares Bild davon, wie sie sich verhält — ihre Zonen, ihre Spannungen, was sie wirklich braucht und was sie stört.\n\nIch habe diese Routine auf Basis dessen entworfen, was ich gerade gesehen habe. **Nichts hier ist zufällig**: jedes Produkt antwortet auf etwas Konkretes, das ich heute in deiner Haut erkannt habe.`,
+      it: `Dopo aver osservato attentamente la tua pelle, ho un'immagine molto chiara di come si comporta — le sue zone, le sue tensioni, ciò di cui ha davvero bisogno e ciò che la disturba.\n\nHo progettato questa routine a partire da quello che ho appena visto. **Niente qui è casuale**: ogni prodotto risponde a qualcosa di concreto che ho rilevato nella tua pelle oggi.`,
+    };
+
+    // Fallback sin foto — mismo tono especialista, cálido, sin jerga técnica fría
+    const puenteSinFoto = {
+      es: `Después de leer tus respuestas con atención, tengo una imagen muy clara de cómo se comporta tu piel — sus ritmos, sus tensiones, lo que necesita de verdad y lo que la altera.\n\nDiseñé esta rutina pensando en ese perfil específico. **Nada aquí es al azar**: cada paso responde a algo que me contaste.`,
+      en: `After reading your answers carefully, I have a very clear picture of how your skin behaves — its rhythms, its tensions, what it truly needs and what disturbs it.\n\nI designed this routine with that specific profile in mind. **Nothing here is random**: every step responds to something you told me.`,
+      fr: `Après avoir lu attentivement tes réponses, j'ai une image très claire du comportement de ta peau — ses rythmes, ses tensions, ce dont elle a vraiment besoin et ce qui la perturbe.\n\nJ'ai conçu cette routine en pensant à ce profil spécifique. **Rien n'est laissé au hasard** : chaque étape répond à quelque chose que tu m'as dit.`,
+      pt: `Depois de ler suas respostas com atenção, tenho uma imagem muito clara de como sua pele se comporta — seus ritmos, suas tensões, o que ela realmente precisa e o que a altera.\n\nDesenhei essa rotina pensando nesse perfil específico. **Nada aqui é ao acaso**: cada passo responde a algo que você me contou.`,
+      de: `Nachdem ich deine Antworten sorgfältig gelesen habe, habe ich ein sehr klares Bild davon, wie sich deine Haut verhält — ihre Rhythmen, ihre Spannungen, was sie wirklich braucht und was sie stört.\n\nIch habe diese Routine mit diesem spezifischen Profil im Sinn entworfen. **Nichts hier ist zufällig**: jeder Schritt antwortet auf etwas, das du mir erzählt hast.`,
+      it: `Dopo aver letto le tue risposte con attenzione, ho un'immagine molto chiara di come si comporta la tua pelle — i suoi ritmi, le sue tensioni, ciò di cui ha davvero bisogno e ciò che la disturba.\n\nHo progettato questa routine pensando a quel profilo specifico. **Niente qui è casuale**: ogni step risponde a qualcosa che mi hai raccontato.`,
+    };
+
+    // Parte 3 — Instrucciones operativas
+    const instrucciones = {
+      es: `En cada paso de la rutina te doy **3 opciones** — todas igual de efectivas, elige la que más te resuene. Cada producto tiene un botón ❓ para saber exactamente por qué lo elegí para ti.`,
+      en: `For each step of the routine you'll get **3 options** — all equally effective, pick the one that resonates most. Each product has a ❓ button to know exactly why I chose it for you.`,
+      fr: `Pour chaque étape de la routine, **3 options** — toutes aussi efficaces, choisis celle qui te correspond le mieux. Chaque produit a un ❓ pour savoir exactement pourquoi je l'ai choisi.`,
+      pt: `Em cada passo da rotina te dou **3 opções** — todas igualmente eficazes, escolha a que mais fizer sentido para você. Cada produto tem um ❓ para saber exatamente por que o escolhi.`,
+      de: `Für jeden Schritt der Routine **3 Optionen** — alle gleich wirksam, wähle die, die am besten zu dir passt. Jedes Produkt hat einen ❓ Button, um zu erfahren, warum ich es genau für dich gewählt habe.`,
+      it: `Per ogni step della routine **3 opzioni** — tutte ugualmente efficaci, scegli quella che ti convince di più. Ogni prodotto ha un ❓ per sapere esattamente perché l'ho scelto per te.`,
     };
 
     mostrarTyping();
     // Pausa más dramática cuando hay reveal personalizado — el usuario siente que KOI "leyó" su foto
-    await new Promise(r => setTimeout(r, visionReveal ? 1400 : 900));
+    await new Promise(r => setTimeout(r, visionReveal ? 1600 : 1000));
     ocultarTyping();
 
-    // Construir mensaje final: reveal personalizado + sufijo operativo, o fallback genérico
+    // Construir mensaje final según si hubo foto o no
+    const intro    = introConFoto[idioma]  || introConFoto['en'];
+    const puente   = visionReveal
+      ? (puenteConFoto[idioma]  || puenteConFoto['en'])
+      : (puenteSinFoto[idioma]  || puenteSinFoto['en']);
+    const instrs   = instrucciones[idioma] || instrucciones['en'];
+
     const msg = visionReveal
-      ? `${visionReveal}${sufijo[idioma] || sufijo['en']}`
-      : (mensajesRevealFallback[idioma] || mensajesRevealFallback['en']);
+      ? `${intro}\n\n${visionReveal}\n\n${puente}\n\n${instrs}`
+      : `${puente}\n\n${instrs}`;
     const textEl = agregarMensaje('koi', '', true);
     if (textEl) await escribirConEfecto(textEl, msg);
     KOI_STATE.historial.push({ role: 'assistant', content: msg });
