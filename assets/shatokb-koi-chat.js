@@ -1251,11 +1251,27 @@ async function manejarResultadoVision (data) {
 
     guardarHistorialLocal();
 
-    // 3. ★ REASIGNACIÓN SILENCIOSA DE PERFIL ★
-    // El usuario NUNCA ha visto la rutina del quiz — la verá por primera vez en el reveal.
-    // Si la foto contradice el quiz, simplemente actualizamos el perfil en silencio
-    // ANTES de que el usuario vea cualquier producto. Para él es transparente:
-    // solo ve la rutina correcta con un mensaje_reveal que la explica perfectamente.
+    // 3. ★★ ENRIQUECIMIENTO + REASIGNACIÓN SILENCIOSA — v7.3 ★★
+    // El usuario NUNCA ha visto la rutina — la ve por primera vez en el reveal.
+    // Antes de mostrarla, hacemos dos cosas en silencio:
+    //   A) Enriquecer las respuestas del quiz con los scores reales de la foto
+    //   B) Reasignar el perfil si la foto contradice el quiz
+    // Resultado: los 250 productos se rankean por piel REAL (foto + quiz combinados)
+
+    // A) Enriquecer respuestas con scores de visión
+    let respuestasEnriquecidas = null;
+    if (typeof window.shatokbEnriquecerRespuestasConVision === 'function') {
+      const respuestasBase = KOI_STATE.contexto?.respuestas || {};
+      respuestasEnriquecidas = window.shatokbEnriquecerRespuestasConVision(respuestasBase, result);
+      console.log('[KOI Vision] ✅ Respuestas enriquecidas con foto:', {
+        tipo_piel_base: respuestasBase.tipo_piel,
+        tipo_piel_final: respuestasEnriquecidas.tipo_piel,
+        concerns_final: [respuestasEnriquecidas.preocupacion, ...(respuestasEnriquecidas.preocupacion_secundaria || [])],
+        sensibilidad_final: respuestasEnriquecidas.sensibilidad,
+      });
+    }
+
+    // B) Reasignación de perfil si la foto lo indica
     const ajuste = result.ajuste_perfil;
     const hayReasignacion = !result.confirmacion_perfil
       && ajuste
@@ -1264,16 +1280,21 @@ async function manejarResultadoVision (data) {
       && ajuste.nuevo_perfil_id !== (KOI_STATE.contexto?.perfil?.id || '');
 
     if (hayReasignacion) {
-      // Actualizar el perfil en el DOM del quiz ANTES del reveal (silencioso)
+      // Cambiar perfil Y pasar respuestas enriquecidas al scorer
       if (typeof window.shatokbCambiarPerfil === 'function') {
-        await window.shatokbCambiarPerfil(ajuste.nuevo_perfil_id);
+        await window.shatokbCambiarPerfil(ajuste.nuevo_perfil_id, respuestasEnriquecidas);
       }
-      // Actualizar KOI_STATE.contexto para que revelarRutinaConKOI use el perfil correcto
       if (KOI_STATE.contexto) {
         KOI_STATE.contexto.perfil = {
           id:     ajuste.nuevo_perfil_id,
           nombre: ajuste.nuevo_perfil_id,
         };
+      }
+    } else if (respuestasEnriquecidas) {
+      // Perfil confirmado pero enriquecer igual — re-rankear productos con foto
+      if (typeof window.shatokbCambiarPerfil === 'function') {
+        const perfilActual = KOI_STATE.contexto?.perfil?.id || '';
+        await window.shatokbCambiarPerfil(perfilActual, respuestasEnriquecidas);
       }
     }
 
