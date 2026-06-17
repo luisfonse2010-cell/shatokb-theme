@@ -2595,9 +2595,11 @@ function shatokbActualizarBtnNext(mostrar, idx) {
   var label    = esFinal ? 'See My Routine →' : 'Next →';
 
   if (mostrar) {
+    var esNuevo = !document.getElementById('shatokb-btn-siguiente');
+
     // Si ya existe el botón, solo actualizar visibilidad
     slot.style.display = 'block';
-    if (!document.getElementById('shatokb-btn-siguiente')) {
+    if (esNuevo) {
       slot.innerHTML = `<button
         class="shatokb-btn shatokb-btn--primary shatokb-btn--ready"
         id="shatokb-btn-siguiente"
@@ -2605,6 +2607,16 @@ function shatokbActualizarBtnNext(mostrar, idx) {
         onclick="event.stopPropagation();shatokbSiguientePregunta(${idx})"
         >${label}</button>`;
     }
+
+    // Scroll suave hasta el botón Next cuando aparece por primera vez
+    // (o cuando el usuario selecciona en single-select)
+    if (esNuevo) {
+      setTimeout(function() {
+        var btn = document.getElementById('shatokb-btn-siguiente');
+        if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 80);
+    }
+
   } else {
     slot.style.display = 'none';
     slot.innerHTML = '';
@@ -2919,17 +2931,52 @@ async function shatokbMostrarResultado() {
         </p>
       </div>
 
-      <!-- Aviso KOI — al principio de los productos -->
-      <div class="stk-blur-overlay" id="stk-blur-overlay">
-        <span class="stk-blur-overlay__icon">🌸</span>
-        <div class="stk-blur-overlay__text">
-          <p class="stk-blur-overlay__title">Your routine is being prepared by KOI…</p>
-          <p class="stk-blur-overlay__sub">KOI will walk you through it in just a moment.</p>
+      <!-- Aviso KOI — Teaser card WOW -->
+      ${(function() {
+        // Mensaje personalizado según concern principal
+        const concern = Array.isArray(shatokbState.respuestas.preocupacion)
+          ? shatokbState.respuestas.preocupacion[0]
+          : (shatokbState.respuestas.preocupacion || '');
+        const secondaryConcerns = Array.isArray(shatokbState.respuestas.preocupacion_secundaria)
+          ? shatokbState.respuestas.preocupacion_secundaria.filter(c => c && c !== 'ninguna')
+          : [];
+        const totalConcerns = (concern ? 1 : 0) + secondaryConcerns.length;
+        const concernCount  = Math.max(totalConcerns, 2); // mínimo 2 para el mensaje
+
+        const CONCERN_MSGS = {
+          acne:          `I flagged ${concernCount} things in your profile I need to talk to you about 👀`,
+          poros:         `Your pores need a specific layering order — I mapped it out for you 🗺️`,
+          manchas:       `There's a mistake most people make with hyperpigmentation. Yours is fixable 🌿`,
+          deshidratacion:`Your barrier and hydration are linked. I found ${concernCount} patterns worth discussing 💧`,
+          rojeces:       `Redness is almost always a barrier issue. I spotted something in your profile 🔎`,
+          antiaging:     `I analyzed your profile. There are ${concernCount} things I want to walk you through 💎`,
+          textura:       `Texture takes the right sequence. I've got something specific for your routine ✨`,
+          sensible:      `Sensitive skin needs careful layering. I flagged ${concernCount} things for you 🌸`,
+        };
+        const msg = CONCERN_MSGS[concern] || `I analyzed your skin profile. There are ${concernCount} things I want to talk to you about 👀`;
+
+        return `
+      <div class="stk-koi-teaser" id="stk-blur-overlay" data-msg="${msg.replace(/"/g, '&quot;')}">
+        <div class="stk-koi-teaser__header">
+          <span class="stk-koi-teaser__avatar">🌸</span>
+          <div class="stk-koi-teaser__meta">
+            <span class="stk-koi-teaser__name">KOI</span>
+            <span class="stk-koi-teaser__status">
+              <span class="stk-koi-teaser__dot"></span>online now
+            </span>
+          </div>
         </div>
-        <button class="stk-blur-overlay__cta" onclick="shatokbScrollAKOI()" type="button">
-          👇 Talk to KOI
+        <div class="stk-koi-teaser__bubble">
+          <span class="stk-koi-teaser__typing" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+          <p class="stk-koi-teaser__text" aria-live="polite"></p>
+        </div>
+        <button class="stk-koi-teaser__cta" onclick="shatokbScrollAKOI()" type="button">
+          Open my analysis →
         </button>
-      </div>
+      </div>`;
+      })()}
 
       <!-- Productos sombreados -->
       <div class="stk-routine-blurred" id="stk-routine-blurred">
@@ -3010,6 +3057,8 @@ async function shatokbMostrarResultado() {
   shatokbApplyConfigToUI();
   shatokbIniciarTimer();
   shatokbCargarReviewsTodos(pasosProd);
+  // Arrancar animación typewriter del KOI teaser
+  setTimeout(shatokbActivarKoiTeaser, 400);
   shatokbTrackPixel('ViewContent', {
     content_name:     'skin_routine_' + perfilId,
     content_category: perfilId,
@@ -3088,9 +3137,9 @@ async function shatokbMostrarResultado() {
   // Disparar evento custom → shatokb-koi-chat.js lo escucha
   document.dispatchEvent(new CustomEvent('shatokb:resultado', { detail: koiContexto }));
 
-  // Llamada directa con retry — koi-chat.js puede no haber terminado de parsear todavía
-  // (ambos scripts tienen defer; el orden de ejecución no está 100% garantizado)
-  // Esperamos también a que el contenedor de resultado sea visible en el DOM
+  // Llamada directa con retry — única ruta que inicia KOI.
+  // El CustomEvent 'shatokb:resultado' tiene un guard en koi-chat.js
+  // para no duplicar si intentarKOI ya lo arrancó primero.
   (function intentarKOI(intentos) {
     const resultadoEl = document.getElementById('shatokb-resultado');
     const koiListo    = typeof window.shatokbIniciarKOI === 'function';
@@ -3101,9 +3150,58 @@ async function shatokbMostrarResultado() {
     } else if (intentos > 0) {
       setTimeout(function() { intentarKOI(intentos - 1); }, 300);
     }
-  })(20); // reintenta hasta 20 veces × 300ms = 6 segundos máximo
+  })(20);
 }
 
+
+/* ============================================================
+   KOI TEASER — Animación typewriter del banner de bienvenida
+   Se llama 400ms después de que se renderiza el resultado.
+============================================================ */
+function shatokbActivarKoiTeaser() {
+  const teaser  = document.getElementById('stk-blur-overlay');
+  if (!teaser) return;
+
+  const typingEl = teaser.querySelector('.stk-koi-teaser__typing');
+  const textEl   = teaser.querySelector('.stk-koi-teaser__text');
+  const ctaEl    = teaser.querySelector('.stk-koi-teaser__cta');
+  const msg      = teaser.dataset.msg || "I analyzed your skin profile. There are 2 things I want to talk to you about 👀";
+
+  if (!typingEl || !textEl || !ctaEl) return;
+
+  // Fase 1 — mostrar el teaser con entrada suave
+  teaser.classList.add('stk-koi-teaser--visible');
+
+  // Fase 2 (500ms) — mostrar typing dots
+  setTimeout(function() {
+    typingEl.classList.add('stk-koi-teaser__typing--active');
+  }, 500);
+
+  // Fase 3 (1500ms) — ocultar dots, arrancar typewriter
+  setTimeout(function() {
+    typingEl.classList.remove('stk-koi-teaser__typing--active');
+    typingEl.style.display = 'none';
+    textEl.classList.add('stk-koi-teaser__text--visible');
+
+    // Typewriter letra a letra
+    let i = 0;
+    const chars = Array.from(msg); // soporte emojis multibyte
+    function typeNext() {
+      if (i < chars.length) {
+        textEl.textContent += chars[i++];
+        // velocidad variable: más rápida en palabras, pausa en puntuación
+        const delay = /[,.!?👀💧🌿🔎✨💎🗺️🌸]/.test(chars[i - 1]) ? 120 : 38;
+        setTimeout(typeNext, delay);
+      } else {
+        // Fase 4 — botón aparece con bounce cuando termina el texto
+        setTimeout(function() {
+          ctaEl.classList.add('stk-koi-teaser__cta--visible');
+        }, 200);
+      }
+    }
+    typeNext();
+  }, 1500);
+}
 
 /* ============================================================
    THE REVEAL — función pública llamada por KOI cuando
