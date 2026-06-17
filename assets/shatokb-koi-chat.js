@@ -1289,10 +1289,14 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
         }, 300);
 
         // 3. Mostrar barra de input + habilitar + chips de bienvenida
+        //    + activar mini barra de carrito (ahora el usuario ya vio la rutina)
         setTimeout(() => {
           setInputAreaVisible(true);
           setInputHabilitado(true);
           mostrarChips('bienvenida');
+          // Activar mini barra — el usuario acaba de ver los productos,
+          // ahora tiene sentido mostrar el precio y el botón de compra
+          window.shatokbMostrarMiniCartBar();
         }, 1800);
       });
 
@@ -2317,27 +2321,56 @@ async function enviarDesdeChip (texto) {
      MINI BARRA DE CARRITO — dentro del chat
      Replica exactamente la barra sticky superior del quiz.
 
-     Activación:
-       La barra superior del quiz dispara el evento custom
-       'shatokb:totalBar' con { total, label, cta } cada vez
-       que se actualiza (cuando el quiz muestra la rutina).
-       Si ese evento no llega (versión antigua del quiz) se
-       hace polling sobre el DOM buscando la barra real y
-       leyendo su contenido directamente.
+     Timing de aparición:
+       La barra se llena con el precio en cuanto está disponible
+       (via evento o polling), pero NO se hace visible hasta que
+       el usuario haya hecho clic en "Ver mi rutina ahora".
+       Así el usuario descubre primero los productos antes de
+       ver el botón de compra, lo que mejora la conversión.
+
+       window.shatokbMostrarMiniCartBar() — función pública
+       llamada desde el click del botón "Ver mi rutina ahora"
+       para activar la visibilidad con animación.
 
      Clic → llama window.shatokbAddAllToCart() exactamente
      igual que el botón de la barra superior.
      ══════════════════════════════════════════════════════════ */
+
+  // Datos en memoria — se llenan en cuanto llega el precio,
+  // aunque la barra aún no sea visible.
+  var _miniCartData = { total: '', label: '', cta: '' };
+
+  // Flag: ¿ya puede mostrarse la barra? (se activa al hacer reveal)
+  var _miniCartRevealed = false;
+
   function _actualizarMiniCartBar (total, label, cta) {
+    // Guardar siempre en memoria (para cuando se active el reveal)
+    if (total) _miniCartData.total = total;
+    if (label) _miniCartData.label = label;
+    if (cta)   _miniCartData.cta   = cta;
+
+    // Solo renderizar si el reveal ya ocurrió
+    if (!_miniCartRevealed) return;
+    _renderizarMiniCartBar();
+  }
+
+  function _renderizarMiniCartBar () {
     const bar      = document.getElementById('koi-mini-cart-bar');
     const labelEl  = document.getElementById('koi-mini-cart-label');
     const totalEl  = document.getElementById('koi-mini-cart-total');
     const btnEl    = document.getElementById('koi-mini-cart-btn');
     if (!bar || !labelEl || !totalEl || !btnEl) return;
 
+    const total = _miniCartData.total;
+    const label = _miniCartData.label;
+    const cta   = _miniCartData.cta;
+
+    // Solo mostrar si tenemos precio
+    if (!total) return;
+
     // Rellenar contenido
-    labelEl.textContent = label || '';
-    totalEl.textContent = total || '';
+    labelEl.textContent = label || 'Estimated total for your routine';
+    totalEl.textContent = total;
     btnEl.textContent   = cta   || '🛒 Add my full routine to cart';
 
     // Mostrar con animación
@@ -2353,6 +2386,13 @@ async function enviarDesdeChip (texto) {
       });
     }
   }
+
+  // API pública: llamada desde el click de "Ver mi rutina ahora"
+  // para activar la visibilidad de la mini barra.
+  window.shatokbMostrarMiniCartBar = function () {
+    _miniCartRevealed = true;
+    _renderizarMiniCartBar();
+  };
 
   // Ruta 1: evento custom disparado por shatokb-quiz.js cuando actualiza la barra
   document.addEventListener('shatokb:totalBar', function (e) {
