@@ -2255,6 +2255,88 @@ function shatokbScoreProducto(p, tipoPiel, preocupaciones, objetivos, sensibilid
 const SHATOKB_BUDGET_LIMITS = { bajo: 40, medio: 80, alto: Infinity };
 const SHATOKB_MAX_OPTIONS   = 3;
 
+/* ============================================================
+   ROTACIÓN INTELIGENTE DE PRODUCTOS — v7.4
+   Garantiza que todos los productos del catálogo se muestren
+   a lo largo del tiempo, sin sacrificar personalización.
+
+   DISEÑO:
+   1. Scorer rankea todos los candidatos por relevancia (como siempre)
+   2. Se divide el resultado en 3 bandas por score:
+      - TIER A: top 30% — los más relevantes para esta piel
+      - TIER B: 30-60%  — buenos candidatos
+      - TIER C: 60-100% — válidos pero menos prioritarios
+   3. Se seleccionan 2 de TIER A + 1 rotando entre B y C
+      → Los mejores siempre aparecen, los demás rotan garantizados
+   4. Dentro de cada tier, shuffle aleatorio puro
+      → Cada visita = combinación diferente
+
+   RESULTADO:
+   - Visita 1: A1, A2, B3        Visita 2: A1, A3, B7
+   - Visita 3: A2, A4, C12       Visita 4: A1, A2, C5
+   → A lo largo de N visitas, todos los productos B y C aparecen
+   → Los A también rotan entre sí (nunca el mismo par dos veces)
+============================================================ */
+
+/**
+ * Fisher-Yates shuffle — orden aleatorio puro, sin sesgo.
+ * @param {Array} arr
+ * @returns {Array} nuevo array mezclado
+ */
+function shatokbShuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/**
+ * Selección rotativa por tiers — el corazón de la rotación.
+ * Divide candidatos ya rankeados por score en 3 bandas y
+ * selecciona 2 del tier alto + 1 rotando entre los demás.
+ *
+ * @param {Array}  candidatos  — productos ya ordenados por _score desc
+ * @param {number} n           — cuántos devolver (default 3)
+ * @returns {Array}            — n productos seleccionados
+ */
+function shatokbSeleccionarConRotacion(candidatos, n = SHATOKB_MAX_OPTIONS) {
+  if (candidatos.length <= n) return candidatos;
+
+  const total = candidatos.length;
+
+  // Calcular tamaño de cada tier
+  // TIER A: top 30% pero mínimo 2 productos, máximo 6
+  const tierASize = Math.min(Math.max(Math.ceil(total * 0.30), 2), 6);
+  // TIER B: siguiente 35%
+  const tierBSize = Math.min(Math.ceil(total * 0.35), 12);
+  // TIER C: el resto
+
+  const tierA = candidatos.slice(0, tierASize);
+  const tierB = candidatos.slice(tierASize, tierASize + tierBSize);
+  const tierC = candidatos.slice(tierASize + tierBSize);
+
+  // Mezclar cada tier independientemente
+  const shuffledA = shatokbShuffle(tierA);
+  const shuffledBC = shatokbShuffle([...tierB, ...tierC]);
+
+  // Selección: tomar del tier A primero (n-1 slots), 1 slot para B/C
+  // Si n=3: 2 de A + 1 de B/C
+  // Si n=4: 3 de A + 1 de B/C
+  // Si n=5: 3 de A + 2 de B/C
+  const slotsA  = Math.max(n - 1, Math.ceil(n * 0.65));
+  const slotsBC = n - slotsA;
+
+  const seleccionados = [
+    ...shuffledA.slice(0, slotsA),
+    ...shuffledBC.slice(0, slotsBC),
+  ];
+
+  // Shuffle final — mezclar A y B/C para que no sea predecible el orden
+  return shatokbShuffle(seleccionados);
+}
+
 // Routine step order for sorting
 const SHATOKB_STEP_ORDER = ['cleanser', 'toner', 'essence', 'serum', 'moisturizer', 'eye', 'spf', 'mask', 'exfoliator'];
 
@@ -2317,11 +2399,21 @@ function shatokbRecomendarProductos(perfilId, respuestas) {
       return { ...p, _score };
     });
 
+    // Ordenar por score descendente (el scorer ya evaluó relevancia para esta piel)
     candidatos.sort((a, b) => b._score - a._score);
-    const opciones = candidatos.slice(0, SHATOKB_MAX_OPTIONS);
+
+    // ★ v7.4 ROTACIÓN INTELIGENTE
+    // Filtrar primero los que tienen score mínimo aceptable (> 0)
+    // para no incluir productos que el scorer descartó activamente
+    const candidatosValidos = candidatos.filter(p => p._score > 0);
+    const opciones = shatokbSeleccionarConRotacion(
+      candidatosValidos.length >= SHATOKB_MAX_OPTIONS ? candidatosValidos : candidatos,
+      SHATOKB_MAX_OPTIONS
+    );
 
     // Determine the predominant momento for this step
-    const topMomento = opciones[0]?.momento || 'both';
+    // Usar el producto con mayor score (primero antes del shuffle) como referencia
+    const topMomento = candidatos[0]?.momento || 'both';
 
     // Hero product flag — mark if this is the Excel-designated hero for this profile
     const heroId = perfil.hero_product;
@@ -2833,9 +2925,12 @@ async function shatokbMostrarResultado() {
     });
   }
 
-  const perfilId  = shatokbCalcularPerfil(shatokbState.respuestas);
+  // ★ v7.3: usar perfilOverride y respuestasEnriquecidas si KOI Vision ya analizó la foto
+  // Esto garantiza que la rutina final use los scores reales de la piel, no solo el quiz
+  const perfilId  = shatokbState.perfilOverride || shatokbCalcularPerfil(shatokbState.respuestas);
+  const respuestasParaScorer = shatokbState.respuestasEnriquecidas || shatokbState.respuestas;
   const perfil    = SHATOKB_PERFILES[perfilId];
-  const pasosProd = shatokbRecomendarProductos(perfilId, shatokbState.respuestas);
+  const pasosProd = shatokbRecomendarProductos(perfilId, respuestasParaScorer);
   const tags      = perfil.resumen || [];
 
   // Pre-select top option for each step
@@ -3830,12 +3925,147 @@ function shatokbScrollAKOI() {
 
 
 /* ============================================================
+   15b-bis. ENRIQUECER RESPUESTAS CON SCORES DE VISIÓN — v7.3
+   Traduce los 8 scores clínicos de la foto (0-10) a signals
+   que el scorer shatokbScoreProducto() ya conoce.
+   Resultado: los 250 productos se rankean según la piel REAL
+   del usuario, no solo sus respuestas de texto.
+
+   Reglas de traducción (conservadoras — no destruyen el quiz):
+   • Solo override cuando el score fotográfico es significativo
+   • Suma concerns al array, no destruye los del quiz
+   • Thresholds calibrados: <4 = señal clara, >7 = señal clara
+============================================================ */
+window.shatokbEnriquecerRespuestasConVision = function(respuestasBase, visionResult) {
+  if (!visionResult || !visionResult.dimensiones) return respuestasBase;
+
+  // Deep copy para no mutar las respuestas originales del quiz
+  const r = JSON.parse(JSON.stringify(respuestasBase));
+  const dim = visionResult.dimensiones;
+
+  // Helper: score numérico de una dimensión (null-safe)
+  const s = (nombre) => {
+    const d = dim[nombre];
+    return (d && typeof d.score === 'number') ? d.score : null;
+  };
+
+  // Asegurar que preocupacion_secundaria es array
+  if (!Array.isArray(r.preocupacion_secundaria)) {
+    r.preocupacion_secundaria = r.preocupacion_secundaria
+      ? [r.preocupacion_secundaria]
+      : [];
+  }
+  // Helper: añadir concern sin duplicar
+  const addConcern = (c) => {
+    if (r.preocupacion !== c && !r.preocupacion_secundaria.includes(c)) {
+      r.preocupacion_secundaria.push(c);
+    }
+  };
+
+  // ── 1. HIDRATACIÓN ────────────────────────────────────────────
+  // Score bajo → piel deshidratada → priorizar humectantes
+  const hidScore = s('hidratacion');
+  if (hidScore !== null) {
+    if (hidScore <= 3) {
+      // Deshidratación severa: override tipo_piel a seca si era mixta/normal
+      if (r.tipo_piel === 'mixta' || r.tipo_piel === 'normal' || r.tipo_piel === 'nolose') {
+        r.tipo_piel = 'seca';
+      }
+      addConcern('deshidratacion');
+    } else if (hidScore <= 5) {
+      // Deshidratación moderada: añadir concern sin cambiar tipo
+      addConcern('deshidratacion');
+    }
+  }
+
+  // ── 2. BARRERA ────────────────────────────────────────────────
+  // Score bajo → barrera comprometida → activar barrier repair mode
+  const barrScore = s('barrera');
+  if (barrScore !== null) {
+    if (barrScore <= 3) {
+      // Barrera muy comprometida: damaged mode → bloquea activos fuertes
+      r.sensibilidad = 'damaged';
+    } else if (barrScore <= 5 && r.sensibilidad === 'baja') {
+      // Barrera moderada: subir sensibilidad a media si quiz decía baja
+      r.sensibilidad = 'media';
+    }
+  }
+
+  // ── 3. SEBO ───────────────────────────────────────────────────
+  // Score alto → exceso de sebo → priorizar oil-control
+  const seboScore = s('sebum');
+  if (seboScore !== null) {
+    if (seboScore >= 8) {
+      // Sebo muy alto: override tipo_piel a grasa si era mixta/normal
+      if (r.tipo_piel === 'mixta' || r.tipo_piel === 'normal') {
+        r.tipo_piel = 'grasa';
+      }
+      addConcern('textura'); // poros y textura asociados al exceso de sebo
+    } else if (seboScore >= 6 && r.tipo_piel === 'seca') {
+      // Seco en quiz pero foto muestra algo de sebo → realmente mixta
+      r.tipo_piel = 'mixta';
+    }
+  }
+
+  // ── 4. PIGMENTACIÓN ───────────────────────────────────────────
+  // Score bajo → manchas/hiperpigmentación visibles
+  const pigScore = s('pigmentacion');
+  if (pigScore !== null && pigScore <= 5) {
+    addConcern('manchas');
+  }
+
+  // ── 5. MICROBIOMA ─────────────────────────────────────────────
+  // Score bajo → congestión, tendencia acneica visible
+  const micScore = s('microbioma');
+  if (micScore !== null && micScore <= 4) {
+    addConcern('acne');
+  }
+
+  // ── 6. FIRMEZA ────────────────────────────────────────────────
+  // Score bajo → pérdida de firmeza visible → antiaging
+  const firmScore = s('firmeza');
+  if (firmScore !== null && firmScore <= 5) {
+    addConcern('antiaging');
+    // Si la foto indica envejecimiento y el quiz no lo mencionó,
+    // también subir tolerancia a ingredientes si estaba en 'none'
+    if (r.ingredient_tolerance === 'none') {
+      r.ingredient_tolerance = 'basic';
+    }
+  }
+
+  // ── 7. TEXTURA ────────────────────────────────────────────────
+  const texScore = s('textura');
+  if (texScore !== null && texScore <= 4) {
+    addConcern('textura');
+  }
+
+  // ── 8. CIRCULACIÓN (ojeras, apagamiento) ──────────────────────
+  // Score bajo → piel apagada → glow / circulación
+  const circScore = s('circulacion');
+  if (circScore !== null && circScore <= 4) {
+    // No hay concern directo para circulación → boost a glow
+    if (r.objetivo === 'glow' || !r.objetivo) {
+      // ya está bien orientado
+    } else if (!r.objetivo) {
+      r.objetivo = 'glow';
+    }
+  }
+
+  // ── Guardar flag de enriquecimiento para trazabilidad ─────────
+  r._vision_enriched = true;
+  r._vision_score_global = visionResult.score_global || null;
+
+  return r;
+};
+
+
+/* ============================================================
    15c. CAMBIAR PERFIL DINÁMICAMENTE — KOI Vision Override
    Llamado por KOI cuando el análisis de la foto revela que
    el perfil del quiz NO coincide con lo que se ve en la imagen.
    Re-renderiza la rutina completa con el perfil corregido.
 ============================================================ */
-window.shatokbCambiarPerfil = async function (nuevoPerfilId) {
+window.shatokbCambiarPerfil = async function (nuevoPerfilId, respuestasEnriquecidas) {
   const PERFILES_VALIDOS = [
     'grasa_acne','grasa_poros','mixta_general','mixta_manchas',
     'seca_hidratacion','seca_antiaging','sensible_rojeces','general_glow'
@@ -3846,14 +4076,13 @@ window.shatokbCambiarPerfil = async function (nuevoPerfilId) {
     return false;
   }
 
-  const perfilActual = shatokbState.perfilOverride || shatokbCalcularPerfil(shatokbState.respuestas);
-  if (perfilActual === nuevoPerfilId) {
-    console.log('[KOI Vision] Perfil ya asignado, sin cambios:', nuevoPerfilId);
-    return false;
-  }
-
-  // 1. Guardar override — para que el resto del sistema lo sepa
+  // 1. Guardar override y respuestas enriquecidas
   shatokbState.perfilOverride = nuevoPerfilId;
+  // Si se pasaron respuestas enriquecidas por foto, usarlas para el scorer
+  const respuestasParaScorer = respuestasEnriquecidas || shatokbState.respuestas;
+  if (respuestasEnriquecidas) {
+    shatokbState.respuestasEnriquecidas = respuestasEnriquecidas;
+  }
 
   // 2. Obtener datos del nuevo perfil y productos
   const nuevoPerfil = SHATOKB_PERFILES[nuevoPerfilId];
@@ -3868,7 +4097,9 @@ window.shatokbCambiarPerfil = async function (nuevoPerfilId) {
     });
   }
 
-  const pasosProd = shatokbRecomendarProductos(nuevoPerfilId, shatokbState.respuestas);
+  // ★ Usar respuestas enriquecidas para que el scorer seleccione
+  // los productos más adecuados para la piel REAL (foto + quiz)
+  const pasosProd = shatokbRecomendarProductos(nuevoPerfilId, respuestasParaScorer);
 
   // 3. Pre-select top option para cada paso
   shatokbState.selectedProducts = {};
