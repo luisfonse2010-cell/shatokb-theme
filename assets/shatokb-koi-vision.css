@@ -375,35 +375,57 @@
   z-index: 6;
 }
 
-/* Oval exterior — guía */
+/* Oval exterior — guía facial siempre visible */
 .kv-face-guide__oval {
   width: 54%;
   aspect-ratio: 3/4;
-  border: 1.5px solid rgba(236,149,184,0.30);
+  border: 2px solid rgba(236,149,184,0.75);
   border-radius: 50%;
   position: relative;
   transition: border-color 0.5s ease, box-shadow 0.5s ease;
+  box-shadow:
+    0 0 0 1px rgba(236,149,184,0.15),
+    0 0 20px rgba(236,149,184,0.20),
+    inset 0 0 20px rgba(236,149,184,0.04);
+  animation: kvOvalBreathing 3s ease-in-out infinite;
 }
 
-/* Rotación de puntos de tracking alrededor del oval */
+@keyframes kvOvalBreathing {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(236,149,184,0.15),
+      0 0 20px rgba(236,149,184,0.20),
+      inset 0 0 20px rgba(236,149,184,0.04);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px rgba(236,149,184,0.10),
+      0 0 32px rgba(236,149,184,0.35),
+      inset 0 0 28px rgba(236,149,184,0.08);
+  }
+}
+
+/* Arco exterior giratorio — rosa */
 .kv-face-guide__oval::before {
   content: '';
   position: absolute;
-  inset: -6px;
+  inset: -8px;
   border-radius: 50%;
-  border: 1px dashed rgba(236,149,184,0.12);
-  animation: kvOvalRotate 12s linear infinite;
+  border: 1.5px dashed rgba(236,149,184,0.35);
+  animation: kvOvalRotate 10s linear infinite;
 }
 
+/* Arco interior giratorio — azul */
 .kv-face-guide__oval::after {
   content: '';
   position: absolute;
-  inset: -14px;
+  inset: -18px;
   border-radius: 50%;
   border: 1px solid transparent;
-  border-top-color: rgba(58,122,245,0.20);
-  border-bottom-color: rgba(236,149,184,0.20);
-  animation: kvOvalRotate 6s linear infinite reverse;
+  border-top-color: rgba(58,122,245,0.50);
+  border-right-color: rgba(58,122,245,0.20);
+  border-bottom-color: rgba(236,149,184,0.40);
+  animation: kvOvalRotate 5s linear infinite reverse;
 }
 
 @keyframes kvOvalRotate {
@@ -1017,6 +1039,197 @@
   transform: scale(1);
 }
 
+/* ══════════════════════════════════════════════════════════
+   SCANNER CLÍNICO — Beam + Puntos biométricos + Data chips
+   ══════════════════════════════════════════════════════════ */
+
+/* Línea de barrido scanner — sube y baja infinitamente */
+.kv-scan-beam {
+  position: absolute;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(236,149,184,0.3) 20%,
+    rgba(236,149,184,0.95) 50%,
+    rgba(58,122,245,0.95) 80%,
+    transparent 100%
+  );
+  box-shadow: 0 0 12px rgba(236,149,184,0.7), 0 0 24px rgba(58,122,245,0.4);
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.kv-scan-beam.kv--active {
+  opacity: 1;
+  animation: kvBeamSweep 2.4s ease-in-out infinite;
+}
+
+.kv-scan-beam.kv--complete {
+  opacity: 0;
+  background: linear-gradient(90deg, transparent, #22c55e, #86efac, #22c55e, transparent);
+  box-shadow: 0 0 20px rgba(34,197,94,0.8);
+  transition: background 0.2s ease, box-shadow 0.2s ease, opacity 0.5s ease 0.4s;
+}
+
+@keyframes kvBeamSweep {
+  0%   { top: -4px;   }
+  45%  { top: calc(100% + 4px); }
+  50%  { top: calc(100% + 4px); opacity: 0.6; }
+  55%  { top: calc(100% + 4px); }
+  100% { top: -4px;   }
+}
+
+/* Puntos biométricos sobre la foto */
+.kv-bio-points {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+}
+
+.kv-bio-pt {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: transform 0.4s var(--kv-ease-spring), opacity 0.3s ease;
+}
+
+.kv-bio-pt.kv--visible {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+/* Colores por zona */
+.kv-bio-pt--tzone   { background: rgba(236,149,184,0.9); box-shadow: 0 0 8px rgba(236,149,184,0.8); }
+.kv-bio-pt--cheekL,
+.kv-bio-pt--cheekR  { background: rgba(58,122,245,0.9);  box-shadow: 0 0 8px rgba(58,122,245,0.8);  }
+.kv-bio-pt--eyeL,
+.kv-bio-pt--eyeR    { background: rgba(103,232,249,0.9); box-shadow: 0 0 8px rgba(103,232,249,0.8); }
+.kv-bio-pt--chin    { background: rgba(236,149,184,0.7); box-shadow: 0 0 6px rgba(236,149,184,0.6); }
+.kv-bio-pt--nose    { background: rgba(255,255,255,0.5); box-shadow: 0 0 6px rgba(255,255,255,0.4); }
+
+/* Pulso continuo en los puntos */
+.kv-bio-pt.kv--visible::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  opacity: 0;
+  animation: kvDotPulse 2s ease-out infinite;
+}
+
+.kv-bio-pt--tzone::after   { border-color: rgba(236,149,184,0.6); }
+.kv-bio-pt--cheekL::after,
+.kv-bio-pt--cheekR::after  { border-color: rgba(58,122,245,0.6);  }
+.kv-bio-pt--eyeL::after,
+.kv-bio-pt--eyeR::after    { border-color: rgba(103,232,249,0.6); }
+.kv-bio-pt--chin::after,
+.kv-bio-pt--nose::after    { border-color: rgba(255,255,255,0.3); }
+
+@keyframes kvDotPulse {
+  0%   { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(2.8); opacity: 0; }
+}
+
+/* Chips de datos sobre la foto */
+.kv-scan-data {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none;
+}
+
+.kv-scan-data__chip {
+  position: absolute;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  padding: 3px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+}
+
+.kv-scan-data__chip--tl {
+  top: 8px; left: 8px;
+  color: rgba(236,149,184,0.8);
+  border: 1px solid rgba(236,149,184,0.25);
+  background: rgba(0,0,0,0.5);
+  animation: kvChipBlink 1.8s ease-in-out infinite;
+}
+
+.kv-scan-data__chip--br {
+  bottom: 8px; right: 8px;
+  color: rgba(103,232,249,0.9);
+  border: 1px solid rgba(103,232,249,0.25);
+  background: rgba(0,0,0,0.6);
+  min-width: 28px;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+@keyframes kvChipBlink {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 1;   }
+}
+
+/* Marcos de esquina sobre la foto (tipo viewfinder clínico) */
+.kv-photo-corner {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  z-index: 11;
+  pointer-events: none;
+}
+
+.kv-photo-corner--tl { top: 6px;  left: 6px;  border-top: 1.5px solid rgba(236,149,184,0.7); border-left: 1.5px solid rgba(236,149,184,0.7);   }
+.kv-photo-corner--tr { top: 6px;  right: 6px; border-top: 1.5px solid rgba(236,149,184,0.7); border-right: 1.5px solid rgba(236,149,184,0.7);  }
+.kv-photo-corner--bl { bottom: 6px; left: 6px;  border-bottom: 1.5px solid rgba(58,122,245,0.7); border-left: 1.5px solid rgba(58,122,245,0.7);  }
+.kv-photo-corner--br { bottom: 6px; right: 6px; border-bottom: 1.5px solid rgba(58,122,245,0.7); border-right: 1.5px solid rgba(58,122,245,0.7); }
+
+/* ── Header de progreso con porcentaje ── */
+.kv-analysis-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.kv-analysis-pct {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--kv-pink);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.kv-analysis-progress__sub {
+  font-size: 9px;
+  color: rgba(255,255,255,0.22);
+  letter-spacing: 0.06em;
+  margin-top: 6px;
+  font-style: italic;
+}
+
+/* ── Items: hacerlos más compactos con 8 en pantalla ── */
+.kv-analysis-item {
+  padding: 5px 8px;
+  gap: 7px;
+}
+
+.kv-analysis-item__icon { font-size: 11px; width: 16px; }
+.kv-analysis-item__text { font-size: 10px; }
+.kv-analysis-item__check { font-size: 10px; }
+
 /* Overlay scanlines sobre la imagen capturada */
 .kv-captured-wrap::after {
   content: '';
@@ -1047,22 +1260,29 @@
 /* Área de info / progreso */
 .kv-analyzing-info {
   flex: 1;
-  padding: 20px 18px 20px 12px;
+  padding: 14px 14px 14px 10px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
   position: relative;
   z-index: 5;
+  overflow: hidden;
 }
+
+.kv-analysis-items {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.kv-analysis-items::-webkit-scrollbar { display: none; }
 
 .kv-analysis-progress__label {
   font-size: 10px;
   font-weight: 800;
   color: var(--kv-pink);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.10em;
   text-transform: uppercase;
   display: block;
-  margin-bottom: 8px;
 }
 
 .kv-progress-track {
@@ -1070,7 +1290,7 @@
   background: rgba(255,255,255,0.06);
   border-radius: 50px;
   overflow: hidden;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .kv-progress-fill {
@@ -1416,6 +1636,104 @@
 }
 
 /* ══════════════════════════════════════════════════════════
+   MOBILE FULLSCREEN — cámara ocupa toda la pantalla
+   En pantallas ≤ 640px el modal y el panel son 100vw × 100vh.
+   El viewfinder crece para llenar el espacio sin el header,
+   y el ovalo se centra correctamente.
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+
+  /* Modal sin padding — bordes a ras de pantalla */
+  #koi-vision-modal {
+    padding: 0 !important;
+    align-items: stretch !important;
+  }
+
+  /* Panel fullscreen, sin border-radius */
+  .kv-panel {
+    max-width: 100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100dvh !important;
+    border-radius: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Header compacto */
+  .kv-header {
+    padding: 12px 16px 10px !important;
+    flex-shrink: 0;
+  }
+
+  .kv-header__name    { font-size: 13px !important; }
+  .kv-header__subtitle { font-size: 9px !important; }
+
+  /* Viewfinder: ocupa todo el espacio restante de la pantalla */
+  .kv-viewfinder {
+    flex: 1 !important;
+    width: 100% !important;
+    aspect-ratio: unset !important;  /* quitar ratio fijo — que crezca libre */
+    min-height: 0 !important;
+  }
+
+  /* Video: cubre todo el viewfinder */
+  #koi-vision-video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+
+  /* Ovalo más grande en mobile */
+  .kv-face-guide__oval {
+    width: 65% !important;
+  }
+
+  /* Texto guía más legible */
+  .kv-guide-text {
+    font-size: 11px !important;
+    top: 14px !important;
+  }
+
+  /* HUD pegado al fondo con más padding para home indicator iOS */
+  .kv-hud {
+    padding: 14px 16px 28px !important;
+  }
+
+  /* Loading state fullscreen */
+  .kv-loading-state {
+    padding: 80px 24px !important;
+  }
+
+  /* Pantalla de análisis fullscreen */
+  .kv-analyzing-inner {
+    flex-direction: column !important;
+  }
+
+  .kv-captured-wrap {
+    width: 100% !important;
+    max-height: 45vh !important;
+  }
+
+  .kv-captured-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+
+  /* Resultado preview: scrollable si es largo */
+  .kv-result-preview {
+    padding: 16px 16px 28px !important;
+  }
+
+  /* Botón CTA más grande para tapping fácil */
+  .kv-result-cta {
+    padding: 16px 20px !important;
+    font-size: 15px !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
    CARD DE ANÁLISIS EN EL CHAT DE KOI
    ══════════════════════════════════════════════════════════ */
 .koi-vision-card {
@@ -1577,16 +1895,118 @@
 }
 
 .kva-card__header {
-  padding: 14px 16px 12px;
+  padding: 12px 16px 10px;
   border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kva-card__badge {
+  font-size: 10px;
+  font-weight: 800;
+  color: #ec95b8;
+  background: rgba(236,149,184,0.10);
+  border: 1px solid rgba(236,149,184,0.20);
+  border-radius: 4px;
+  padding: 2px 6px;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
 }
 
 .kva-card__title {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
-  color: #ec95b8;
+  color: rgba(255,255,255,0.82);
+  letter-spacing: 0.04em;
+}
+
+/* ══════════════════════════════════════════════════════════
+   SCORE GLOBAL — Hero section con gauge SVG
+   ══════════════════════════════════════════════════════════ */
+.kva-score-global {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, rgba(58,122,245,0.07) 0%, rgba(236,149,184,0.06) 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.kva-score-global::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 20% 50%, rgba(58,122,245,0.08) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.kva-sg__gauge-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 88px;
+  height: 88px;
+}
+
+.kva-sg__svg {
+  display: block;
+  transform: rotate(-90deg);
+}
+
+.kva-sg__number {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  padding-bottom: 10px;
+}
+
+.kva-sg__denom {
+  position: absolute;
+  bottom: 18px;
+  left: 0; right: 0;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.28);
+  letter-spacing: 0.04em;
+}
+
+.kva-sg__right {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.kva-sg__label {
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.28);
   letter-spacing: 0.10em;
   text-transform: uppercase;
+}
+
+.kva-sg__grade {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.kva-sg__sublabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.52);
+  line-height: 1.4;
+  margin-top: 2px;
 }
 
 /* ── Secciones ── */
@@ -1656,6 +2076,15 @@
   font-size: 11px;
   font-weight: 700;
   color: rgba(255,255,255,0.72);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.kva-dim__icon {
+  font-size: 12px;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .kva-dim__score {
@@ -1708,11 +2137,41 @@
 .kva-ingredients { display: flex; flex-direction: column; gap: 7px; }
 
 .kva-ingredient {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   background: rgba(58,122,245,0.06);
   border: 1px solid rgba(58,122,245,0.14);
-  border-left: 2px solid #3a7af5;
   border-radius: 8px;
-  padding: 7px 10px;
+  padding: 8px 10px;
+  transition: background 0.2s ease;
+}
+
+.kva-ingredient:hover {
+  background: rgba(58,122,245,0.10);
+}
+
+.kva-ingredient__num {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(58,122,245,0.18);
+  border: 1px solid rgba(58,122,245,0.28);
+  font-size: 9px;
+  font-weight: 900;
+  color: #93c5fd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+}
+
+.kva-ingredient__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .kva-ingredient__name {
@@ -1721,7 +2180,6 @@
   font-weight: 800;
   color: #93c5fd;
   letter-spacing: 0.04em;
-  margin-bottom: 2px;
 }
 
 .kva-ingredient__reason {
@@ -1757,32 +2215,46 @@
 
 /* ── Meta (edad bio + perfil) ── */
 .kva-meta {
-  padding: 9px 16px;
+  padding: 10px 16px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-  background: rgba(255,255,255,0.01);
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(255,255,255,0.015);
+  border-top: 1px solid rgba(255,255,255,0.05);
 }
 
-.kva-meta__item { display: flex; align-items: center; gap: 6px; }
+.kva-meta__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
 
-.kva-meta__key  { font-size: 10px; color: rgba(255,255,255,0.30); font-weight: 600; }
-.kva-meta__val  { font-size: 10px; color: rgba(255,255,255,0.55); font-weight: 600; }
+.kva-meta__icon {
+  font-size: 13px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
 
-.kva-meta__badge {
+.kva-meta__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.kva-meta__key  {
   font-size: 10px;
-  font-weight: 800;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  color: rgba(255,255,255,0.30);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
-
-.kva-meta__badge--ok   { background: rgba(34,197,94,0.15);  color: #86efac; border: 1px solid rgba(34,197,94,0.25); }
-.kva-meta__badge--warn { background: rgba(251,191,36,0.12); color: #fde68a; border: 1px solid rgba(251,191,36,0.25); }
+.kva-meta__val  {
+  font-size: 11px;
+  color: rgba(255,255,255,0.62);
+  font-weight: 500;
+  line-height: 1.4;
+}
 
 /* ══════════════════════════════════════════════════════════
    RESPONSIVE
