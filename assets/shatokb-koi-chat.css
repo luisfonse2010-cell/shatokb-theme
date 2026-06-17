@@ -376,6 +376,19 @@
   align-items: flex-end;
   position: relative;
   z-index: 1;
+  transition: opacity 0.3s ease, transform 0.3s ease, max-height 0.35s ease, padding 0.3s ease;
+  max-height: 200px;
+  overflow: hidden;
+}
+
+/* Oculta completamente la barra — sin espacio, sin confusión */
+.koi-input-area--hidden {
+  opacity: 0;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  pointer-events: none;
+  border-top-color: transparent;
 }
 
 .koi-input {
