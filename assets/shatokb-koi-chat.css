@@ -816,17 +816,79 @@
 
 
 /* ══════════════════════════════════════════════════════════
-   THE REVEAL — EMAIL GATE CONVERSACIONAL v2.0
-   Componente de email que se inyecta dentro del chat
-   de KOI. No es un modal — es parte de la conversación.
+   THE REVEAL — EMAIL GATE CONVERSACIONAL v3.0
+   Ahora vive anclado en el panel (nivel .koi-panel),
+   no dentro del scroll de mensajes. Siempre visible
+   aunque el usuario siga chateando.
    ══════════════════════════════════════════════════════════ */
+
+/* ── Versión legacy (dentro del scroll) — por compatibilidad ── */
 .koi-email-gate {
-  margin: 4px 0 8px 42px; /* alineado con las burbujas de KOI */
+  margin: 4px 0 8px 42px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(236, 149, 184, 0.25);
   border-radius: 12px;
   padding: 16px;
   animation: koiEmailSlideIn 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Versión anclada al panel — siempre visible ─────────── */
+.koi-email-gate--panel {
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border-top: 1px solid rgba(236, 149, 184, 0.25) !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  background: #1c181a !important;
+  padding: 0 !important;
+  animation: koiEmailPanelIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  position: relative;
+  z-index: 3;
+}
+
+@keyframes koiEmailPanelIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+.koi-email-gate--panel .koi-email-gate__inner {
+  padding: 14px 20px 12px;
+}
+
+.koi-email-gate__hint {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.40);
+  margin: 0 0 10px;
+  text-align: center;
+  letter-spacing: 0.01em;
+}
+
+/* En la versión panel el input tiene menos margen */
+.koi-email-gate--panel .koi-email-input {
+  margin-bottom: 8px !important;
+}
+
+/* Footer con nota + skip en línea */
+.koi-email-gate__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.koi-email-gate--panel .koi-email-note {
+  margin: 0 !important;
+  text-align: left !important;
+  flex: 1;
+}
+
+.koi-email-gate--panel .koi-email-skip {
+  margin: 0 !important;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 @keyframes koiEmailSlideIn {
