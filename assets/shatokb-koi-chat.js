@@ -123,7 +123,11 @@
    * Llamado desde shatokb-quiz.js cuando se muestra el resultado.
    */
   window.shatokbIniciarKOI = function (contextoQuiz) {
+    // Guard anti-duplicación: bloquea cualquier segunda llamada
+    // (el quiz dispara CustomEvent + intentarKOI en paralelo).
+    // Se activa AQUÍ, inmediatamente, antes de cualquier setTimeout.
     if (KOI_STATE.isReady) return;
+    KOI_STATE.isReady = true; // ← marcar YA, no esperar al setTimeout
 
     // Guardar contexto del quiz
     KOI_STATE.contexto = contextoQuiz || obtenerContextoLocal();
@@ -135,7 +139,6 @@
     // Animar entrada después del delay
     setTimeout(() => {
       wrapper.classList.add('koi--visible');
-      KOI_STATE.isReady = true;
 
       // Primer mensaje proactivo de KOI
       setTimeout(() => {
@@ -1617,13 +1620,19 @@ async function enviarDesdeChip (texto) {
      INTEGRACIÓN CON shatokb-quiz.js
      Escucha el evento custom que dispara el quiz cuando
      muestra el resultado, y arranca KOI automáticamente.
+
+     GUARD ANTI-DUPLICACIÓN:
+     shatokbIniciarKOI ya tiene "if (KOI_STATE.isReady) return" como
+     primera línea — eso basta para bloquear cualquier segunda llamada,
+     sin importar la ruta (CustomEvent o llamada directa desde quiz.js).
      ══════════════════════════════════════════════════════════ */
+
+  // Ruta 1: CustomEvent 'shatokb:resultado' disparado por shatokb-quiz.js
   document.addEventListener('shatokb:resultado', function (e) {
-    const contexto = e.detail || {};
-    window.shatokbIniciarKOI(contexto);
+    window.shatokbIniciarKOI(e.detail || {});
   });
 
-  // Fallback: si el resultado ya está visible al cargar
+  // Fallback: si el resultado ya está visible al cargar la página
   document.addEventListener('DOMContentLoaded', function () {
     const resultado = document.querySelector('.shatokb-resultado');
     if (resultado && resultado.style.display !== 'none') {
