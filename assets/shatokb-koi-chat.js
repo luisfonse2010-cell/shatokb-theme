@@ -830,8 +830,16 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     .catch(() => {}); // silencioso — nunca interrumpir la experiencia
   }
 
+  // Flag booleano síncrono — guard más rápido que el string revealPhase
+  // Evita race condition si revelarRutinaConKOI se llama dos veces antes
+  // de que el primer await haya terminado.
+  let _revelarEnCurso = false;
+
   async function revelarRutinaConKOI (email) {
-    // Guard: evitar doble ejecución si ya se reveló
+    // Doble guard: booleano síncrono + string de fase
+    // El booleano es la primera línea → imposible que dos llamadas simultáneas pasen
+    if (_revelarEnCurso) return;
+    _revelarEnCurso = true;
     if (KOI_STATE.revealPhase === 'revealed') return;
     KOI_STATE.revealPhase = 'revealed';
 
@@ -1333,12 +1341,19 @@ function _animarCardEntrada(cardEl) {
 
 /* ══════════════════════════════════════════════════════════
    ESCUCHAR EVENTO GLOBAL de KOI Vision (alternativo al callback)
+   Usa { once: true } para que el listener se auto-elimine tras
+   la primera ejecución — evita acumulación de handlers si el
+   usuario abre la cámara más de una vez.
    ══════════════════════════════════════════════════════════ */
-window.addEventListener('koi-vision-result', function(e) {
-  if (e.detail) {
-    manejarResultadoVision(e.detail);
-  }
-});
+let _visionResultHandled = false;
+function _handleVisionResult(e) {
+  if (_visionResultHandled) return;
+  _visionResultHandled = true;
+  if (e.detail) manejarResultadoVision(e.detail);
+  // Resetear el flag después de 2s para permitir nuevos análisis
+  setTimeout(function() { _visionResultHandled = false; }, 2000);
+}
+window.addEventListener('koi-vision-result', _handleVisionResult);
 
 async function enviarDesdeChip (texto) {
     // ── Chips de bifurcación "The Reveal" ─────────────────────
@@ -1421,9 +1436,14 @@ async function enviarDesdeChip (texto) {
       // Exponer la URL del Worker al módulo de visión
       window.KOI_VISION_WORKER_URL = KOI_CONFIG.workerUrl.replace('/chat', '/vision');
 
-      // Registrar el callback ANTES de abrir (el modal lo llama al cerrar)
+      // Registrar el callback ANTES de abrir (el modal lo llama al cerrar).
+      // Pasar flag _visionResultHandled para evitar doble ejecución si
+      // el evento global también dispara (ambos apuntan a la misma función).
       window.koiVision.onResultado(function(data) {
+        if (_visionResultHandled) return;
+        _visionResultHandled = true;
         manejarResultadoVision(data);
+        setTimeout(function() { _visionResultHandled = false; }, 2000);
       });
 
       // Fallback alternativo (si el usuario cancela la cámara)
