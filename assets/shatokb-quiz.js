@@ -2925,8 +2925,8 @@ async function shatokbMostrarResultado() {
       <div class="stk-reveal-header">
         <p class="stk-section-title">Your Personalized Routine</p>
         <p class="stk-section-sub">
-          For each step below we've hand-picked the best options for your skin profile and budget.<br>
-          <strong>All the products within each step work for your skin — pick the one you prefer.</strong>
+          For each step we've hand-picked the best options for your skin profile and budget.<br>
+          <strong>All options within each step work for your skin — pick the one you prefer.</strong>
           Your estimated total updates automatically as you choose.
         </p>
       </div>
@@ -2981,39 +2981,90 @@ async function shatokbMostrarResultado() {
       <!-- Productos sombreados -->
       <div class="stk-routine-blurred" id="stk-routine-blurred">
 
-        <!-- ── AM/PM split ─────────────────────────────────── -->
+        <!-- ══════════════════════════════════════════════════
+             SECCIÓN 1 — TODOS LOS PRODUCTOS (numerados 1…N)
+             Tarjetas completas con opciones seleccionables.
+             ═══════════════════════════════════════════════ -->
         <div id="shatokb-routine-steps">
           ${(function() {
             const { am, pm } = shatokbSplitAMPM(pasosProd);
+
+            // Orden canónico: AM primero, luego PM-exclusivos.
+            // Este orden define los números 1…N que aparecen
+            // tanto en las tarjetas como en el schedule AM/PM.
+            const allOrdered = [...am, ...pm.filter(p => !am.includes(p))];
+
+            // Mapa paso → número display (1-based, secuencial)
+            const displayNumMap = new Map();
+            allOrdered.forEach((p, i) => displayNumMap.set(p, i + 1));
+
             let html = '';
 
-            // ── AM block ─────────────────────────────────────
+            // ── Lista completa de pasos con tarjetas ─────────
+            allOrdered.forEach((paso) => {
+              html += shatokbRenderPasoHTML(paso, pasosProd.indexOf(paso), budgetMax, displayNumMap.get(paso));
+            });
+
+            // ── Separador "How to use them" ───────────────────
+            html += `
+            <div class="stk-schedule" id="stk-schedule">
+              <div class="stk-schedule__header">
+                <span class="stk-schedule__icon">🗓️</span>
+                <div>
+                  <h3 class="stk-schedule__title">How to use them</h3>
+                  <p class="stk-schedule__sub">Apply your products in this order, morning and night</p>
+                </div>
+              </div>`;
+
+            // ── AM lane ───────────────────────────────────────
             if (am.length > 0) {
-              html += `<div class="stk-ampm-block stk-ampm-block--am">
-                <div class="stk-ampm-header">
-                  <span class="stk-ampm-icon">☀️</span>
-                  <div>
-                    <h3 class="stk-ampm-title">Morning Routine</h3>
-                    <p class="stk-ampm-sub">${am.length} step${am.length !== 1 ? 's' : ''} · Apply in this order for maximum absorption</p>
-                  </div>
-                </div>`;
-              am.forEach((paso, i) => { html += shatokbRenderPasoHTML(paso, pasosProd.indexOf(paso), budgetMax); });
-              html += '</div>';
+              html += `
+              <div class="stk-schedule__lane stk-schedule__lane--am">
+                <div class="stk-schedule__lane-label">
+                  <span class="stk-schedule__lane-icon">☀️</span>
+                  <span>Morning</span>
+                </div>
+                <div class="stk-schedule__steps">`;
+              am.forEach((paso, i) => {
+                const num = displayNumMap.get(paso);
+                html += `
+                  <div class="stk-schedule__step">
+                    <div class="stk-schedule__step-num">${num}</div>
+                    <div class="stk-schedule__step-name">${paso.paso}</div>
+                  </div>`;
+                if (i < am.length - 1) {
+                  html += `<div class="stk-schedule__arrow">→</div>`;
+                }
+              });
+              html += `</div></div>`;
             }
 
-            // ── PM block ─────────────────────────────────────
-            if (pm.length > 0) {
-              html += `<div class="stk-ampm-block stk-ampm-block--pm">
-                <div class="stk-ampm-header">
-                  <span class="stk-ampm-icon">🌙</span>
-                  <div>
-                    <h3 class="stk-ampm-title">Night Routine</h3>
-                    <p class="stk-ampm-sub">${pm.length} step${pm.length !== 1 ? 's' : ''} · PM-only actives work while you sleep</p>
-                  </div>
-                </div>`;
-              pm.forEach((paso, i) => { html += shatokbRenderPasoHTML(paso, pasosProd.indexOf(paso), budgetMax); });
-              html += '</div>';
+            // ── PM lane ───────────────────────────────────────
+            const pmAll = pasosProd.filter(s => s.momento === 'pm' || s.momento === 'both' || !s.momento);
+            if (pmAll.length > 0) {
+              html += `
+              <div class="stk-schedule__lane stk-schedule__lane--pm">
+                <div class="stk-schedule__lane-label">
+                  <span class="stk-schedule__lane-icon">🌙</span>
+                  <span>Night</span>
+                </div>
+                <div class="stk-schedule__steps">`;
+              pmAll.forEach((paso, i) => {
+                const num = displayNumMap.get(paso);
+                const isPmOnly = paso.momento === 'pm';
+                html += `
+                  <div class="stk-schedule__step${isPmOnly ? ' stk-schedule__step--pm-only' : ''}">
+                    <div class="stk-schedule__step-num">${num}</div>
+                    <div class="stk-schedule__step-name">${paso.paso}${isPmOnly ? '<span class="stk-schedule__step-pm-badge">PM only</span>' : ''}</div>
+                  </div>`;
+                if (i < pmAll.length - 1) {
+                  html += `<div class="stk-schedule__arrow">→</div>`;
+                }
+              });
+              html += `</div></div>`;
             }
+
+            html += `</div>`; // cierra .stk-schedule
 
             // ── Conflict warnings ─────────────────────────────
             const conflictos = shatokbDetectarConflictos(pasosProd);
@@ -3330,7 +3381,7 @@ function shatokbArchetypeIcon(archetype) {
   return ICONS[archetype] || '🌿';
 }
 
-function shatokbRenderPasoHTML(paso, stepIdx, budgetMax) {
+function shatokbRenderPasoHTML(paso, stepIdx, budgetMax, displayNum) {
   // ── Momento badge for the step ───────────────────────────────
   const momentoData = SHATOKB_MOMENTO_BADGE[paso.momento] || SHATOKB_MOMENTO_BADGE.both;
   const momentoBadge = `
@@ -3464,7 +3515,7 @@ function shatokbRenderPasoHTML(paso, stepIdx, budgetMax) {
   return `
     <div class="stk-routine-step shatokb-paso" data-step="${stepIdx}" data-momento="${paso.momento || 'both'}">
       <div class="stk-routine-step__header">
-        <div class="stk-routine-step__num">${stepIdx + 1}</div>
+        <div class="stk-routine-step__num">${displayNum !== undefined ? displayNum : stepIdx + 1}</div>
         <div style="flex:1">
           <div class="stk-routine-step__name">
             ${paso.paso}
