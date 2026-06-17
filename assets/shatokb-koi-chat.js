@@ -579,6 +579,11 @@ RULES — READ CAREFULLY:
     const idioma = detectarIdioma();
     ocultarChips();
 
+    // Ocultar barra de input mientras KOI escribe — el usuario
+    // no puede interrumpir la fase insight/reveal
+    setInputAreaVisible(false);
+    setInputHabilitado(false);
+
     if (esChipCamara(texto)) {
       // Marcar fase → los chips post_camara no serán interceptados por esChipReveal
       KOI_STATE.revealPhase = 'camara';
@@ -1194,6 +1199,12 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       de: `Für jeden Schritt der Routine **3 Optionen** — alle gleich wirksam, wähle die, die am besten zu dir passt. Jedes Produkt hat einen ❓ Button, um zu erfahren, warum ich es genau für dich gewählt habe.`,
       it: `Per ogni step della routine **3 opzioni** — tutte ugualmente efficaci, scegli quella che ti convince di più. Ogni prodotto ha un ❓ per sapere esattamente perché l'ho scelto per te.`,
     };
+
+    // ── Ocultar barra de input desde el primer instante del reveal ──
+    // El usuario no debe poder escribir mientras KOI está generando
+    // el diagnóstico y los mensajes de la fase insight.
+    setInputAreaVisible(false);
+    setInputHabilitado(false);
 
     mostrarTyping();
     await new Promise(r => setTimeout(r, visionReveal ? 1600 : 1200));
