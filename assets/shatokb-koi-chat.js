@@ -2229,10 +2229,28 @@ async function enviarDesdeChip (texto) {
     };
     const skipText = skipTexts[idioma] || skipTexts['en'];
 
+    // Header recordatorio — recupera el contexto si el usuario perdió el mensaje
+    const headerTexts = {
+      es: { title: '📩 Tu Skin Report personalizado está listo', sub: 'Recíbelo gratis en tu email · Incluye análisis de piel, rutina completa y manual de uso' },
+      en: { title: '📩 Your personalized Skin Report is ready',  sub: 'Get it free in your email · Includes skin analysis, full routine and usage guide' },
+      fr: { title: '📩 Votre Skin Report personnalisé est prêt', sub: 'Recevez-le gratuitement · Inclut analyse de peau, routine complète et guide d\'utilisation' },
+      pt: { title: '📩 Seu Skin Report personalizado está pronto', sub: 'Receba grátis no seu email · Inclui análise de pele, rotina completa e manual de uso' },
+      de: { title: '📩 Dein persönlicher Skin Report ist fertig', sub: 'Kostenlos per E-Mail · Enthält Hautanalyse, vollständige Routine und Anwendungsanleitung' },
+      it: { title: '📩 Il tuo Skin Report personalizzato è pronto', sub: 'Ricevilo gratis via email · Include analisi della pelle, routine completa e guida all\'uso' },
+    };
+    const header = headerTexts[idioma] || headerTexts['en'];
+
+    // Leer precio actual de la mini barra para mostrarlo en el header
+    const precioEl  = document.getElementById('koi-mini-cart-total');
+    const precioStr = precioEl ? precioEl.textContent.trim() : (_miniCartData.total || '');
+    const precioHTML = precioStr
+      ? `<span class="koi-email-gate__price">${precioStr}</span>`
+      : '';
+
     // ── Inyectar en el .koi-panel (nivel del panel, no dentro del scroll) ──
     // Así el formulario siempre es visible aunque el usuario siga chateando.
     // Se inserta justo antes de .koi-input-area (debajo de la mini barra).
-    const panel    = document.querySelector('#shatokb-koi-wrapper .koi-panel');
+    const panel     = document.querySelector('#shatokb-koi-wrapper .koi-panel');
     const inputArea = document.querySelector('#shatokb-koi-wrapper .koi-input-area');
     if (!panel) return;
 
@@ -2240,8 +2258,13 @@ async function enviarDesdeChip (texto) {
     gate.id        = 'koi-email-gate';
     gate.className = 'koi-email-gate koi-email-gate--panel';
     gate.innerHTML = `
+      <div class="koi-email-gate__header">
+        <div class="koi-email-gate__header-left">
+          <span class="koi-email-gate__title">${header.title}${precioHTML}</span>
+          <span class="koi-email-gate__sub">${header.sub}</span>
+        </div>
+      </div>
       <div class="koi-email-gate__inner">
-        <p class="koi-email-gate__hint" id="koi-email-hint"></p>
         <input
           type="email"
           id="koi-email-input"
