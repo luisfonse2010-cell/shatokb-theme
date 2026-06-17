@@ -1006,127 +1006,13 @@
   margin-bottom: 10px;
 }
 
-/* ── Momento 3: Cart CTA grande (post-email) ─────────────── */
-.koi-cart-cta {
-  margin: 6px 0 8px 42px;
-  animation: koiCartCTAIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-@keyframes koiCartCTAIn {
-  from { opacity: 0; transform: translateY(10px) scale(0.96); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.koi-cart-cta__btn {
-  width: 100%;
-  background: linear-gradient(135deg, #ec95b8 0%, #d97baa 100%);
-  color: #1c181a;
-  border: none;
-  border-radius: 12px;
-  padding: 15px 24px;
-  font-size: 15px;
-  font-weight: 800;
-  cursor: pointer;
-  letter-spacing: -0.01em;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
-  box-shadow: 0 4px 16px rgba(236, 149, 184, 0.35);
-  font-family: var(--koi-font-body, sans-serif);
-  display: block;
-}
-
-.koi-cart-cta__btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(236, 149, 184, 0.50);
-  filter: brightness(1.05);
-}
-
-.koi-cart-cta__btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(236, 149, 184, 0.30);
-}
-
-.koi-cart-cta__sub {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.35);
-  text-align: center;
-  margin-top: 6px;
-  letter-spacing: 0.01em;
-}
-
-/* Pulso sutil en el botón para llamar atención */
-@keyframes koiCartBtnPulse {
-  0%, 100% { box-shadow: 0 4px 16px rgba(236, 149, 184, 0.35); }
-  50%       { box-shadow: 0 4px 26px rgba(236, 149, 184, 0.60); }
-}
-
-.koi-cart-cta__btn {
-  animation: koiCartBtnPulse 2.5s ease-in-out 1s infinite;
-}
-
-.koi-cart-cta__btn:hover,
-.koi-cart-cta__btn:active {
-  animation: none;
-}
-
-/* ── Momento 5: Cart CTA compacto anclado ────────────────── */
-.koi-cart-cta-anchored {
-  margin: 4px 0 6px 42px;
-  animation: koiAnchoredIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-@keyframes koiAnchoredIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.koi-cart-cta-anchored__divider {
-  height: 1px;
-  background: rgba(255, 255, 255, 0.08);
-  margin-bottom: 10px;
-}
-
-.koi-cart-cta-anchored__btn {
-  width: 100%;
-  background: rgba(236, 149, 184, 0.12);
-  border: 1px solid rgba(236, 149, 184, 0.35);
-  border-radius: 10px;
-  padding: 11px 18px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--koi-rose, #ec95b8);
-  cursor: pointer;
-  letter-spacing: 0.01em;
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
-  font-family: var(--koi-font-body, sans-serif);
-  display: block;
-  text-align: center;
-}
-
-.koi-cart-cta-anchored__btn:hover {
-  background: rgba(236, 149, 184, 0.22);
-  border-color: rgba(236, 149, 184, 0.60);
-  transform: translateY(-1px);
-}
-
-.koi-cart-cta-anchored__btn:active {
-  transform: translateY(0);
-}
+/* Momentos 3 y 5 (Cart CTA dentro del chat) eliminados.
+   El cuadro sticky "Add my full routine to cart" encima del chat
+   cumple esa función correctamente y siempre está visible. */
 
 /* ── Responsive mobile ───────────────────────────────────── */
 @media (max-width: 640px) {
-  .koi-preparing-card,
-  .koi-cart-cta,
-  .koi-cart-cta-anchored {
+  .koi-preparing-card {
     margin-left: 0;
-  }
-
-  .koi-cart-cta__btn {
-    font-size: 14px;
-    padding: 13px 20px;
-  }
-
-  .koi-cart-cta-anchored__btn {
-    font-size: 13px;
-    padding: 10px 16px;
   }
 }
