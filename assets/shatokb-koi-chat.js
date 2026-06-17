@@ -2029,6 +2029,7 @@ async function enviarDesdeChip (texto) {
     container.appendChild(gate);
     scrollAlFinal();
     setInputHabilitado(false);
+    setInputAreaVisible(false); // ocultar barra — el formulario la reemplaza
 
     setTimeout(() => {
       const inp = document.getElementById('koi-email-input');
@@ -2063,6 +2064,7 @@ async function enviarDesdeChip (texto) {
       setTimeout(() => { if (gate.parentNode) gate.remove(); }, 400);
       agregarMensaje('user', email);
       setInputHabilitado(true);
+      setInputAreaVisible(true);
 
       // Mensaje de confirmación breve antes del carrito
       const confirmaciones = {
@@ -2085,6 +2087,7 @@ async function enviarDesdeChip (texto) {
       gate.classList.add('koi-email-gate--confirmed');
       setTimeout(() => { if (gate.parentNode) gate.remove(); }, 400);
       setInputHabilitado(true);
+      setInputAreaVisible(true);
       callbackProcederAlCarrito();
     }
 
