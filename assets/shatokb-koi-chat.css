@@ -12,6 +12,82 @@
  * ============================================================
  */
 
+/* ══════════════════════════════════════════════════════════
+   MINI BARRA DE CARRITO — dentro del chat, encima del footer
+   Aparece cuando la barra superior (sticky quiz) está visible.
+   Mismas funciones, diseño compacto.
+   ══════════════════════════════════════════════════════════ */
+.koi-mini-cart-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: #1c181a;
+  border-top: 1px solid rgba(236, 149, 184, 0.20);
+  padding: 10px 16px;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.koi-mini-cart-bar--visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.koi-mini-cart-bar__info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.koi-mini-cart-bar__label {
+  font-family: var(--koi-font-body);
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.50);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.koi-mini-cart-bar__total {
+  font-family: var(--koi-font-head);
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.koi-mini-cart-bar__btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ec95b8;
+  color: #1c181a;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-family: var(--koi-font-body);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+  white-space: nowrap;
+}
+
+.koi-mini-cart-bar__btn:hover {
+  background: #f0aac8;
+  transform: translateY(-1px);
+}
+
+.koi-mini-cart-bar__btn:active {
+  transform: translateY(0);
+}
+
 /* ── Variables KOI ────────────────────────────────────────── */
 :root {
   --koi-dark:        #1c181a;
