@@ -2625,6 +2625,16 @@ function shatokbSiguientePregunta(idx) {
 
   if (idx + 1 < SHATOKB_PREGUNTAS.length) {
     shatokbRenderPregunta(idx + 1);
+    // Scroll al inicio de la pregunta — siempre, en cualquier dispositivo
+    setTimeout(function() {
+      const form = document.getElementById('shatokb-quiz-form');
+      const target = form || document.getElementById('shatokb-quiz');
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 30);
   } else {
     shatokbMostrarGateEmail();
   }
@@ -2643,14 +2653,88 @@ function shatokbMostrarGateEmail() {
   const form  = document.getElementById('shatokb-quiz-form');
 
   if (fill)  fill.style.width     = '100%';
-  if (texto) texto.textContent    = '🎉 Done! Preparing your routine…';
+  if (texto) texto.textContent    = '✓ Complete!';
   if (pctEl) pctEl.textContent    = '100%';
-  if (form)  form.style.display   = 'none';
 
   shatokbTrackPixel('QuizCompleted', { skin_profile: shatokbCalcularPerfil(shatokbState.respuestas) });
 
-  // Email gate removido — ir directo al resultado
-  shatokbMostrarResultado();
+  // Mostrar pantalla de transición "construyendo tu rutina"
+  shatokbMostrarTransicion(function() {
+    if (form) form.style.display = 'none';
+    shatokbMostrarResultado();
+  });
+}
+
+function shatokbMostrarTransicion(callback) {
+  // Crear overlay de transición sobre el quiz
+  const quizEl = document.getElementById('shatokb-quiz') ||
+                 document.getElementById('shatokb-quiz-form') ||
+                 document.body;
+
+  // Eliminar overlay anterior si existe
+  const prev = document.getElementById('stk-building-overlay');
+  if (prev) prev.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'stk-building-overlay';
+  overlay.innerHTML = `
+    <div class="stk-building__inner">
+      <div class="stk-building__icon-wrap">
+        <div class="stk-building__ring stk-building__ring--1"></div>
+        <div class="stk-building__ring stk-building__ring--2"></div>
+        <div class="stk-building__ring stk-building__ring--3"></div>
+        <span class="stk-building__emoji">🌸</span>
+      </div>
+      <p class="stk-building__title">Building your routine…</p>
+      <p class="stk-building__sub">Analyzing your skin profile</p>
+      <div class="stk-building__steps">
+        <div class="stk-building__step" id="stk-bs-1">
+          <span class="stk-building__step-dot"></span>
+          <span>Calculating your skin profile</span>
+        </div>
+        <div class="stk-building__step" id="stk-bs-2">
+          <span class="stk-building__step-dot"></span>
+          <span>Selecting compatible actives</span>
+        </div>
+        <div class="stk-building__step" id="stk-bs-3">
+          <span class="stk-building__step-dot"></span>
+          <span>Personalizing AM &amp; PM routine</span>
+        </div>
+      </div>
+    </div>`;
+
+  document.body.appendChild(overlay);
+
+  // Scroll al top para que se vea el overlay
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // Activar con frame de delay para transición suave
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => overlay.classList.add('stk-building--visible'));
+  });
+
+  // Animar steps secuencialmente
+  const steps = [
+    document.getElementById('stk-bs-1'),
+    document.getElementById('stk-bs-2'),
+    document.getElementById('stk-bs-3'),
+  ];
+  steps.forEach(function(el, i) {
+    if (!el) return;
+    setTimeout(function() {
+      el.classList.add('stk-building__step--active');
+      setTimeout(function() { el.classList.add('stk-building__step--done'); }, 600);
+    }, 400 + i * 700);
+  });
+
+  // Tras ~2.6s, fade out y ejecutar callback
+  setTimeout(function() {
+    overlay.classList.add('stk-building--exit');
+    setTimeout(function() {
+      overlay.remove();
+      if (typeof callback === 'function') callback();
+    }, 500);
+  }, 2800);
 }
 
 async function shatokbSubmitEmail(e) {
