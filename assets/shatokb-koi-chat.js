@@ -282,9 +282,21 @@
   /* ══════════════════════════════════════════════════════════
      CHIPS DE RESPUESTA RÁPIDA
      ══════════════════════════════════════════════════════════ */
+  // Tipos de chips donde el input NO tiene sentido:
+  // el usuario debe elegir una opción, no escribir libremente.
+  const CHIPS_SIN_INPUT = new Set(['reveal', 'post_camara', 'post_vision']);
+
   function mostrarChips (tipo) {
     const container = document.getElementById('koi-chips');
     if (!container) return;
+
+    // Ocultar/mostrar barra de input según el tipo de chips
+    if (CHIPS_SIN_INPUT.has(tipo)) {
+      setInputAreaVisible(false);
+    } else {
+      setInputAreaVisible(true);
+      setInputHabilitado(true);
+    }
 
     // Chips localizados según el idioma detectado del navegador
     const idioma     = detectarIdioma();
@@ -298,6 +310,9 @@
       btn.textContent = texto;
       btn.addEventListener('click', () => {
         container.innerHTML = '';
+        // Al hacer clic en chip de acción → restaurar input
+        setInputAreaVisible(true);
+        setInputHabilitado(true);
         enviarDesdeChip(texto);
       });
       container.appendChild(btn);
@@ -636,6 +651,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
   async function pedirEmailEnChat () {
     KOI_STATE.revealPhase = 'email';
     setInputHabilitado(false);
+    setInputAreaVisible(false); // ocultar barra — el formulario de email la reemplaza
 
     // Pequeña pausa → typing visible
     mostrarTyping();
@@ -1059,8 +1075,9 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     };
     const btnLabel = scrollBtns[idioma] || scrollBtns['en'];
 
-    // Ocultar barra de input — más claro que mostrarla deshabilitada en gris.
-    // El usuario no puede (ni debe) escribir hasta ver la rutina.
+    // Ocultar barra de input — ya se hizo desde mostrarChips('reveal')
+    // o desde pedirEmailEnChat(). Nos aseguramos aquí también por si
+    // revelarRutinaConKOI se llama sin pasar por esos flujos.
     setInputAreaVisible(false);
 
     setTimeout(() => {
