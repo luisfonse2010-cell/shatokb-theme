@@ -38,7 +38,8 @@
     },
 
     // Delay entre cada item de análisis (ms)
-    analysisItemDelay: 800,
+    // 8 items × 1800ms = 14.4s — cubre la mayoría de respuestas Vision
+    analysisItemDelay: 1800,
 
     // Tiempo mínimo de análisis simulado antes de mostrar resultado (ms)
     minAnalysisTime: 3200,
@@ -87,12 +88,16 @@
       status_capture: 'Capturing…',
       quality_ready:  '✓ READY',
       analysis_title: 'KOI is analyzing your skin',
+      analysis_sub:   'Clinical analysis in progress — please wait',
       items: [
-        { icon: '🔬', text: 'Analyzing skin texture and pores' },
-        { icon: '💧', text: 'Detecting hydration levels' },
-        { icon: '🎨', text: 'Evaluating tone and pigmentation' },
-        { icon: '⚡', text: 'Identifying reactive zones' },
-        { icon: '✨', text: 'Personalizing your routine' },
+        { icon: '💧', text: 'Hydration levels',         dim: 'hidratacion'  },
+        { icon: '🛡️', text: 'Skin barrier integrity',   dim: 'barrera'      },
+        { icon: '✨', text: 'Sebum distribution',        dim: 'sebum'        },
+        { icon: '🌗', text: 'Pigmentation & tone',       dim: 'pigmentacion' },
+        { icon: '🔎', text: 'Texture & pore structure',  dim: 'textura'      },
+        { icon: '❤️', text: 'Microcirculation',          dim: 'circulacion'  },
+        { icon: '💪', text: 'Firmness & elasticity',     dim: 'firmeza'      },
+        { icon: '🦠', text: 'Microbiome balance',        dim: 'microbioma'   },
       ],
       result_title:    'Skin Analysis Complete',
       result_cta:      '✨ See full analysis in chat →',
@@ -123,12 +128,16 @@
       status_capture: 'Capturando…',
       quality_ready:  '✓ LISTO',
       analysis_title: 'KOI está analizando tu piel',
+      analysis_sub:   'Análisis clínico en curso — por favor espera',
       items: [
-        { icon: '🔬', text: 'Analizando textura y poros' },
-        { icon: '💧', text: 'Detectando niveles de hidratación' },
-        { icon: '🎨', text: 'Evaluando tono y pigmentación' },
-        { icon: '⚡', text: 'Identificando zonas reactivas' },
-        { icon: '✨', text: 'Personalizando tu rutina' },
+        { icon: '💧', text: 'Hidratación',              dim: 'hidratacion'  },
+        { icon: '🛡️', text: 'Barrera cutánea',          dim: 'barrera'      },
+        { icon: '✨', text: 'Distribución sebácea',      dim: 'sebum'        },
+        { icon: '🌗', text: 'Pigmentación y tono',       dim: 'pigmentacion' },
+        { icon: '🔎', text: 'Textura y poros',           dim: 'textura'      },
+        { icon: '❤️', text: 'Microcirculación',          dim: 'circulacion'  },
+        { icon: '💪', text: 'Firmeza y elasticidad',     dim: 'firmeza'      },
+        { icon: '🦠', text: 'Microbioma cutáneo',        dim: 'microbioma'   },
       ],
       result_title:    'Análisis completado',
       result_cta:      '✨ Ver análisis completo en el chat →',
@@ -292,18 +301,48 @@
         <div class="kv-analyzing" id="kv-analyzing">
           <div class="kv-analyzing-inner">
 
-            <!-- Imagen capturada con efecto scan -->
+            <!-- Imagen capturada con overlay scanner clínico -->
             <div class="kv-captured-wrap">
               <img class="kv-captured-img" id="kv-captured-img" alt="Captured frame" />
+
+              <!-- Línea de barrido scanner -->
+              <div class="kv-scan-beam" id="kv-scan-beam"></div>
+
+              <!-- Puntos de análisis biométrico sobre la foto -->
+              <div class="kv-bio-points" id="kv-bio-points">
+                <div class="kv-bio-pt kv-bio-pt--tzone"    style="top:28%;left:50%"></div>
+                <div class="kv-bio-pt kv-bio-pt--cheekL"   style="top:52%;left:28%"></div>
+                <div class="kv-bio-pt kv-bio-pt--cheekR"   style="top:52%;left:72%"></div>
+                <div class="kv-bio-pt kv-bio-pt--eyeL"     style="top:38%;left:34%"></div>
+                <div class="kv-bio-pt kv-bio-pt--eyeR"     style="top:38%;left:66%"></div>
+                <div class="kv-bio-pt kv-bio-pt--chin"     style="top:74%;left:50%"></div>
+                <div class="kv-bio-pt kv-bio-pt--nose"     style="top:50%;left:50%"></div>
+              </div>
+
+              <!-- Grid de datos flotantes sobre la foto -->
+              <div class="kv-scan-data" id="kv-scan-data">
+                <div class="kv-scan-data__chip kv-scan-data__chip--tl">SCAN</div>
+                <div class="kv-scan-data__chip kv-scan-data__chip--br" id="kv-scan-pct">0%</div>
+              </div>
+
+              <!-- Marco de esquinas tipo viewfinder clínico -->
+              <div class="kv-photo-corner kv-photo-corner--tl"></div>
+              <div class="kv-photo-corner kv-photo-corner--tr"></div>
+              <div class="kv-photo-corner kv-photo-corner--bl"></div>
+              <div class="kv-photo-corner kv-photo-corner--br"></div>
             </div>
 
             <!-- Info / Progreso -->
             <div class="kv-analyzing-info">
               <div class="kv-analysis-progress">
-                <span class="kv-analysis-progress__label">${t.analysis_title}</span>
+                <div class="kv-analysis-header">
+                  <span class="kv-analysis-progress__label">${t.analysis_title}</span>
+                  <span class="kv-analysis-pct" id="kv-analysis-pct-label">0%</span>
+                </div>
                 <div class="kv-progress-track">
                   <div class="kv-progress-fill" id="kv-progress-fill"></div>
                 </div>
+                <div class="kv-analysis-progress__sub">${t.analysis_sub}</div>
               </div>
               <div class="kv-analysis-items" id="kv-analysis-items">
                 ${t.items.map((item, i) => `
@@ -996,57 +1035,100 @@
 
     const t = getT();
 
-    // Mostrar imagen capturada — con saturación progresiva
+    // ── Imagen capturada con saturación progresiva ────────────
     const imgEl = document.getElementById('kv-captured-img');
     if (imgEl && imageBase64) {
       imgEl.src = imageBase64;
       setTimeout(() => {
         imgEl.classList.add('kv--visible');
-        // Recuperar color progresivamente
         let sat = 0;
         const saturateTimer = setInterval(() => {
-          sat = Math.min(sat + 8, 100);
-          imgEl.style.filter = `saturate(${sat}%) brightness(${0.6 + (sat / 100) * 0.4})`;
+          sat = Math.min(sat + 6, 100);
+          imgEl.style.filter = `saturate(${sat}%) brightness(${0.55 + (sat / 100) * 0.45})`;
           if (sat >= 100) clearInterval(saturateTimer);
-        }, 60);
-      }, 200);
+        }, 50);
+      }, 150);
     }
 
-    // Animar items progresivamente
-    const items    = t.items;
-    const total    = items.length;
-    const fillEl   = document.getElementById('kv-progress-fill');
-    const subEl    = document.getElementById('kv-analyzing-sub');
+    // ── Activar beam scanner sobre la foto ───────────────────
+    const beamEl = document.getElementById('kv-scan-beam');
+    if (beamEl) {
+      setTimeout(() => beamEl.classList.add('kv--active'), 400);
+    }
 
-    // Lanzar análisis en el Worker EN PARALELO con la animación
+    // ── Activar puntos biométricos con stagger ────────────────
+    const bioPts = document.querySelectorAll('.kv-bio-pt');
+    bioPts.forEach((pt, i) => {
+      setTimeout(() => pt.classList.add('kv--visible'), 600 + i * 180);
+    });
+
+    // ── Elementos de UI ───────────────────────────────────────
+    const fillEl    = document.getElementById('kv-progress-fill');
+    const pctLabel  = document.getElementById('kv-analysis-pct-label');
+    const scanPct   = document.getElementById('kv-scan-pct');
+    const items     = t.items;
+    const total     = items.length;
+
+    // ── Actualiza barra de progreso + porcentajes ─────────────
+    function setProgress(pct) {
+      if (fillEl)   fillEl.style.width = pct + '%';
+      if (pctLabel) pctLabel.textContent = Math.round(pct) + '%';
+      if (scanPct)  scanPct.textContent  = Math.round(pct) + '%';
+    }
+
+    // ── Lanzar llamada al Worker EN PARALELO ──────────────────
     const analysisPromise = imageBase64
       ? llamarWorkerVision(imageBase64)
       : Promise.resolve(null);
 
-    // Animar items uno a uno
+    // ── Animar 8 dimensiones clínicas ────────────────────────
+    // Cada dimensión: ~1.8s activa → check → siguiente
+    // 8 × 1.8s = 14.4s — cubre la mayoría de respuestas de Vision
     for (let i = 0; i < total; i++) {
       const el = document.getElementById(`kv-item-${i}`);
+
+      // Activar item actual
       if (el) el.classList.add('kv--active');
 
-      if (fillEl) fillEl.style.width = ((i + 1) / total * 85) + '%';
+      // Progreso: 0→85% repartido entre los 8 items
+      const pctStart = (i / total) * 85;
+      const pctEnd   = ((i + 1) / total) * 85;
 
-      await delay(KV_CONFIG.analysisItemDelay);
+      // Animar progreso suavemente dentro del delay del item
+      setProgress(pctStart);
 
+      // Mini-animación interna del progreso (avance gradual mientras el item está activo)
+      const steps     = 8;
+      const stepDelay = KV_CONFIG.analysisItemDelay / steps;
+      for (let s = 1; s <= steps; s++) {
+        await delay(stepDelay);
+        setProgress(pctStart + (pctEnd - pctStart) * (s / steps));
+      }
+
+      // Marcar como completado
       if (el) { el.classList.remove('kv--active'); el.classList.add('kv--done'); }
     }
 
-    // Esperar el resultado del worker (o el tiempo mínimo, lo que sea mayor)
+    // ── Esperar resultado del Worker (si aún no llegó) ────────
+    // Ya pasaron ~14s de animación — en la mayoría de casos ya llegó
     const [analysisResult] = await Promise.all([
       analysisPromise,
-      delay(500), // tiempo mínimo para que la UX no se sienta brusca
+      delay(200),
     ]);
 
-    if (fillEl) fillEl.style.width = '100%';
-    await delay(400);
+    // ── Completar al 100% con animación ──────────────────────
+    setProgress(100);
+    if (beamEl) beamEl.classList.remove('kv--active');
+
+    // Flash de "análisis completado" en el beam
+    if (beamEl) {
+      beamEl.classList.add('kv--complete');
+      setTimeout(() => beamEl.classList.remove('kv--complete'), 600);
+    }
+
+    await delay(600);
 
     KV_STATE.analysisResult = analysisResult;
-
-    // Mostrar resultado preview
     mostrarResultadoPreview(analysisResult);
   }
 
@@ -1067,20 +1149,38 @@
         },
       };
 
-      const response = await fetch(KV_CONFIG.workerUrl, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(payload),
-      });
+      // AbortController con 45s timeout — Vision tarda más que chat normal
+      const controller = new AbortController();
+      const timeoutId  = setTimeout(() => controller.abort(), 45000);
+
+      let response;
+      try {
+        response = await fetch(KV_CONFIG.workerUrl, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify(payload),
+          signal:  controller.signal,
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
 
       if (!response.ok) throw new Error(`Worker responded with ${response.status}`);
 
       const data = await response.json();
-      return data; // { analisis, ajuste_rutina, mensaje_koi, zonas }
+      return data;
 
     } catch (err) {
       console.warn('[KOI Vision] Worker call failed:', err.message);
-      return null; // Modo fallback — usar análisis local
+      // Propagar error tipado para que manejarResultadoVision lo maneje correctamente
+      const isAbort = err.name === 'AbortError';
+      return {
+        _error: true,
+        _error_type: isAbort ? 'timeout' : 'network_error',
+        zonas: {},
+        dimensiones: {},
+        mensaje_koi: null,
+      };
     }
   }
 
