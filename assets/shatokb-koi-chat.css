@@ -859,10 +859,10 @@
   bottom: 0 !important;
   width: 100% !important;
   height: 100% !important;
-  background: rgba(236, 149, 184, 0.50) !important;
-  background-color: rgba(236, 149, 184, 0.50) !important;
-  backdrop-filter: blur(4px) !important;
-  -webkit-backdrop-filter: blur(4px) !important;
+  background: rgba(236, 149, 184, 0.25) !important;
+  background-color: rgba(236, 149, 184, 0.25) !important;
+  backdrop-filter: blur(3px) !important;
+  -webkit-backdrop-filter: blur(3px) !important;
   z-index: 100 !important;
   pointer-events: auto !important;
   display: block !important;

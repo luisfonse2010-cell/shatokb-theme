@@ -908,9 +908,9 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       '  bottom: 0 !important;' +
       '  width: 100vw !important;' +
       '  height: 100vh !important;' +
-      '  background-color: rgba(236,149,184,0.30) !important;' +
-      '  backdrop-filter: blur(4px) !important;' +
-      '  -webkit-backdrop-filter: blur(4px) !important;' +
+      '  background-color: rgba(236,149,184,0.25) !important;' +
+      '  backdrop-filter: blur(3px) !important;' +
+      '  -webkit-backdrop-filter: blur(3px) !important;' +
       '  z-index: 2147483640 !important;' +
       '  pointer-events: auto !important;' +
       '  display: block !important;' +
