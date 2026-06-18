@@ -2207,116 +2207,155 @@ async function enviarDesdeChip (texto) {
 
   function inyectarEmailGateCarrito (callbackProcederAlCarrito) {
     // Evitar duplicados
-    if (document.getElementById('koi-email-gate')) return;
+    if (document.getElementById('koi-focus-overlay')) return;
 
     const idioma = detectarIdioma();
+
     const ui = {
-      es: { placeholder: 'tu@email.com', btn: 'Enviar y continuar →', note: '🔒 Solo para tu Skin Report. Sin spam.' },
-      en: { placeholder: 'you@email.com', btn: 'Send & continue →',   note: '🔒 Only for your Skin Report. No spam.' },
-      fr: { placeholder: 'vous@email.com', btn: 'Envoyer et continuer →', note: '🔒 Uniquement pour votre Skin Report.' },
-      pt: { placeholder: 'voce@email.com', btn: 'Enviar e continuar →', note: '🔒 Apenas para o seu Skin Report. Sem spam.' },
-      de: { placeholder: 'du@email.com', btn: 'Senden & weiter →',    note: '🔒 Nur für deinen Skin Report. Kein Spam.' },
-      it: { placeholder: 'tu@email.com', btn: 'Invia e continua →',   note: '🔒 Solo per il tuo Skin Report.' },
-    }[idioma] || { placeholder: 'you@email.com', btn: 'Send & continue →', note: '🔒 No spam.' };
+      es: { placeholder: 'tu@email.com', btn: 'Enviar y continuar →', note: '🔒 Solo para tu Skin Report. Sin spam.', skip: 'Prefiero ir directo al carrito' },
+      en: { placeholder: 'you@email.com', btn: 'Send & continue →',   note: '🔒 Only for your Skin Report. No spam.', skip: 'Skip, take me to cart' },
+      fr: { placeholder: 'vous@email.com', btn: 'Envoyer et continuer →', note: '🔒 Uniquement pour votre Skin Report.', skip: 'Passer, aller au panier' },
+      pt: { placeholder: 'voce@email.com', btn: 'Enviar e continuar →', note: '🔒 Apenas para o seu Skin Report. Sem spam.', skip: 'Pular, ir para o carrinho' },
+      de: { placeholder: 'du@email.com',   btn: 'Senden & weiter →',   note: '🔒 Nur für deinen Skin Report. Kein Spam.', skip: 'Überspringen, zum Warenkorb' },
+      it: { placeholder: 'tu@email.com',   btn: 'Invia e continua →',  note: '🔒 Solo per il tuo Skin Report.',          skip: 'Salta, vai al carrello' },
+    }[idioma] || { placeholder: 'you@email.com', btn: 'Send & continue →', note: '🔒 No spam.', skip: 'Skip' };
 
-    const skipTexts = {
-      es: 'Prefiero ir directo al carrito',
-      en: 'Skip, take me to cart',
-      fr: 'Passer, aller au panier',
-      pt: 'Pular, ir para o carrinho',
-      de: 'Überspringen, zum Warenkorb',
-      it: 'Salta, vai al carrello',
+    // Textos del pitch KOI — el mensaje que se muestra en la card
+    const pitchTexts = {
+      es: {
+        headline: '¡Perfecto, lista para ir al carrito! 🛒',
+        body: 'Antes de enviarte, quiero prepararte algo: tu <strong>Skin Report personalizado</strong> — incluye tu análisis de piel, el por qué de cada producto y un <strong>manual paso a paso</strong> para usarlos correctamente juntos.',
+        ask: 'Te lo envío ahora mismo a tu email. ¿Cuál es?',
+      },
+      en: {
+        headline: 'Perfect, ready for cart! 🛒',
+        body: 'Before I send you over, I want to prepare something: your <strong>personalized Skin Report</strong> — includes your skin analysis, the reason behind each product, and a <strong>step-by-step guide</strong> on how to use them together.',
+        ask: 'I\'ll send it to your email right now. What is it?',
+      },
+      fr: {
+        headline: 'Parfait, prêt pour le panier ! 🛒',
+        body: 'Avant de vous envoyer, je veux préparer quelque chose : votre <strong>Skin Report personnalisé</strong> — inclut votre analyse de peau, la raison de chaque produit et un <strong>guide étape par étape</strong>.',
+        ask: 'Je vous l\'envoie par email maintenant. Lequel ?',
+      },
+      pt: {
+        headline: 'Perfeito, pronto para o carrinho! 🛒',
+        body: 'Antes de te enviar, quero preparar algo: seu <strong>Skin Report personalizado</strong> — inclui sua análise de pele, o motivo de cada produto e um <strong>guia passo a passo</strong>.',
+        ask: 'Vou enviar agora para o seu email. Qual é?',
+      },
+      de: {
+        headline: 'Perfekt, bereit für den Warenkorb! 🛒',
+        body: 'Bevor ich dich weiterleite, möchte ich etwas vorbereiten: deinen <strong>persönlichen Skin Report</strong> — enthält deine Hautanalyse, den Grund für jedes Produkt und eine <strong>Schritt-für-Schritt-Anleitung</strong>.',
+        ask: 'Ich schicke ihn dir gleich per E-Mail. Wie lautet sie?',
+      },
+      it: {
+        headline: 'Perfetto, pronto per il carrello! 🛒',
+        body: 'Prima di mandarti lì, voglio prepararti qualcosa: il tuo <strong>Skin Report personalizzato</strong> — include la tua analisi della pelle, il motivo di ogni prodotto e una <strong>guida passo dopo passo</strong>.',
+        ask: 'Te lo mando ora via email. Qual è?',
+      },
     };
-    const skipText = skipTexts[idioma] || skipTexts['en'];
+    const pitch = pitchTexts[idioma] || pitchTexts['en'];
 
-    // Header recordatorio — recupera el contexto si el usuario perdió el mensaje
-    const headerTexts = {
-      es: { title: '📩 Tu Skin Report personalizado está listo', sub: 'Recíbelo gratis en tu email · Incluye análisis de piel, rutina completa y manual de uso' },
-      en: { title: '📩 Your personalized Skin Report is ready',  sub: 'Get it free in your email · Includes skin analysis, full routine and usage guide' },
-      fr: { title: '📩 Votre Skin Report personnalisé est prêt', sub: 'Recevez-le gratuitement · Inclut analyse de peau, routine complète et guide d\'utilisation' },
-      pt: { title: '📩 Seu Skin Report personalizado está pronto', sub: 'Receba grátis no seu email · Inclui análise de pele, rotina completa e manual de uso' },
-      de: { title: '📩 Dein persönlicher Skin Report ist fertig', sub: 'Kostenlos per E-Mail · Enthält Hautanalyse, vollständige Routine und Anwendungsanleitung' },
-      it: { title: '📩 Il tuo Skin Report personalizzato è pronto', sub: 'Ricevilo gratis via email · Include analisi della pelle, routine completa e guida all\'uso' },
-    };
-    const header = headerTexts[idioma] || headerTexts['en'];
-
-    // Leer precio actual de la mini barra para mostrarlo en el header
+    // Precio actual para mostrarlo en la card
     const precioEl  = document.getElementById('koi-mini-cart-total');
     const precioStr = precioEl ? precioEl.textContent.trim() : (_miniCartData.total || '');
-    const precioHTML = precioStr
-      ? `<span class="koi-email-gate__price">${precioStr}</span>`
-      : '';
 
-    // ── Inyectar en el .koi-panel (nivel del panel, no dentro del scroll) ──
-    // Así el formulario siempre es visible aunque el usuario siga chateando.
-    // Se inserta justo antes de .koi-input-area (debajo de la mini barra).
-    const panel     = document.querySelector('#shatokb-koi-wrapper .koi-panel');
+    // ── Referencias DOM ─────────────────────────────────────────────────────
+    const panel    = document.querySelector('#shatokb-koi-wrapper .koi-panel');
+    const messages = document.getElementById('koi-messages');
+    const chips    = document.getElementById('koi-chips');
     const inputArea = document.querySelector('#shatokb-koi-wrapper .koi-input-area');
-    if (!panel) return;
+    if (!panel || !messages) return;
 
-    const gate = document.createElement('div');
-    gate.id        = 'koi-email-gate';
-    gate.className = 'koi-email-gate koi-email-gate--panel';
-    gate.innerHTML = `
-      <div class="koi-email-gate__header">
-        <div class="koi-email-gate__header-left">
-          <span class="koi-email-gate__title">${header.title}${precioHTML}</span>
-          <span class="koi-email-gate__sub">${header.sub}</span>
-        </div>
+    // ── Activar focus mode en el panel ─────────────────────────────────────
+    panel.classList.add('koi--focus-mode');
+    if (chips)     chips.style.display    = 'none';
+    if (inputArea) inputArea.style.display = 'none';
+
+    // ── Crear overlay sobre los mensajes ────────────────────────────────────
+    const overlay = document.createElement('div');
+    overlay.id        = 'koi-focus-overlay';
+    overlay.className = 'koi-focus-overlay';
+    messages.appendChild(overlay);
+
+    // ── Crear card centrada flotante sobre el panel ─────────────────────────
+    const card = document.createElement('div');
+    card.id        = 'koi-email-gate';
+    card.className = 'koi-focus-card';
+    card.innerHTML = `
+      <div class="koi-focus-card__koi">
+        <div class="koi-focus-card__avatar">🌸</div>
+        <div class="koi-focus-card__name">KOI</div>
       </div>
-      <div class="koi-email-gate__inner">
+
+      <div class="koi-focus-card__bubble">
+        <p class="koi-focus-card__headline">${pitch.headline}</p>
+        <p class="koi-focus-card__body">${pitch.body}</p>
+        <p class="koi-focus-card__ask">${pitch.ask}</p>
+      </div>
+
+      ${precioStr ? `<div class="koi-focus-card__price-badge">${precioStr} · Tu rutina completa</div>` : ''}
+
+      <div class="koi-focus-card__form">
         <input
           type="email"
           id="koi-email-input"
-          class="koi-email-input"
+          class="koi-focus-card__input"
           placeholder="${ui.placeholder}"
           autocomplete="email"
           inputmode="email"
         />
-        <button class="koi-email-btn" id="koi-email-btn">${ui.btn}</button>
-        <div class="koi-email-gate__footer">
-          <p class="koi-email-note">${ui.note}</p>
-          <button class="koi-email-skip" id="koi-email-skip">${skipText}</button>
+        <button class="koi-focus-card__btn" id="koi-email-btn">${ui.btn}</button>
+        <div class="koi-focus-card__footer">
+          <span class="koi-focus-card__note">${ui.note}</span>
+          <button class="koi-focus-card__skip" id="koi-email-skip">${ui.skip}</button>
         </div>
       </div>
     `;
 
-    // Insertar antes del input area (o al final del panel si no hay input area)
-    if (inputArea) {
-      panel.insertBefore(gate, inputArea);
-    } else {
-      panel.appendChild(gate);
-    }
+    // Insertar la card dentro del área de mensajes (junto al overlay)
+    // El área de mensajes tiene position:relative — la card se centra sobre ella
+    messages.appendChild(card);
 
-    // El input sigue habilitado — el usuario puede seguir preguntando
-    // El gate no reemplaza el input, convive con él
-    setInputHabilitado(true);
-    setInputAreaVisible(true);
-
+    // Focus al input (solo desktop para no abrir teclado en mobile automáticamente)
     setTimeout(() => {
       const inp = document.getElementById('koi-email-input');
-      if (inp && window.innerWidth > 768) inp.focus();
-    }, 200);
+      if (inp && window.innerWidth > 900) inp.focus();
+    }, 400);
 
-    const inp     = document.getElementById('koi-email-input');
-    const btn     = document.getElementById('koi-email-btn');
-    const skipBtn = document.getElementById('koi-email-skip');
-
-    function _cerrarGate () {
-      gate.classList.add('koi-email-gate--confirmed');
-      setTimeout(() => { if (gate.parentNode) gate.remove(); }, 350);
+    // ── Cerrar focus mode ───────────────────────────────────────────────────
+    function _cerrarFocusMode (confirmado) {
+      card.classList.add('koi-focus-card--exit');
+      overlay.classList.add('koi-focus-overlay--exit');
+      setTimeout(() => {
+        panel.classList.remove('koi--focus-mode');
+        if (chips)     chips.style.display     = '';
+        if (inputArea) inputArea.style.display  = '';
+        if (card.parentNode)    card.remove();
+        if (overlay.parentNode) overlay.remove();
+        if (!confirmado) {
+          // Restaurar scroll al último mensaje
+          messages.scrollTop = messages.scrollHeight;
+        }
+      }, 350);
     }
 
+    // ── Confirmar email ─────────────────────────────────────────────────────
     async function confirmarEmailCarrito () {
+      const inp = document.getElementById('koi-email-input');
       if (!inp) return;
-      const email  = inp.value.trim();
-      const idioma = detectarIdioma();
+      const email = inp.value.trim();
 
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        inp.classList.add('koi-email-input--error');
-        setTimeout(() => inp.classList.remove('koi-email-input--error'), 800);
+        inp.classList.add('koi-focus-card__input--error');
+        setTimeout(() => inp.classList.remove('koi-focus-card__input--error'), 800);
         return;
       }
+
+      // Deshabilitar controles para evitar doble clic
+      const btnEl  = document.getElementById('koi-email-btn');
+      const skipEl = document.getElementById('koi-email-skip');
+      if (btnEl)  { btnEl.disabled = true; btnEl.textContent = '⏳ Un momento...'; }
+      if (skipEl)   skipEl.disabled = true;
 
       // Guardar email
       KOI_STATE.emailCaptured = email;
@@ -2324,16 +2363,18 @@ async function enviarDesdeChip (texto) {
       shatokbEnviarEmailShopify(email);
       enviarSkinReport(email);
 
-      // Cerrar gate con animación
-      _cerrarGate();
+      // Cerrar focus mode
+      _cerrarFocusMode(true);
+
+      // Añadir email como mensaje del usuario en el chat
       agregarMensaje('user', email);
 
-      // Mensaje de confirmación
+      // Mensaje de confirmación de KOI
       const confirmaciones = {
         es: '¡Listo! Te lo envío en breve. Ahora sí, aquí está tu carrito 🛒',
-        en: 'Done! Sending it shortly. Now, here\'s your cart 🛒',
+        en: 'Done! Sending it shortly. Here\'s your cart 🛒',
         fr: 'Fait ! Je vous l\'envoie dans un instant. Voici votre panier 🛒',
-        pt: 'Feito! Enviando em breve. Agora, aqui está seu carrinho 🛒',
+        pt: 'Feito! Enviando em breve. Aqui está seu carrinho 🛒',
         de: 'Erledigt! Ich schicke es dir gleich. Hier ist dein Warenkorb 🛒',
         it: 'Fatto! Te lo invio a breve. Ecco il tuo carrello 🛒',
       };
@@ -2345,13 +2386,18 @@ async function enviarDesdeChip (texto) {
     }
 
     function saltarAlCarrito () {
-      _cerrarGate();
+      _cerrarFocusMode(false);
       callbackProcederAlCarrito();
     }
 
-    if (btn)     btn.addEventListener('click', confirmarEmailCarrito);
-    if (inp)     inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); confirmarEmailCarrito(); } });
-    if (skipBtn) skipBtn.addEventListener('click', saltarAlCarrito);
+    // ── Eventos ─────────────────────────────────────────────────────────────
+    const btnEl  = document.getElementById('koi-email-btn');
+    const inpEl  = document.getElementById('koi-email-input');
+    const skipEl = document.getElementById('koi-email-skip');
+
+    if (btnEl)  btnEl.addEventListener('click', confirmarEmailCarrito);
+    if (inpEl)  inpEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); confirmarEmailCarrito(); } });
+    if (skipEl) skipEl.addEventListener('click', saltarAlCarrito);
   }
 
   /* ══════════════════════════════════════════════════════════
