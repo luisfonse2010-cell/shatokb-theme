@@ -835,10 +835,10 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
         checks: [
           'Routine AM/PM personnalisée',
           'Pourquoi chaque produit a été choisi',
-          "Ordre d'application + conseils",
+          'Ordre d\'application + conseils',
           'Guide des ingrédients clés',
         ],
-        subtitle:    "Où dois-je vous l'envoyer ?",
+        subtitle:    'Où dois-je vous l\'envoyer ?',
         placeholder: 'vous@email.com',
         btn:         'Envoyer ma routine →',
         note:        '🔒 Uniquement pour votre routine.',
@@ -889,22 +889,23 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     };
     const lbl = LABELS[idioma] || LABELS['en'];
 
-    // Overlay DENTRO del wrapper — position:absolute, solo cubre el chat
-    // NO toca document.body, NO afecta la página Shopify exterior
+    // Overlay: position:absolute dentro del wrapper (solo oscurece el chat, no la página)
+    // Card: position:fixed centrada en el viewport (siempre visible y completa)
     const styleTag = document.createElement('style');
     styleTag.id = 'koi-focus-style';
     styleTag.textContent =
-      '#koi-focus-overlay{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;background:rgba(28,24,26,0.85)!important;backdrop-filter:blur(5px)!important;-webkit-backdrop-filter:blur(5px)!important;z-index:200!important;display:block!important;pointer-events:auto!important;}' +
-      '#koi-focus-card{position:fixed!important;top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;z-index:2147483647!important;width:calc(100vw - 40px)!important;max-width:440px!important;background:#1c181a!important;border:1px solid rgba(236,149,184,0.35)!important;border-radius:18px!important;box-shadow:0 24px 64px rgba(0,0,0,0.7)!important;padding:26px 26px 20px!important;display:flex!important;flex-direction:column!important;gap:16px!important;box-sizing:border-box!important;pointer-events:auto!important;}' +
-      '#shatokb-koi-wrapper{position:relative!important;}';
+      '#shatokb-koi-wrapper{position:relative!important;overflow:visible!important;}' +
+      '#koi-focus-overlay{position:absolute!important;inset:0!important;top:0!important;left:0!important;width:100%!important;height:100%!important;background:rgba(28,24,26,0.82)!important;backdrop-filter:blur(4px)!important;-webkit-backdrop-filter:blur(4px)!important;z-index:200!important;pointer-events:auto!important;display:block!important;}' +
+      '#koi-focus-card{position:fixed!important;top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;z-index:9999!important;pointer-events:auto!important;display:flex!important;flex-direction:column!important;width:calc(100% - 40px)!important;max-width:420px!important;}';
     document.head.appendChild(styleTag);
 
-    // Overlay dentro del wrapper del chat
+    // Overlay dentro del wrapper — solo oscurece el chat, no la página
     const overlay = document.createElement('div');
     overlay.id = 'koi-focus-overlay';
     wrapper.appendChild(overlay);
 
-    // Card dentro del wrapper del chat — centrada sobre el overlay
+    // Card → document.body (no al wrapper) para escapar del transform:matrix()
+    // El transform del wrapper atrapa position:fixed — body no tiene ese problema
     const card = document.createElement('div');
     card.id        = 'koi-focus-card';
     card.className = 'koi-focus-card';
@@ -929,7 +930,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
         <button class="koi-focus-card__skip" id="koi-focus-skip">${lbl.skip}</button>
       </div>
     `;
-    wrapper.appendChild(card);
+    document.body.appendChild(card); // body, no wrapper — escapa del transform:matrix()
 
     const checkEls = card.querySelectorAll('.koi-envelope__check');
     checkEls.forEach((el, i) => {
@@ -942,8 +943,8 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     }, 200 + 4 * 180 + 150);
 
     function _cerrarFocusMode () {
-      const o = document.getElementById('koi-focus-overlay');
-      const c = document.getElementById('koi-focus-card');
+      const o = document.getElementById('koi-focus-overlay'); // en wrapper
+      const c = document.getElementById('koi-focus-card');   // en body
       if (o) o.remove();
       if (c) c.remove();
       const st = document.getElementById('koi-focus-style');
@@ -976,8 +977,8 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       revelarRutinaConKOI('');
     }
 
-    const inp  = document.getElementById('koi-focus-email-input');
-    const btn  = document.getElementById('koi-focus-email-btn');
+    const inp = document.getElementById('koi-focus-email-input');
+    const btn = document.getElementById('koi-focus-email-btn');
     const skip = document.getElementById('koi-focus-skip');
     if (btn)  btn.addEventListener('click',  _confirmarFocusEmail);
     if (inp)  inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); _confirmarFocusEmail(); } });
