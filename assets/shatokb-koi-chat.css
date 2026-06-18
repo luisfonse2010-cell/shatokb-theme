@@ -836,6 +836,11 @@
    El overlay cubre exactamente el área del chat, no toda la página.
    Técnica: position:absolute dentro de .koi-panel con overflow:visible
    ══════════════════════════════════════════════════════════ */
+/* Bloqueo de scroll en html — previene scroll por debajo del overlay en iOS */
+html.koi-scroll-locked {
+  overflow: hidden !important;
+}
+
 /* El wrapper es el contenedor del overlay y la card */
 #shatokb-koi-wrapper.koi-wrapper--focus-active {
   position: relative !important;
@@ -851,22 +856,24 @@
 
 .koi-focus-overlay,
 #koi-focus-overlay {
-  /* Cubre TODO el wrapper: header + barra carrito + mensajes + input */
-  position: absolute !important;
+  /* Overlay fijo sobre toda la página — cubre TODO incluyendo header + cart bar */
+  position: fixed !important;
+  inset: 0 !important;
   top: 0 !important;
   left: 0 !important;
   right: 0 !important;
   bottom: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
+  width: 100vw !important;
+  height: 100vh !important;
   background: rgba(236, 149, 184, 0.25) !important;
   background-color: rgba(236, 149, 184, 0.25) !important;
   backdrop-filter: blur(3px) !important;
   -webkit-backdrop-filter: blur(3px) !important;
-  z-index: 100 !important;
+  /* overlay bajo la card — el JS inyecta 2147483640, la card 2147483641 */
+  z-index: 2147483640 !important;
   pointer-events: auto !important;
   display: block !important;
-  border-radius: var(--koi-radius) !important;
+  border-radius: 0 !important;
   animation: koiFocusOverlayIn 0.35s ease forwards;
 }
 
@@ -886,9 +893,9 @@
   from { opacity: 1; } to { opacity: 0; }
 }
 
-/* Card centrada dentro del wrapper, encima del overlay */
+/* Card centrada con position:fixed — SIEMPRE por encima del overlay */
 .koi-focus-card {
-  position: absolute !important;
+  position: fixed !important;
   left: 50% !important;
   top: 50% !important;
   transform: translate(-50%, -50%) !important;
@@ -898,7 +905,8 @@
   border: 1px solid rgba(236, 149, 184, 0.35);
   border-radius: 18px;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.60);
-  z-index: 200 !important;
+  /* SIEMPRE por encima del overlay (2147483641 > 2147483640) */
+  z-index: 2147483641 !important;
   padding: 26px 26px 20px;
   display: flex;
   flex-direction: column;
@@ -912,12 +920,12 @@
 }
 
 @keyframes koiFocusCardIn {
-  from { opacity: 0; transform: translate(-50%, calc(-50% + 16px)) scale(0.96); }
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 20px)) scale(0.95); }
   to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 @keyframes koiFocusCardOut {
   from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  to   { opacity: 0; transform: translate(-50%, calc(-50% - 10px)) scale(0.97); }
+  to   { opacity: 0; transform: translate(-50%, calc(-50% - 12px)) scale(0.96); }
 }
 
 /* ── Identidad KOI dentro de la card ─────────────────────── */
@@ -1122,10 +1130,12 @@
 /* ── Responsive mobile ────────────────────────────────────── */
 @media (max-width: 600px) {
   .koi-focus-card {
-    width: calc(100% - 20px);
+    width: calc(100vw - 24px) !important;
+    max-width: 100% !important;
     padding: 22px 18px 18px;
-    top: 50%;
-    max-height: calc(100% - 40px);
+    top: 50% !important;
+    left: 50% !important;
+    max-height: calc(100vh - 40px);
     overflow-y: auto;
   }
 

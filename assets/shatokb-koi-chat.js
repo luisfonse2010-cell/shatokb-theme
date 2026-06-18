@@ -892,10 +892,20 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     // Añadir clase al panel para suprimir chips + input
     panel.classList.add('koi--focus-mode');
     wrapper.classList.add('koi-wrapper--focus-active');
-    document.body.style.overflow = 'hidden';
 
-    // ── 1. Overlay rosa — inyectar <style> en head + div en body ──
-    // El <style> en head tiene máxima prioridad, no puede ser sobreescrito por nada
+    // Bloquear scroll — técnica robusta para iOS + desktop
+    // Guardamos la posición actual para restaurarla al cerrar
+    const scrollY = window.scrollY;
+    document.documentElement.classList.add('koi-scroll-locked');
+    document.body.style.overflow   = 'hidden';
+    document.body.style.position   = 'fixed';
+    document.body.style.top        = `-${scrollY}px`;
+    document.body.style.left       = '0';
+    document.body.style.right      = '0';
+    document.body.style.width      = '100%';
+
+    // ── 1. Overlay rosa + card — inyectar <style> en head con máxima prioridad ──
+    // z-index: overlay = 2147483640, card = 2147483641 (card SIEMPRE encima)
     const styleTag = document.createElement('style');
     styleTag.id = 'koi-focus-style';
     styleTag.textContent =
@@ -914,19 +924,25 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       '  z-index: 2147483640 !important;' +
       '  pointer-events: auto !important;' +
       '  display: block !important;' +
+      '}' +
+      '#koi-focus-card {' +
+      '  position: fixed !important;' +
+      '  top: 50% !important;' +
+      '  left: 50% !important;' +
+      '  transform: translate(-50%, -50%) !important;' +
+      '  z-index: 2147483641 !important;' +
+      '  pointer-events: auto !important;' +
       '}';
     document.head.appendChild(styleTag);
 
     const overlay = document.createElement('div');
     overlay.id = 'koi-focus-overlay';
-    // En el wrapper — cubre TODO: header + barra carrito + mensajes + input
-    wrapper.appendChild(overlay);
+    document.body.appendChild(overlay);
 
-    // ── 2. Card centrada — también en el wrapper, encima del overlay ──
+    // ── 2. Card centrada — en body, encima del overlay (z-index mayor) ──
     const card = document.createElement('div');
     card.id        = 'koi-focus-card';
     card.className = 'koi-focus-card';
-    card.style.zIndex = '200';
     card.innerHTML = `
       <div class="koi-focus-card__koi">
         <div class="koi-focus-card__avatar">🌸</div>
@@ -977,7 +993,19 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       if (c) { c.classList.add('koi-focus-card--exit');   setTimeout(() => c?.remove(), 300); }
       panel.classList.remove('koi--focus-mode');
       wrapper.classList.remove('koi-wrapper--focus-active');
+      // Restaurar scroll — leer la posición guardada en body.style.top
+      const savedTop = document.body.style.top;
+      document.documentElement.classList.remove('koi-scroll-locked');
       document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top      = '';
+      document.body.style.left     = '';
+      document.body.style.right    = '';
+      document.body.style.width    = '';
+      // Volver exactamente a donde estaba el usuario
+      if (savedTop) {
+        window.scrollTo(0, -parseInt(savedTop || '0', 10));
+      }
       const st = document.getElementById('koi-focus-style');
       if (st) st.remove();
     }
