@@ -770,10 +770,10 @@ html.koi-scroll-locked {
   left: 0 !important;
   width: 100% !important;
   height: 100% !important;
-  background: rgba(28, 24, 26, 0.82) !important;
-  background-color: rgba(28, 24, 26, 0.82) !important;
-  backdrop-filter: blur(4px) !important;
-  -webkit-backdrop-filter: blur(4px) !important;
+  background: rgba(28, 24, 26, 0.85) !important;
+  background-color: rgba(28, 24, 26, 0.85) !important;
+  backdrop-filter: blur(5px) !important;
+  -webkit-backdrop-filter: blur(5px) !important;
   z-index: 200 !important;
   pointer-events: auto !important;
   display: block !important;
@@ -796,26 +796,23 @@ html.koi-scroll-locked {
   from { opacity: 1; } to { opacity: 0; }
 }
 
-/* Card centrada con position:absolute dentro del wrapper */
 .koi-focus-card {
-  position: absolute !important;
+  position: fixed !important;
   left: 50% !important;
   top: 50% !important;
   transform: translate(-50%, -50%) !important;
-  width: calc(100% - 40px);
-  max-width: 420px;
+  width: calc(100vw - 40px);
+  max-width: 440px;
   background: #1c181a;
   border: 1px solid rgba(236, 149, 184, 0.35);
   border-radius: 18px;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.60);
-  /* SIEMPRE por encima del overlay (2147483641 > 2147483640) */
-  z-index: 9999 !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.70);
+  z-index: 2147483647 !important;
   padding: 26px 26px 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   box-sizing: border-box;
-  animation: koiFocusCardIn 0.40s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .koi-focus-card--exit {
