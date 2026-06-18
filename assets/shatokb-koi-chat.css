@@ -1,34 +1,146 @@
-/* ── Focus Mode — PATCHED v20260618F ── */
-html.koi-scroll-locked {
-  overflow: hidden !important;
+/**
+ * ============================================================
+ * SHATOKB · KOI Chat — Experta K-Beauty con IA
+ * Archivo: assets/shatokb-koi-chat.css
+ * Versión: 1.0
+ *
+ * Paleta:
+ *   #1c181a  — fondo oscuro (mismo que hero)
+ *   #ec95b8  — rosa acento KOI
+ *   #f0aac8  — rosa hover
+ *   #ffffff  — texto claro
+ * ============================================================
+ */
+
+/* ══════════════════════════════════════════════════════════
+   MINI BARRA DE CARRITO — fija debajo del header KOI
+   Siempre visible en mobile. +40% tamaño, layout centrado.
+   Alta especificidad + !important para neutralizar el tema Halo.
+   ══════════════════════════════════════════════════════════ */
+#shatokb-koi-wrapper #koi-mini-cart-bar,
+#shatokb-koi-wrapper .koi-mini-cart-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-direction: row !important;
+  gap: 16px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  background: #1c181a !important;
+  border-top: none !important;
+  border-bottom: 1px solid rgba(236, 149, 184, 0.25) !important;
+  border-left: none !important;
+  border-right: none !important;
+  padding: 14px 24px !important;
+  margin: 0 !important;
+  position: relative !important;
+  z-index: 2 !important;
+  opacity: 0 !important;
+  transform: translateY(-6px) !important;
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  pointer-events: none !important;
+  border-radius: 0 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+  /* Resetear cualquier estilo heredado del tema */
+  font-size: 14px !important;
+  line-height: 1.2 !important;
+  text-align: center !important;
+  float: none !important;
+  overflow: visible !important;
 }
-#koi-focus-overlay {
-  position: fixed !important;
-  inset: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  background-color: rgba(236,149,184,0.25) !important;
-  backdrop-filter: blur(3px) !important;
-  -webkit-backdrop-filter: blur(3px) !important;
-  z-index: 2147483640 !important;
+
+#shatokb-koi-wrapper #koi-mini-cart-bar.koi-mini-cart-bar--visible,
+#shatokb-koi-wrapper .koi-mini-cart-bar.koi-mini-cart-bar--visible {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
   pointer-events: auto !important;
 }
-#koi-focus-card,
-.koi-focus-card {
-  position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  z-index: 2147483641 !important;
-  width: min(480px, 92vw);
-  background: #1c181a;
-  border: 1px solid rgba(236,149,184,0.25);
-  border-radius: 20px;
-  padding: 28px 24px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+
+#shatokb-koi-wrapper .koi-mini-cart-bar__info {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+  min-width: 0 !important;
+  flex-shrink: 0 !important;
+  align-items: center !important;
+  text-align: center !important;
+}
+
+#shatokb-koi-wrapper .koi-mini-cart-bar__label {
+  font-family: 'Arimo', 'Arial', sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  color: rgba(255, 255, 255, 0.55) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1.2 !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+
+#shatokb-koi-wrapper .koi-mini-cart-bar__total {
+  font-family: 'Prompt', 'Arial Black', sans-serif !important;
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  line-height: 1 !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+
+#shatokb-koi-wrapper .koi-mini-cart-bar__btn {
+  flex-shrink: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  background: #ec95b8 !important;
+  color: #1c181a !important;
+  border: none !important;
+  border-radius: 10px !important;
+  padding: 13px 24px !important;
+  font-family: 'Arimo', 'Arial', sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: background 0.2s ease, transform 0.15s ease !important;
+  white-space: nowrap !important;
+  text-decoration: none !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  line-height: 1.2 !important;
+  min-height: auto !important;
+  height: auto !important;
+  width: auto !important;
+  box-shadow: 0 4px 14px rgba(236, 149, 184, 0.35) !important;
+  outline: none !important;
+  margin: 0 !important;
+  position: static !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+}
+
+#shatokb-koi-wrapper .koi-mini-cart-bar__btn:hover {
+  background: #f0aac8 !important;
+  transform: translateY(-1px) !important;
+  color: #1c181a !important;
+  box-shadow: 0 6px 18px rgba(236, 149, 184, 0.45) !important;
+}
+
+#shatokb-koi-wrapper .koi-mini-cart-bar__btn:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 8px rgba(236, 149, 184, 0.25) !important;
 }
 
 /* ── Variables KOI ────────────────────────────────────────── */
@@ -725,15 +837,9 @@ html.koi-scroll-locked {
    - Card: position:fixed, centrada en el viewport, siempre completa
    ══════════════════════════════════════════════════════════ */
 
-/* Focus Mode: overlay v4 — cubre TODO el panel (header + mini-cart + mensajes)
-   z-index:10 supera .koi-header(1) y .koi-mini-cart-bar(2)
-   overflow:hidden del .koi-panel evita que el chat scrollee */
-/* Focus Mode: overlay v4 — cubre TODO el panel (header + mini-cart + mensajes)
-   z-index:10 supera .koi-header(1) y .koi-mini-cart-bar(2)
-   overflow:hidden del .koi-panel evita que el chat scrollee */
-/* Focus Mode: overlay v4 — cubre TODO el panel (header + mini-cart + mensajes)
-   z-index:10 supera .koi-header(1) y .koi-mini-cart-bar(2)
-   overflow:hidden del .koi-panel evita que el chat scrollee */
+/* Overlay: va dentro de .koi-panel — cubre TODO el panel (header + mini-cart + mensajes)
+   z-index:10 supera .koi-header (z-index:1) y .koi-mini-cart-bar (z-index:2)
+   overflow:hidden en .koi-panel atrapa el overlay → el chat NO puede scrollear */
 .koi-focus-overlay,
 #koi-focus-overlay {
   position: absolute !important;
@@ -752,8 +858,8 @@ html.koi-scroll-locked {
   border-radius: inherit !important;
 }
 
-/* Focus Mode: card v4 — en document.body, escapa transform:matrix()
-   z-index:2147483647 = máximo posible → encima de absolutamente todo */
+/* Card: position:fixed centrada en el viewport — en document.body, escapa del transform:matrix()
+   z-index:2147483647 (máximo) → siempre encima de todo, incluido el header del tema */
 .koi-focus-card {
   position: fixed !important;
   left: 50% !important;
@@ -764,7 +870,7 @@ html.koi-scroll-locked {
   background: #1c181a;
   border: 1px solid rgba(236, 149, 184, 0.35);
   border-radius: 18px;
-  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.80), 0 0 0 1px rgba(236, 149, 184, 0.10);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.80), 0 0 0 1px rgba(236,149,184,0.10);
   z-index: 2147483647 !important;
   padding: 26px 26px 20px;
   display: flex;
