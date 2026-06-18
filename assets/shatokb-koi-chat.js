@@ -907,7 +907,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       'width:100vw',
       'height:100vh',
       'background:rgba(236,149,184,0.50)',
-      'z-index:9999',
+      'z-index:2147483640',   /* máximo z-index posible menos 10 */
       'pointer-events:auto',
     ].join(';') + ';';
     document.body.appendChild(overlay);
@@ -916,6 +916,8 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     const card = document.createElement('div');
     card.id        = 'koi-focus-card';
     card.className = 'koi-focus-card';
+    // z-index inline por encima del overlay (2147483640 + 5)
+    card.style.zIndex = '2147483645';
     card.innerHTML = `
       <div class="koi-focus-card__koi">
         <div class="koi-focus-card__avatar">🌸</div>
