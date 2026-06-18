@@ -145,6 +145,30 @@
   box-shadow: 0 2px 8px rgba(236, 149, 184, 0.25) !important;
 }
 
+/* ── Mini cart bar — MÓVIL: 2 filas (precio arriba, botón abajo) ── */
+@media (max-width: 600px) {
+  #shatokb-koi-wrapper #koi-mini-cart-bar,
+  #shatokb-koi-wrapper .koi-mini-cart-bar {
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 12px 16px !important;
+    min-height: auto !important;
+  }
+  #shatokb-koi-wrapper .koi-mini-cart-bar__info {
+    position: static !important;  /* sale del absolute, flujo normal */
+    align-items: center !important;
+    text-align: center !important;
+  }
+  #shatokb-koi-wrapper .koi-mini-cart-bar__btn {
+    width: 100% !important;       /* botón ocupa todo el ancho */
+    justify-content: center !important;
+    font-size: 18px !important;
+    padding: 15px 20px !important;
+  }
+}
+
 /* ── Variables KOI ────────────────────────────────────────── */
 :root {
   --koi-dark:        #1c181a;
