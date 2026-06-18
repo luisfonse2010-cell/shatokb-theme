@@ -926,17 +926,28 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     // del panel visible detrás de la card. z-index:10 supera header(1) y cart(2).
     const overlay = document.createElement('div');
     overlay.id = 'koi-focus-overlay';
+    // ── Color DIRECTO en el elemento via style inline ─────────────────────────
+    // El diagnóstico confirmó: el CSS del styleTag no llega (Shopify cachea el JS
+    // viejo). Usar style.setProperty con !important directamente en el elemento
+    // es la única forma garantizada de superar cualquier CSS existente.
+    overlay.style.setProperty('position',   'absolute',                   'important');
+    overlay.style.setProperty('inset',      '0',                          'important');
+    overlay.style.setProperty('width',      '100%',                       'important');
+    overlay.style.setProperty('height',     '100%',                       'important');
+    overlay.style.setProperty('background', 'rgba(236,149,184,0.25)',     'important');
+    overlay.style.setProperty('z-index',    '10',                         'important');
+    overlay.style.setProperty('pointer-events', 'auto',                   'important');
+    overlay.style.setProperty('display',    'block',                      'important');
     panel.appendChild(overlay);
 
-    // ── Aclarar fondo de mensajes con color vino directamente en los elementos ──
-    // backdrop-filter no funciona con overflow:hidden en el padre.
-    // Solución: cambiar background de .koi-messages y .koi-header directamente.
+    // ── Color vino en .koi-panel directamente ─────────────────────────────
+    // El panel tiene bg rgb(28,24,26). Lo cambiamos a vino para que el overlay
+    // semitransparente encima se vea diferente al negro.
+    panel.style.setProperty('background', '#3e2b32', 'important');
+    panel.style.setProperty('background-color', '#3e2b32', 'important');
+
     const messages = document.getElementById('koi-messages');
     const header   = document.querySelector('#shatokb-koi-wrapper .koi-header');
-    const _msgBgPrev    = messages ? messages.style.getPropertyValue('background') : '';
-    const _headerBgPrev = header   ? header.style.getPropertyValue('background')   : '';
-    if (messages) messages.style.setProperty('background', '#3e2b32', 'important');
-    if (header)   header.style.setProperty('background',   '#3e2b32', 'important');
 
     // Card → document.body (no al wrapper) para escapar del transform:matrix()
     const card = document.createElement('div');
@@ -984,7 +995,9 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       if (bg) bg.remove();
       const st = document.getElementById('koi-focus-style');
       if (st) st.remove();
-      // Restaurar colores de mensajes y header
+      // Restaurar panel, mensajes y header
+      panel.style.removeProperty('background');
+      panel.style.removeProperty('background-color');
       if (messages) messages.style.removeProperty('background');
       if (header)   header.style.removeProperty('background');
       // Restaurar scroll en body, html y panel
@@ -2509,12 +2522,22 @@ async function enviarDesdeChip (texto) {
     if (inputArea) inputArea.style.display = 'none';
 
     // ── Crear overlay sobre TODO el panel (header + mini-cart + mensajes) ───
-    // Va en panel (position:relative, overflow:hidden) → el chat no puede scrollear
-    // z-index:10 supera header (z-index:1) y mini-cart-bar (z-index:2)
     const overlay = document.createElement('div');
     overlay.id        = 'koi-focus-overlay';
     overlay.className = 'koi-focus-overlay';
+    // Color directo via setProperty — garantizado contra cualquier CSS cacheado
+    overlay.style.setProperty('position',       'absolute',               'important');
+    overlay.style.setProperty('inset',          '0',                      'important');
+    overlay.style.setProperty('width',          '100%',                   'important');
+    overlay.style.setProperty('height',         '100%',                   'important');
+    overlay.style.setProperty('background',     'rgba(236,149,184,0.25)', 'important');
+    overlay.style.setProperty('z-index',        '10',                     'important');
+    overlay.style.setProperty('pointer-events', 'auto',                   'important');
+    overlay.style.setProperty('display',        'block',                  'important');
     panel.appendChild(overlay);
+    // Color vino en el panel para que el overlay semitransparente se vea diferente
+    panel.style.setProperty('background',       '#3e2b32',                'important');
+    panel.style.setProperty('background-color', '#3e2b32',                'important');
 
     // ── Bloquear scroll: página exterior + panel del chat ────────────────────
     // Se bloquea <html> Y <body> porque Shopify usa distintos scroll roots
@@ -2592,6 +2615,9 @@ async function enviarDesdeChip (texto) {
       document.body.style.overflow            = _bodyScrollPrev;
       document.documentElement.style.overflow = _htmlScrollPrev;
       panel.style.overflow                    = _panelScrollPrev;
+      // Restaurar color del panel
+      panel.style.removeProperty('background');
+      panel.style.removeProperty('background-color');
       // Eliminar backdrop de página
       const bg = document.getElementById('koi-page-backdrop');
       if (bg) bg.remove();
