@@ -847,11 +847,10 @@
 }
 
 .koi-focus-overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: rgba(236, 149, 184, 0.50);
-  z-index: 10;
-  border-radius: 16px;
+  z-index: 9999;
   pointer-events: auto;
   animation: koiFocusOverlayIn 0.35s ease forwards;
 }
@@ -872,9 +871,9 @@
   from { opacity: 1; } to { opacity: 0; }
 }
 
-/* Card centrada — opaca, sin scroll, encima del overlay rosa */
+/* Card centrada — fixed en el viewport, encima del overlay */
 .koi-focus-card {
-  position: absolute;
+  position: fixed;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
@@ -883,9 +882,8 @@
   background: #1c181a;
   border: 1px solid rgba(236, 149, 184, 0.35);
   border-radius: 18px;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.50);
-  overflow: hidden;
-  z-index: 20;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.60);
+  z-index: 10000;
   padding: 26px 26px 20px;
   display: flex;
   flex-direction: column;
