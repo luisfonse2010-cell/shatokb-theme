@@ -900,16 +900,28 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     styleTag.id = 'koi-focus-style';
     styleTag.textContent =
       '#koi-focus-overlay{position:absolute!important;inset:0!important;top:0!important;left:0!important;width:100%!important;height:100%!important;background:rgba(28,24,26,0.88)!important;backdrop-filter:blur(6px)!important;-webkit-backdrop-filter:blur(6px)!important;z-index:10!important;pointer-events:auto!important;display:block!important;border-radius:inherit!important;}' +
-      '#koi-focus-card{position:fixed!important;top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;z-index:2147483647!important;pointer-events:auto!important;display:flex!important;flex-direction:column!important;width:calc(100vw - 40px)!important;max-width:440px!important;background:#1c181a!important;border:1px solid rgba(236,149,184,0.35)!important;border-radius:18px!important;box-shadow:0 24px 64px rgba(0,0,0,0.75)!important;padding:26px 26px 20px!important;gap:16px!important;box-sizing:border-box!important;}';
+      '#koi-focus-card{position:fixed!important;top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;z-index:2147483647!important;pointer-events:auto!important;display:flex!important;flex-direction:column!important;width:calc(100vw - 40px)!important;max-width:440px!important;background:#1c181a!important;border:1px solid rgba(236,149,184,0.35)!important;border-radius:18px!important;box-shadow:0 24px 64px rgba(0,0,0,0.75)!important;padding:26px 26px 20px!important;gap:16px!important;box-sizing:border-box!important;}' +
+      '#koi-page-backdrop{position:fixed!important;inset:0!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;background:rgba(18,14,16,0.82)!important;z-index:2147483640!important;pointer-events:auto!important;}';
     document.head.appendChild(styleTag);
 
     // ── Bloquear scroll: página exterior + panel del chat ────────────────────
-    // Evita que el usuario scrollee el fondo de Shopify o el chat
-    // mientras la card de email está visible.
+    // Evita que el usuario scrollee el fondo de Shopify o el chat.
+    // Se bloquea tanto <html> como <body> porque distintos temas Shopify
+    // usan uno u otro como scroll root.
     const _bodyOverflowPrev  = document.body.style.overflow;
+    const _htmlOverflowPrev  = document.documentElement.style.overflow;
     const _panelOverflowPrev = panel.style.overflow;
-    document.body.style.overflow = 'hidden';
-    panel.style.overflow         = 'hidden';
+    document.body.style.overflow            = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    panel.style.overflow                    = 'hidden';
+
+    // ── Backdrop de página completa (position:fixed cubre todo el viewport) ──
+    // Necesario porque el overlay del panel solo cubre el área del chat.
+    // Este backdrop cubre el 100% del viewport real incluyendo franjas
+    // blancas por debajo o encima del chat.
+    const backdrop = document.createElement('div');
+    backdrop.id = 'koi-page-backdrop';
+    document.body.appendChild(backdrop);
 
     // Overlay dentro del .koi-panel — cubre header + mini-cart + mensajes
     const overlay = document.createElement('div');
@@ -955,15 +967,18 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     }, 200 + 4 * 180 + 150);
 
     function _cerrarFocusMode () {
-      const o = document.getElementById('koi-focus-overlay'); // en wrapper
-      const c = document.getElementById('koi-focus-card');   // en body
-      if (o) o.remove();
-      if (c) c.remove();
+      const o  = document.getElementById('koi-focus-overlay');
+      const c  = document.getElementById('koi-focus-card');
+      const bg = document.getElementById('koi-page-backdrop');
+      if (o)  o.remove();
+      if (c)  c.remove();
+      if (bg) bg.remove();
       const st = document.getElementById('koi-focus-style');
       if (st) st.remove();
-      // Restaurar scroll
-      document.body.style.overflow = _bodyOverflowPrev;
-      panel.style.overflow         = _panelOverflowPrev;
+      // Restaurar scroll en body, html y panel
+      document.body.style.overflow            = _bodyOverflowPrev;
+      document.documentElement.style.overflow = _htmlOverflowPrev;
+      panel.style.overflow                    = _panelOverflowPrev;
     }
 
     async function _confirmarFocusEmail () {
@@ -2490,10 +2505,28 @@ async function enviarDesdeChip (texto) {
     panel.appendChild(overlay);
 
     // ── Bloquear scroll: página exterior + panel del chat ────────────────────
+    // Se bloquea <html> Y <body> porque Shopify usa distintos scroll roots
+    // según el tema. Ambos deben estar hidden para que no haya franja blanca.
     const _bodyScrollPrev  = document.body.style.overflow;
+    const _htmlScrollPrev  = document.documentElement.style.overflow;
     const _panelScrollPrev = panel.style.overflow;
-    document.body.style.overflow = 'hidden';
-    panel.style.overflow         = 'hidden';
+    document.body.style.overflow            = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    panel.style.overflow                    = 'hidden';
+
+    // ── Backdrop de página completa — cubre el 100% del viewport real ───────
+    // El overlay del panel solo cubre el área del chat. Este backdrop oscuro
+    // cubre toda la pantalla (franjas blancas arriba/abajo) con position:fixed.
+    // Mismo CSS del styleTag de _inyectarFocusMode.
+    if (!document.getElementById('koi-page-backdrop')) {
+      const backdropStyle = document.createElement('style');
+      backdropStyle.id = 'koi-backdrop-style';
+      backdropStyle.textContent = '#koi-page-backdrop{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;background:rgba(18,14,16,0.82)!important;z-index:2147483640!important;pointer-events:auto!important;}';
+      document.head.appendChild(backdropStyle);
+    }
+    const backdrop = document.createElement('div');
+    backdrop.id = 'koi-page-backdrop';
+    document.body.appendChild(backdrop);
 
     // ── Crear card centrada flotante sobre el panel ─────────────────────────
     const card = document.createElement('div');
@@ -2544,8 +2577,14 @@ async function enviarDesdeChip (texto) {
       card.classList.add('koi-focus-card--exit');
       overlay.classList.add('koi-focus-overlay--exit');
       // Restaurar scroll inmediatamente (no esperar al timeout)
-      document.body.style.overflow = _bodyScrollPrev;
-      panel.style.overflow         = _panelScrollPrev;
+      document.body.style.overflow            = _bodyScrollPrev;
+      document.documentElement.style.overflow = _htmlScrollPrev;
+      panel.style.overflow                    = _panelScrollPrev;
+      // Eliminar backdrop de página
+      const bg = document.getElementById('koi-page-backdrop');
+      if (bg) bg.remove();
+      const bs = document.getElementById('koi-backdrop-style');
+      if (bs) bs.remove();
       setTimeout(() => {
         panel.classList.remove('koi--focus-mode');
         if (chips)     chips.style.display     = '';
