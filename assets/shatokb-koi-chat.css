@@ -1,34 +1,146 @@
-/* ── Focus Mode — PATCHED v20260618F ── */
-html.koi-scroll-locked {
-  overflow: hidden !important;
+/**
+ * ============================================================
+ * SHATOKB · KOI Chat — Experta K-Beauty con IA
+ * Archivo: assets/shatokb-koi-chat.css
+ * Versión: 1.0
+ *
+ * Paleta:
+ *   #1c181a  — fondo oscuro (mismo que hero)
+ *   #ec95b8  — rosa acento KOI
+ *   #f0aac8  — rosa hover
+ *   #ffffff  — texto claro
+ * ============================================================
+ */
+
+/* ══════════════════════════════════════════════════════════
+   MINI BARRA DE CARRITO — fija debajo del header KOI
+   Siempre visible en mobile. +40% tamaño, layout centrado.
+   Alta especificidad + !important para neutralizar el tema Halo.
+   ══════════════════════════════════════════════════════════ */
+#shatokb-koi-wrapper #koi-mini-cart-bar,
+#shatokb-koi-wrapper .koi-mini-cart-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-direction: row !important;
+  gap: 16px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  background: #1c181a !important;
+  border-top: none !important;
+  border-bottom: 1px solid rgba(236, 149, 184, 0.25) !important;
+  border-left: none !important;
+  border-right: none !important;
+  padding: 14px 24px !important;
+  margin: 0 !important;
+  position: relative !important;
+  z-index: 2 !important;
+  opacity: 0 !important;
+  transform: translateY(-6px) !important;
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  pointer-events: none !important;
+  border-radius: 0 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+  /* Resetear cualquier estilo heredado del tema */
+  font-size: 14px !important;
+  line-height: 1.2 !important;
+  text-align: center !important;
+  float: none !important;
+  overflow: visible !important;
 }
-#koi-focus-overlay {
-  position: fixed !important;
-  inset: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  background-color: rgba(28, 24, 26, 0.82) !important;
-  backdrop-filter: blur(3px) !important;
-  -webkit-backdrop-filter: blur(3px) !important;
-  z-index: 2147483640 !important;
+
+#shatokb-koi-wrapper #koi-mini-cart-bar.koi-mini-cart-bar--visible,
+#shatokb-koi-wrapper .koi-mini-cart-bar.koi-mini-cart-bar--visible {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
   pointer-events: auto !important;
 }
-#koi-focus-card,
-.koi-focus-card {
-  position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  z-index: 9999 !important;
-  width: min(480px, 92vw);
-  background: #1c181a;
-  border: 1px solid rgba(28, 24, 26, 0.82);
-  border-radius: 20px;
-  padding: 28px 24px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+
+#shatokb-koi-wrapper .koi-mini-cart-bar__info {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+  min-width: 0 !important;
+  flex-shrink: 0 !important;
+  align-items: center !important;
+  text-align: center !important;
+}
+
+#shatokb-koi-wrapper .koi-mini-cart-bar__label {
+  font-family: 'Arimo', 'Arial', sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  color: rgba(255, 255, 255, 0.55) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1.2 !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+
+#shatokb-koi-wrapper .koi-mini-cart-bar__total {
+  font-family: 'Prompt', 'Arial Black', sans-serif !important;
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  line-height: 1 !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+
+#shatokb-koi-wrapper .koi-mini-cart-bar__btn {
+  flex-shrink: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  background: #ec95b8 !important;
+  color: #1c181a !important;
+  border: none !important;
+  border-radius: 10px !important;
+  padding: 13px 24px !important;
+  font-family: 'Arimo', 'Arial', sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: background 0.2s ease, transform 0.15s ease !important;
+  white-space: nowrap !important;
+  text-decoration: none !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  line-height: 1.2 !important;
+  min-height: auto !important;
+  height: auto !important;
+  width: auto !important;
+  box-shadow: 0 4px 14px rgba(236, 149, 184, 0.35) !important;
+  outline: none !important;
+  margin: 0 !important;
+  position: static !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+}
+
+#shatokb-koi-wrapper .koi-mini-cart-bar__btn:hover {
+  background: #f0aac8 !important;
+  transform: translateY(-1px) !important;
+  color: #1c181a !important;
+  box-shadow: 0 6px 18px rgba(236, 149, 184, 0.45) !important;
+}
+
+#shatokb-koi-wrapper .koi-mini-cart-bar__btn:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 8px rgba(236, 149, 184, 0.25) !important;
 }
 
 /* ── Variables KOI ────────────────────────────────────────── */
@@ -118,7 +230,7 @@ html.koi-scroll-locked {
   justify-content: center;
   font-size: 22px;
   flex-shrink: 0;
-  box-shadow: 0 0 0 3px rgba(28, 24, 26, 0.82);
+  box-shadow: 0 0 0 3px rgba(236, 149, 184, 0.25);
 }
 
 .koi-header__info {
@@ -505,7 +617,7 @@ html.koi-scroll-locked {
   background: linear-gradient(135deg,
     rgba(236, 149, 184, 0.12) 0%,
     rgba(255, 255, 255, 0.05) 100%);
-  border-color: rgba(28, 24, 26, 0.82);
+  border-color: rgba(236, 149, 184, 0.25);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -720,48 +832,12 @@ html.koi-scroll-locked {
    ══════════════════════════════════════════════════════════ */
 
 /* ══════════════════════════════════════════════════════════
-   FOCUS MODE — overlay rosa DENTRO del panel
-   El overlay cubre exactamente el área del chat, no toda la página.
-   Técnica: position:absolute dentro de .koi-panel con overflow:visible
+   FOCUS MODE
+   - Overlay oscuro: position:absolute, cubre el wrapper
+   - Card: position:fixed, centrada en el viewport, siempre completa
    ══════════════════════════════════════════════════════════ */
-/* Bloqueo de scroll en html — previene scroll por debajo del overlay en iOS */
-html.koi-scroll-locked {
-  overflow: hidden !important;
-}
 
-/* Wrapper en focus mode — NO crea stacking context propio,
-   así el overlay fixed puede cubrirlo desde body */
-#shatokb-koi-wrapper.koi-wrapper--focus-active {
-  position: relative !important;
-  z-index: 1 !important;
-  overflow: visible !important;
-  isolation: auto !important;
-  transform: none !important;
-  filter: none !important;
-}
-
-/* Bajar todos los hijos internos para que el overlay fixed los tape */
-#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-header,
-#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-mini-cart-bar,
-#shatokb-koi-wrapper.koi-wrapper--focus-active #koi-mini-cart-bar {
-  z-index: 0 !important;
-  position: relative !important;
-}
-#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-panel,
-#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-messages,
-#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-input-area,
-#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-chips,
-#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-footer {
-  z-index: 0 !important;
-  position: relative !important;
-}
-
-/* El panel en focus mode NO oculta nada */
-.koi-panel.koi--focus-mode {
-  overflow: visible !important;
-  position: relative !important;
-}
-
+/* Overlay: cubre exactamente el wrapper (no la página) */
 .koi-focus-overlay,
 #koi-focus-overlay {
   position: absolute !important;
@@ -770,49 +846,35 @@ html.koi-scroll-locked {
   left: 0 !important;
   width: 100% !important;
   height: 100% !important;
-  background: rgba(28, 24, 26, 0.85) !important;
-  background-color: rgba(28, 24, 26, 0.85) !important;
-  backdrop-filter: blur(5px) !important;
-  -webkit-backdrop-filter: blur(5px) !important;
+  background: rgba(28, 24, 26, 0.82) !important;
+  background-color: rgba(28, 24, 26, 0.82) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
   z-index: 200 !important;
   pointer-events: auto !important;
   display: block !important;
   border-radius: 0 !important;
 }
 
-.koi-focus-overlay--exit {
-  animation: koiFocusOverlayOut 0.35s ease forwards !important;
-}
-
-/* Bloquear scroll de mensajes */
-.koi-panel.koi--focus-mode .koi-messages {
-  overflow: hidden !important;
-}
-
-@keyframes koiFocusOverlayIn {
-  from { opacity: 0; } to { opacity: 1; }
-}
-@keyframes koiFocusOverlayOut {
-  from { opacity: 1; } to { opacity: 0; }
-}
-
+/* Card: position:fixed centrada en el viewport — siempre visible y completa */
 .koi-focus-card {
   position: fixed !important;
   left: 50% !important;
   top: 50% !important;
   transform: translate(-50%, -50%) !important;
-  width: calc(100vw - 40px);
-  max-width: 440px;
+  width: calc(100% - 40px);
+  max-width: 420px;
   background: #1c181a;
   border: 1px solid rgba(236, 149, 184, 0.35);
   border-radius: 18px;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.70);
-  z-index: 2147483647 !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.60);
+  z-index: 9999 !important;
   padding: 26px 26px 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   box-sizing: border-box;
+  animation: koiFocusCardIn 0.40s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .koi-focus-card--exit {
@@ -983,7 +1045,7 @@ html.koi-scroll-locked {
 
 .koi-focus-card__btn:active {
   transform: translateY(0);
-  box-shadow: 0 3px 10px rgba(28, 24, 26, 0.82);
+  box-shadow: 0 3px 10px rgba(236, 149, 184, 0.25);
 }
 
 .koi-focus-card__btn:disabled {
@@ -1048,7 +1110,7 @@ html.koi-scroll-locked {
 .koi-email-gate {
   margin: 4px 0 8px 42px;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(28, 24, 26, 0.82);
+  border: 1px solid rgba(236, 149, 184, 0.25);
   border-radius: 12px;
   padding: 16px;
   animation: koiEmailSlideIn 0.35s cubic-bezier(0.22, 1, 0.36, 1);
@@ -1176,7 +1238,7 @@ html.koi-scroll-locked {
    BOTÓN REVEAL — discreto, inline con los chips
    ══════════════════════════════════════════════════════════ */
 .koi-chip--reveal-cta {
-  background: rgba(28, 24, 26, 0.82) !important;
+  background: rgba(236, 149, 184, 0.12) !important;
   color: #ec95b8 !important;
   font-size: 13px !important;
   font-weight: 600 !important;
@@ -1189,7 +1251,7 @@ html.koi-scroll-locked {
 }
 
 .koi-chip--reveal-cta:hover {
-  background: rgba(28, 24, 26, 0.82) !important;
+  background: rgba(236, 149, 184, 0.22) !important;
   border-color: rgba(236, 149, 184, 0.60) !important;
   color: #f0aac8 !important;
   transform: none !important;
