@@ -899,7 +899,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     const styleTag = document.createElement('style');
     styleTag.id = 'koi-focus-style';
     styleTag.textContent =
-      '#koi-focus-overlay{position:absolute!important;inset:0!important;top:0!important;left:0!important;width:100%!important;height:100%!important;background:transparent!important;z-index:10!important;pointer-events:auto!important;display:block!important;border-radius:inherit!important;}' +
+      '#koi-focus-overlay{position:absolute!important;inset:0!important;top:0!important;left:0!important;width:100%!important;height:100%!important;background:rgba(62,43,50,0.75)!important;backdrop-filter:blur(4px)!important;-webkit-backdrop-filter:blur(4px)!important;z-index:10!important;pointer-events:auto!important;display:block!important;border-radius:inherit!important;}' +
       '#koi-focus-card{position:fixed!important;top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;z-index:2147483647!important;pointer-events:auto!important;display:flex!important;flex-direction:column!important;width:calc(100vw - 40px)!important;max-width:440px!important;background:#1c181a!important;border:1px solid rgba(236,149,184,0.35)!important;border-radius:18px!important;box-shadow:0 24px 64px rgba(0,0,0,0.75)!important;padding:26px 26px 20px!important;gap:16px!important;box-sizing:border-box!important;}' +
       '#koi-page-backdrop{position:fixed!important;inset:0!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;background:rgba(236,149,184,0.25)!important;backdrop-filter:blur(3px)!important;-webkit-backdrop-filter:blur(3px)!important;z-index:2147483640!important;pointer-events:auto!important;}';
     document.head.appendChild(styleTag);
@@ -920,16 +920,10 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     backdrop.id = 'koi-page-backdrop';
     document.body.appendChild(backdrop);
 
-    // ── Aclarar el panel + blur para que el fondo sea visible ────────────
-    // Usamos setProperty con !important para superar el CSS del tema Shopify.
-    const _panelBgPrev = panel.getAttribute('style') || '';
-    panel.style.setProperty('background', '#3e2b32', 'important');
-    panel.style.setProperty('background-color', '#3e2b32', 'important');
-    panel.style.setProperty('filter', 'blur(4px)', 'important');
-    panel.style.setProperty('transition', 'filter 0.3s ease, background 0.3s ease', 'important');
-    panel.style.setProperty('pointer-events', 'none', 'important');
-
-    // Overlay dentro del .koi-panel — cubre header + mini-cart + mensajes
+    // ── Overlay dentro del .koi-panel — color vino + blur sobre TODO el panel ──
+    // position:absolute inset:0 cubre cada píxel del panel (header, mini-cart,
+    // mensajes). El color #3e2b32 con backdrop-filter:blur desenfoca el contenido
+    // del panel visible detrás de la card. z-index:10 supera header(1) y cart(2).
     const overlay = document.createElement('div');
     overlay.id = 'koi-focus-overlay';
     panel.appendChild(overlay);
@@ -981,12 +975,6 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       if (bg) bg.remove();
       const st = document.getElementById('koi-focus-style');
       if (st) st.remove();
-      // Quitar blur del panel y restaurar background original
-      panel.style.removeProperty('background');
-      panel.style.removeProperty('background-color');
-      panel.style.removeProperty('filter');
-      panel.style.removeProperty('pointer-events');
-      panel.style.removeProperty('transition');
       // Restaurar scroll en body, html y panel
       document.body.style.overflow            = _bodyOverflowPrev;
       document.documentElement.style.overflow = _htmlOverflowPrev;
@@ -2540,14 +2528,6 @@ async function enviarDesdeChip (texto) {
     backdrop.id = 'koi-page-backdrop';
     document.body.appendChild(backdrop);
 
-    // ── Aclarar panel + blur (mismo que _inyectarFocusMode) ───────────────
-    const _panelBgPrev = panel.getAttribute('style') || '';
-    panel.style.setProperty('background', '#3e2b32', 'important');
-    panel.style.setProperty('background-color', '#3e2b32', 'important');
-    panel.style.setProperty('filter', 'blur(4px)', 'important');
-    panel.style.setProperty('transition', 'filter 0.3s ease, background 0.3s ease', 'important');
-    panel.style.setProperty('pointer-events', 'none', 'important');
-
     // ── Crear card centrada flotante sobre el panel ─────────────────────────
     const card = document.createElement('div');
     card.id        = 'koi-email-gate';
@@ -2600,12 +2580,6 @@ async function enviarDesdeChip (texto) {
       document.body.style.overflow            = _bodyScrollPrev;
       document.documentElement.style.overflow = _htmlScrollPrev;
       panel.style.overflow                    = _panelScrollPrev;
-      // Quitar blur del panel y restaurar background original
-      panel.style.removeProperty('background');
-      panel.style.removeProperty('background-color');
-      panel.style.removeProperty('filter');
-      panel.style.removeProperty('pointer-events');
-      panel.style.removeProperty('transition');
       // Eliminar backdrop de página
       const bg = document.getElementById('koi-page-backdrop');
       if (bg) bg.remove();
