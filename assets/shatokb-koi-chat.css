@@ -848,8 +848,11 @@
   height: 100vh !important;
   background: rgba(236, 149, 184, 0.50) !important;
   background-color: rgba(236, 149, 184, 0.50) !important;
-  z-index: 9999 !important;
-  pointer-events: auto;
+  backdrop-filter: blur(3px) !important;
+  -webkit-backdrop-filter: blur(3px) !important;
+  z-index: 2147483640 !important;
+  pointer-events: auto !important;
+  display: block !important;
   animation: koiFocusOverlayIn 0.35s ease forwards;
 }
 
@@ -871,17 +874,17 @@
 
 /* Card centrada - fixed en el viewport, encima del overlay */
 .koi-focus-card {
-  position: fixed;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  position: fixed !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
   width: calc(100% - 40px);
   max-width: 460px;
   background: #1c181a;
   border: 1px solid rgba(236, 149, 184, 0.35);
   border-radius: 18px;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.60);
-  z-index: 10000;
+  z-index: 2147483645 !important;
   padding: 26px 26px 20px;
   display: flex;
   flex-direction: column;
