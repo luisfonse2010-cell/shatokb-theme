@@ -19,7 +19,7 @@
  * ============================================================
  */
 
-/* ── Last deploy: 2026-06-17T21:29:24.615Z ──
+/* ── Last deploy: 2026-06-18T16:41:58.244Z ──
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
 const KOI_SYSTEM_PROMPT = `
 You are KOI.
@@ -881,6 +881,70 @@ ABSOLUTE RULES — violation means the analysis is worthless:
           }),
           { status: 200, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
         );
+      }
+    }
+
+    // ── Endpoint /shopify-proxy — relay para Shopify Admin API ───
+    // La Admin API de Shopify bloquea fetch() desde el browser (CORS).
+    // Este endpoint actúa como relay server-side: recibe la petición
+    // del deploy panel y la reenvía a Shopify con el token secreto.
+    if (url.pathname === '/shopify-proxy') {
+      if (request.method !== 'POST') {
+        return new Response(JSON.stringify({ error: 'Method not allowed' }),
+          { status: 405, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
+      }
+
+      let proxyBody;
+      try { proxyBody = await request.json(); } catch {
+        return new Response(JSON.stringify({ error: 'Invalid body' }),
+          { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
+      }
+
+      const { shopify_domain, shopify_token, method, path, body: proxyPayload } = proxyBody;
+
+      if (!shopify_domain || !shopify_token || !method || !path) {
+        return new Response(JSON.stringify({ error: 'Missing fields: shopify_domain, shopify_token, method, path' }),
+          { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
+      }
+
+      // Seguridad básica: solo permitir rutas de Admin API de temas
+      const allowedPaths = ['/admin/api/2024-01/themes', '/admin/api/2024-01/themes/'];
+      const isAllowed = path.startsWith('/admin/api/2024-01/themes');
+      if (!isAllowed) {
+        return new Response(JSON.stringify({ error: 'Path not allowed' }),
+          { status: 403, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
+      }
+
+      const shopifyUrl = `https://${shopify_domain}${path}`;
+      console.log(`[Shopify Proxy] ${method} ${shopifyUrl}`);
+
+      try {
+        const shopifyRes = await fetch(shopifyUrl, {
+          method: method,
+          headers: {
+            'X-Shopify-Access-Token': shopify_token,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: proxyPayload ? JSON.stringify(proxyPayload) : undefined,
+        });
+
+        const responseText = await shopifyRes.text();
+        let responseData;
+        try { responseData = JSON.parse(responseText); }
+        catch { responseData = { raw: responseText }; }
+
+        console.log(`[Shopify Proxy] Response ${shopifyRes.status}`);
+
+        return new Response(JSON.stringify(responseData), {
+          status: shopifyRes.ok ? 200 : shopifyRes.status,
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+        });
+
+      } catch (err) {
+        console.error('[Shopify Proxy] Error:', err.message);
+        return new Response(JSON.stringify({ error: `Proxy fetch failed: ${err.message}` }),
+          { status: 500, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
       }
     }
 
