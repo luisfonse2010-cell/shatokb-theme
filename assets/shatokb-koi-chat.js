@@ -899,9 +899,9 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     const styleTag = document.createElement('style');
     styleTag.id = 'koi-focus-style';
     styleTag.textContent =
-      '#koi-focus-overlay{position:absolute!important;inset:0!important;top:0!important;left:0!important;width:100%!important;height:100%!important;background:rgba(62,43,50,0.75)!important;backdrop-filter:blur(4px)!important;-webkit-backdrop-filter:blur(4px)!important;z-index:10!important;pointer-events:auto!important;display:block!important;border-radius:inherit!important;}' +
+      '#koi-focus-overlay{position:absolute!important;inset:0!important;top:0!important;left:0!important;width:100%!important;height:100%!important;background:rgba(236,149,184,0.18)!important;z-index:10!important;pointer-events:auto!important;display:block!important;border-radius:inherit!important;}' +
       '#koi-focus-card{position:fixed!important;top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;z-index:2147483647!important;pointer-events:auto!important;display:flex!important;flex-direction:column!important;width:calc(100vw - 40px)!important;max-width:440px!important;background:#1c181a!important;border:1px solid rgba(236,149,184,0.35)!important;border-radius:18px!important;box-shadow:0 24px 64px rgba(0,0,0,0.75)!important;padding:26px 26px 20px!important;gap:16px!important;box-sizing:border-box!important;}' +
-      '#koi-page-backdrop{position:fixed!important;inset:0!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;background:rgba(236,149,184,0.25)!important;backdrop-filter:blur(3px)!important;-webkit-backdrop-filter:blur(3px)!important;z-index:2147483640!important;pointer-events:auto!important;}';
+      '#koi-page-backdrop{position:fixed!important;inset:0!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;background:rgba(236,149,184,0.18)!important;z-index:2147483640!important;pointer-events:auto!important;}';
     document.head.appendChild(styleTag);
 
     // ── Bloquear scroll: página exterior + panel del chat ────────────────────
@@ -928,8 +928,17 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     overlay.id = 'koi-focus-overlay';
     panel.appendChild(overlay);
 
+    // ── Aclarar fondo de mensajes con color vino directamente en los elementos ──
+    // backdrop-filter no funciona con overflow:hidden en el padre.
+    // Solución: cambiar background de .koi-messages y .koi-header directamente.
+    const messages = document.getElementById('koi-messages');
+    const header   = document.querySelector('#shatokb-koi-wrapper .koi-header');
+    const _msgBgPrev    = messages ? messages.style.getPropertyValue('background') : '';
+    const _headerBgPrev = header   ? header.style.getPropertyValue('background')   : '';
+    if (messages) messages.style.setProperty('background', '#3e2b32', 'important');
+    if (header)   header.style.setProperty('background',   '#3e2b32', 'important');
+
     // Card → document.body (no al wrapper) para escapar del transform:matrix()
-    // El transform del wrapper atrapa position:fixed — body no tiene ese problema
     const card = document.createElement('div');
     card.id        = 'koi-focus-card';
     card.className = 'koi-focus-card';
@@ -975,6 +984,9 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       if (bg) bg.remove();
       const st = document.getElementById('koi-focus-style');
       if (st) st.remove();
+      // Restaurar colores de mensajes y header
+      if (messages) messages.style.removeProperty('background');
+      if (header)   header.style.removeProperty('background');
       // Restaurar scroll en body, html y panel
       document.body.style.overflow            = _bodyOverflowPrev;
       document.documentElement.style.overflow = _htmlOverflowPrev;
@@ -2521,7 +2533,7 @@ async function enviarDesdeChip (texto) {
     if (!document.getElementById('koi-page-backdrop')) {
       const backdropStyle = document.createElement('style');
       backdropStyle.id = 'koi-backdrop-style';
-      backdropStyle.textContent = '#koi-page-backdrop{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;background:rgba(236,149,184,0.25)!important;backdrop-filter:blur(3px)!important;-webkit-backdrop-filter:blur(3px)!important;z-index:2147483640!important;pointer-events:auto!important;}';
+      backdropStyle.textContent = '#koi-page-backdrop{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;background:rgba(236,149,184,0.18)!important;z-index:2147483640!important;pointer-events:auto!important;}';
       document.head.appendChild(backdropStyle);
     }
     const backdrop = document.createElement('div');
