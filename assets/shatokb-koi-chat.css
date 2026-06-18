@@ -831,92 +831,72 @@
    completo de KOI + formulario de email. Sin distracciones.
    ══════════════════════════════════════════════════════════ */
 
-/* ── Panel en modo focus ─────────────────────────────────── */
-/* Todo el contenido del panel se oscurece y desenfoca excepto
-   la mini-cart-bar (z-index alto) y la focus-card (z-index alto).
-   No dependemos de position:absolute porque overflow:hidden
-   lo recortaría. En su lugar oscurecemos cada hijo directamente. */
+/* ══════════════════════════════════════════════════════════
+   FOCUS MODE — solución definitiva
+   ──────────────────────────────────────────────────────────
+   Estrategia: oscurecer los HIJOS del panel directamente
+   con opacity + blur. El overflow:hidden del panel no
+   puede recortar estilos aplicados a sus propios hijos.
+   La card flota encima con z-index alto y clip-path:none.
+   ══════════════════════════════════════════════════════════ */
 
-/* Oscurecer y difuminar header, mensajes, chips, input, footer */
+/* 1 ─ Todo el contenido queda oscuro y borroso */
 .koi-panel.koi--focus-mode .koi-header,
 .koi-panel.koi--focus-mode .koi-messages,
 .koi-panel.koi--focus-mode .koi-chips,
 .koi-panel.koi--focus-mode .koi-input-area,
 .koi-panel.koi--focus-mode .koi-footer {
-  opacity: 0.12 !important;
-  filter: blur(3px) !important;
+  opacity: 0.08 !important;
+  filter: blur(4px) !important;
   pointer-events: none !important;
-  transition: opacity 0.35s ease, filter 0.35s ease !important;
   user-select: none !important;
+  transition: opacity 0.4s ease, filter 0.4s ease !important;
 }
 
-/* La mini-cart-bar permanece visible y usable */
+/* 2 ─ Mini-cart-bar permanece nítida y usable */
 .koi-panel.koi--focus-mode .koi-mini-cart-bar,
 .koi-panel.koi--focus-mode #koi-mini-cart-bar {
   opacity: 1 !important;
   filter: none !important;
   pointer-events: auto !important;
+  position: relative !important;
+  z-index: 60 !important;
 }
 
-/* ── Overlay oscuro — cubre TODO el .koi-panel ───────────── */
-/* position:absolute + inset:0 sobre .koi-panel (position:relative).
-   Refuerza visualmente el oscurecimiento ya aplicado por CSS.    */
+/* 3 ─ El overlay sólo existe para la animación de entrada/salida;
+       el oscurecimiento real lo hacen las reglas de arriba */
 .koi-focus-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(14, 10, 12, 0.75);
-  z-index: 30;
-  border-radius: inherit;
-  animation: koiFocusOverlayIn 0.35s ease forwards;
-  pointer-events: none; /* los clics pasan a los elementos de abajo */
-}
-
-/* El mini-cart-bar debe flotar POR ENCIMA del overlay */
-#shatokb-koi-wrapper #koi-mini-cart-bar,
-#shatokb-koi-wrapper .koi-mini-cart-bar {
-  z-index: 40 !important;
+  display: none; /* ya no necesitamos el div overlay */
 }
 
 .koi-focus-overlay--exit {
-  animation: koiFocusOverlayOut 0.35s ease forwards !important;
+  display: none;
 }
 
 @keyframes koiFocusOverlayIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from { opacity: 0; } to { opacity: 1; }
 }
 @keyframes koiFocusOverlayOut {
-  from { opacity: 1; }
-  to   { opacity: 0; }
+  from { opacity: 1; } to { opacity: 0; }
 }
 
-/* Cuando focus mode está activo, el panel permite que la card
-   sobresalga si es más alta que el contenido actual            */
-.koi-panel.koi--focus-mode {
-  overflow: visible !important;
-}
-
-/* ── Card centrada — flota sobre el overlay ──────────────── */
-/* Vive directamente en .koi-panel, z-index > overlay          */
+/* 4 ─ La card flota centrada sobre el panel */
 .koi-focus-card {
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%) scale(1);
-  width: calc(100% - 32px);
-  max-width: 480px;
-  background: #231d20;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 40px);
+  max-width: 460px;
+  background: #241e21;
   border: 1px solid rgba(236, 149, 184, 0.35);
   border-radius: 18px;
-  box-shadow:
-    0 0 0 2000px rgba(14, 10, 12, 0.80),  /* sombra infinita = oscurece TODO el panel */
-    0 32px 80px rgba(0, 0, 0, 0.70),
-    0 0 0 1px rgba(236, 149, 184, 0.10);
-  z-index: 50;   /* encima de todo */
-  padding: 28px 28px 22px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.70);
+  z-index: 50;
+  padding: 26px 26px 20px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
   box-sizing: border-box;
   animation: koiFocusCardIn 0.40s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
@@ -926,12 +906,12 @@
 }
 
 @keyframes koiFocusCardIn {
-  from { opacity: 0; transform: translate(-50%, calc(-50% + 20px)) scale(0.96); }
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 16px)) scale(0.96); }
   to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 @keyframes koiFocusCardOut {
   from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  to   { opacity: 0; transform: translate(-50%, calc(-50% - 12px)) scale(0.97); }
+  to   { opacity: 0; transform: translate(-50%, calc(-50% - 10px)) scale(0.97); }
 }
 
 /* ── Identidad KOI dentro de la card ─────────────────────── */
