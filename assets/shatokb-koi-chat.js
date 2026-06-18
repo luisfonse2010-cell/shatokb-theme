@@ -16,6 +16,9 @@
 (function () {
   'use strict';
 
+  /* ── VERSION STAMP — para confirmar qué archivo corre en Shopify ── */
+  alert('🔴 KOI ORIGINAL shatokb-koi-chat.js CARGADO — BUILD 2026-06-18-A');
+
   /* ── Configuración ──────────────────────────────────────── */
   const KOI_CONFIG = {
     // Cloudflare Worker URL — secured proxy to OpenAI
