@@ -795,8 +795,9 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
      de mensajes), así oscurecen header + messages + chips + input.
      El mini-cart-bar queda visible por encima (z-index:40).         */
   function _inyectarFocusMode () {
-    const panel = document.querySelector('#shatokb-koi-wrapper .koi-panel');
-    if (!panel || document.getElementById('koi-focus-overlay')) return;
+    const panel   = document.querySelector('#shatokb-koi-wrapper .koi-panel');
+    const wrapper = document.getElementById('shatokb-koi-wrapper');
+    if (!panel || !wrapper || document.getElementById('koi-focus-overlay')) return;
 
     const idioma = detectarIdioma();
 
@@ -891,13 +892,13 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     // Añadir clase al panel para suprimir chips + input
     panel.classList.add('koi--focus-mode');
 
-    // ── 1. Overlay oscuro — cubre todo el panel ──
+    // ── 1. Overlay blanco — va en el WRAPPER (sin overflow:hidden) ──
     const overlay = document.createElement('div');
     overlay.id        = 'koi-focus-overlay';
     overlay.className = 'koi-focus-overlay';
-    panel.appendChild(overlay);
+    wrapper.appendChild(overlay);
 
-    // ── 2. Card centrada — flota sobre el overlay ──
+    // ── 2. Card centrada — también en el WRAPPER, encima del overlay ──
     const card = document.createElement('div');
     card.id        = 'koi-focus-card';
     card.className = 'koi-focus-card';
@@ -929,7 +930,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
         <button class="koi-focus-card__skip" id="koi-focus-skip">${lbl.skip}</button>
       </div>
     `;
-    panel.appendChild(card);
+    wrapper.appendChild(card);
 
     // Animar checkmarks con stagger
     const checkEls = card.querySelectorAll('.koi-envelope__check');
