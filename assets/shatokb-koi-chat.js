@@ -904,7 +904,9 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     overlay.style.setProperty('left',             '0',                        'important');
     overlay.style.setProperty('width',            '100vw',                    'important');
     overlay.style.setProperty('height',           '100vh',                    'important');
-    overlay.style.setProperty('background-color', 'rgba(236,149,184,0.50)',   'important');
+    overlay.style.setProperty('background-color', 'rgba(236,149,184,0.85)',   'important');
+    overlay.style.setProperty('backdrop-filter',  'blur(8px)',                'important');
+    overlay.style.setProperty('-webkit-backdrop-filter', 'blur(8px)',         'important');
     overlay.style.setProperty('z-index',          '2147483640',               'important');
     overlay.style.setProperty('pointer-events',   'auto',                     'important');
     overlay.style.setProperty('display',          'block',                    'important');
