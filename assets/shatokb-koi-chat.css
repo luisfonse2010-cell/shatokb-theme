@@ -849,15 +849,20 @@
 .koi-focus-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.78);
+  background: rgba(236, 149, 184, 0.50);
   z-index: 10;
   border-radius: 16px;
-  pointer-events: none;
+  pointer-events: auto;
   animation: koiFocusOverlayIn 0.35s ease forwards;
 }
 
 .koi-focus-overlay--exit {
   animation: koiFocusOverlayOut 0.35s ease forwards !important;
+}
+
+/* Bloquear scroll de mensajes en focus mode */
+.koi-panel.koi--focus-mode .koi-messages {
+  overflow: hidden !important;
 }
 
 @keyframes koiFocusOverlayIn {
@@ -867,7 +872,7 @@
   from { opacity: 1; } to { opacity: 0; }
 }
 
-/* Card centrada — hijo del wrapper, z-index:20 > overlay (10) */
+/* Card centrada — opaca, sin scroll, encima del overlay rosa */
 .koi-focus-card {
   position: absolute;
   left: 50%;
@@ -879,6 +884,7 @@
   border: 1px solid rgba(236, 149, 184, 0.35);
   border-radius: 18px;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.50);
+  overflow: hidden;
   z-index: 20;
   padding: 26px 26px 20px;
   display: flex;
