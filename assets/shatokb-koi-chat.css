@@ -825,6 +825,298 @@
    ══════════════════════════════════════════════════════════ */
 
 /* ── Versión legacy (dentro del scroll) — por compatibilidad ── */
+/* ══════════════════════════════════════════════════════════
+   FOCUS MODE — Email gate de alta conversión
+   Overlay oscuro sobre mensajes + card centrada con pitch
+   completo de KOI + formulario de email. Sin distracciones.
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Panel en modo focus — oculta chips e input ─────────── */
+.koi-panel.koi--focus-mode .koi-chips,
+.koi-panel.koi--focus-mode .koi-input-area {
+  display: none !important;
+}
+
+/* En focus mode el área de mensajes crece para llenar el espacio
+   liberado por chips e input, dando más espacio a la card */
+.koi-panel.koi--focus-mode .koi-messages {
+  max-height: 540px !important;
+  min-height: 320px !important;
+}
+
+/* ── Overlay oscuro sobre el área de mensajes ────────────── */
+.koi-focus-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(28, 24, 26, 0.82);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: 10;
+  animation: koiFocusOverlayIn 0.35s ease forwards;
+}
+
+.koi-focus-overlay--exit {
+  animation: koiFocusOverlayOut 0.35s ease forwards !important;
+}
+
+@keyframes koiFocusOverlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes koiFocusOverlayOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* ── Card centrada — flota sobre el panel ────────────────── */
+.koi-focus-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  width: calc(100% - 32px);
+  max-width: 480px;
+  background: #231d20;
+  border: 1px solid rgba(236, 149, 184, 0.30);
+  border-radius: 18px;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(236, 149, 184, 0.08);
+  z-index: 20;
+  padding: 28px 28px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-sizing: border-box;
+  animation: koiFocusCardIn 0.40s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.koi-focus-card--exit {
+  animation: koiFocusCardOut 0.30s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
+}
+
+@keyframes koiFocusCardIn {
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 20px)) scale(0.96); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes koiFocusCardOut {
+  from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  to   { opacity: 0; transform: translate(-50%, calc(-50% - 12px)) scale(0.97); }
+}
+
+/* ── Identidad KOI dentro de la card ─────────────────────── */
+.koi-focus-card__koi {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.koi-focus-card__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ec95b8 0%, #d4688a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 3px rgba(236, 149, 184, 0.20);
+}
+
+.koi-focus-card__name {
+  font-family: var(--koi-font-head);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--koi-rose);
+  letter-spacing: 0.04em;
+}
+
+/* ── Burbuja de mensaje KOI ───────────────────────────────── */
+.koi-focus-card__bubble {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px 16px 16px 16px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.koi-focus-card__headline {
+  font-family: var(--koi-font-body);
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.koi-focus-card__body {
+  font-family: var(--koi-font-body);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.80);
+  margin: 0;
+  line-height: 1.65;
+}
+
+.koi-focus-card__body strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.koi-focus-card__ask {
+  font-family: var(--koi-font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--koi-rose);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Badge de precio ──────────────────────────────────────── */
+.koi-focus-card__price-badge {
+  display: inline-flex;
+  align-self: center;
+  align-items: center;
+  gap: 6px;
+  background: rgba(236, 149, 184, 0.12);
+  border: 1px solid rgba(236, 149, 184, 0.28);
+  color: #ec95b8;
+  font-family: var(--koi-font-head);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: 50px;
+  letter-spacing: 0.01em;
+}
+
+/* ── Formulario ───────────────────────────────────────────── */
+.koi-focus-card__form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.koi-focus-card__input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 13px 16px;
+  color: #ffffff;
+  font-family: var(--koi-font-body);
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  box-sizing: border-box;
+}
+
+.koi-focus-card__input::placeholder {
+  color: rgba(255, 255, 255, 0.28);
+}
+
+.koi-focus-card__input:focus {
+  border-color: var(--koi-rose);
+  background: rgba(255, 255, 255, 0.10);
+  box-shadow: 0 0 0 3px rgba(236, 149, 184, 0.12);
+}
+
+.koi-focus-card__input--error {
+  border-color: #f87171 !important;
+  animation: koiFocusShake 0.4s ease;
+}
+
+@keyframes koiFocusShake {
+  0%, 100% { transform: translateX(0);    }
+  20%       { transform: translateX(-5px); }
+  40%       { transform: translateX(5px);  }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px);  }
+}
+
+.koi-focus-card__btn {
+  width: 100%;
+  background: var(--koi-rose);
+  color: #1c181a;
+  border: none;
+  border-radius: 10px;
+  padding: 14px 20px;
+  font-family: var(--koi-font-body);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  letter-spacing: 0.01em;
+  box-shadow: 0 6px 20px rgba(236, 149, 184, 0.35);
+}
+
+.koi-focus-card__btn:hover {
+  background: var(--koi-rose-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(236, 149, 184, 0.45);
+}
+
+.koi-focus-card__btn:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 10px rgba(236, 149, 184, 0.25);
+}
+
+.koi-focus-card__btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Footer: nota + skip ──────────────────────────────────── */
+.koi-focus-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.koi-focus-card__note {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.30);
+  line-height: 1.4;
+  flex: 1;
+}
+
+.koi-focus-card__skip {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.30);
+  font-size: 11px;
+  font-family: var(--koi-font-body);
+  cursor: pointer;
+  padding: 4px 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.koi-focus-card__skip:hover {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ── Responsive mobile ────────────────────────────────────── */
+@media (max-width: 600px) {
+  .koi-focus-card {
+    width: calc(100% - 20px);
+    padding: 22px 18px 18px;
+    top: 50%;
+    max-height: calc(100% - 40px);
+    overflow-y: auto;
+  }
+
+  .koi-focus-card__headline { font-size: 14px; }
+  .koi-focus-card__body     { font-size: 12px; }
+  .koi-focus-card__btn      { padding: 13px 16px; font-size: 14px; }
+}
+
+/* ── Estilos legacy (email gate en mensajes, modo antiguo) ── */
 .koi-email-gate {
   margin: 4px 0 8px 42px;
   background: rgba(255, 255, 255, 0.05);
@@ -832,109 +1124,6 @@
   border-radius: 12px;
   padding: 16px;
   animation: koiEmailSlideIn 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* ── Versión anclada al panel — siempre visible ─────────── */
-.koi-email-gate--panel {
-  margin: 0 !important;
-  border-radius: 0 !important;
-  border-top: 1px solid rgba(236, 149, 184, 0.25) !important;
-  border-left: none !important;
-  border-right: none !important;
-  border-bottom: none !important;
-  background: #1c181a !important;
-  padding: 0 !important;
-  animation: koiEmailPanelIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) !important;
-  position: relative;
-  z-index: 3;
-}
-
-@keyframes koiEmailPanelIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0);   }
-}
-
-.koi-email-gate--panel .koi-email-gate__inner {
-  padding: 14px 20px 12px;
-}
-
-/* ── Header recordatorio — siempre visible encima del form ── */
-.koi-email-gate__header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 20px 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.koi-email-gate__header-left {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-  flex: 1;
-}
-
-.koi-email-gate__title {
-  font-family: var(--koi-font-body);
-  font-size: 12px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.90);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  line-height: 1.3;
-}
-
-.koi-email-gate__price {
-  font-family: var(--koi-font-head);
-  font-size: 14px;
-  font-weight: 700;
-  color: #ec95b8;
-  white-space: nowrap;
-}
-
-.koi-email-gate__sub {
-  font-family: var(--koi-font-body);
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.40);
-  line-height: 1.4;
-}
-
-.koi-email-gate__hint {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.40);
-  margin: 0 0 10px;
-  text-align: center;
-  letter-spacing: 0.01em;
-}
-
-/* En la versión panel el input tiene menos margen */
-.koi-email-gate--panel .koi-email-input {
-  margin-bottom: 8px !important;
-}
-
-/* Footer con nota + skip en línea */
-.koi-email-gate__footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 8px;
-  flex-wrap: wrap;
-}
-
-.koi-email-gate--panel .koi-email-note {
-  margin: 0 !important;
-  text-align: left !important;
-  flex: 1;
-}
-
-.koi-email-gate--panel .koi-email-skip {
-  margin: 0 !important;
-  white-space: nowrap;
-  flex-shrink: 0;
 }
 
 @keyframes koiEmailSlideIn {
