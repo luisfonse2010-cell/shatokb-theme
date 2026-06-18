@@ -897,20 +897,24 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     const overlay = document.createElement('div');
     overlay.id        = 'koi-focus-overlay';
     overlay.className = 'koi-focus-overlay';
-    // Estilos inline como fallback definitivo — no depende del CSS externo
-    overlay.style.cssText = [
-      'position:fixed',
-      'top:0',
-      'left:0',
-      'right:0',
-      'bottom:0',
-      'width:100vw',
-      'height:100vh',
-      'background:rgba(236,149,184,0.50)',
-      'z-index:2147483640',   /* máximo z-index posible menos 10 */
-      'pointer-events:auto',
-    ].join(';') + ';';
+    // setAttribute es imposible de sobreescribir por CSS externo
+    overlay.setAttribute('style',
+      'position:fixed!important;' +
+      'top:0!important;' +
+      'left:0!important;' +
+      'width:100%!important;' +
+      'height:100%!important;' +
+      'background-color:rgba(236,149,184,0.50)!important;' +
+      'z-index:2147483640!important;' +
+      'pointer-events:auto!important;' +
+      'display:block!important;'
+    );
     document.body.appendChild(overlay);
+    // Forzar color después de insertar, por si algún script lo resetea
+    setTimeout(() => {
+      const o = document.getElementById('koi-focus-overlay');
+      if (o) o.style.setProperty('background-color', 'rgba(236,149,184,0.50)', 'important');
+    }, 50);
 
     // ── 2. Card centrada — también en document.body, encima del overlay ──
     const card = document.createElement('div');
