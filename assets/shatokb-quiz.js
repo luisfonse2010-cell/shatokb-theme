@@ -683,7 +683,47 @@ function shatokbAutoClassify(handle, categoria, tipo_piel, concerns, ingrediente
  *     excel_am_routine — textual AM routine sequence from Excel
  *     excel_pm_routine — textual PM routine sequence from Excel
  */
+// ── Blocklist de productos excluidos permanentemente ─────────────────────────
+// Kits, sets de viaje y productos multi-unidad que no son SKUs individuales
+// y no deben aparecer en ningún paso de rutina. Se excluyen por handle exacto
+// independientemente de sus tags, score o cualquier otra propiedad.
+// Para añadir un nuevo handle: copiarlo exactamente de la URL de Shopify.
+const SHATOKB_HANDLE_BLOCKLIST = new Set([
+  // ── Kits / Travel Sets / Multi-packs ────────────────────────────────────
+  'skin1004-madagascar-centella-travel-kit-5-travel-size-items',   // Travel kit 5 piezas
+  'cosrx-all-about-snail-mucin-korean-skin-care-set',              // Snail 4-piece set
+  'cosrx-all-about-snail-kit',                                     // variante corta handle
+]);
+
+// ── Mapa de subcategoría explícita por handle ─────────────────────────────────
+// Garantiza que productos del catálogo dinámico (Shopify live) sean clasificados
+// correctamente aunque sus tags no incluyan el ingrediente clave.
+// Se aplica en shatokbMapProduct() con máxima prioridad (sobre tags e ingredientes).
+// Para añadir un producto: handle exacto → subcategoría del paso de rutina correcto.
+const SHATOKB_SUBCATEGORIA_MAP = {
+  // ── Serums con Niacinamide como activo principal ──────────────────────────
+  'frankly-niacinamide-15-zinc-beads-1-2-serum-acne-dark-spots-care-1-01-fl-oz':             'serum_niacinamide',
+  'cosrx-15-niacinamide-face-serum-0-67-fl-oz':                                              'serum_niacinamide',
+  'anua-niacinamide-10-txa-4-serum-hyaluronic-acid-tranexamic-acid-vitamin-b12-30ml-1-01-fl-oz': 'serum_niacinamide',
+  'anua-peach-70-niacinamide-serum-30ml-1-01-fl-oz':                                         'serum_niacinamide',
+  'tiam-vita-b3-source-10-niacinamide-serum-2-arbutin-1-35-fl-oz':                           'serum_niacinamide',
+  'cos-de-baha-niacinamide-20-zinc-pca-4-serum-for-face-1-fl-oz':                            'serum_niacinamide',
+  'aplb-glutathione-niacinamide-ampoule-serum-lipo-gluta-niac-cen-31-3-1-35-fl-oz':          'serum_niacinamide',
+  'axis-y-dark-spot-correcting-glow-serum-5-niacinamide-vegan-for-all-skin-types-1-69-fl-oz':'serum_niacinamide',
+  'beauty-of-joseon-glow-serum-propolis-and-niacinamide-hydrating-facial-soothing-moisturizer-30ml-1-fl-oz': 'serum_niacinamide',
+  // ── Moisturizers con Niacinamide ─────────────────────────────────────────
+  'aplb-glutathione-niacinamide-facial-cream-lipo-gluta-niac-cen-24-8-1-86-fl-oz':           'moisturizer_niacinamide',
+  // ── Masks con Niacinamide ─────────────────────────────────────────────────
+  'sungboon-editor-deep-collagen-niacin-vita-c-overnight-mask-37gx4ea-real-collagen-2-160-000ppb-with-niacinamide-vitamin-c': 'mask_niacinamide',
+  // ── Serums barrera con ceramida (relacionados, no niacinamide puro) ───────
+  'anua-rice-ceramide-7-hydrating-barrier-serum-50ml-1-69fl-oz':                             'serum_barrier',
+  'anua-azelaic-acid-10-hyaluron-redness-soothing-serum-30ml-1-01-fl-oz':                    'serum_calming',
+};
+
 function shatokbMapProduct(p) {
+  // ── Hard-block kits and non-individual SKUs ───────────────────────────────
+  if (SHATOKB_HANDLE_BLOCKLIST.has(p.handle)) return null;
+
   // Shopify returns tags as a comma-separated string in /products.json
   // but some API versions / storefronts return an array — handle both.
   const rawTags = p.tags || '';
@@ -876,6 +916,54 @@ function shatokbMapProduct(p) {
     }
   }
 
+  // ── Subcategoría — inferida del handle + ingredientes + tags ────────────────
+  // Crítico para el filtro v7.5 (subcategoría first). Permite que productos del
+  // catálogo dinámico (Shopify live) aparezcan en el paso correcto de la rutina.
+  // Priority: mapa explícito > tag explícito > ingredientes > handle keyword.
+  let subcategoria = null;
+  // 0. Mapa explícito por handle — máxima prioridad, nunca se sobreescribe
+  if (SHATOKB_SUBCATEGORIA_MAP[p.handle]) {
+    subcategoria = SHATOKB_SUBCATEGORIA_MAP[p.handle];
+  }
+  // 1. Tag explícito ('subcat_serum_niacinamide', 'subcat_moisturizer_gel', etc.)
+  if (!subcategoria) for (const tag of tags) {
+    if (tag.startsWith('subcat_')) { subcategoria = tag.slice(7); break; }
+  }
+  // 2. Inferir desde ingredientes (más fiable que handle)
+  if (!subcategoria && categoria === 'serum') {
+    if (ingredientes.includes('niacinamide') && (ingredientes.includes('zinc') || ingredientes.includes('tranexamic_acid') || p.title.toLowerCase().includes('niacinamide')))
+      subcategoria = 'serum_niacinamide';
+    else if (ingredientes.includes('retinol') || ingredientes.includes('retinal'))
+      subcategoria = 'serum_retinol';
+    else if (ingredientes.includes('l_ascorbic_acid'))
+      subcategoria = 'serum_vitamin_c';
+    else if (ingredientes.includes('niacinamide') || ingredientes.includes('alpha_arbutin') || ingredientes.includes('glutathione') || ingredientes.includes('tranexamic_acid'))
+      subcategoria = 'serum_brightening';
+    else if (ingredientes.includes('centella_asiatica') || ingredientes.includes('azelaic_acid') || ingredientes.includes('panthenol'))
+      subcategoria = 'serum_calming';
+  }
+  if (!subcategoria && categoria === 'toner') {
+    if (ingredientes.includes('aha') || ingredientes.includes('bha') || ingredientes.includes('pha'))
+      subcategoria = 'toner_exfoliating';
+    else
+      subcategoria = 'toner_hydrating';
+  }
+  if (!subcategoria && categoria === 'moisturizer') {
+    if (ingredientes.includes('retinol') || ingredientes.includes('peptide'))
+      subcategoria = 'moisturizer_anti_aging';
+    else if (tipo_piel.includes('grasa') || tipo_piel.includes('mixta'))
+      subcategoria = 'moisturizer_gel';
+    else
+      subcategoria = 'moisturizer_cream';
+  }
+  // 3. Inferir desde handle (último recurso)
+  if (!subcategoria) {
+    const h = p.handle.toLowerCase();
+    if (h.includes('niacinamide'))                              subcategoria = categoria + '_niacinamide';
+    else if (h.includes('retinol') || h.includes('retinal'))   subcategoria = categoria + '_retinol';
+    else if (h.includes('vitamin-c') || h.includes('vita-c'))  subcategoria = categoria + '_vitamin_c';
+  }
+
   return {
     id:           p.handle,
     nombre:       p.title,
@@ -892,6 +980,7 @@ function shatokbMapProduct(p) {
     concerns,
     sensible,
     imagen:       p.images?.[0]?.src || null,
+    subcategoria,   // ← ahora presente en todos los productos (dinámicos y fallback)
     // ── SHATO SKIN OS v4.0 fields ──────────────────────────────
     momento,
     score_base,
@@ -1301,7 +1390,7 @@ const SHATOKB_FALLBACK = [
     momento:'both', score_base:88,
     ingredientes:['niacinamide','tranexamic_acid','hyaluronic_acid'],
     risk:[], fit:['mixta_manchas','grasa_acne','grasa_poros'],
-    subcategoria:'serum_brightening', nivel_usuario:'intermediate',
+    subcategoria:'serum_niacinamide', nivel_usuario:'intermediate',  // niacinamide es el activo principal (10%)
     posicion_am:4, posicion_pm:5
   },
   {
@@ -2402,14 +2491,40 @@ function shatokbRecomendarProductos(perfilId, respuestas) {
     // Ordenar por score descendente (el scorer ya evaluó relevancia para esta piel)
     candidatos.sort((a, b) => b._score - a._score);
 
-    // ★ v7.4 ROTACIÓN INTELIGENTE
-    // Filtrar primero los que tienen score mínimo aceptable (> 0)
-    // para no incluir productos que el scorer descartó activamente
-    const candidatosValidos = candidatos.filter(p => p._score > 0);
-    const opciones = shatokbSeleccionarConRotacion(
-      candidatosValidos.length >= SHATOKB_MAX_OPTIONS ? candidatosValidos : candidatos,
-      SHATOKB_MAX_OPTIONS
-    );
+    // ★ v7.5 SUBCATEGORÍA FIRST — garantizar que el paso muestre
+    // productos de la subcategoría correcta cuando existe preferencia.
+    //
+    // Ejemplo: paso "Niacinamide Serum" (subcategoria_pref:'serum_niacinamide')
+    // debe mostrar SOLO serums con niacinamida, no cualquier serum.
+    //
+    // Algoritmo:
+    //   1. Si hay subcategoria_pref, separar candidatos en dos listas:
+    //      a) exact   — tienen la subcategoría preferida exacta
+    //      b) related — misma categoría pero subcategoría diferente
+    //   2. Rellenar opciones con "exact" primero hasta MAX_OPTIONS
+    //   3. Solo completar con "related" si no hay suficientes "exact"
+    //   4. Si no hay subcategoria_pref, comportamiento original v7.4
+    let poolSeleccion;
+    if (paso.subcategoria_pref) {
+      const exact   = candidatos.filter(p => p._score > 0 && p.subcategoria === paso.subcategoria_pref);
+      const related = candidatos.filter(p => p._score > 0 && p.subcategoria !== paso.subcategoria_pref);
+      if (exact.length >= SHATOKB_MAX_OPTIONS) {
+        // Hay suficientes productos exactos — usar solo ellos
+        poolSeleccion = exact;
+      } else if (exact.length > 0) {
+        // Pocos productos exactos — completar con relacionados
+        poolSeleccion = [...exact, ...related];
+      } else {
+        // No hay ninguno con esa subcategoría — usar todos (comportamiento original)
+        const candidatosValidos = candidatos.filter(p => p._score > 0);
+        poolSeleccion = candidatosValidos.length >= SHATOKB_MAX_OPTIONS ? candidatosValidos : candidatos;
+      }
+    } else {
+      // Sin preferencia de subcategoría — comportamiento original v7.4
+      const candidatosValidos = candidatos.filter(p => p._score > 0);
+      poolSeleccion = candidatosValidos.length >= SHATOKB_MAX_OPTIONS ? candidatosValidos : candidatos;
+    }
+    const opciones = shatokbSeleccionarConRotacion(poolSeleccion, SHATOKB_MAX_OPTIONS);
 
     // Determine the predominant momento for this step
     // Usar el producto con mayor score (primero antes del shuffle) como referencia
