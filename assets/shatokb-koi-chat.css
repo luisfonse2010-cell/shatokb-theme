@@ -836,11 +836,19 @@
   position: relative;
 }
 
-.koi-focus-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(236, 149, 184, 0.50);
-  z-index: 9999;
+.koi-focus-overlay,
+#koi-focus-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(236, 149, 184, 0.50) !important;
+  background-color: rgba(236, 149, 184, 0.50) !important;
+  z-index: 9999 !important;
   pointer-events: auto;
   animation: koiFocusOverlayIn 0.35s ease forwards;
 }
