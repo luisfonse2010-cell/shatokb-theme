@@ -897,6 +897,19 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     const overlay = document.createElement('div');
     overlay.id        = 'koi-focus-overlay';
     overlay.className = 'koi-focus-overlay';
+    // Estilos inline como fallback definitivo — no depende del CSS externo
+    overlay.style.cssText = [
+      'position:fixed',
+      'top:0',
+      'left:0',
+      'right:0',
+      'bottom:0',
+      'width:100vw',
+      'height:100vh',
+      'background:rgba(236,149,184,0.50)',
+      'z-index:9999',
+      'pointer-events:auto',
+    ].join(';') + ';';
     document.body.appendChild(overlay);
 
     // ── 2. Card centrada — también en document.body, encima del overlay ──
