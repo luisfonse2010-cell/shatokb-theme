@@ -14,21 +14,28 @@ html.koi-scroll-locked {
   pointer-events: auto !important;
 }
 #koi-focus-card,
+/* Focus Mode: card v4 — en document.body, escapa transform:matrix()
+   z-index:2147483647 = máximo posible → encima de absolutamente todo */
+/* Focus Mode: card v4 — en document.body, escapa transform:matrix()
+   z-index:2147483647 = máximo posible → encima de absolutamente todo */
 .koi-focus-card {
   position: fixed !important;
-  top: 50% !important;
   left: 50% !important;
+  top: 50% !important;
   transform: translate(-50%, -50%) !important;
-  z-index: 2147483641 !important;
-  width: min(480px, 92vw);
+  width: calc(100vw - 40px);
+  max-width: 440px;
   background: #1c181a;
-  border: 1px solid rgba(236,149,184,0.25);
-  border-radius: 20px;
-  padding: 28px 24px 20px;
+  border: 1px solid rgba(236, 149, 184, 0.35);
+  border-radius: 18px;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.80), 0 0 0 1px rgba(236, 149, 184, 0.10);
+  z-index: 2147483647 !important;
+  padding: 26px 26px 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+  box-sizing: border-box;
+  animation: koiFocusCardIn 0.40s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 /**
@@ -870,6 +877,12 @@ html.koi-scroll-locked {
    - Card: position:fixed, centrada en el viewport, siempre completa
    ══════════════════════════════════════════════════════════ */
 
+/* Focus Mode: overlay v4 — cubre TODO el panel (header + mini-cart + mensajes)
+   z-index:10 supera .koi-header(1) y .koi-mini-cart-bar(2)
+   overflow:hidden del .koi-panel evita que el chat scrollee */
+/* Focus Mode: overlay v4 — cubre TODO el panel (header + mini-cart + mensajes)
+   z-index:10 supera .koi-header(1) y .koi-mini-cart-bar(2)
+   overflow:hidden del .koi-panel evita que el chat scrollee */
 /* Focus Mode: overlay v4 — cubre TODO el panel (header + mini-cart + mensajes)
    z-index:10 supera .koi-header(1) y .koi-mini-cart-bar(2)
    overflow:hidden del .koi-panel evita que el chat scrollee */
