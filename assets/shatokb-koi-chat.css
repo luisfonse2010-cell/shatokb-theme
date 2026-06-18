@@ -831,17 +831,7 @@
    completo de KOI + formulario de email. Sin distracciones.
    ══════════════════════════════════════════════════════════ */
 
-/* ══════════════════════════════════════════════════════════
-   FOCUS MODE — fondo blanco sobre el panel
-   El panel entero se "blanquea" con un pseudo-element ::after
-   que pinta un blanco semitransparente encima de TODO el panel.
-   La card queda por encima con z-index mayor.
-   Mini-cart-bar también queda encima.
-   ══════════════════════════════════════════════════════════ */
-
-/* Fog blanco — hijo del #shatokb-koi-wrapper (position:relative, sin overflow:hidden)
-   Cubre exactamente el panel que está debajo. La card va en el mismo wrapper
-   con z-index mayor → queda completamente opaca, sin recortes.               */
+/* FOCUS MODE - overlay rosa + card fija en viewport */
 #shatokb-koi-wrapper {
   position: relative;
 }
@@ -859,7 +849,7 @@
   animation: koiFocusOverlayOut 0.35s ease forwards !important;
 }
 
-/* Bloquear scroll de mensajes en focus mode */
+/* Bloquear scroll de mensajes */
 .koi-panel.koi--focus-mode .koi-messages {
   overflow: hidden !important;
 }
@@ -871,7 +861,7 @@
   from { opacity: 1; } to { opacity: 0; }
 }
 
-/* Card centrada — fixed en el viewport, encima del overlay */
+/* Card centrada - fixed en el viewport, encima del overlay */
 .koi-focus-card {
   position: fixed;
   left: 50%;
