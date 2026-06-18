@@ -891,14 +891,15 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
 
     // Añadir clase al panel para suprimir chips + input
     panel.classList.add('koi--focus-mode');
+    document.body.style.overflow = 'hidden'; // bloquear scroll de página
 
-    // ── 1. Overlay blanco — va en el WRAPPER (sin overflow:hidden) ──
+    // ── 1. Overlay rosa — va en document.body para escapar stacking contexts del tema ──
     const overlay = document.createElement('div');
     overlay.id        = 'koi-focus-overlay';
     overlay.className = 'koi-focus-overlay';
-    wrapper.appendChild(overlay);
+    document.body.appendChild(overlay);
 
-    // ── 2. Card centrada — también en el WRAPPER, encima del overlay ──
+    // ── 2. Card centrada — también en document.body, encima del overlay ──
     const card = document.createElement('div');
     card.id        = 'koi-focus-card';
     card.className = 'koi-focus-card';
@@ -930,7 +931,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
         <button class="koi-focus-card__skip" id="koi-focus-skip">${lbl.skip}</button>
       </div>
     `;
-    wrapper.appendChild(card);
+    document.body.appendChild(card);
 
     // Animar checkmarks con stagger
     const checkEls = card.querySelectorAll('.koi-envelope__check');
@@ -951,6 +952,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       if (o) { o.classList.add('koi-focus-overlay--exit'); setTimeout(() => o?.remove(), 350); }
       if (c) { c.classList.add('koi-focus-card--exit');   setTimeout(() => c?.remove(), 300); }
       panel.classList.remove('koi--focus-mode');
+      document.body.style.overflow = ''; // restaurar scroll de página
     }
 
     // Confirmar email
