@@ -16,7 +16,7 @@
           "type": "image",
           "disabled": true,
           "settings": {
-            "image_slide": "shopify://shop_images/1500x720.png",
+            "image_slide": "shopify:\/\/shop_images\/1500x720.png",
             "alignment": "left",
             "enable_custom_position": true,
             "custom_horizontal": "17",
@@ -50,7 +50,7 @@
             "border_sub_heading": "solid",
             "sub_title_position": "sub_title_above",
             "color_sub_heading": "#ffffff",
-            "heading": "<strong style=\"color: #10ffda;\">The Ultimate </strong>  <br> 6-IN-1",
+            "heading": "<strong style=\"color: #10ffda;\">The Ultimate <\/strong>  <br> 6-IN-1",
             "letter_spacing_heading": "",
             "enable_border_heading": false,
             "font_style_heading": "normal",
@@ -69,7 +69,7 @@
             "font_weight_sub_heading_mb": "400",
             "border_sub_heading_mb": "none",
             "color_sub_heading_mb": "#ffffff",
-            "heading_mb": "<strong style=\"color: #10ffda;\">The Ultimate</strong> <br> 6-IN-1",
+            "heading_mb": "<strong style=\"color: #10ffda;\">The Ultimate<\/strong> <br> 6-IN-1",
             "font_style_heading_mb": "normal",
             "font_size_heading_mb": 28,
             "line_height_heading_mb": 30,
@@ -84,7 +84,7 @@
             "enable_underline": true,
             "font_size_link": 20,
             "button_slide": "Shop Now",
-            "link": "shopify://collections/medicube",
+            "link": "shopify:\/\/collections\/medicube",
             "button_style": "button_1",
             "button_slide_2": "",
             "link_2": "",
@@ -191,8 +191,8 @@
           "type": "image",
           "disabled": true,
           "settings": {
-            "image_slide": "shopify://shop_images/Logo_Asesoria_de_imagen_Monograma_Elegante_Blanco_y_negro_1000_x_500_px_500_x_250_px_500_x_230_px_500_x_210_px_500_x_200_px_500_x_190_px_500_x_180_px_500_x_150_px_2000_x_2000_px.jpg",
-            "image_slide_mb": "shopify://shop_images/Logo_Asesoria_de_imagen_Monograma_Elegante_Blanco_y_negro_1000_x_500_px_500_x_250_px_500_x_230_px_500_x_210_px_500_x_200_px_500_x_190_px_500_x_180_px_500_x_150_px_2000_x_2000_px.jpg",
+            "image_slide": "shopify:\/\/shop_images\/Logo_Asesoria_de_imagen_Monograma_Elegante_Blanco_y_negro_1000_x_500_px_500_x_250_px_500_x_230_px_500_x_210_px_500_x_200_px_500_x_190_px_500_x_180_px_500_x_150_px_2000_x_2000_px.jpg",
+            "image_slide_mb": "shopify:\/\/shop_images\/Logo_Asesoria_de_imagen_Monograma_Elegante_Blanco_y_negro_1000_x_500_px_500_x_250_px_500_x_230_px_500_x_210_px_500_x_200_px_500_x_190_px_500_x_180_px_500_x_150_px_2000_x_2000_px.jpg",
             "alignment": "left",
             "enable_custom_position": true,
             "custom_horizontal": "17",
@@ -260,10 +260,10 @@
             "enable_underline": true,
             "font_size_link": 20,
             "button_slide": "",
-            "link": "shopify://collections/anua",
+            "link": "shopify:\/\/collections\/anua",
             "button_style": "button_1",
             "button_slide_2": "",
-            "link_2": "shopify://collections/anua",
+            "link_2": "shopify:\/\/collections\/anua",
             "min_width_banner_button": 100,
             "color_button": "#ffffff",
             "border_button": "#ffffff",
@@ -291,8 +291,8 @@
         "image_nGrfbC": {
           "type": "image",
           "settings": {
-            "image_slide": "shopify://shop_images/Details.png",
-            "image_slide_mb": "shopify://shop_images/Details.png",
+            "image_slide": "shopify:\/\/shop_images\/Details.png",
+            "image_slide_mb": "shopify:\/\/shop_images\/Details.png",
             "alignment": "left",
             "enable_custom_position": true,
             "custom_horizontal": "17",
@@ -360,10 +360,10 @@
             "enable_underline": true,
             "font_size_link": 20,
             "button_slide": "",
-            "link": "shopify://collections/vt",
+            "link": "shopify:\/\/collections\/vt",
             "button_style": "button_1",
             "button_slide_2": "",
-            "link_2": "shopify://collections/vt",
+            "link_2": "shopify:\/\/collections\/vt",
             "min_width_banner_button": 100,
             "color_button": "#ffffff",
             "border_button": "#ffffff",
@@ -391,8 +391,8 @@
         "image_BG9Fqy": {
           "type": "image",
           "settings": {
-            "image_slide": "shopify://shop_images/Sitio_web_de_boda_fotografico_en_crema_y_negro_2000_x_800_px_2000_x_780_px_1800_x_780_px_1800_x_800_px_3.png",
-            "image_slide_mb": "shopify://shop_images/Sitio_web_de_boda_fotografico_en_crema_y_negro_2000_x_800_px_2000_x_780_px_1800_x_780_px_1800_x_800_px_3.png",
+            "image_slide": "shopify:\/\/shop_images\/Sitio_web_de_boda_fotografico_en_crema_y_negro_2000_x_800_px_2000_x_780_px_1800_x_780_px_1800_x_800_px_3.png",
+            "image_slide_mb": "shopify:\/\/shop_images\/Sitio_web_de_boda_fotografico_en_crema_y_negro_2000_x_800_px_2000_x_780_px_1800_x_780_px_1800_x_800_px_3.png",
             "alignment": "left",
             "enable_custom_position": true,
             "custom_horizontal": "17",
@@ -460,10 +460,10 @@
             "enable_underline": true,
             "font_size_link": 20,
             "button_slide": "",
-            "link": "shopify://collections/beauty-of-joseon",
+            "link": "shopify:\/\/collections\/beauty-of-joseon",
             "button_style": "button_1",
             "button_slide_2": "",
-            "link_2": "shopify://collections/beauty-of-joseon",
+            "link_2": "shopify:\/\/collections\/beauty-of-joseon",
             "min_width_banner_button": 100,
             "color_button": "#ffffff",
             "border_button": "#ffffff",
@@ -491,8 +491,8 @@
         "image_icUFzU": {
           "type": "image",
           "settings": {
-            "image_slide": "shopify://shop_images/2_697dfaa6-c2e2-4f3d-b1e5-b17ff40afb5c.png",
-            "image_slide_mb": "shopify://shop_images/2_697dfaa6-c2e2-4f3d-b1e5-b17ff40afb5c.png",
+            "image_slide": "shopify:\/\/shop_images\/2_697dfaa6-c2e2-4f3d-b1e5-b17ff40afb5c.png",
+            "image_slide_mb": "shopify:\/\/shop_images\/2_697dfaa6-c2e2-4f3d-b1e5-b17ff40afb5c.png",
             "alignment": "left",
             "enable_custom_position": true,
             "custom_horizontal": "17",
@@ -560,10 +560,10 @@
             "enable_underline": true,
             "font_size_link": 20,
             "button_slide": "",
-            "link": "shopify://collections/medicube",
+            "link": "shopify:\/\/collections\/medicube",
             "button_style": "button_1",
             "button_slide_2": "",
-            "link_2": "shopify://collections/medicube",
+            "link_2": "shopify:\/\/collections\/medicube",
             "min_width_banner_button": 100,
             "color_button": "#ffffff",
             "border_button": "#ffffff",
@@ -591,8 +591,8 @@
         "image_6BzFqV": {
           "type": "image",
           "settings": {
-            "image_slide": "shopify://shop_images/4_19805c70-2295-48ff-8022-13909f798cce.png",
-            "image_slide_mb": "shopify://shop_images/4_19805c70-2295-48ff-8022-13909f798cce.png",
+            "image_slide": "shopify:\/\/shop_images\/4_19805c70-2295-48ff-8022-13909f798cce.png",
+            "image_slide_mb": "shopify:\/\/shop_images\/4_19805c70-2295-48ff-8022-13909f798cce.png",
             "alignment": "left",
             "enable_custom_position": true,
             "custom_horizontal": "17",
@@ -660,10 +660,10 @@
             "enable_underline": true,
             "font_size_link": 20,
             "button_slide": "",
-            "link": "shopify://collections/dalba",
+            "link": "shopify:\/\/collections\/dalba",
             "button_style": "button_1",
             "button_slide_2": "",
-            "link_2": "shopify://collections/dalba",
+            "link_2": "shopify:\/\/collections\/dalba",
             "min_width_banner_button": 100,
             "color_button": "#ffffff",
             "border_button": "#ffffff",
@@ -691,8 +691,8 @@
         "image_htKdVj": {
           "type": "image",
           "settings": {
-            "image_slide": "shopify://shop_images/5_dc90282a-c8f8-4121-b80c-8812a26ec16e.png",
-            "image_slide_mb": "shopify://shop_images/5_dc90282a-c8f8-4121-b80c-8812a26ec16e.png",
+            "image_slide": "shopify:\/\/shop_images\/5_dc90282a-c8f8-4121-b80c-8812a26ec16e.png",
+            "image_slide_mb": "shopify:\/\/shop_images\/5_dc90282a-c8f8-4121-b80c-8812a26ec16e.png",
             "alignment": "left",
             "enable_custom_position": true,
             "custom_horizontal": "17",
@@ -760,10 +760,10 @@
             "enable_underline": true,
             "font_size_link": 20,
             "button_slide": "",
-            "link": "shopify://collections/axis-y",
+            "link": "shopify:\/\/collections\/axis-y",
             "button_style": "button_1",
             "button_slide_2": "",
-            "link_2": "shopify://collections/axis-y",
+            "link_2": "shopify:\/\/collections\/axis-y",
             "min_width_banner_button": 100,
             "color_button": "#ffffff",
             "border_button": "#ffffff",
@@ -791,8 +791,8 @@
         "image_rYqH7B": {
           "type": "image",
           "settings": {
-            "image_slide": "shopify://shop_images/9.png",
-            "image_slide_mb": "shopify://shop_images/9.png",
+            "image_slide": "shopify:\/\/shop_images\/9.png",
+            "image_slide_mb": "shopify:\/\/shop_images\/9.png",
             "alignment": "left",
             "enable_custom_position": true,
             "custom_horizontal": "17",
@@ -860,10 +860,10 @@
             "enable_underline": true,
             "font_size_link": 20,
             "button_slide": "",
-            "link": "shopify://collections/abib",
+            "link": "shopify:\/\/collections\/abib",
             "button_style": "button_1",
             "button_slide_2": "",
-            "link_2": "shopify://collections/abib",
+            "link_2": "shopify:\/\/collections\/abib",
             "min_width_banner_button": 100,
             "color_button": "#ffffff",
             "border_button": "#ffffff",
@@ -891,8 +891,8 @@
         "image_cbFbAB": {
           "type": "image",
           "settings": {
-            "image_slide": "shopify://shop_images/7.png",
-            "image_slide_mb": "shopify://shop_images/7.png",
+            "image_slide": "shopify:\/\/shop_images\/7.png",
+            "image_slide_mb": "shopify:\/\/shop_images\/7.png",
             "alignment": "left",
             "enable_custom_position": true,
             "custom_horizontal": "17",
@@ -960,10 +960,10 @@
             "enable_underline": true,
             "font_size_link": 20,
             "button_slide": "",
-            "link": "shopify://collections/purito-seoul",
+            "link": "shopify:\/\/collections\/purito-seoul",
             "button_style": "button_1",
             "button_slide_2": "",
-            "link_2": "shopify://collections/purito-seoul",
+            "link_2": "shopify:\/\/collections\/purito-seoul",
             "min_width_banner_button": 100,
             "color_button": "#ffffff",
             "border_button": "#ffffff",
@@ -991,8 +991,8 @@
         "image_pdcLRf": {
           "type": "image",
           "settings": {
-            "image_slide": "shopify://shop_images/8.png",
-            "image_slide_mb": "shopify://shop_images/8.png",
+            "image_slide": "shopify:\/\/shop_images\/8.png",
+            "image_slide_mb": "shopify:\/\/shop_images\/8.png",
             "alignment": "left",
             "enable_custom_position": true,
             "custom_horizontal": "17",
@@ -1060,10 +1060,10 @@
             "enable_underline": true,
             "font_size_link": 20,
             "button_slide": "",
-            "link": "shopify://collections/haruharu-wonder",
+            "link": "shopify:\/\/collections\/haruharu-wonder",
             "button_style": "button_1",
             "button_slide_2": "",
-            "link_2": "shopify://collections/haruharu-wonder",
+            "link_2": "shopify:\/\/collections\/haruharu-wonder",
             "min_width_banner_button": 100,
             "color_button": "#ffffff",
             "border_button": "#ffffff",
@@ -1091,8 +1091,8 @@
         "image_XQKEUj": {
           "type": "image",
           "settings": {
-            "image_slide": "shopify://shop_images/10.png",
-            "image_slide_mb": "shopify://shop_images/10.png",
+            "image_slide": "shopify:\/\/shop_images\/10.png",
+            "image_slide_mb": "shopify:\/\/shop_images\/10.png",
             "alignment": "left",
             "enable_custom_position": true,
             "custom_horizontal": "17",
@@ -1160,10 +1160,10 @@
             "enable_underline": true,
             "font_size_link": 20,
             "button_slide": "",
-            "link": "shopify://collections/skinfood",
+            "link": "shopify:\/\/collections\/skinfood",
             "button_style": "button_1",
             "button_slide_2": "",
-            "link_2": "shopify://collections/skinfood",
+            "link_2": "shopify:\/\/collections\/skinfood",
             "min_width_banner_button": 100,
             "color_button": "#ffffff",
             "border_button": "#ffffff",
@@ -1275,7 +1275,7 @@
         "marquee_jGLHVh": {
           "type": "marquee",
           "settings": {
-            "text": "<p>Your Glow-Up Starts Now – Get 10% OFF Your First Purchase 💎</p>",
+            "text": "<p>Your Glow-Up Starts Now – Get 10% OFF Your First Purchase 💎<\/p>",
             "color": "#000000",
             "color_mb": "#000000",
             "bg_color": "",
@@ -1285,7 +1285,7 @@
         "marquee_Wm3HJL": {
           "type": "marquee",
           "settings": {
-            "text": "<p>Use code: <strong>WELCOME</strong> at checkout.</p>",
+            "text": "<p>Use code: <strong>WELCOME<\/strong> at checkout.<\/p>",
             "color": "#000000",
             "color_mb": "#000000",
             "bg_color": "",
@@ -1525,7 +1525,7 @@
           "type": "image",
           "settings": {
             "enable_image": true,
-            "image": "shopify://shop_images/912f0d94-d02f-40e4-972e-6c4e23347971.png",
+            "image": "shopify:\/\/shop_images\/912f0d94-d02f-40e4-972e-6c4e23347971.png",
             "title_align": "center",
             "enable_absolute": false,
             "align_items": "center",
@@ -1556,7 +1556,7 @@
             "enable_des_hover": false,
             "button_style": "button_1",
             "button": "",
-            "link": "shopify://collections/cosrx",
+            "link": "shopify:\/\/collections\/cosrx",
             "fontsize_btn": 16,
             "button_width": 190,
             "bg_opacity_button": 1,
@@ -1579,7 +1579,7 @@
           "type": "image",
           "settings": {
             "enable_image": true,
-            "image": "shopify://shop_images/5779eeb4-9c02-45ba-8a5d-77167b6f4715.png",
+            "image": "shopify:\/\/shop_images\/5779eeb4-9c02-45ba-8a5d-77167b6f4715.png",
             "title_align": "center",
             "enable_absolute": false,
             "align_items": "center",
@@ -1610,7 +1610,7 @@
             "enable_des_hover": false,
             "button_style": "button_1",
             "button": "",
-            "link": "shopify://collections/beauty-of-joseon",
+            "link": "shopify:\/\/collections\/beauty-of-joseon",
             "fontsize_btn": 16,
             "button_width": 190,
             "bg_opacity_button": 1,
@@ -1717,43 +1717,43 @@
         "00eb63be-e2e6-42a3-beba-b86835209958": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/202405210800000_logo_2.png",
+            "image": "shopify:\/\/shop_images\/202405210800000_logo_2.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/anua"
+            "link": "shopify:\/\/collections\/anua"
           }
         },
         "9b762b19-9ce6-468e-92d9-240827f2b367": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/Sin_titulo_1600_x_720_px_740_x_510_px_145_x_110_px_186_x_74_px_186_x_40_px_7.jpg",
+            "image": "shopify:\/\/shop_images\/Sin_titulo_1600_x_720_px_740_x_510_px_145_x_110_px_186_x_74_px_186_x_40_px_7.jpg",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/aplb"
+            "link": "shopify:\/\/collections\/aplb"
           }
         },
         "cd71499c-3d12-4a79-9431-61934301ef2d": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052108085151_logo_10_2.png",
+            "image": "shopify:\/\/shop_images\/2024052108085151_logo_10_2.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/abib"
+            "link": "shopify:\/\/collections\/abib"
           }
         },
         "4a13b25b-5b3f-4ca9-a700-513944c6d200": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052401475555_logo_5_3.png",
+            "image": "shopify:\/\/shop_images\/2024052401475555_logo_5_3.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
@@ -1765,7 +1765,7 @@
         "image_cm76A4": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/202405210801088_logo_2_1.png",
+            "image": "shopify:\/\/shop_images\/202405210801088_logo_2_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
@@ -1777,7 +1777,7 @@
         "image_YjwmmG": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/202405210909011_mixsoon.png",
+            "image": "shopify:\/\/shop_images\/202405210909011_mixsoon.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
@@ -1789,7 +1789,7 @@
         "image_QadpjV": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/202405230939077_biodance_1.png",
+            "image": "shopify:\/\/shop_images\/202405230939077_biodance_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
@@ -1801,7 +1801,7 @@
         "image_KUiqdL": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/202405240223055_logo_2_1.png",
+            "image": "shopify:\/\/shop_images\/202405240223055_logo_2_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
@@ -1813,7 +1813,7 @@
         "image_JQ4ypx": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/202405240230022_logo_1_1.png",
+            "image": "shopify:\/\/shop_images\/202405240230022_logo_1_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
@@ -1825,31 +1825,31 @@
         "image_PhK6HR": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/202412180517033_dalba.png",
+            "image": "shopify:\/\/shop_images\/202412180517033_dalba.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/dalba"
+            "link": "shopify:\/\/collections\/dalba"
           }
         },
         "image_jrzARr": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/Sin_titulo_1600_x_720_px_740_x_510_px_145_x_110_px_186_x_74_px_186_x_40_px_4.png",
+            "image": "shopify:\/\/shop_images\/Sin_titulo_1600_x_720_px_740_x_510_px_145_x_110_px_186_x_74_px_186_x_40_px_4.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/numbuzin"
+            "link": "shopify:\/\/collections\/numbuzin"
           }
         },
         "image_7waL9M": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052108073131_logo_8_1.png",
+            "image": "shopify:\/\/shop_images\/2024052108073131_logo_8_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
@@ -1861,43 +1861,43 @@
         "image_URwGCH": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052108093737_logo_12_1.png",
+            "image": "shopify:\/\/shop_images\/2024052108093737_logo_12_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/goodal"
+            "link": "shopify:\/\/collections\/goodal"
           }
         },
         "image_FdzwfX": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/Sin_titulo_1600_x_720_px_740_x_510_px_145_x_110_px_186_x_74_px_186_x_40_px_5.png",
+            "image": "shopify:\/\/shop_images\/Sin_titulo_1600_x_720_px_740_x_510_px_145_x_110_px_186_x_74_px_186_x_40_px_5.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/round-lab"
+            "link": "shopify:\/\/collections\/round-lab"
           }
         },
         "image_FqU4da": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052108143838_logo_23_1.png",
+            "image": "shopify:\/\/shop_images\/2024052108143838_logo_23_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/haruharu-wonder"
+            "link": "shopify:\/\/collections\/haruharu-wonder"
           }
         },
         "image_JgaUYP": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052109084040_benton.png",
+            "image": "shopify:\/\/shop_images\/2024052109084040_benton.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
@@ -1909,7 +1909,7 @@
         "image_tKXfnE": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052109151616_medipeel_1.png",
+            "image": "shopify:\/\/shop_images\/2024052109151616_medipeel_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
@@ -1921,19 +1921,19 @@
         "image_4DV7xA": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052401462424_logo_14_1.png",
+            "image": "shopify:\/\/shop_images\/2024052401462424_logo_14_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/innisfree"
+            "link": "shopify:\/\/collections\/innisfree"
           }
         },
         "image_nxRhGG": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052401471414_logo_1_1.png",
+            "image": "shopify:\/\/shop_images\/2024052401471414_logo_1_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
@@ -1945,7 +1945,7 @@
         "image_QUxr6x": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052401473838_logo_3_1.png",
+            "image": "shopify:\/\/shop_images\/2024052401473838_logo_3_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
@@ -1957,7 +1957,7 @@
         "image_nrLtb8": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052401481818_logo_7.png",
+            "image": "shopify:\/\/shop_images\/2024052401481818_logo_7.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
@@ -1969,7 +1969,7 @@
         "image_DDPWMj": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052401493232_logo_15.png",
+            "image": "shopify:\/\/shop_images\/2024052401493232_logo_15.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
@@ -1981,7 +1981,7 @@
         "image_VPG6Hg": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052401534242_logo_1.png",
+            "image": "shopify:\/\/shop_images\/2024052401534242_logo_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
@@ -1993,79 +1993,79 @@
         "image_eJEYVY": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052402192020_logo_2_1.png",
+            "image": "shopify:\/\/shop_images\/2024052402192020_logo_2_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/the-saem"
+            "link": "shopify:\/\/collections\/the-saem"
           }
         },
         "image_CbYjap": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052402225555_logo_1.png",
+            "image": "shopify:\/\/shop_images\/2024052402225555_logo_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/illiyoon"
+            "link": "shopify:\/\/collections\/illiyoon"
           }
         },
         "image_BgGAxJ": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052402301111_logo_3.png",
+            "image": "shopify:\/\/shop_images\/2024052402301111_logo_3.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/farmstay"
+            "link": "shopify:\/\/collections\/farmstay"
           }
         },
         "image_AinH8R": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052402371313_logo_6_1.png",
+            "image": "shopify:\/\/shop_images\/2024052402371313_logo_6_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/heimish"
+            "link": "shopify:\/\/collections\/heimish"
           }
         },
         "image_M9EnVm": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052402451414_logo_7_1.png",
+            "image": "shopify:\/\/shop_images\/2024052402451414_logo_7_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/skin1004"
+            "link": "shopify:\/\/collections\/skin1004"
           }
         },
         "image_CCwCpB": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052402501212_logo_1_1.png",
+            "image": "shopify:\/\/shop_images\/2024052402501212_logo_1_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/purito-seoul"
+            "link": "shopify:\/\/collections\/purito-seoul"
           }
         },
         "image_GJQKWB": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052402514747_logo_1.png",
+            "image": "shopify:\/\/shop_images\/2024052402514747_logo_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
@@ -2077,19 +2077,19 @@
         "image_htHJ7i": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052403025454_logo_1_1.png",
+            "image": "shopify:\/\/shop_images\/2024052403025454_logo_1_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/beauty-of-joseon"
+            "link": "shopify:\/\/collections\/beauty-of-joseon"
           }
         },
         "image_bQBrxW": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052403071515_logo_3.png",
+            "image": "shopify:\/\/shop_images\/2024052403071515_logo_3.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
@@ -2101,139 +2101,139 @@
         "image_idjJfY": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052403072525_logo_5.png",
+            "image": "shopify:\/\/shop_images\/2024052403072525_logo_5.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/round-lab"
+            "link": "shopify:\/\/collections\/round-lab"
           }
         },
         "image_XVXwLL": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052404392121_logo_5_1.png",
+            "image": "shopify:\/\/shop_images\/2024052404392121_logo_5_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/tiam"
+            "link": "shopify:\/\/collections\/tiam"
           }
         },
         "image_WzChVb": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/Sin_titulo_1600_x_720_px_740_x_510_px_145_x_110_px_186_x_74_px_186_x_40_px_1.png",
+            "image": "shopify:\/\/shop_images\/Sin_titulo_1600_x_720_px_740_x_510_px_145_x_110_px_186_x_74_px_186_x_40_px_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/tirtir"
+            "link": "shopify:\/\/collections\/tirtir"
           }
         },
         "image_w7YhwP": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052405192020_logo_15.png",
+            "image": "shopify:\/\/shop_images\/2024052405192020_logo_15.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/vt"
+            "link": "shopify:\/\/collections\/vt"
           }
         },
         "image_H3wJj3": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052405233131_logo_1.png",
+            "image": "shopify:\/\/shop_images\/2024052405233131_logo_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/dearklairs"
+            "link": "shopify:\/\/collections\/dearklairs"
           }
         },
         "image_AtxQiJ": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052404385858_logo_1.png",
+            "image": "shopify:\/\/shop_images\/2024052404385858_logo_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/im-from"
+            "link": "shopify:\/\/collections\/im-from"
           }
         },
         "image_c6n8im": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024052405235151_logo_1.png",
+            "image": "shopify:\/\/shop_images\/2024052405235151_logo_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/cosrx"
+            "link": "shopify:\/\/collections\/cosrx"
           }
         },
         "image_Ee9ggf": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/Sin_titulo_1600_x_720_px_740_x_510_px_145_x_110_px_186_x_74_px_186_x_40_px_6.png",
+            "image": "shopify:\/\/shop_images\/Sin_titulo_1600_x_720_px_740_x_510_px_145_x_110_px_186_x_74_px_186_x_40_px_6.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/ksecret-seoul-1988"
+            "link": "shopify:\/\/collections\/ksecret-seoul-1988"
           }
         },
         "image_bHdBer": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024060709031818_logo__2.png",
+            "image": "shopify:\/\/shop_images\/2024060709031818_logo__2.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/the-face-shop"
+            "link": "shopify:\/\/collections\/the-face-shop"
           }
         },
         "image_8R3tjX": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024061404234949_logo_1.png",
+            "image": "shopify:\/\/shop_images\/2024061404234949_logo_1.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/dr-althea"
+            "link": "shopify:\/\/collections\/dr-althea"
           }
         },
         "image_Rqwq7H": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024090209125757_cnp_2.png",
+            "image": "shopify:\/\/shop_images\/2024090209125757_cnp_2.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/cnp"
+            "link": "shopify:\/\/collections\/cnp"
           }
         },
         "image_mapmtj": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024100702582828_mary.png",
+            "image": "shopify:\/\/shop_images\/2024100702582828_mary.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
@@ -2245,43 +2245,43 @@
         "image_ERjxLg": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024101604032727_axis_y.png",
+            "image": "shopify:\/\/shop_images\/2024101604032727_axis_y.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/axis-y"
+            "link": "shopify:\/\/collections\/axis-y"
           }
         },
         "image_PkpmTg": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024111206135959_somebymi.png",
+            "image": "shopify:\/\/shop_images\/2024111206135959_somebymi.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/some-by-mi"
+            "link": "shopify:\/\/collections\/some-by-mi"
           }
         },
         "image_knHFXL": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024111206164444_nature_republic.png",
+            "image": "shopify:\/\/shop_images\/2024111206164444_nature_republic.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/nature-republic"
+            "link": "shopify:\/\/collections\/nature-republic"
           }
         },
         "image_JRAV6H": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2024111902574444_logorejuran.png",
+            "image": "shopify:\/\/shop_images\/2024111902574444_logorejuran.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
@@ -2293,25 +2293,25 @@
         "image_pAg9bc": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/2025011402341515_logo_frudia.png",
+            "image": "shopify:\/\/shop_images\/2025011402341515_logo_frudia.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/frudia"
+            "link": "shopify:\/\/collections\/frudia"
           }
         },
         "image_HjDEBt": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/1740710489_pyunkang_yul.png",
+            "image": "shopify:\/\/shop_images\/1740710489_pyunkang_yul.png",
             "title": "",
             "color_text": "#000000",
             "color_text_hover": "#3e8cc4",
             "description": "",
             "color_des": "#3c3c3c",
-            "link": "shopify://collections/pyunkang-yul"
+            "link": "shopify:\/\/collections\/pyunkang-yul"
           }
         }
       },
@@ -2385,7 +2385,7 @@
         "mg_bottom_title": 12,
         "enable_border_title": false,
         "border_color_title": "#051c42",
-        "brand_des": "<strong style>Shop the Best Korean Skincare Brands:  </strong>  <br> \n\"Top, Popular, Affordable & Luxury Korean Beauty and Cosmetics Brands\"",
+        "brand_des": "<strong style>Shop the Best Korean Skincare Brands:  <\/strong>  <br> \n\"Top, Popular, Affordable & Luxury Korean Beauty and Cosmetics Brands\"",
         "color_des": "#3c3c3c",
         "fontsize_des": 16,
         "mg_bottom_des": 0,
@@ -2403,7 +2403,7 @@
         "fontsize_btn": 12,
         "btn_spacing_top": 2,
         "btn_color": "#828282",
-        "btn_link": "shopify://collections/collection-home-09-all",
+        "btn_link": "shopify:\/\/collections\/collection-home-09-all",
         "enable_autoplay": false,
         "brand_speed": "3000",
         "brand_rows": "5",
@@ -2479,7 +2479,7 @@
         "3bf5f6d5-9964-4053-b129-da4a001eebde": {
           "type": "banner",
           "settings": {
-            "image": "shopify://shop_images/41_SvPyVstL._AC.png"
+            "image": "shopify:\/\/shop_images\/41_SvPyVstL._AC.png"
           }
         }
       },
@@ -2603,7 +2603,7 @@
         "3bf5f6d5-9964-4053-b129-da4a001eebde": {
           "type": "banner",
           "settings": {
-            "image": "shopify://shop_images/Sitio_web_de_boda_fotografico_en_crema_negro_x_800_px_2000_x_780_px_1800_x_780_px_1800_x_400_px_2000_x_780_px_2000_x_500_px_2000_x_780_px_1800_x_780_px_2000_x_2000_px_35.png"
+            "image": "shopify:\/\/shop_images\/Sitio_web_de_boda_fotografico_en_crema_negro_x_800_px_2000_x_780_px_1800_x_780_px_1800_x_400_px_2000_x_780_px_2000_x_500_px_2000_x_780_px_1800_x_780_px_2000_x_2000_px_35.png"
           }
         }
       },
@@ -2997,7 +2997,7 @@
         "3bf5f6d5-9964-4053-b129-da4a001eebde": {
           "type": "banner",
           "settings": {
-            "image": "shopify://shop_images/Sin_titulo_250_x_250_px_1200_x_1200_px_652_x_500_px_500_x_652_px_3.jpg"
+            "image": "shopify:\/\/shop_images\/Sin_titulo_250_x_250_px_1200_x_1200_px_652_x_500_px_500_x_652_px_3.jpg"
           }
         },
         "product_tabs_WzcRbK": {
@@ -3280,7 +3280,7 @@
           "type": "image",
           "settings": {
             "enable_image": true,
-            "image": "shopify://shop_images/Sin_titulo_250_x_250_px_1200_x_1200_px_1.jpg",
+            "image": "shopify:\/\/shop_images\/Sin_titulo_250_x_250_px_1200_x_1200_px_1.jpg",
             "title_align": "center",
             "enable_absolute": false,
             "align_items": "center",
@@ -3311,7 +3311,7 @@
             "enable_des_hover": false,
             "button_style": "button_1",
             "button": "Shop Now",
-            "link": "shopify://products/nature-republic-honey-melting-lip-soft-lip-stick",
+            "link": "shopify:\/\/products\/nature-republic-honey-melting-lip-soft-lip-stick",
             "fontsize_btn": 12,
             "button_width": 160,
             "bg_opacity_button": 1,
@@ -3334,7 +3334,7 @@
           "type": "image",
           "settings": {
             "enable_image": true,
-            "image": "shopify://shop_images/Sin_titulo_250_x_250_px_1200_x_1200_px_2.jpg",
+            "image": "shopify:\/\/shop_images\/Sin_titulo_250_x_250_px_1200_x_1200_px_2.jpg",
             "title_align": "center",
             "enable_absolute": false,
             "align_items": "center",
@@ -3365,7 +3365,7 @@
             "enable_des_hover": false,
             "button_style": "button_1",
             "button": "Shop Now",
-            "link": "shopify://products/too-cool-for-school-artclass-by-rodin-shading-warm-tone-1-classic",
+            "link": "shopify:\/\/products\/too-cool-for-school-artclass-by-rodin-shading-warm-tone-1-classic",
             "fontsize_btn": 12,
             "button_width": 160,
             "bg_opacity_button": 1,
@@ -3388,7 +3388,7 @@
           "type": "image",
           "settings": {
             "enable_image": true,
-            "image": "shopify://shop_images/71IpmqiZQ4L._SL1500_9008c6bf-3054-4170-942e-069c9068b10d.jpg",
+            "image": "shopify:\/\/shop_images\/71IpmqiZQ4L._SL1500_9008c6bf-3054-4170-942e-069c9068b10d.jpg",
             "title_align": "center",
             "enable_absolute": false,
             "align_items": "center",
@@ -3419,7 +3419,7 @@
             "enable_des_hover": false,
             "button_style": "button_1",
             "button": "Shop Now",
-            "link": "shopify://products/the-saem-cover-perfection-tip-concealer",
+            "link": "shopify:\/\/products\/the-saem-cover-perfection-tip-concealer",
             "fontsize_btn": 12,
             "button_width": 160,
             "bg_opacity_button": 1,
@@ -3708,7 +3708,7 @@
           "type": "image",
           "settings": {
             "enable_image": true,
-            "image": "shopify://shop_images/Sitio-web-de-boda-fotografico-en-crema-y-negro-2000-x-800-px-2000-x-780-px-1800-x-780-px-1800-x-400-px-2000-x-780-px-2000-x-500-px-2000-x-780-px-1800-x-780-px-2000-x-2000-px.png",
+            "image": "shopify:\/\/shop_images\/Sitio-web-de-boda-fotografico-en-crema-y-negro-2000-x-800-px-2000-x-780-px-1800-x-780-px-1800-x-400-px-2000-x-780-px-2000-x-500-px-2000-x-780-px-1800-x-780-px-2000-x-2000-px.png",
             "title_align": "center",
             "enable_absolute": false,
             "align_items": "bottom",
@@ -3739,7 +3739,7 @@
             "enable_des_hover": false,
             "button_style": "button_1",
             "button": "Shop Now",
-            "link": "shopify://products/medicube-age-r-booster-pro-6-in-1-real-glass-glow-device",
+            "link": "shopify:\/\/products\/medicube-age-r-booster-pro-6-in-1-real-glass-glow-device",
             "fontsize_btn": 12,
             "button_width": 160,
             "bg_opacity_button": 1,
@@ -3762,7 +3762,7 @@
           "type": "image",
           "settings": {
             "enable_image": true,
-            "image": "shopify://shop_images/MicrosoftTeams-image_893.png",
+            "image": "shopify:\/\/shop_images\/MicrosoftTeams-image_893.png",
             "title_align": "center",
             "enable_absolute": false,
             "align_items": "center",
@@ -3793,7 +3793,7 @@
             "enable_des_hover": false,
             "button_style": "button_1",
             "button": "Shop Now",
-            "link": "shopify://products/medicube-collagen-jelly-cream-with-niacinamide-and-freeze-dried-hydrolyzed-collagen-50ml-1-69fl-oz",
+            "link": "shopify:\/\/products\/medicube-collagen-jelly-cream-with-niacinamide-and-freeze-dried-hydrolyzed-collagen-50ml-1-69fl-oz",
             "fontsize_btn": 12,
             "button_width": 160,
             "bg_opacity_button": 1,
@@ -3816,7 +3816,7 @@
           "type": "image",
           "settings": {
             "enable_image": true,
-            "image": "shopify://shop_images/SDFSDF_1.png",
+            "image": "shopify:\/\/shop_images\/SDFSDF_1.png",
             "title_align": "center",
             "enable_absolute": false,
             "align_items": "center",
@@ -3847,7 +3847,7 @@
             "enable_des_hover": false,
             "button_style": "button_1",
             "button": "Shop Now",
-            "link": "shopify://products/medicube-collagen-overnight-wrapping-peel-off-facial-mask-pack",
+            "link": "shopify:\/\/products\/medicube-collagen-overnight-wrapping-peel-off-facial-mask-pack",
             "fontsize_btn": 12,
             "button_width": 160,
             "bg_opacity_button": 1,
@@ -4225,7 +4225,7 @@
             "mg_bottom_title": 10,
             "mg_bottom_title_mb": 0,
             "color_block": "#232323",
-            "description": "24/7 Customer Service - We’re here and happy to help!",
+            "description": "24\/7 Customer Service - We’re here and happy to help!",
             "fontsize_des_block": 12,
             "fontsize_des_block_mb": 12,
             "lineheight_des_block": 22,
@@ -4468,7 +4468,7 @@
       "type": "apps",
       "blocks": {
         "instareel_instagram_reels_feed_instagram_reels_feed_YzPNQw": {
-          "type": "shopify://apps/instareel-ig-reels/blocks/instagram-reels-feed/6399ee9c-54c8-4f76-97d7-8f02f7662aa1",
+          "type": "shopify:\/\/apps\/instareel-ig-reels\/blocks\/instagram-reels-feed\/6399ee9c-54c8-4f76-97d7-8f02f7662aa1",
           "settings": {
             "playlist_id": "",
             "hide_when_no_product_playlist": false,
