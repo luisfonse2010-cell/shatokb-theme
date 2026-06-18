@@ -890,6 +890,8 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     const lbl = LABELS[idioma] || LABELS['en'];
 
     // Añadir clase al panel para suprimir chips + input
+    // ── DIAGNÓSTICO TEMPORAL — confirma qué archivo corre ──
+    alert('KOI v2 CARGADO ✅ — overlay fix activo');
     panel.classList.add('koi--focus-mode');
     document.body.style.overflow = 'hidden'; // bloquear scroll de página
 
