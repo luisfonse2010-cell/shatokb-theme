@@ -892,9 +892,6 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     // Añadir clase al panel para suprimir chips + input
     panel.classList.add('koi--focus-mode');
     document.body.style.overflow = 'hidden'; // bloquear scroll de página
-
-    // El wrapper sube encima del overlay para que el chat se vea detrás del tinte rosa
-    // La clase koi-wrapper--focus-active tiene z-index: 2147483641 (overlay es 2147483640)
     wrapper.classList.add('koi-wrapper--focus-active');
 
     // ── 1. Overlay rosa — inyectar <style> en head + div en body ──
@@ -922,14 +919,14 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
 
     const overlay = document.createElement('div');
     overlay.id = 'koi-focus-overlay';
-    document.body.appendChild(overlay);
+    // Dentro del panel — position:absolute cubre exactamente el chat
+    panel.appendChild(overlay);
 
-    // ── 2. Card centrada — también en document.body, encima del overlay ──
+    // ── 2. Card centrada — también dentro del panel, encima del overlay ──
     const card = document.createElement('div');
     card.id        = 'koi-focus-card';
     card.className = 'koi-focus-card';
-    // z-index inline por encima del overlay (2147483640 + 5)
-    card.style.zIndex = '2147483645';
+    card.style.zIndex = '200';
     card.innerHTML = `
       <div class="koi-focus-card__koi">
         <div class="koi-focus-card__avatar">🌸</div>
