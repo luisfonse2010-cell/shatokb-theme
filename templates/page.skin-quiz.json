@@ -1,21 +1,20 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
-    "skin-quiz-page": {
-      "type": "shatokb-quiz-page",
-      "settings": {
-        "seo_title": "Free K-Beauty Skin Quiz — Find Your Korean Skincare Routine | SHATOKB",
-        "seo_description": "Answer 8 questions and get your personalized Korean skincare routine — chosen by AI for your exact skin type, concerns and budget. Free. No account needed.",
-        "titulo": "Find out exactly what your skin needs.",
-        "subtitulo": "8 questions. 3 minutes. Real Korean products.",
-        "total_bar_label": "Estimated total for your routine",
-        "total_bar_cta": "🛒 Add my full routine to cart",
-        "btn_retake_text": "↺ My skin feels different — redo",
-        "btn_catalogue_url": "/collections/all",
-        "btn_bestsellers_url": "/collections/best-sellers",
-        "btn_whatsapp_number": "",
-        "btn_whatsapp_message": "Hi! I just took the skin quiz and need help with my routine."
-      }
+    "main": {
+      "type": "main-page",
+      "settings": {}
     }
   },
-  "order": ["skin-quiz-page"]
+  "order": [
+    "main"
+  ]
 }
