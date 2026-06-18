@@ -901,7 +901,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     styleTag.textContent =
       '#koi-focus-overlay{position:absolute!important;inset:0!important;top:0!important;left:0!important;width:100%!important;height:100%!important;background:transparent!important;z-index:10!important;pointer-events:auto!important;display:block!important;border-radius:inherit!important;}' +
       '#koi-focus-card{position:fixed!important;top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;z-index:2147483647!important;pointer-events:auto!important;display:flex!important;flex-direction:column!important;width:calc(100vw - 40px)!important;max-width:440px!important;background:#1c181a!important;border:1px solid rgba(236,149,184,0.35)!important;border-radius:18px!important;box-shadow:0 24px 64px rgba(0,0,0,0.75)!important;padding:26px 26px 20px!important;gap:16px!important;box-sizing:border-box!important;}' +
-      '#koi-page-backdrop{position:fixed!important;inset:0!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;background:rgba(28,24,26,0.25)!important;backdrop-filter:blur(3px)!important;-webkit-backdrop-filter:blur(3px)!important;z-index:2147483640!important;pointer-events:auto!important;}';
+      '#koi-page-backdrop{position:fixed!important;inset:0!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;z-index:2147483640!important;pointer-events:auto!important;}';
     document.head.appendChild(styleTag);
 
     // ── Bloquear scroll: página exterior + panel del chat ────────────────────
@@ -2521,7 +2521,7 @@ async function enviarDesdeChip (texto) {
     if (!document.getElementById('koi-page-backdrop')) {
       const backdropStyle = document.createElement('style');
       backdropStyle.id = 'koi-backdrop-style';
-      backdropStyle.textContent = '#koi-page-backdrop{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;background:rgba(28,24,26,0.25)!important;backdrop-filter:blur(3px)!important;-webkit-backdrop-filter:blur(3px)!important;z-index:2147483640!important;pointer-events:auto!important;}';
+      backdropStyle.textContent = '#koi-page-backdrop{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;z-index:2147483640!important;pointer-events:auto!important;}';
       document.head.appendChild(backdropStyle);
     }
     const backdrop = document.createElement('div');
