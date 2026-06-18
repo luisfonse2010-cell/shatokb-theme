@@ -897,24 +897,17 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     const overlay = document.createElement('div');
     overlay.id        = 'koi-focus-overlay';
     overlay.className = 'koi-focus-overlay';
-    // setAttribute es imposible de sobreescribir por CSS externo
-    overlay.setAttribute('style',
-      'position:fixed!important;' +
-      'top:0!important;' +
-      'left:0!important;' +
-      'width:100%!important;' +
-      'height:100%!important;' +
-      'background-color:rgba(236,149,184,0.50)!important;' +
-      'z-index:2147483640!important;' +
-      'pointer-events:auto!important;' +
-      'display:block!important;'
-    );
     document.body.appendChild(overlay);
-    // Forzar color después de insertar, por si algún script lo resetea
-    setTimeout(() => {
-      const o = document.getElementById('koi-focus-overlay');
-      if (o) o.style.setProperty('background-color', 'rgba(236,149,184,0.50)', 'important');
-    }, 50);
+    // setProperty con 'important' es el único método que garantiza !important en JS
+    overlay.style.setProperty('position',         'fixed',                    'important');
+    overlay.style.setProperty('top',              '0',                        'important');
+    overlay.style.setProperty('left',             '0',                        'important');
+    overlay.style.setProperty('width',            '100vw',                    'important');
+    overlay.style.setProperty('height',           '100vh',                    'important');
+    overlay.style.setProperty('background-color', 'rgba(236,149,184,0.50)',   'important');
+    overlay.style.setProperty('z-index',          '2147483640',               'important');
+    overlay.style.setProperty('pointer-events',   'auto',                     'important');
+    overlay.style.setProperty('display',          'block',                    'important');
 
     // ── 2. Card centrada — también en document.body, encima del overlay ──
     const card = document.createElement('div');
