@@ -894,9 +894,9 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     const styleTag = document.createElement('style');
     styleTag.id = 'koi-focus-style';
     styleTag.textContent =
-      '#shatokb-koi-wrapper{position:relative!important;overflow:hidden!important;}' +
+      '#shatokb-koi-wrapper{position:relative!important;overflow:visible!important;}' +
       '#koi-focus-overlay{position:absolute!important;inset:0!important;top:0!important;left:0!important;width:100%!important;height:100%!important;background:rgba(28,24,26,0.82)!important;backdrop-filter:blur(4px)!important;-webkit-backdrop-filter:blur(4px)!important;z-index:200!important;pointer-events:auto!important;display:block!important;}' +
-      '#koi-focus-card{position:absolute!important;top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;z-index:201!important;pointer-events:auto!important;display:flex!important;flex-direction:column!important;width:90%!important;max-width:460px!important;}';
+      '#koi-focus-card{position:fixed!important;top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;z-index:9999!important;pointer-events:auto!important;display:flex!important;flex-direction:column!important;width:calc(100% - 40px)!important;max-width:420px!important;}';
     document.head.appendChild(styleTag);
 
     // Overlay dentro del wrapper del chat

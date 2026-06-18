@@ -19,7 +19,7 @@ html.koi-scroll-locked {
   top: 50% !important;
   left: 50% !important;
   transform: translate(-50%, -50%) !important;
-  z-index: 201 !important;
+  z-index: 9999 !important;
   width: min(480px, 92vw);
   background: #1c181a;
   border: 1px solid rgba(28, 24, 26, 0.82);
@@ -809,7 +809,7 @@ html.koi-scroll-locked {
   border-radius: 18px;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.60);
   /* SIEMPRE por encima del overlay (2147483641 > 2147483640) */
-  z-index: 2147483641 !important;
+  z-index: 201 !important;
   padding: 26px 26px 20px;
   display: flex;
   flex-direction: column;
@@ -1179,7 +1179,7 @@ html.koi-scroll-locked {
    BOTÓN REVEAL — discreto, inline con los chips
    ══════════════════════════════════════════════════════════ */
 .koi-chip--reveal-cta {
-  background: rgba(236, 149, 184, 0.12) !important;
+  background: rgba(28, 24, 26, 0.82) !important;
   color: #ec95b8 !important;
   font-size: 13px !important;
   font-weight: 600 !important;
@@ -1192,7 +1192,7 @@ html.koi-scroll-locked {
 }
 
 .koi-chip--reveal-cta:hover {
-  background: rgba(236, 149, 184, 0.22) !important;
+  background: rgba(28, 24, 26, 0.82) !important;
   border-color: rgba(236, 149, 184, 0.60) !important;
   color: #f0aac8 !important;
   transform: none !important;
