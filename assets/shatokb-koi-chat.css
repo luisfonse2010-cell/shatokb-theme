@@ -834,6 +834,12 @@
 /* FOCUS MODE - overlay rosa + card fija en viewport */
 #shatokb-koi-wrapper {
   position: relative;
+  /* Cuando el focus mode está activo, el wrapper sube encima del overlay
+     para que el chat sea visible DETRÁS del tinte rosa, no tapado por él */
+}
+#shatokb-koi-wrapper.koi-wrapper--focus-active {
+  z-index: 2147483641 !important; /* encima del overlay (2147483640) */
+  position: relative !important;
 }
 
 .koi-focus-overlay,

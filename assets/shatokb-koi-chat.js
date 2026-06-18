@@ -893,11 +893,9 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     panel.classList.add('koi--focus-mode');
     document.body.style.overflow = 'hidden'; // bloquear scroll de página
 
-    // Quitar overflow:hidden del panel — crea stacking context que tapa el overlay
-    panel.style.setProperty('overflow', 'visible', 'important');
-    // z-index explícito BAJO al panel para que el overlay fixed quede encima
-    panel.style.setProperty('z-index', '1', 'important');
-    wrapper.style.setProperty('z-index', '1', 'important');
+    // El wrapper sube encima del overlay para que el chat se vea detrás del tinte rosa
+    // La clase koi-wrapper--focus-active tiene z-index: 2147483641 (overlay es 2147483640)
+    wrapper.classList.add('koi-wrapper--focus-active');
 
     // ── 1. Overlay rosa — inyectar <style> en head + div en body ──
     // El <style> en head tiene máxima prioridad, no puede ser sobreescrito por nada
@@ -913,9 +911,9 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       '  bottom: 0 !important;' +
       '  width: 100vw !important;' +
       '  height: 100vh !important;' +
-      '  background-color: rgba(236,149,184,0.25) !important;' +
-      '  backdrop-filter: blur(3px) !important;' +
-      '  -webkit-backdrop-filter: blur(3px) !important;' +
+      '  background-color: rgba(236,149,184,0.30) !important;' +
+      '  backdrop-filter: blur(4px) !important;' +
+      '  -webkit-backdrop-filter: blur(4px) !important;' +
       '  z-index: 2147483640 !important;' +
       '  pointer-events: auto !important;' +
       '  display: block !important;' +
@@ -981,10 +979,8 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       if (o) { o.classList.add('koi-focus-overlay--exit'); setTimeout(() => o?.remove(), 350); }
       if (c) { c.classList.add('koi-focus-card--exit');   setTimeout(() => c?.remove(), 300); }
       panel.classList.remove('koi--focus-mode');
+      wrapper.classList.remove('koi-wrapper--focus-active');
       document.body.style.overflow = '';
-      panel.style.removeProperty('overflow');
-      panel.style.removeProperty('z-index');
-      wrapper.style.removeProperty('z-index');
       const st = document.getElementById('koi-focus-style');
       if (st) st.remove();
     }
