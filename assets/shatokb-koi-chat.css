@@ -809,7 +809,7 @@ html.koi-scroll-locked {
   border-radius: 18px;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.60);
   /* SIEMPRE por encima del overlay (2147483641 > 2147483640) */
-  z-index: 201 !important;
+  z-index: 9999 !important;
   padding: 26px 26px 20px;
   display: flex;
   flex-direction: column;
