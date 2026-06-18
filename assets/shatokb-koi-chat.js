@@ -903,6 +903,14 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       '#koi-focus-card{position:fixed!important;top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;z-index:2147483647!important;pointer-events:auto!important;display:flex!important;flex-direction:column!important;width:calc(100vw - 40px)!important;max-width:440px!important;background:#1c181a!important;border:1px solid rgba(236,149,184,0.35)!important;border-radius:18px!important;box-shadow:0 24px 64px rgba(0,0,0,0.75)!important;padding:26px 26px 20px!important;gap:16px!important;box-sizing:border-box!important;}';
     document.head.appendChild(styleTag);
 
+    // ── Bloquear scroll: página exterior + panel del chat ────────────────────
+    // Evita que el usuario scrollee el fondo de Shopify o el chat
+    // mientras la card de email está visible.
+    const _bodyOverflowPrev  = document.body.style.overflow;
+    const _panelOverflowPrev = panel.style.overflow;
+    document.body.style.overflow = 'hidden';
+    panel.style.overflow         = 'hidden';
+
     // Overlay dentro del .koi-panel — cubre header + mini-cart + mensajes
     const overlay = document.createElement('div');
     overlay.id = 'koi-focus-overlay';
@@ -953,6 +961,9 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       if (c) c.remove();
       const st = document.getElementById('koi-focus-style');
       if (st) st.remove();
+      // Restaurar scroll
+      document.body.style.overflow = _bodyOverflowPrev;
+      panel.style.overflow         = _panelOverflowPrev;
     }
 
     async function _confirmarFocusEmail () {
@@ -2478,6 +2489,12 @@ async function enviarDesdeChip (texto) {
     overlay.className = 'koi-focus-overlay';
     panel.appendChild(overlay);
 
+    // ── Bloquear scroll: página exterior + panel del chat ────────────────────
+    const _bodyScrollPrev  = document.body.style.overflow;
+    const _panelScrollPrev = panel.style.overflow;
+    document.body.style.overflow = 'hidden';
+    panel.style.overflow         = 'hidden';
+
     // ── Crear card centrada flotante sobre el panel ─────────────────────────
     const card = document.createElement('div');
     card.id        = 'koi-email-gate';
@@ -2526,6 +2543,9 @@ async function enviarDesdeChip (texto) {
     function _cerrarFocusMode (confirmado) {
       card.classList.add('koi-focus-card--exit');
       overlay.classList.add('koi-focus-overlay--exit');
+      // Restaurar scroll inmediatamente (no esperar al timeout)
+      document.body.style.overflow = _bodyScrollPrev;
+      panel.style.overflow         = _panelScrollPrev;
       setTimeout(() => {
         panel.classList.remove('koi--focus-mode');
         if (chips)     chips.style.display     = '';
