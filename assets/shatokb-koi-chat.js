@@ -786,8 +786,207 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     preparandoCard.classList.add('koi-preparing-card--out');
     setTimeout(() => {
       if (preparandoCard.parentNode) preparandoCard.remove();
-      _inyectarEnvelopeCard();
+      _inyectarFocusMode();   // ← reemplaza _inyectarEnvelopeCard
     }, 350);
+  }
+
+  /* ── Focus Mode — overlay sobre TODO el panel + card centrada ──
+     El overlay y la card se insertan en .koi-panel (no en el scroll
+     de mensajes), así oscurecen header + messages + chips + input.
+     El mini-cart-bar queda visible por encima (z-index:40).         */
+  function _inyectarFocusMode () {
+    const panel = document.querySelector('#shatokb-koi-wrapper .koi-panel');
+    if (!panel || document.getElementById('koi-focus-overlay')) return;
+
+    const idioma = detectarIdioma();
+
+    const LABELS = {
+      es: {
+        title:       '📩 Tu Skin Report está listo',
+        checks: [
+          'Rutina AM/PM personalizada',
+          'Por qué cada producto fue elegido',
+          'Orden de aplicación + tips',
+          'Guía de ingredientes clave',
+        ],
+        subtitle:    '¿A dónde te lo envío?',
+        placeholder: 'tu@email.com',
+        btn:         'Enviar mi rutina →',
+        note:        '🔒 Solo para enviarte tu rutina. Sin spam.',
+        skip:        'Prefiero no dejar mi email',
+      },
+      en: {
+        title:       '📩 Your Skin Report is ready',
+        checks: [
+          'Personalized AM/PM routine',
+          'Why each product was chosen',
+          'Application order + tips',
+          'Key ingredients guide',
+        ],
+        subtitle:    'Where should I send it?',
+        placeholder: 'you@email.com',
+        btn:         'Send my routine →',
+        note:        '🔒 Only to send you your routine. No spam.',
+        skip:        'Skip, show me my routine',
+      },
+      fr: {
+        title:       '📩 Votre Skin Report est prêt',
+        checks: [
+          'Routine AM/PM personnalisée',
+          'Pourquoi chaque produit a été choisi',
+          'Ordre d\'application + conseils',
+          'Guide des ingrédients clés',
+        ],
+        subtitle:    'Où dois-je vous l\'envoyer ?',
+        placeholder: 'vous@email.com',
+        btn:         'Envoyer ma routine →',
+        note:        '🔒 Uniquement pour votre routine.',
+        skip:        'Ignorer, voir ma routine',
+      },
+      pt: {
+        title:       '📩 Seu Skin Report está pronto',
+        checks: [
+          'Rotina AM/PM personalizada',
+          'Por que cada produto foi escolhido',
+          'Ordem de aplicação + dicas',
+          'Guia de ingredientes principais',
+        ],
+        subtitle:    'Para onde envio?',
+        placeholder: 'voce@email.com',
+        btn:         'Enviar minha rotina →',
+        note:        '🔒 Apenas para sua rotina. Sem spam.',
+        skip:        'Pular, ver minha rotina',
+      },
+      de: {
+        title:       '📩 Dein Skin Report ist fertig',
+        checks: [
+          'Personalisierte AM/PM-Routine',
+          'Warum jedes Produkt gewählt wurde',
+          'Anwendungsreihenfolge + Tipps',
+          'Leitfaden für wichtige Inhaltsstoffe',
+        ],
+        subtitle:    'Wohin soll ich es schicken?',
+        placeholder: 'du@email.com',
+        btn:         'Routine senden →',
+        note:        '🔒 Nur für deine Routine. Kein Spam.',
+        skip:        'Überspringen, Routine anzeigen',
+      },
+      it: {
+        title:       '📩 Il tuo Skin Report è pronto',
+        checks: [
+          'Routine AM/PM personalizzata',
+          'Perché ogni prodotto è stato scelto',
+          'Ordine di applicazione + consigli',
+          'Guida agli ingredienti chiave',
+        ],
+        subtitle:    'Dove te lo mando?',
+        placeholder: 'tu@email.com',
+        btn:         'Invia la mia routine →',
+        note:        '🔒 Solo per inviarti la tua routine.',
+        skip:        'Salta, mostrami la routine',
+      },
+    };
+    const lbl = LABELS[idioma] || LABELS['en'];
+
+    // Añadir clase al panel para suprimir chips + input
+    panel.classList.add('koi--focus-mode');
+
+    // ── 1. Overlay oscuro — cubre todo el panel ──
+    const overlay = document.createElement('div');
+    overlay.id        = 'koi-focus-overlay';
+    overlay.className = 'koi-focus-overlay';
+    panel.appendChild(overlay);
+
+    // ── 2. Card centrada — flota sobre el overlay ──
+    const card = document.createElement('div');
+    card.id        = 'koi-focus-card';
+    card.className = 'koi-focus-card';
+    card.innerHTML = `
+      <div class="koi-focus-card__koi">
+        <div class="koi-focus-card__avatar">🌸</div>
+        <div class="koi-focus-card__name">KOI</div>
+      </div>
+      <div class="koi-focus-card__bubble">
+        <p class="koi-focus-card__headline">${lbl.title}</p>
+        <ul class="koi-envelope__checks" style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;">
+          ${lbl.checks.map(c => `<li class="koi-envelope__check"><span class="koi-envelope__check-icon">✓</span><span>${c}</span></li>`).join('')}
+        </ul>
+        <p class="koi-focus-card__ask">${lbl.subtitle}</p>
+      </div>
+      <div class="koi-focus-card__form">
+        <input
+          type="email"
+          id="koi-focus-email-input"
+          class="koi-focus-card__input"
+          placeholder="${lbl.placeholder}"
+          autocomplete="email"
+          inputmode="email"
+        />
+        <button class="koi-focus-card__btn" id="koi-focus-email-btn">${lbl.btn}</button>
+      </div>
+      <div class="koi-focus-card__footer">
+        <span class="koi-focus-card__note">${lbl.note}</span>
+        <button class="koi-focus-card__skip" id="koi-focus-skip">${lbl.skip}</button>
+      </div>
+    `;
+    panel.appendChild(card);
+
+    // Animar checkmarks con stagger
+    const checkEls = card.querySelectorAll('.koi-envelope__check');
+    checkEls.forEach((el, i) => {
+      setTimeout(() => el.classList.add('koi-envelope__check--visible'), 200 + i * 180);
+    });
+
+    // Foco automático en desktop
+    setTimeout(() => {
+      const inp = document.getElementById('koi-focus-email-input');
+      if (inp && window.innerWidth > 768) inp.focus();
+    }, 200 + 4 * 180 + 150);
+
+    // Helper: cerrar el focus mode (overlay + card) con animación
+    function _cerrarFocusMode () {
+      const o = document.getElementById('koi-focus-overlay');
+      const c = document.getElementById('koi-focus-card');
+      if (o) { o.classList.add('koi-focus-overlay--exit'); setTimeout(() => o?.remove(), 350); }
+      if (c) { c.classList.add('koi-focus-card--exit');   setTimeout(() => c?.remove(), 300); }
+      panel.classList.remove('koi--focus-mode');
+    }
+
+    // Confirmar email
+    async function _confirmarFocusEmail () {
+      const inp = document.getElementById('koi-focus-email-input');
+      const btn = document.getElementById('koi-focus-email-btn');
+      if (!inp) return;
+      const email = inp.value.trim();
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        inp.classList.add('koi-focus-card__input--error');
+        setTimeout(() => inp.classList.remove('koi-focus-card__input--error'), 800);
+        return;
+      }
+      if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+      KOI_STATE.emailCaptured = email;
+      try { localStorage.setItem('shatokb_email', email); } catch (_) {}
+      shatokbEnviarEmailShopify(email);
+      agregarMensaje('user', email);
+      setInputHabilitado(true);
+      _cerrarFocusMode();
+      await revelarRutinaConKOI(email);
+    }
+
+    // Skip — sin email, revelar de todas formas
+    function _skipFocusEmail () {
+      _cerrarFocusMode();
+      setInputHabilitado(true);
+      revelarRutinaConKOI('');
+    }
+
+    // Eventos
+    const inp = document.getElementById('koi-focus-email-input');
+    const btn = document.getElementById('koi-focus-email-btn');
+    const skip = document.getElementById('koi-focus-skip');
+    if (btn)  btn.addEventListener('click',  _confirmarFocusEmail);
+    if (inp)  inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); _confirmarFocusEmail(); } });
+    if (skip) skip.addEventListener('click', _skipFocusEmail);
   }
 
   function _inyectarEnvelopeCard () {
