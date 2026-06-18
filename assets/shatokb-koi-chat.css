@@ -7,7 +7,7 @@ html.koi-scroll-locked {
   inset: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
-  background-color: rgba(236,149,184,0.25) !important;
+  background-color: rgba(28, 24, 26, 0.82) !important;
   backdrop-filter: blur(3px) !important;
   -webkit-backdrop-filter: blur(3px) !important;
   z-index: 2147483640 !important;
@@ -19,10 +19,10 @@ html.koi-scroll-locked {
   top: 50% !important;
   left: 50% !important;
   transform: translate(-50%, -50%) !important;
-  z-index: 2147483641 !important;
+  z-index: 201 !important;
   width: min(480px, 92vw);
   background: #1c181a;
-  border: 1px solid rgba(236,149,184,0.25);
+  border: 1px solid rgba(28, 24, 26, 0.82);
   border-radius: 20px;
   padding: 28px 24px 20px;
   display: flex;
@@ -118,7 +118,7 @@ html.koi-scroll-locked {
   justify-content: center;
   font-size: 22px;
   flex-shrink: 0;
-  box-shadow: 0 0 0 3px rgba(236, 149, 184, 0.25);
+  box-shadow: 0 0 0 3px rgba(28, 24, 26, 0.82);
 }
 
 .koi-header__info {
@@ -505,7 +505,7 @@ html.koi-scroll-locked {
   background: linear-gradient(135deg,
     rgba(236, 149, 184, 0.12) 0%,
     rgba(255, 255, 255, 0.05) 100%);
-  border-color: rgba(236, 149, 184, 0.25);
+  border-color: rgba(28, 24, 26, 0.82);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -764,25 +764,20 @@ html.koi-scroll-locked {
 
 .koi-focus-overlay,
 #koi-focus-overlay {
-  /* Overlay fijo sobre toda la página — cubre TODO incluyendo header + cart bar */
-  position: fixed !important;
+  position: absolute !important;
   inset: 0 !important;
   top: 0 !important;
   left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  background: rgba(236, 149, 184, 0.25) !important;
-  background-color: rgba(236, 149, 184, 0.25) !important;
-  backdrop-filter: blur(3px) !important;
-  -webkit-backdrop-filter: blur(3px) !important;
-  /* overlay bajo la card — el JS inyecta 2147483640, la card 2147483641 */
-  z-index: 2147483640 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: rgba(28, 24, 26, 0.82) !important;
+  background-color: rgba(28, 24, 26, 0.82) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  z-index: 200 !important;
   pointer-events: auto !important;
   display: block !important;
   border-radius: 0 !important;
-  animation: koiFocusOverlayIn 0.35s ease forwards;
 }
 
 .koi-focus-overlay--exit {
@@ -801,9 +796,9 @@ html.koi-scroll-locked {
   from { opacity: 1; } to { opacity: 0; }
 }
 
-/* Card centrada con position:fixed — SIEMPRE por encima del overlay */
+/* Card centrada con position:absolute dentro del wrapper */
 .koi-focus-card {
-  position: fixed !important;
+  position: absolute !important;
   left: 50% !important;
   top: 50% !important;
   transform: translate(-50%, -50%) !important;
@@ -991,7 +986,7 @@ html.koi-scroll-locked {
 
 .koi-focus-card__btn:active {
   transform: translateY(0);
-  box-shadow: 0 3px 10px rgba(236, 149, 184, 0.25);
+  box-shadow: 0 3px 10px rgba(28, 24, 26, 0.82);
 }
 
 .koi-focus-card__btn:disabled {
@@ -1056,7 +1051,7 @@ html.koi-scroll-locked {
 .koi-email-gate {
   margin: 4px 0 8px 42px;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(236, 149, 184, 0.25);
+  border: 1px solid rgba(28, 24, 26, 0.82);
   border-radius: 12px;
   padding: 16px;
   animation: koiEmailSlideIn 0.35s cubic-bezier(0.22, 1, 0.36, 1);
