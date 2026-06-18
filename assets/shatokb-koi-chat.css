@@ -832,46 +832,36 @@
    ══════════════════════════════════════════════════════════ */
 
 /* ══════════════════════════════════════════════════════════
-   FOCUS MODE — solución definitiva
-   ──────────────────────────────────────────────────────────
-   Estrategia: oscurecer los HIJOS del panel directamente
-   con opacity + blur. El overflow:hidden del panel no
-   puede recortar estilos aplicados a sus propios hijos.
-   La card flota encima con z-index alto y clip-path:none.
+   FOCUS MODE — fondo blanco sobre el panel
+   El panel entero se "blanquea" con un pseudo-element ::after
+   que pinta un blanco semitransparente encima de TODO el panel.
+   La card queda por encima con z-index mayor.
+   Mini-cart-bar también queda encima.
    ══════════════════════════════════════════════════════════ */
 
-/* 1 ─ Todo el contenido queda oscuro y borroso */
-.koi-panel.koi--focus-mode .koi-header,
-.koi-panel.koi--focus-mode .koi-messages,
-.koi-panel.koi--focus-mode .koi-chips,
-.koi-panel.koi--focus-mode .koi-input-area,
-.koi-panel.koi--focus-mode .koi-footer {
-  opacity: 0.08 !important;
-  filter: blur(4px) !important;
-  pointer-events: none !important;
-  user-select: none !important;
-  transition: opacity 0.4s ease, filter 0.4s ease !important;
+/* Capa semitransparente que cubre todo el panel — deja ver el fondo */
+.koi-panel.koi--focus-mode::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(28, 24, 26, 0.72);
+  z-index: 40;
+  border-radius: inherit;
+  pointer-events: none;
+  animation: koiFocusOverlayIn 0.35s ease forwards;
 }
 
-/* 2 ─ Mini-cart-bar permanece nítida y usable */
+/* Mini-cart-bar encima del blanco */
 .koi-panel.koi--focus-mode .koi-mini-cart-bar,
 .koi-panel.koi--focus-mode #koi-mini-cart-bar {
-  opacity: 1 !important;
-  filter: none !important;
-  pointer-events: auto !important;
   position: relative !important;
-  z-index: 60 !important;
+  z-index: 50 !important;
 }
 
-/* 3 ─ El overlay sólo existe para la animación de entrada/salida;
-       el oscurecimiento real lo hacen las reglas de arriba */
-.koi-focus-overlay {
-  display: none; /* ya no necesitamos el div overlay */
-}
+/* Card encima de todo */
 
-.koi-focus-overlay--exit {
-  display: none;
-}
+.koi-focus-overlay { display: none; }
+.koi-focus-overlay--exit { display: none; }
 
 @keyframes koiFocusOverlayIn {
   from { opacity: 0; } to { opacity: 1; }
@@ -880,7 +870,7 @@
   from { opacity: 1; } to { opacity: 0; }
 }
 
-/* 4 ─ La card flota centrada sobre el panel */
+/* Card centrada — por encima del blanco (z-index > 40) */
 .koi-focus-card {
   position: absolute;
   left: 50%;
@@ -888,11 +878,11 @@
   transform: translate(-50%, -50%);
   width: calc(100% - 40px);
   max-width: 460px;
-  background: #241e21;
+  background: #1c181a;
   border: 1px solid rgba(236, 149, 184, 0.35);
   border-radius: 18px;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.70);
-  z-index: 50;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.50);
+  z-index: 60;
   padding: 26px 26px 20px;
   display: flex;
   flex-direction: column;
