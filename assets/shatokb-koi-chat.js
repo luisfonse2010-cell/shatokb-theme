@@ -899,25 +899,32 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     panel.style.setProperty('z-index', '1', 'important');
     wrapper.style.setProperty('z-index', '1', 'important');
 
-    // ── 1. Overlay rosa — va en document.body para escapar stacking contexts del tema ──
+    // ── 1. Overlay rosa — inyectar <style> en head + div en body ──
+    // El <style> en head tiene máxima prioridad, no puede ser sobreescrito por nada
+    const styleTag = document.createElement('style');
+    styleTag.id = 'koi-focus-style';
+    styleTag.textContent =
+      '#koi-focus-overlay {' +
+      '  position: fixed !important;' +
+      '  inset: 0 !important;' +
+      '  top: 0 !important;' +
+      '  left: 0 !important;' +
+      '  right: 0 !important;' +
+      '  bottom: 0 !important;' +
+      '  width: 100vw !important;' +
+      '  height: 100vh !important;' +
+      '  background-color: rgba(236,149,184,0.25) !important;' +
+      '  backdrop-filter: blur(3px) !important;' +
+      '  -webkit-backdrop-filter: blur(3px) !important;' +
+      '  z-index: 2147483640 !important;' +
+      '  pointer-events: auto !important;' +
+      '  display: block !important;' +
+      '}';
+    document.head.appendChild(styleTag);
+
     const overlay = document.createElement('div');
-    overlay.id        = 'koi-focus-overlay';
-    overlay.className = 'koi-focus-overlay';
+    overlay.id = 'koi-focus-overlay';
     document.body.appendChild(overlay);
-    // setProperty con 'important' es el único método que garantiza !important en JS
-    overlay.style.setProperty('position',         'fixed',                    'important');
-    overlay.style.setProperty('top',              '0',                        'important');
-    overlay.style.setProperty('left',             '0',                        'important');
-    overlay.style.setProperty('width',            window.innerWidth  + 'px',  'important');
-    overlay.style.setProperty('height',           window.innerHeight + 'px',  'important');
-    overlay.style.setProperty('min-width',        '100%',                     'important');
-    overlay.style.setProperty('min-height',       '100%',                     'important');
-    overlay.style.setProperty('background-color', 'rgba(236,149,184,0.25)',   'important');
-    overlay.style.setProperty('backdrop-filter',  'blur(3px)',                'important');
-    overlay.style.setProperty('-webkit-backdrop-filter', 'blur(3px)',         'important');
-    overlay.style.setProperty('z-index',          '2147483640',               'important');
-    overlay.style.setProperty('pointer-events',   'auto',                     'important');
-    overlay.style.setProperty('display',          'block',                    'important');
 
     // ── 2. Card centrada — también en document.body, encima del overlay ──
     const card = document.createElement('div');
@@ -978,6 +985,8 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       panel.style.removeProperty('overflow');
       panel.style.removeProperty('z-index');
       wrapper.style.removeProperty('z-index');
+      const st = document.getElementById('koi-focus-style');
+      if (st) st.remove();
     }
 
     // Confirmar email
