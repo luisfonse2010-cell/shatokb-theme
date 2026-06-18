@@ -921,13 +921,13 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     document.body.appendChild(backdrop);
 
     // ── Aclarar el panel + blur para que el fondo sea visible ────────────
-    // El panel base es #1c181a (muy oscuro). Lo aclaramos temporalmente
-    // a un marrón-rosa claro para que el efecto de transparencia sea visible.
-    const _panelBgPrev         = panel.style.background;
-    panel.style.background     = '#3d2535';
-    panel.style.filter         = 'blur(4px)';
-    panel.style.transition     = 'filter 0.25s ease, background 0.25s ease';
-    panel.style.pointerEvents  = 'none';
+    // Usamos setProperty con !important para superar el CSS del tema Shopify.
+    const _panelBgPrev = panel.getAttribute('style') || '';
+    panel.style.setProperty('background', '#3e2b32', 'important');
+    panel.style.setProperty('background-color', '#3e2b32', 'important');
+    panel.style.setProperty('filter', 'blur(4px)', 'important');
+    panel.style.setProperty('transition', 'filter 0.3s ease, background 0.3s ease', 'important');
+    panel.style.setProperty('pointer-events', 'none', 'important');
 
     // Overlay dentro del .koi-panel — cubre header + mini-cart + mensajes
     const overlay = document.createElement('div');
@@ -981,10 +981,12 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       if (bg) bg.remove();
       const st = document.getElementById('koi-focus-style');
       if (st) st.remove();
-      // Quitar blur del panel
-      panel.style.filter        = '';
-      panel.style.background    = _panelBgPrev;
-      panel.style.pointerEvents = '';
+      // Quitar blur del panel y restaurar background original
+      panel.style.removeProperty('background');
+      panel.style.removeProperty('background-color');
+      panel.style.removeProperty('filter');
+      panel.style.removeProperty('pointer-events');
+      panel.style.removeProperty('transition');
       // Restaurar scroll en body, html y panel
       document.body.style.overflow            = _bodyOverflowPrev;
       document.documentElement.style.overflow = _htmlOverflowPrev;
@@ -2539,11 +2541,12 @@ async function enviarDesdeChip (texto) {
     document.body.appendChild(backdrop);
 
     // ── Aclarar panel + blur (mismo que _inyectarFocusMode) ───────────────
-    const _panelBgPrev        = panel.style.background;
-    panel.style.background    = '#3d2535';
-    panel.style.filter        = 'blur(4px)';
-    panel.style.transition    = 'filter 0.25s ease, background 0.25s ease';
-    panel.style.pointerEvents = 'none';
+    const _panelBgPrev = panel.getAttribute('style') || '';
+    panel.style.setProperty('background', '#3e2b32', 'important');
+    panel.style.setProperty('background-color', '#3e2b32', 'important');
+    panel.style.setProperty('filter', 'blur(4px)', 'important');
+    panel.style.setProperty('transition', 'filter 0.3s ease, background 0.3s ease', 'important');
+    panel.style.setProperty('pointer-events', 'none', 'important');
 
     // ── Crear card centrada flotante sobre el panel ─────────────────────────
     const card = document.createElement('div');
@@ -2597,10 +2600,12 @@ async function enviarDesdeChip (texto) {
       document.body.style.overflow            = _bodyScrollPrev;
       document.documentElement.style.overflow = _htmlScrollPrev;
       panel.style.overflow                    = _panelScrollPrev;
-      // Quitar blur del panel y restaurar background
-      panel.style.filter        = '';
-      panel.style.background    = _panelBgPrev;
-      panel.style.pointerEvents = '';
+      // Quitar blur del panel y restaurar background original
+      panel.style.removeProperty('background');
+      panel.style.removeProperty('background-color');
+      panel.style.removeProperty('filter');
+      panel.style.removeProperty('pointer-events');
+      panel.style.removeProperty('transition');
       // Eliminar backdrop de página
       const bg = document.getElementById('koi-page-backdrop');
       if (bg) bg.remove();
