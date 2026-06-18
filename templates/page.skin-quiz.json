@@ -9,12 +9,21 @@
  */
 {
   "sections": {
-    "main": {
-      "type": "main-page",
-      "settings": {}
+    "skin-quiz-page": {
+      "type": "shatokb-skin-quiz",
+      "settings": {
+        "titulo": "Find out exactly what your skin needs.",
+        "subtitulo": "8 questions. 3 minutes. Real Korean products.",
+        "total_bar_label": "Estimated total for your routine",
+        "total_bar_cta": "🛒 Add my full routine to cart",
+        "btn_retake_show": true,
+        "btn_retake_text": "↺ My skin feels different — redo",
+        "btn_catalogue_show": false,
+        "btn_bestsellers_show": false,
+        "btn_whatsapp_show": false
+      }
     }
   },
-  "order": [
-    "main"
-  ]
+  "order": ["skin-quiz-page"]
 }
+
