@@ -893,12 +893,11 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     panel.classList.add('koi--focus-mode');
     document.body.style.overflow = 'hidden'; // bloquear scroll de página
 
-    // Hacer el panel y el wrapper transparentes para que el overlay del body se vea
-    panel.style.setProperty('background', 'transparent', 'important');
-    panel.style.setProperty('background-color', 'transparent', 'important');
-    panel.style.setProperty('box-shadow', 'none', 'important');
-    wrapper.style.setProperty('background', 'transparent', 'important');
-    wrapper.style.setProperty('background-color', 'transparent', 'important');
+    // Quitar overflow:hidden del panel — crea stacking context que tapa el overlay
+    panel.style.setProperty('overflow', 'visible', 'important');
+    // z-index explícito BAJO al panel para que el overlay fixed quede encima
+    panel.style.setProperty('z-index', '1', 'important');
+    wrapper.style.setProperty('z-index', '1', 'important');
 
     // ── 1. Overlay rosa — va en document.body para escapar stacking contexts del tema ──
     const overlay = document.createElement('div');
@@ -973,12 +972,10 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       if (o) { o.classList.add('koi-focus-overlay--exit'); setTimeout(() => o?.remove(), 350); }
       if (c) { c.classList.add('koi-focus-card--exit');   setTimeout(() => c?.remove(), 300); }
       panel.classList.remove('koi--focus-mode');
-      document.body.style.overflow = ''; // restaurar scroll de página
-      panel.style.removeProperty('background');
-      panel.style.removeProperty('background-color');
-      panel.style.removeProperty('box-shadow');
-      wrapper.style.removeProperty('background');
-      wrapper.style.removeProperty('background-color');
+      document.body.style.overflow = '';
+      panel.style.removeProperty('overflow');
+      panel.style.removeProperty('z-index');
+      wrapper.style.removeProperty('z-index');
     }
 
     // Confirmar email
