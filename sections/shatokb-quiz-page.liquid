@@ -1,0 +1,623 @@
+{% comment %}
+  ============================================================
+  SHATOKB · Skin Quiz — Dedicated Page  v1.0
+  File: shopify/sections/shatokb-quiz-page.liquid
+  URL:  /pages/skin-quiz
+
+  Página dedicada al quiz de piel — foco total, sin distracciones.
+  Incluye quiz completo + KOI chat + barra de carrito.
+
+  SEO:
+  - Canonical tag
+  - JSON-LD (WebPage + FAQPage schema)
+  - Open Graph / Twitter Card
+  - Meta description y keywords
+
+  Assets:
+  - assets/shatokb-quiz.css
+  - assets/shatokb-koi-chat.css
+  - assets/shatokb-koi-vision.css
+  - assets/shatokb-excel-intel.js
+  - assets/shatokb-quiz.js
+  - assets/shatokb-koi-vision.js
+  - assets/shatokb-koi-chat.js
+  ============================================================
+{% endcomment %}
+
+{%- comment -%} ── SEO HEAD TAGS ─────────────────────────────────── {%- endcomment -%}
+{%- capture seo_title -%}{{ section.settings.seo_title | default: 'Free K-Beauty Skin Quiz — Find Your Korean Skincare Routine | SHATOKB' }}{%- endcapture -%}
+{%- capture seo_description -%}{{ section.settings.seo_description | default: 'Answer 8 questions and get your personalized Korean skincare routine — chosen by AI for your exact skin type, concerns and budget. Free. No account needed.' }}{%- endcapture -%}
+{%- assign seo_image = section.settings.seo_image | default: '' -%}
+{%- assign page_url = shop.url | append: '/pages/skin-quiz' -%}
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "{{ page_url }}",
+      "url": "{{ page_url }}",
+      "name": "{{ seo_title }}",
+      "description": "{{ seo_description }}",
+      "inLanguage": "en-US",
+      "isPartOf": {
+        "@type": "WebSite",
+        "@id": "{{ shop.url }}",
+        "name": "{{ shop.name }}",
+        "url": "{{ shop.url }}"
+      },
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "{{ shop.url }}"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Skin Quiz",
+            "item": "{{ page_url }}"
+          }
+        ]
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How long does the skin quiz take?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The quiz takes about 2-3 minutes. You answer 8 questions about your skin type, concerns, lifestyle and budget."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is the Korean skincare quiz free?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, completely free. No account needed, no credit card, no email required to see your results."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the AI choose products for my skin?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "KOI, our AI skin expert, analyzes your skin profile, concerns and budget to select the best Korean skincare products specifically for you from our curated catalogue of 200+ products."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What skin types does the quiz cover?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The quiz covers all skin types: dry, oily, combination, sensitive, normal and mature skin. It also addresses specific concerns like acne, dark spots, anti-aging, hydration and brightening."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+{%- comment -%} ── CSS ───────────────────────────────────────────── {%- endcomment -%}
+{{ 'shatokb-quiz.css' | asset_url | stylesheet_tag }}
+{{ 'shatokb-koi-chat.css' | asset_url | stylesheet_tag }}
+{{ 'shatokb-koi-vision.css' | asset_url | stylesheet_tag }}
+
+<style>
+  /* ══════════════════════════════════════════════════════════
+     QUIZ PAGE — Layout de página dedicada full-focus
+     ══════════════════════════════════════════════════════════ */
+
+  .sqp-page {
+    min-height: calc(100vh - 80px);
+    background: #ffffff;
+    font-family: 'Arimo', Arial, sans-serif;
+  }
+
+  /* ── Hero intro de la página ── */
+  .sqp-hero {
+    background: linear-gradient(135deg, #0b0335 0%, #1a0a4a 100%);
+    padding: 48px 24px 40px;
+    text-align: center;
+  }
+  .sqp-hero__badge {
+    display: inline-block;
+    background: rgba(236, 149, 184, 0.15);
+    border: 1px solid rgba(236, 149, 184, 0.4);
+    color: #ec95b8;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+  }
+  .sqp-hero__title {
+    font-family: 'Prompt', 'Arial Black', sans-serif !important;
+    font-size: 32px !important;
+    font-weight: 800 !important;
+    color: #ffffff !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.03em !important;
+    line-height: 1.2 !important;
+    margin: 0 0 14px !important;
+    max-width: 700px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  .sqp-hero__title em {
+    font-style: normal;
+    color: #ec95b8;
+  }
+  .sqp-hero__subtitle {
+    font-size: 16px !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+    line-height: 1.6 !important;
+    max-width: 560px;
+    margin: 0 auto !important;
+  }
+  .sqp-hero__trust {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .sqp-hero__trust-item {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .sqp-hero__trust-item strong {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  /* ── Contenedor del quiz ── */
+  .sqp-quiz-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 24px 100px;
+  }
+
+  /* ── Sobreescribir título del quiz (h2) dentro de la página ── */
+  .sqp-quiz-wrap .shatokb-quiz-section__titulo {
+    font-size: 0 !important; /* ocultamos el h2 interno — el hero ya lo muestra */
+    margin: 0 !important;
+  }
+  .sqp-quiz-wrap .shatokb-quiz-section__subtitulo {
+    display: none !important;
+  }
+  .sqp-quiz-wrap .shatokb-quiz-section__header {
+    display: none !important; /* el header SEO está en .sqp-hero */
+  }
+
+  /* ── Sección de beneficios debajo del hero ── */
+  .sqp-benefits {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    padding: 20px 24px;
+    background: #f8f9fc;
+    border-bottom: 1px solid #e5e7eb;
+    flex-wrap: wrap;
+  }
+  .sqp-benefit {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #4b5563;
+    font-weight: 600;
+  }
+  .sqp-benefit__icon {
+    font-size: 18px;
+  }
+
+  /* ── Breadcrumb SEO ── */
+  .sqp-breadcrumb {
+    padding: 10px 24px;
+    font-size: 12px;
+    color: #9ca3af;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .sqp-breadcrumb a {
+    color: #6b7280;
+    text-decoration: none;
+  }
+  .sqp-breadcrumb a:hover { text-decoration: underline; }
+  .sqp-breadcrumb span { margin: 0 6px; }
+
+  /* ── Bloque de contenido SEO (visible para Google, discreto para el usuario) ── */
+  .sqp-seo-content {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 24px;
+    border-top: 1px solid #e5e7eb;
+  }
+  .sqp-seo-content h2 {
+    font-family: 'Prompt', 'Arial Black', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: #0b0335;
+    margin: 0 0 16px;
+  }
+  .sqp-seo-content h3 {
+    font-family: 'Prompt', 'Arial Black', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 20px 0 8px;
+  }
+  .sqp-seo-content p {
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.7;
+    margin: 0 0 12px;
+  }
+  .sqp-faq {
+    margin-top: 32px;
+  }
+  .sqp-faq__item {
+    border-bottom: 1px solid #f3f4f6;
+    padding: 14px 0;
+  }
+  .sqp-faq__q {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 6px;
+  }
+  .sqp-faq__a {
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    .sqp-hero { padding: 36px 20px 28px; }
+    .sqp-hero__title { font-size: 24px !important; }
+    .sqp-hero__subtitle { font-size: 14px !important; }
+    .sqp-benefits { gap: 16px; padding: 14px 20px; }
+    .sqp-quiz-wrap { padding: 24px 16px 80px; }
+  }
+</style>
+
+{%- comment -%} ── PÁGINA ────────────────────────────────────────── {%- endcomment -%}
+<main class="sqp-page" id="sqp-main" aria-label="Skin quiz page">
+
+  {%- comment -%} Breadcrumb para SEO {%- endcomment -%}
+  <nav class="sqp-breadcrumb" aria-label="Breadcrumb">
+    <a href="{{ shop.url }}">Home</a>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">Skin Quiz</span>
+  </nav>
+
+  {%- comment -%} Hero — título visible + trust signals {%- endcomment -%}
+  <header class="sqp-hero">
+    <div class="sqp-hero__badge">🇰🇷 Free · AI-Powered · 200+ K-Beauty Products</div>
+    <h1 class="sqp-hero__title">
+      Find Out <em>Exactly</em><br>What Your Skin Needs.
+    </h1>
+    <p class="sqp-hero__subtitle">
+      8 questions. 3 minutes. A complete Korean skincare routine — chosen by AI for your exact skin type, concerns and budget.
+    </p>
+    <div class="sqp-hero__trust">
+      <span class="sqp-hero__trust-item">✅ <strong>Free</strong> — no credit card</span>
+      <span class="sqp-hero__trust-item">🔒 <strong>No account</strong> needed</span>
+      <span class="sqp-hero__trust-item">🌸 <strong>200+</strong> curated K-Beauty products</span>
+      <span class="sqp-hero__trust-item">⚡ Results in <strong>3 minutes</strong></span>
+    </div>
+  </header>
+
+  {%- comment -%} Benefits bar {%- endcomment -%}
+  <div class="sqp-benefits" aria-hidden="true">
+    <div class="sqp-benefit"><span class="sqp-benefit__icon">🧬</span> Science-backed formulas</div>
+    <div class="sqp-benefit"><span class="sqp-benefit__icon">🤖</span> AI skin analysis</div>
+    <div class="sqp-benefit"><span class="sqp-benefit__icon">🛒</span> Shop directly from results</div>
+    <div class="sqp-benefit"><span class="sqp-benefit__icon">💬</span> Ask KOI any question</div>
+  </div>
+
+  {%- comment -%} Quiz + KOI — reutilizamos la sección existente {%- endcomment -%}
+  <div class="sqp-quiz-wrap">
+
+    <section
+      id="shatokb-quiz"
+      class="shatokb-quiz-section"
+      aria-label="Personalized skin diagnosis quiz"
+
+      data-btn-catalogue-show="false"
+      data-btn-catalogue-text="{{ section.settings.btn_catalogue_text | default: '🛍️ Explore the full catalogue' | escape }}"
+      data-btn-catalogue-url="{{ section.settings.btn_catalogue_url | default: '/collections/all' }}"
+
+      data-btn-whatsapp-show="false"
+      data-btn-whatsapp-text="{{ section.settings.btn_whatsapp_text | default: '💬 Talk to a skin expert' | escape }}"
+      data-btn-whatsapp-number="{{ section.settings.btn_whatsapp_number | default: '' | escape }}"
+      data-btn-whatsapp-message="{{ section.settings.btn_whatsapp_message | default: 'Hi! I just took the skin quiz and need help with my routine.' | escape }}"
+
+      data-btn-bestsellers-show="false"
+      data-btn-bestsellers-text="{{ section.settings.btn_bestsellers_text | default: '⭐ View Best Sellers' | escape }}"
+      data-btn-bestsellers-url="{{ section.settings.btn_bestsellers_url | default: '/collections/best-sellers' }}"
+
+      data-btn-retake-show="true"
+      data-btn-retake-text="{{ section.settings.btn_retake_text | default: '↺ My skin feels different — redo' | escape }}"
+
+      data-total-bar-label="{{ section.settings.total_bar_label | default: 'Estimated total for your routine' | escape }}"
+      data-total-bar-cta="{{ section.settings.total_bar_cta | default: '🛒 Add my full routine to cart' | escape }}"
+    >
+      <div class="shatokb-quiz-section__inner">
+
+        <header class="shatokb-quiz-section__header" id="shatokb-quiz-cabecera">
+          <h2 class="shatokb-quiz-section__titulo">{{ section.settings.titulo | default: 'Find out exactly what your skin needs.' }}</h2>
+          <p class="shatokb-quiz-section__subtitulo">{{ section.settings.subtitulo | default: '8 questions. 3 minutes. Real Korean products.' }}</p>
+        </header>
+
+        <div id="shatokb-quiz-inicio" style="text-align:center; padding:12px 0 40px;">
+          <div style="font-size:36px; margin-bottom:16px; line-height:1;">🔬✨</div>
+          <p style="font-family:'Arimo',Arial,sans-serif; font-size:15px; color:#6b7280; line-height:1.65; max-width:480px; margin:0 auto 28px;">
+            Most people spend years — and hundreds of dollars — trying random products that don't work for their skin.<br><br>
+            <strong>This quiz ends that.</strong> In 3 minutes you'll know your exact skin profile and the Korean products proven to work for it.
+          </p>
+          <button
+            id="shatokb-btn-inicio"
+            style="display:inline-flex;align-items:center;justify-content:center;padding:16px 40px;background:#3a7af5;color:#fff;font-family:'Arimo',Arial,sans-serif;font-size:17px;font-weight:700;border:none;border-radius:8px;cursor:pointer;transition:background 0.2s;box-shadow:0 4px 16px rgba(58,122,245,0.35);"
+            type="button"
+            onclick="event.stopPropagation();event.preventDefault();shatokbIniciarQuiz();return false;">
+            Yes — show me my routine →
+          </button>
+          <p style="font-family:'Arimo',Arial,sans-serif; font-size:13px; color:#9ca3af; margin-top:14px;">Free · No account needed · Results in 3 minutes</p>
+        </div>
+
+        <div
+          id="shatokb-progreso"
+          class="shatokb-progreso"
+          style="display:none;"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0">
+          <div class="shatokb-progreso__meta">
+            <span id="shatokb-progreso-texto">Question 1 of 8</span>
+            <span id="shatokb-pregunta-num" aria-hidden="true">0%</span>
+          </div>
+          <div class="shatokb-progreso__track">
+            <div id="shatokb-progreso-barra" class="shatokb-progreso__fill" style="width:0%"></div>
+          </div>
+        </div>
+
+        <div
+          id="shatokb-quiz-form"
+          class="shatokb-quiz-form"
+          style="display:none;"
+          aria-label="Quiz questions">
+          <noscript>
+            <p style="text-align:center; color:#f42b23; font-weight:600; padding:24px 0;">
+              Please enable JavaScript to use the skin diagnosis quiz.
+            </p>
+          </noscript>
+        </div>
+
+      </div>
+    </section>
+
+    <div id="stk-email-gate" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="stk-gate-title">
+      <div class="stk-gate__backdrop" onclick="shatokbSaltarEmail()"></div>
+      <div class="stk-gate__card">
+        <span class="stk-gate__emoji">🎁</span>
+        <h2 class="stk-gate__title" id="stk-gate-title">Your routine is ready!</h2>
+        <p class="stk-gate__sub">Where should we send it so you can come back to it anytime?</p>
+        <form class="stk-gate__form" onsubmit="shatokbSubmitEmail(event)">
+          <input type="email" id="stk-email-input" class="stk-gate__input" placeholder="your@email.com" required autocomplete="email" />
+          <button type="submit" class="stk-gate__btn" id="stk-gate-submit">Show me my routine ✨</button>
+        </form>
+        <button class="stk-gate__skip" type="button" onclick="shatokbSaltarEmail()">No thanks, just show me the routine</button>
+        <p class="stk-gate__privacy">🔒 No spam. No subscriptions. Just your routine.</p>
+      </div>
+    </div>
+
+    <div
+      id="shatokb-resultado"
+      class="shatokb-resultado"
+      style="display:none; padding:0 0 88px;"
+      aria-live="polite"
+      aria-label="Your skin diagnosis result">
+      <div class="shatokb-resultado__inner"></div>
+    </div>
+
+  </div>{%- comment -%} /.sqp-quiz-wrap {%- endcomment -%}
+
+  {%- comment -%} ── Contenido SEO — visible para Google, discreto para el usuario ── {%- endcomment -%}
+  <div class="sqp-seo-content">
+    <h2>Korean Skincare Quiz — Find Your Perfect Routine</h2>
+    <p>
+      Not sure which Korean skincare products are right for you? Our free AI-powered skin quiz analyzes your skin type, concerns, lifestyle and budget to build a complete, personalized K-Beauty routine — with real products you can add to your cart in seconds.
+    </p>
+    <p>
+      Whether you have dry skin, oily skin, combination skin, sensitive skin or mature skin, KOI — our AI skin expert — will select the right Korean beauty products for you from our curated catalogue of 200+ K-Beauty essentials.
+    </p>
+
+    <h3>What does the skin quiz include?</h3>
+    <p>
+      The quiz covers 8 questions about your skin type, main concerns (acne, dark spots, anti-aging, hydration, brightening), skin sensitivity, current routine, lifestyle and budget. In about 3 minutes, you get a complete AM/PM Korean skincare routine with specific product recommendations and expert explanations.
+    </p>
+
+    <h3>Why Korean skincare?</h3>
+    <p>
+      Korean beauty (K-Beauty) is globally recognized for its science-backed, skin-first approach. K-Beauty products like essences, ampoules, sheet masks and sunscreens are formulated with high-quality ingredients — snail mucin, niacinamide, ceramides, centella asiatica — at concentrations that actually work.
+    </p>
+
+    <div class="sqp-faq" itemscope itemtype="https://schema.org/FAQPage">
+      <h2>Frequently Asked Questions</h2>
+
+      <div class="sqp-faq__item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+        <p class="sqp-faq__q" itemprop="name">How long does the skin quiz take?</p>
+        <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p class="sqp-faq__a" itemprop="text">The quiz takes about 2-3 minutes. You answer 8 questions about your skin type, concerns, lifestyle and budget.</p>
+        </div>
+      </div>
+
+      <div class="sqp-faq__item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+        <p class="sqp-faq__q" itemprop="name">Is the Korean skincare quiz free?</p>
+        <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p class="sqp-faq__a" itemprop="text">Yes, completely free. No account needed, no credit card, no email required to see your results.</p>
+        </div>
+      </div>
+
+      <div class="sqp-faq__item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+        <p class="sqp-faq__q" itemprop="name">How does the AI choose products for my skin?</p>
+        <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p class="sqp-faq__a" itemprop="text">KOI, our AI skin expert, analyzes your skin profile, concerns and budget to select the best Korean skincare products specifically for you from our curated catalogue of 200+ products.</p>
+        </div>
+      </div>
+
+      <div class="sqp-faq__item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+        <p class="sqp-faq__q" itemprop="name">What skin types does the quiz cover?</p>
+        <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p class="sqp-faq__a" itemprop="text">The quiz covers all skin types: dry, oily, combination, sensitive, normal and mature skin. It also addresses specific concerns like acne, dark spots, anti-aging, hydration and brightening.</p>
+        </div>
+      </div>
+
+      <div class="sqp-faq__item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+        <p class="sqp-faq__q" itemprop="name">Can I add products directly to my cart?</p>
+        <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p class="sqp-faq__a" itemprop="text">Yes. Once you see your personalized routine, you can add individual products or your entire routine to your cart with one click — and go directly to checkout.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+{%- comment -%} ── SCRIPTS ───────────────────────────────────────── {%- endcomment -%}
+<script src="{{ 'shatokb-excel-intel.js' | asset_url }}" defer></script>
+<script src="{{ 'shatokb-quiz.js' | asset_url }}" defer></script>
+<script src="{{ 'shatokb-koi-vision.js' | asset_url }}" defer></script>
+<script src="{{ 'shatokb-koi-chat.js' | asset_url }}?v=20260618" defer></script>
+
+{% schema %}
+{
+  "name": "🔬 Skin Quiz Page",
+  "tag": "div",
+  "settings": [
+
+    {
+      "type": "header",
+      "content": "🔍 SEO"
+    },
+    {
+      "type": "text",
+      "id": "seo_title",
+      "label": "SEO Title",
+      "default": "Free K-Beauty Skin Quiz — Find Your Korean Skincare Routine | SHATOKB",
+      "info": "Recommended: 50-60 characters. Include 'Korean skincare quiz' or 'K-Beauty skin quiz'."
+    },
+    {
+      "type": "textarea",
+      "id": "seo_description",
+      "label": "SEO Meta Description",
+      "default": "Answer 8 questions and get your personalized Korean skincare routine — chosen by AI for your exact skin type, concerns and budget. Free. No account needed.",
+      "info": "Recommended: 150-160 characters."
+    },
+    {
+      "type": "image_picker",
+      "id": "seo_image",
+      "label": "SEO / Open Graph Image",
+      "info": "Used for social sharing. Recommended: 1200x630px."
+    },
+
+    {
+      "type": "header",
+      "content": "📋 Quiz Settings"
+    },
+    {
+      "type": "text",
+      "id": "titulo",
+      "label": "Quiz section title (internal h2)",
+      "default": "Find out exactly what your skin needs."
+    },
+    {
+      "type": "textarea",
+      "id": "subtitulo",
+      "label": "Quiz section subtitle",
+      "default": "8 questions. 3 minutes. Real Korean products."
+    },
+
+    {
+      "type": "header",
+      "content": "🛒 Sticky Total Bar"
+    },
+    {
+      "type": "text",
+      "id": "total_bar_label",
+      "label": "Bar label",
+      "default": "Estimated total for your routine"
+    },
+    {
+      "type": "text",
+      "id": "total_bar_cta",
+      "label": "Add to cart button text",
+      "default": "🛒 Add my full routine to cart"
+    },
+
+    {
+      "type": "header",
+      "content": "↺ Button — Retake Quiz"
+    },
+    {
+      "type": "text",
+      "id": "btn_retake_text",
+      "label": "Retake button text",
+      "default": "↺ My skin feels different — redo"
+    },
+
+    {
+      "type": "header",
+      "content": "🔗 Other Buttons"
+    },
+    {
+      "type": "url",
+      "id": "btn_catalogue_url",
+      "label": "Catalogue URL",
+      "info": "e.g. /collections/all"
+    },
+    {
+      "type": "url",
+      "id": "btn_bestsellers_url",
+      "label": "Best Sellers URL",
+      "info": "e.g. /collections/best-sellers"
+    },
+    {
+      "type": "text",
+      "id": "btn_whatsapp_number",
+      "label": "WhatsApp number (with country code, no +)",
+      "default": ""
+    },
+    {
+      "type": "text",
+      "id": "btn_whatsapp_message",
+      "label": "WhatsApp pre-written message",
+      "default": "Hi! I just took the skin quiz and need help with my routine."
+    }
+
+  ],
+  "presets": [
+    {
+      "name": "🔬 Skin Quiz Page"
+    }
+  ]
+}
+{% endschema %}
