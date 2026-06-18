@@ -835,10 +835,10 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
         checks: [
           'Routine AM/PM personnalisée',
           'Pourquoi chaque produit a été choisi',
-          'Ordre d\'application + conseils',
+          "Ordre d'application + conseils",
           'Guide des ingrédients clés',
         ],
-        subtitle:    'Où dois-je vous l\'envoyer ?',
+        subtitle:    "Où dois-je vous l'envoyer ?",
         placeholder: 'vous@email.com',
         btn:         'Envoyer ma routine →',
         note:        '🔒 Uniquement pour votre routine.',
@@ -894,7 +894,6 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     wrapper.classList.add('koi-wrapper--focus-active');
 
     // Bloquear scroll — técnica robusta para iOS + desktop
-    // Guardamos la posición actual para restaurarla al cerrar
     const scrollY = window.scrollY;
     document.documentElement.classList.add('koi-scroll-locked');
     document.body.style.overflow   = 'hidden';
@@ -904,12 +903,10 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     document.body.style.right      = '0';
     document.body.style.width      = '100%';
 
-    // ── 1. Overlay rosa + card — inyectar <style> en head con máxima prioridad ──
-    // z-index: overlay = 2147483640, card = 2147483641 (card SIEMPRE encima)
+    // ── Inyectar <style> en <head> con máxima prioridad ──
     const styleTag = document.createElement('style');
     styleTag.id = 'koi-focus-style';
     styleTag.textContent =
-      /* ── OVERLAY: cubre 100% de la página, encima de todo ── */
       '#koi-focus-overlay {' +
       '  position: fixed !important;' +
       '  inset: 0 !important;' +
@@ -923,9 +920,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       '  pointer-events: auto !important;' +
       '  display: block !important;' +
       '  transform: none !important;' +
-      '  will-change: auto !important;' +
       '}' +
-      /* ── CARD: centrada, encima del overlay ── */
       '#koi-focus-card {' +
       '  position: fixed !important;' +
       '  top: 50% !important;' +
@@ -936,8 +931,6 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       '  display: flex !important;' +
       '  flex-direction: column !important;' +
       '}' +
-      /* ── El wrapper en focus-mode crea su propio stacking context
-         con z-index alto para que el overlay fixed lo cubra ── */
       '#shatokb-koi-wrapper.koi-wrapper--focus-active {' +
       '  position: relative !important;' +
       '  z-index: 1 !important;' +
@@ -945,7 +938,6 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       '  transform: none !important;' +
       '  filter: none !important;' +
       '}' +
-      /* Bajar específicamente los elementos que se asoman por encima */
       '#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-header,' +
       '#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-mini-cart-bar,' +
       '#shatokb-koi-wrapper.koi-wrapper--focus-active #koi-mini-cart-bar,' +
@@ -959,11 +951,12 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       '}';
     document.head.appendChild(styleTag);
 
+    // ── Overlay — inyectado en document.body (NO en panel) ──
     const overlay = document.createElement('div');
     overlay.id = 'koi-focus-overlay';
     document.body.appendChild(overlay);
 
-    // ── 2. Card centrada — en body, encima del overlay (z-index mayor) ──
+    // ── Card centrada — en document.body, z-index mayor que overlay ──
     const card = document.createElement('div');
     card.id        = 'koi-focus-card';
     card.className = 'koi-focus-card';
@@ -1009,7 +1002,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       if (inp && window.innerWidth > 768) inp.focus();
     }, 200 + 4 * 180 + 150);
 
-    // Helper: cerrar el focus mode (overlay + card) con animación
+    // Helper: cerrar el focus mode
     function _cerrarFocusMode () {
       const o = document.getElementById('koi-focus-overlay');
       const c = document.getElementById('koi-focus-card');
@@ -1017,7 +1010,6 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       if (c) { c.classList.add('koi-focus-card--exit');   setTimeout(() => c?.remove(), 300); }
       panel.classList.remove('koi--focus-mode');
       wrapper.classList.remove('koi-wrapper--focus-active');
-      // Restaurar scroll — leer la posición guardada en body.style.top
       const savedTop = document.body.style.top;
       document.documentElement.classList.remove('koi-scroll-locked');
       document.body.style.overflow = '';
@@ -1026,7 +1018,6 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       document.body.style.left     = '';
       document.body.style.right    = '';
       document.body.style.width    = '';
-      // Volver exactamente a donde estaba el usuario
       if (savedTop) {
         window.scrollTo(0, -parseInt(savedTop || '0', 10));
       }
@@ -1055,7 +1046,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       await revelarRutinaConKOI(email);
     }
 
-    // Skip — sin email, revelar de todas formas
+    // Skip
     function _skipFocusEmail () {
       _cerrarFocusMode();
       setInputHabilitado(true);
