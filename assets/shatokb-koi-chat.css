@@ -839,28 +839,25 @@
    Mini-cart-bar también queda encima.
    ══════════════════════════════════════════════════════════ */
 
-/* Fog blanco — div insertado en .koi-panel por JS,
-   z-index entre el contenido (1) y la card (60).
-   La card queda POR ENCIMA: opaca y sin afectar.     */
+/* Fog blanco — hijo del #shatokb-koi-wrapper (position:relative, sin overflow:hidden)
+   Cubre exactamente el panel que está debajo. La card va en el mismo wrapper
+   con z-index mayor → queda completamente opaca, sin recortes.               */
+#shatokb-koi-wrapper {
+  position: relative;
+}
+
 .koi-focus-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.80);
-  z-index: 45;
-  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.78);
+  z-index: 10;
+  border-radius: 16px;
   pointer-events: none;
   animation: koiFocusOverlayIn 0.35s ease forwards;
 }
 
 .koi-focus-overlay--exit {
   animation: koiFocusOverlayOut 0.35s ease forwards !important;
-}
-
-/* Mini-cart-bar encima del fog */
-.koi-panel.koi--focus-mode .koi-mini-cart-bar,
-.koi-panel.koi--focus-mode #koi-mini-cart-bar {
-  position: relative !important;
-  z-index: 50 !important;
 }
 
 @keyframes koiFocusOverlayIn {
@@ -870,7 +867,7 @@
   from { opacity: 1; } to { opacity: 0; }
 }
 
-/* Card centrada — z-index:60, por encima del fog (45) */
+/* Card centrada — hijo del wrapper, z-index:20 > overlay (10) */
 .koi-focus-card {
   position: absolute;
   left: 50%;
@@ -882,7 +879,7 @@
   border: 1px solid rgba(236, 149, 184, 0.35);
   border-radius: 18px;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.50);
-  z-index: 60;
+  z-index: 20;
   padding: 26px 26px 20px;
   display: flex;
   flex-direction: column;
