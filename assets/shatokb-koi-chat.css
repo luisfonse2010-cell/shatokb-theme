@@ -844,15 +844,26 @@
   min-height: 320px !important;
 }
 
-/* ── Overlay oscuro sobre el área de mensajes ────────────── */
+/* ── Overlay oscuro — cubre TODO el .koi-panel ───────────── */
+/* Se inserta directamente dentro de .koi-panel (position:relative),
+   así tapa header + messages + chips + input de una vez.
+   El mini-cart-bar queda encima gracias a su z-index:2.          */
 .koi-focus-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(28, 24, 26, 0.82);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
-  z-index: 10;
+  background: rgba(20, 16, 18, 0.88);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 30;   /* > z-index de cualquier hijo del panel (max era 2) */
+  border-radius: inherit;           /* hereda el border-radius del panel */
   animation: koiFocusOverlayIn 0.35s ease forwards;
+  pointer-events: auto;
+}
+
+/* El mini-cart-bar debe flotar POR ENCIMA del overlay */
+#shatokb-koi-wrapper #koi-mini-cart-bar,
+#shatokb-koi-wrapper .koi-mini-cart-bar {
+  z-index: 40 !important;  /* > overlay (30) */
 }
 
 .koi-focus-overlay--exit {
@@ -868,7 +879,8 @@
   to   { opacity: 0; }
 }
 
-/* ── Card centrada — flota sobre el panel ────────────────── */
+/* ── Card centrada — flota sobre el overlay ──────────────── */
+/* También vive directamente en .koi-panel, z-index > overlay  */
 .koi-focus-card {
   position: absolute;
   left: 50%;
@@ -880,7 +892,7 @@
   border: 1px solid rgba(236, 149, 184, 0.30);
   border-radius: 18px;
   box-shadow: 0 32px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(236, 149, 184, 0.08);
-  z-index: 20;
+  z-index: 35;   /* > overlay (30), < mini-cart-bar (40) */
   padding: 28px 28px 22px;
   display: flex;
   flex-direction: column;
