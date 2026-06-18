@@ -892,6 +892,14 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     panel.classList.add('koi--focus-mode');
     wrapper.classList.add('koi-wrapper--focus-active');
 
+    // ── CRÍTICO: remover transform del wrapper ──────────────────────
+    // transform:matrix() crea stacking context que atrapa position:fixed.
+    // Guardamos y removemos al abrir, restauramos al cerrar.
+    const savedTransform  = wrapper.style.transform  || '';
+    const savedWillChange = wrapper.style.willChange || '';
+    wrapper.style.transform  = 'none';
+    wrapper.style.willChange = 'auto';
+
     // Bloquear scroll — iOS + desktop
     const scrollY = window.scrollY;
     document.documentElement.classList.add('koi-scroll-locked');
@@ -968,6 +976,9 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       if (c) { c.classList.add('koi-focus-card--exit');   setTimeout(() => c && c.remove(), 300); }
       panel.classList.remove('koi--focus-mode');
       wrapper.classList.remove('koi-wrapper--focus-active');
+      // Restaurar transform
+      wrapper.style.transform  = savedTransform;
+      wrapper.style.willChange = savedWillChange;
       const savedTop = document.body.style.top;
       document.documentElement.classList.remove('koi-scroll-locked');
       document.body.style.overflow = '';
