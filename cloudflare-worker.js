@@ -18,8 +18,9 @@
  *
  * ============================================================
  */
+/* ── Last deploy: 2026-06-18T16:48:35.660Z */
 
-/* ── Last deploy: 2026-06-18T16:46:14.489Z ──
+
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
 const KOI_SYSTEM_PROMPT = `
 You are KOI.
