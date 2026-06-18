@@ -920,11 +920,13 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     backdrop.id = 'koi-page-backdrop';
     document.body.appendChild(backdrop);
 
-    // ── Blur sobre el panel — hace visible que el fondo está "atrás" ──────────
-    // El panel es oscuro por diseño (#1c181a), pero con blur el usuario
-    // percibe claramente que hay contenido detrás de la card.
+    // ── Aclarar el panel + blur para que el fondo sea visible ────────────
+    // El panel base es #1c181a (muy oscuro). Lo aclaramos temporalmente
+    // a un marrón-rosa claro para que el efecto de transparencia sea visible.
+    const _panelBgPrev         = panel.style.background;
+    panel.style.background     = '#3d2535';
     panel.style.filter         = 'blur(4px)';
-    panel.style.transition     = 'filter 0.25s ease';
+    panel.style.transition     = 'filter 0.25s ease, background 0.25s ease';
     panel.style.pointerEvents  = 'none';
 
     // Overlay dentro del .koi-panel — cubre header + mini-cart + mensajes
@@ -981,6 +983,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       if (st) st.remove();
       // Quitar blur del panel
       panel.style.filter        = '';
+      panel.style.background    = _panelBgPrev;
       panel.style.pointerEvents = '';
       // Restaurar scroll en body, html y panel
       document.body.style.overflow            = _bodyOverflowPrev;
@@ -2535,9 +2538,11 @@ async function enviarDesdeChip (texto) {
     backdrop.id = 'koi-page-backdrop';
     document.body.appendChild(backdrop);
 
-    // ── Blur sobre el panel (mismo que _inyectarFocusMode) ────────────────
+    // ── Aclarar panel + blur (mismo que _inyectarFocusMode) ───────────────
+    const _panelBgPrev        = panel.style.background;
+    panel.style.background    = '#3d2535';
     panel.style.filter        = 'blur(4px)';
-    panel.style.transition    = 'filter 0.25s ease';
+    panel.style.transition    = 'filter 0.25s ease, background 0.25s ease';
     panel.style.pointerEvents = 'none';
 
     // ── Crear card centrada flotante sobre el panel ─────────────────────────
@@ -2592,8 +2597,9 @@ async function enviarDesdeChip (texto) {
       document.body.style.overflow            = _bodyScrollPrev;
       document.documentElement.style.overflow = _htmlScrollPrev;
       panel.style.overflow                    = _panelScrollPrev;
-      // Quitar blur del panel
+      // Quitar blur del panel y restaurar background
       panel.style.filter        = '';
+      panel.style.background    = _panelBgPrev;
       panel.style.pointerEvents = '';
       // Eliminar backdrop de página
       const bg = document.getElementById('koi-page-backdrop');
