@@ -891,8 +891,8 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
 
     // Añadir clase al panel para suprimir chips + input
     panel.classList.add('koi--focus-mode');
-    document.body.style.overflow = 'hidden'; // bloquear scroll de página
     wrapper.classList.add('koi-wrapper--focus-active');
+    document.body.style.overflow = 'hidden';
 
     // ── 1. Overlay rosa — inyectar <style> en head + div en body ──
     // El <style> en head tiene máxima prioridad, no puede ser sobreescrito por nada
@@ -919,10 +919,10 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
 
     const overlay = document.createElement('div');
     overlay.id = 'koi-focus-overlay';
-    // Dentro del panel — position:absolute cubre exactamente el chat
-    panel.appendChild(overlay);
+    // En el wrapper — cubre TODO: header + barra carrito + mensajes + input
+    wrapper.appendChild(overlay);
 
-    // ── 2. Card centrada — también dentro del panel, encima del overlay ──
+    // ── 2. Card centrada — también en el wrapper, encima del overlay ──
     const card = document.createElement('div');
     card.id        = 'koi-focus-card';
     card.className = 'koi-focus-card';
