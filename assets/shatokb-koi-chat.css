@@ -841,13 +841,33 @@ html.koi-scroll-locked {
   overflow: hidden !important;
 }
 
-/* El wrapper es el contenedor del overlay y la card */
+/* Wrapper en focus mode — NO crea stacking context propio,
+   así el overlay fixed puede cubrirlo desde body */
 #shatokb-koi-wrapper.koi-wrapper--focus-active {
   position: relative !important;
-  z-index: 9999 !important;
-  /* Asegurar que el contenido no se corte */
+  z-index: 1 !important;
   overflow: visible !important;
+  isolation: auto !important;
+  transform: none !important;
+  filter: none !important;
 }
+
+/* Bajar todos los hijos internos para que el overlay fixed los tape */
+#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-header,
+#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-mini-cart-bar,
+#shatokb-koi-wrapper.koi-wrapper--focus-active #koi-mini-cart-bar {
+  z-index: 0 !important;
+  position: relative !important;
+}
+#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-panel,
+#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-messages,
+#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-input-area,
+#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-chips,
+#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-footer {
+  z-index: 0 !important;
+  position: relative !important;
+}
+
 /* El panel en focus mode NO oculta nada */
 .koi-panel.koi--focus-mode {
   overflow: visible !important;

@@ -909,22 +909,23 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     const styleTag = document.createElement('style');
     styleTag.id = 'koi-focus-style';
     styleTag.textContent =
+      /* ── OVERLAY: cubre 100% de la página, encima de todo ── */
       '#koi-focus-overlay {' +
       '  position: fixed !important;' +
       '  inset: 0 !important;' +
-      '  top: 0 !important;' +
-      '  left: 0 !important;' +
-      '  right: 0 !important;' +
-      '  bottom: 0 !important;' +
-      '  width: 100vw !important;' +
-      '  height: 100vh !important;' +
+      '  top: 0 !important; left: 0 !important;' +
+      '  right: 0 !important; bottom: 0 !important;' +
+      '  width: 100vw !important; height: 100vh !important;' +
       '  background-color: rgba(236,149,184,0.25) !important;' +
       '  backdrop-filter: blur(3px) !important;' +
       '  -webkit-backdrop-filter: blur(3px) !important;' +
       '  z-index: 2147483640 !important;' +
       '  pointer-events: auto !important;' +
       '  display: block !important;' +
+      '  transform: none !important;' +
+      '  will-change: auto !important;' +
       '}' +
+      /* ── CARD: centrada, encima del overlay ── */
       '#koi-focus-card {' +
       '  position: fixed !important;' +
       '  top: 50% !important;' +
@@ -932,6 +933,29 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       '  transform: translate(-50%, -50%) !important;' +
       '  z-index: 2147483641 !important;' +
       '  pointer-events: auto !important;' +
+      '  display: flex !important;' +
+      '  flex-direction: column !important;' +
+      '}' +
+      /* ── El wrapper en focus-mode crea su propio stacking context
+         con z-index alto para que el overlay fixed lo cubra ── */
+      '#shatokb-koi-wrapper.koi-wrapper--focus-active {' +
+      '  position: relative !important;' +
+      '  z-index: 1 !important;' +
+      '  isolation: auto !important;' +
+      '  transform: none !important;' +
+      '  filter: none !important;' +
+      '}' +
+      /* Bajar específicamente los elementos que se asoman por encima */
+      '#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-header,' +
+      '#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-mini-cart-bar,' +
+      '#shatokb-koi-wrapper.koi-wrapper--focus-active #koi-mini-cart-bar,' +
+      '#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-panel,' +
+      '#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-messages,' +
+      '#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-input-area,' +
+      '#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-chips,' +
+      '#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-footer {' +
+      '  z-index: 0 !important;' +
+      '  position: relative !important;' +
       '}';
     document.head.appendChild(styleTag);
 
