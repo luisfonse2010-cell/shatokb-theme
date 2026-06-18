@@ -217,13 +217,7 @@
           <div class="koi-header__badge">AI · shatokb</div>
         </div>
 
-        <!-- Mensajes -->
-        <div class="koi-messages" id="koi-messages"></div>
-
-        <!-- Chips de respuesta rápida -->
-        <div class="koi-chips" id="koi-chips"></div>
-
-        <!-- Mini barra de carrito — copia compacta de la barra sticky superior -->
+        <!-- Mini barra de carrito — fija debajo del header, siempre visible en mobile -->
         <div class="koi-mini-cart-bar" id="koi-mini-cart-bar">
           <div class="koi-mini-cart-bar__info">
             <span class="koi-mini-cart-bar__label" id="koi-mini-cart-label"></span>
@@ -231,6 +225,12 @@
           </div>
           <button class="koi-mini-cart-bar__btn" id="koi-mini-cart-btn"></button>
         </div>
+
+        <!-- Mensajes -->
+        <div class="koi-messages" id="koi-messages"></div>
+
+        <!-- Chips de respuesta rápida -->
+        <div class="koi-chips" id="koi-chips"></div>
 
         <!-- Input -->
         <div class="koi-input-area">
