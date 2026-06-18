@@ -839,29 +839,29 @@
    Mini-cart-bar también queda encima.
    ══════════════════════════════════════════════════════════ */
 
-/* Capa semitransparente que cubre todo el panel — deja ver el fondo */
-.koi-panel.koi--focus-mode::after {
-  content: '';
+/* Fog blanco — div insertado en .koi-panel por JS,
+   z-index entre el contenido (1) y la card (60).
+   La card queda POR ENCIMA: opaca y sin afectar.     */
+.koi-focus-overlay {
   position: absolute;
   inset: 0;
   background: rgba(255, 255, 255, 0.80);
-  z-index: 40;
+  z-index: 45;
   border-radius: inherit;
   pointer-events: none;
   animation: koiFocusOverlayIn 0.35s ease forwards;
 }
 
-/* Mini-cart-bar encima del blanco */
+.koi-focus-overlay--exit {
+  animation: koiFocusOverlayOut 0.35s ease forwards !important;
+}
+
+/* Mini-cart-bar encima del fog */
 .koi-panel.koi--focus-mode .koi-mini-cart-bar,
 .koi-panel.koi--focus-mode #koi-mini-cart-bar {
   position: relative !important;
   z-index: 50 !important;
 }
-
-/* Card encima de todo */
-
-.koi-focus-overlay { display: none; }
-.koi-focus-overlay--exit { display: none; }
 
 @keyframes koiFocusOverlayIn {
   from { opacity: 0; } to { opacity: 1; }
@@ -870,7 +870,7 @@
   from { opacity: 1; } to { opacity: 0; }
 }
 
-/* Card centrada — por encima del blanco (z-index > 40) */
+/* Card centrada — z-index:60, por encima del fog (45) */
 .koi-focus-card {
   position: absolute;
   left: 50%;
