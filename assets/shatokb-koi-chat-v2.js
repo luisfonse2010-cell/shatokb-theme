@@ -25,9 +25,8 @@
     // URL base del sitio (para construir el link del reporte)
     siteUrl:    'https://shatokb.com',
 
-    // URL de la tabla API (para guardar el reporte)
-    // ⚠️ Reemplazar con la URL real de la tabla API del proyecto
-    tableApiUrl: window.location.origin,
+    // URL de la tabla API (Genspark project — tabla skin_reports)
+    tableApiUrl: 'https://www.genspark.ai/api/v1/project/8b11bf35-e038-4848-9fe1-fffa1edac409',
 
     // Límite de mensajes en el historial (memoria de conversación)
     maxHistory: 20,
@@ -1218,8 +1217,12 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       precio:  p.precio,
       paso:    p.paso,
       id:      p.id,
+      handle:  p.handle  || '',
       momento: p.momento || 'ambos',
       razon:   p.razon   || '',
+      // Imagen: construida desde el handle de Shopify
+      imagen:  p.imagen  || (p.handle ? `https://shatokb.com/products/${p.handle}` : ''),
+      url:     p.handle  ? `https://shatokb.com/products/${p.handle}` : '',
     }));
 
     const reportData = {
@@ -1238,11 +1241,15 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       experiencia:           ctx.experiencia  || '',
       idioma:                detectarIdioma(),
       createdAt:             Date.now(),
+      // Vision analysis (GPT-4o foto) — incluye scores, zonas, mensaje_koi, ingredientes
+      visionAnalysis:        KOI_STATE.visionResult || null,
+      // URL del carrito de Shopify para el botón CTA del Skin Report
+      cartUrl:               'https://shatokb.com/cart',
     };
 
     // Llamada silenciosa al Worker — no interrumpe el flujo
-    // tableApiUrl = URL absoluta del proyecto Genspark (donde vive la tabla API)
-    const tableApiUrl = window.location.origin;
+    // tableApiUrl = URL del proyecto Genspark donde vive la tabla skin_reports
+    const tableApiUrl = KOI_CONFIG.tableApiUrl;
     fetch(KOI_CONFIG.reportUrl, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
