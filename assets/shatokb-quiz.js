@@ -4030,13 +4030,23 @@ window.shatokbRevelarProductos = function () {
 ============================================================ */
 function shatokbScrollAKOI() {
 
-  // ── Paso 1: ocultar el teaser inmediatamente ─────────────────
+  // ── Paso 1: ocultar teaser + header de la sección ───────────
+  // El teaser (#stk-blur-overlay) y el header (.stk-reveal-header)
+  // forman una unidad visual — ambos desaparecen al hacer click.
   var teaser = document.getElementById('stk-blur-overlay');
   if (teaser) {
     teaser.style.transition = 'opacity 0.25s ease';
     teaser.style.opacity    = '0';
     teaser.style.pointerEvents = 'none';
     setTimeout(function() { teaser.style.display = 'none'; }, 260);
+  }
+
+  var revealHeader = document.querySelector('#stk-reveal-section .stk-reveal-header');
+  if (revealHeader) {
+    revealHeader.style.transition = 'opacity 0.25s ease';
+    revealHeader.style.opacity    = '0';
+    revealHeader.style.pointerEvents = 'none';
+    setTimeout(function() { revealHeader.style.display = 'none'; }, 260);
   }
 
   // ── Paso 2: mostrar los productos sombreados inmediatamente ──
@@ -4056,9 +4066,9 @@ function shatokbScrollAKOI() {
     window.shatokbIniciarKOI(ctx || {});
   }
 
-  // ── Paso 4: esperar al wrapper KOI y hacer scroll hasta él ───
-  // KOI ya está insertado en #stk-reveal-section (antes de #stk-routine-blurred)
-  // Solo necesitamos hacer scroll hasta él cuando esté visible.
+  // ── Paso 4: esperar al wrapper KOI y hacer scroll rápido hasta él ─
+  // KOI se inserta DESPUÉS de #stk-routine-blurred (al final de los productos).
+  // Scroll automático y rápido hasta KOI en cuanto aparece.
   var intentos = 0;
   var MAX = 40;
 
@@ -4067,11 +4077,11 @@ function shatokbScrollAKOI() {
     var wrapper = document.getElementById('shatokb-koi-wrapper');
 
     if (wrapper) {
-      // Scroll suave hasta KOI
+      // Scroll rápido hasta KOI (behavior:'smooth' pero instant en mobile)
       setTimeout(function() {
         wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
-      console.log('[KOI] Scroll a KOI ✅');
+      }, 150);
+      console.log('[KOI] Scroll a KOI al final de productos ✅');
 
     } else if (intentos < MAX) {
       setTimeout(tick, 150);

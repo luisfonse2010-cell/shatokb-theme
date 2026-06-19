@@ -210,11 +210,12 @@
   function _insertarKOICuandoListo(wrapper) {
     // Estructura del quiz:
     //   #stk-reveal-section
-    //     .stk-reveal-header     "YOUR PERSONALIZED ROUTINE"
-    //     #stk-blur-overlay      teaser "Open my analysis"  ← insertar DESPUÉS de aquí
-    //     #stk-routine-blurred   productos borrosos         ← insertar ANTES de aquí
-    //     #shatokb-koi-wrapper   ← KOI va aquí ✅
+    //     .stk-reveal-header     "YOUR PERSONALIZED ROUTINE"  ← se oculta al click
+    //     #stk-blur-overlay      teaser "Open my analysis"    ← se oculta al click
+    //     #stk-routine-blurred   productos borrosos           ← aparecen al click
+    //     #shatokb-koi-wrapper   ← KOI va AQUÍ (al final, después de productos) ✅
     //
+    // El usuario hace click → productos aparecen → scroll automático hasta KOI abajo.
     // IMPORTANTE: el quiz escribe inner.innerHTML UNA SOLA VEZ y luego
     // no lo toca más. Así que insertar dentro de #stk-reveal-section es seguro
     // siempre que lo hagamos DESPUÉS de que el quiz haya terminado de renderizar.
@@ -222,9 +223,9 @@
     function _doInsert() {
       const blurred = document.getElementById('stk-routine-blurred');
       if (blurred && blurred.parentNode) {
-        // Insertar KOI justo ANTES de #stk-routine-blurred
-        blurred.parentNode.insertBefore(wrapper, blurred);
-        console.log('[KOI] insertado antes de #stk-routine-blurred ✅');
+        // Insertar KOI DESPUÉS de #stk-routine-blurred (al final de los productos)
+        blurred.parentNode.appendChild(wrapper);
+        console.log('[KOI] insertado después de #stk-routine-blurred (al final) ✅');
         return true;
       }
       return false;
@@ -251,7 +252,7 @@
         var resultado = document.querySelector('.shatokb-resultado__inner')
                      || document.querySelector('#shatokb-resultado');
         if (resultado) {
-          console.warn('[KOI] timeout — appending al contenedor');
+          console.warn('[KOI] timeout — appending al contenedor raíz');
           resultado.appendChild(wrapper);
         }
       }
@@ -350,14 +351,15 @@
       </div>
     `;
 
-    // Insertar justo ANTES de #stk-routine-blurred.
+    // Insertar DESPUÉS de #stk-routine-blurred (al final de los productos).
     // Si aún no existe (el quiz no terminó de renderizar), MutationObserver
-    // lo detectará en cuanto aparezca y lo moverá al lugar correcto.
+    // lo detectará en cuanto aparezca y lo añadirá al final.
     // Estructura final:
     //   stk-reveal-section
-    //     stk-koi-teaser#stk-blur-overlay  ← teaser "Open my analysis"
-    //     #shatokb-koi-wrapper             ← KOI chat aquí ✅
-    //     div.stk-routine-blurred          ← productos sombreados
+    //     .stk-reveal-header               ← se oculta al click
+    //     #stk-blur-overlay (teaser)       ← se oculta al click
+    //     div.stk-routine-blurred          ← productos sombreados (aparecen al click)
+    //     #shatokb-koi-wrapper             ← KOI al final ✅ (scroll hasta aquí)
     _insertarKOICuandoListo(wrapper);
 
     // Vincular eventos
