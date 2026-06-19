@@ -2187,17 +2187,34 @@ function _construirCardAnalisis(result, idioma) {
         </ul>
       </div>` : '';
 
-  // ── Ingredientes (hasta 4) ────────────────────────────────
-  const ingsHTML = ings.length
+  // ── Ingredientes (hasta 4) ─────────────────────────────────
+  // El Worker puede devolver ingredientes como:
+  //   A) Array de objetos: [{nombre, razon}, ...]
+  //   B) Array de strings: ["Niacinamide: Helps reduce...", ...]
+  // Normalizamos ambos formatos antes de renderizar.
+  const ingsNormalizados = ings.slice(0, 4).map(ing => {
+    if (typeof ing === 'string') {
+      // Intentar split en ': ' para separar nombre de razón
+      const colonIdx = ing.indexOf(':');
+      if (colonIdx > 0) {
+        return { nombre: ing.slice(0, colonIdx).trim(), razon: ing.slice(colonIdx + 1).trim() };
+      }
+      return { nombre: ing, razon: '' };
+    }
+    // Objeto estándar {nombre, razon}
+    return { nombre: ing.nombre || ing.name || '', razon: ing.razon || ing.reason || '' };
+  });
+
+  const ingsHTML = ingsNormalizados.length
     ? `<div class="kva-section">
         <div class="kva-section__title">${lbl.ingredientes}</div>
         <div class="kva-ingredients">
-          ${ings.slice(0, 4).map((ing, idx) => `
+          ${ingsNormalizados.map((ing, idx) => `
             <div class="kva-ingredient">
               <span class="kva-ingredient__num">${idx + 1}</span>
               <div class="kva-ingredient__body">
                 <span class="kva-ingredient__name">${ing.nombre}</span>
-                <span class="kva-ingredient__reason">${ing.razon}</span>
+                ${ing.razon ? `<span class="kva-ingredient__reason">${ing.razon}</span>` : ''}
               </div>
             </div>`).join('')}
         </div>
@@ -2211,22 +2228,49 @@ function _construirCardAnalisis(result, idioma) {
       </div>` : '';
 
   // ── Meta (edad bio + confirmación perfil) ─────────────────
-  const edadBioHTML = result.edad_biologica_estimada
+  // Normalizar edad biológica: puede venir como número, string "40", o
+  // string descriptivo "Skin appears biologically consistent with 40-45"
+  const edadBioRaw = result.edad_biologica_estimada;
+  const edadBioStr = (function() {
+    if (!edadBioRaw) return '';
+    if (typeof edadBioRaw === 'number') return edadBioRaw + ' años';
+    if (typeof edadBioRaw === 'string') {
+      // Si es solo un número o "40-45" → mostrarlo tal cual + "años"
+      if (/^\d[\d\-–]+$/.test(edadBioRaw.trim())) return edadBioRaw.trim() + ' años';
+      // Si es una frase larga → extraer el número con regex
+      const match = edadBioRaw.match(/\b(\d{2}(?:[\-–]\d{2})?)\b/);
+      if (match) return match[1] + ' años';
+      // Fallback: mostrar el string completo pero acortado
+      return edadBioRaw.length > 40 ? edadBioRaw.slice(0, 40) + '…' : edadBioRaw;
+    }
+    return '';
+  })();
+
+  const edadBioHTML = edadBioStr
     ? `<div class="kva-meta__item">
         <span class="kva-meta__icon">🔬</span>
         <div class="kva-meta__body">
           <span class="kva-meta__key">${lbl.edadBio}</span>
-          <span class="kva-meta__val">${result.edad_biologica_estimada}</span>
+          <span class="kva-meta__val">${edadBioStr}</span>
         </div>
       </div>` : '';
 
   const perfilOk = result.confirmacion_perfil;
+  // ajuste_perfil puede ser un objeto {nuevo_perfil_id:...} o un string — normalizar
+  const ajustePerfilStr = (function() {
+    const a = result.ajuste_perfil;
+    if (!a || a === 'null') return '';
+    if (typeof a === 'string') return a;
+    if (typeof a === 'object') return a.nuevo_perfil_id || a.perfil_id || JSON.stringify(a);
+    return String(a);
+  })();
+
   const perfilHTML = `<div class="kva-meta__item">
       <span class="kva-meta__icon">${perfilOk ? '✅' : '⚠️'}</span>
       <div class="kva-meta__body">
         <span class="kva-meta__key">${perfilOk ? lbl.perfil : lbl.perfilNo}</span>
-        ${!perfilOk && result.ajuste_perfil && result.ajuste_perfil !== 'null'
-          ? `<span class="kva-meta__val">${result.ajuste_perfil}</span>` : ''}
+        ${!perfilOk && ajustePerfilStr
+          ? `<span class="kva-meta__val">${ajustePerfilStr}</span>` : ''}
       </div>
     </div>`;
 
