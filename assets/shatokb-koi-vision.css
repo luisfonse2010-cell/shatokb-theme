@@ -1,16 +1,11 @@
 /**
  * ============================================================
- * SHATOKB · KOI Vision — Camera Analysis UI  v2.0
+ * SHATOKB · KOI Vision — Camera Analysis UI  v3.0
  * assets/shatokb-koi-vision.css
  *
- * Experiencia cinematográfica. Nivel que no existe en ninguna
- * tienda de K-Beauty del mundo.
- *
- * Paleta:
- *   Navy:      #0b0335
- *   Blue:      #3a7af5
- *   Pink KOI:  #ec95b8
- *   Void:      #03010a
+ * v3.0 — Óvalo SVG siempre visible + botón de captura manual
+ *        Sin overflow:hidden en viewfinder. Sin face-api.js.
+ *        Validación de luz real en canvas antes de capturar.
  * ============================================================
  */
 
@@ -26,7 +21,9 @@
   --kv-pink-glow:   rgba(236,149,184,0.40);
   --kv-blue-glow:   rgba(58,122,245,0.35);
   --kv-cyan:        #67e8f9;
-  --kv-scan:        rgba(236,149,184,0.90);
+  --kv-green:       #22c55e;
+  --kv-yellow:      #f59e0b;
+  --kv-red:         #ef4444;
   --kv-radius:      20px;
   --kv-ease-spring: cubic-bezier(0.34,1.56,0.64,1);
   --kv-ease-out:    cubic-bezier(0.25,0.46,0.45,0.94);
@@ -42,25 +39,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(ellipse at 50% 60%, rgba(11,3,53,0.85) 0%, rgba(3,1,10,0.97) 70%);
-  backdrop-filter: blur(18px) saturate(0.7);
-  -webkit-backdrop-filter: blur(18px) saturate(0.7);
+  background: radial-gradient(ellipse at 50% 60%, rgba(11,3,53,0.90) 0%, rgba(3,1,10,0.98) 70%);
+  backdrop-filter: blur(20px) saturate(0.6);
+  -webkit-backdrop-filter: blur(20px) saturate(0.6);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.5s ease;
+  transition: opacity 0.45s ease;
   padding: 16px;
   box-sizing: border-box;
-}
-
-/* Vignette ambiental que rodea el panel */
-#koi-vision-modal::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 60% 40% at 50% 100%, rgba(236,149,184,0.06) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 30% at 50% 0%,   rgba(58,122,245,0.06) 0%, transparent 60%);
-  pointer-events: none;
 }
 
 #koi-vision-modal.kv--active {
@@ -74,25 +60,25 @@
 .kv-panel {
   position: relative;
   width: 100%;
-  max-width: 500px;
-  background: linear-gradient(170deg, #0c0818 0%, #050210 100%);
+  max-width: 480px;
+  background: linear-gradient(170deg, #0d0920 0%, #060312 100%);
   border-radius: var(--kv-radius);
-  overflow: hidden;
+  border: 1px solid rgba(236,149,184,0.14);
   box-shadow:
-    0 0 0 1px rgba(236,149,184,0.12),
     0 0 0 1px rgba(58,122,245,0.06),
-    0 48px 96px rgba(0,0,0,0.80),
-    0 0 80px  rgba(236,149,184,0.06),
+    0 48px 96px rgba(0,0,0,0.85),
+    0 0 80px  rgba(236,149,184,0.07),
     0 0 160px rgba(58,122,245,0.04);
-  transform: translateY(40px) scale(0.94);
-  transition: transform 0.55s var(--kv-ease-spring);
+  transform: translateY(32px) scale(0.95);
+  transition: transform 0.50s var(--kv-ease-spring);
+  overflow: hidden;
 }
 
 #koi-vision-modal.kv--active .kv-panel {
   transform: translateY(0) scale(1);
 }
 
-/* ── Aurora border — 3 capas ── */
+/* Aurora top border */
 .kv-panel::before {
   content: '';
   position: absolute;
@@ -100,27 +86,17 @@
   height: 2px;
   background: linear-gradient(90deg,
     transparent 0%,
-    var(--kv-blue) 15%,
-    var(--kv-pink) 35%,
+    var(--kv-blue) 20%,
+    var(--kv-pink) 40%,
     #fff 50%,
-    var(--kv-pink) 65%,
-    var(--kv-blue) 85%,
+    var(--kv-pink) 60%,
+    var(--kv-blue) 80%,
     transparent 100%
   );
   background-size: 300% 100%;
   animation: kvAuroraFlow 4s linear infinite;
   z-index: 20;
   filter: blur(0.5px);
-}
-
-.kv-panel::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 60px;
-  background: linear-gradient(180deg, rgba(236,149,184,0.04) 0%, transparent 100%);
-  pointer-events: none;
-  z-index: 1;
 }
 
 @keyframes kvAuroraFlow {
@@ -135,7 +111,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 18px 14px;
+  padding: 14px 18px 12px;
   border-bottom: 1px solid rgba(255,255,255,0.05);
   position: relative;
   z-index: 5;
@@ -158,6 +134,7 @@
   font-size: 16px;
   position: relative;
   animation: kvAvatarSpin 8s linear infinite;
+  flex-shrink: 0;
 }
 
 .kv-header__avatar::before {
@@ -165,18 +142,13 @@
   position: absolute;
   inset: 2px;
   border-radius: 50%;
-  background: #0c0818;
+  background: #0d0920;
   z-index: 0;
 }
 
-.kv-header__avatar span {
-  position: relative;
-  z-index: 1;
-}
+.kv-header__avatar span { position: relative; z-index: 1; }
 
-@keyframes kvAvatarSpin {
-  to { transform: rotate(360deg); }
-}
+@keyframes kvAvatarSpin { to { transform: rotate(360deg); } }
 
 .kv-header__name {
   font-family: 'Prompt', 'Arial Black', sans-serif;
@@ -211,7 +183,7 @@
 
 @keyframes kvBadgePulse {
   0%,100% { opacity: 0.8; }
-  50%     { opacity: 1;   box-shadow: 0 0 8px rgba(103,232,249,0.30); }
+  50%     { opacity: 1; box-shadow: 0 0 8px rgba(103,232,249,0.30); }
 }
 
 .kv-close-btn {
@@ -228,6 +200,7 @@
   justify-content: center;
   transition: all 0.2s ease;
   margin-left: 10px;
+  flex-shrink: 0;
 }
 
 .kv-close-btn:hover {
@@ -236,7 +209,6 @@
   color: var(--kv-pink);
   transform: rotate(90deg);
 }
-
 
 /* ══════════════════════════════════════════════════════════
    LOADING STATE
@@ -249,23 +221,19 @@
   align-items: center;
   gap: 18px;
 }
-
 .kv-loading-state.kv--active { display: flex; }
 
-/* Spinner orbital */
 .kv-spinner {
   width: 56px;
   height: 56px;
   position: relative;
 }
-
 .kv-spinner::before,
 .kv-spinner::after {
   content: '';
   position: absolute;
   border-radius: 50%;
 }
-
 .kv-spinner::before {
   inset: 0;
   border: 2px solid transparent;
@@ -273,7 +241,6 @@
   border-right-color: var(--kv-blue);
   animation: kvSpinA 0.8s linear infinite;
 }
-
 .kv-spinner::after {
   inset: 8px;
   border: 1.5px solid transparent;
@@ -281,7 +248,6 @@
   opacity: 0.6;
   animation: kvSpinB 1.2s linear infinite reverse;
 }
-
 @keyframes kvSpinA { to { transform: rotate(360deg); } }
 @keyframes kvSpinB { to { transform: rotate(360deg); } }
 
@@ -292,689 +258,370 @@
   letter-spacing: 0.04em;
   animation: kvTextBlink 1.5s ease-in-out infinite;
 }
-
 @keyframes kvTextBlink {
   0%,100% { opacity: 0.5; }
   50%     { opacity: 1; }
 }
 
-
 /* ══════════════════════════════════════════════════════════
-   VIEWFINDER — la magia ocurre aquí
+   VIEWFINDER — sin overflow:hidden para que el SVG respire
    ══════════════════════════════════════════════════════════ */
 .kv-viewfinder {
   position: relative;
   width: 100%;
   aspect-ratio: 4/3;
   background: #000;
-  overflow: hidden;
+  /* SIN overflow:hidden — el SVG del óvalo debe verse siempre */
 }
+.kv-viewfinder.kv--active { display: block; }
 
 #koi-vision-video {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scaleX(-1);
+  transform: scaleX(-1); /* espejo — natural para selfie */
   display: block;
+  position: absolute;
+  inset: 0;
 }
 
 #koi-vision-canvas { display: none; }
 
-/* ── Overlay de efectos (sobre el vídeo) ── */
-.kv-fx-overlay {
+/* Viñeta ambiental sobre el video */
+.kv-vignette {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 5;
-  /* Viñeta suave en bordes */
-  background:
-    radial-gradient(ellipse 90% 90% at 50% 50%, transparent 60%, rgba(3,1,10,0.55) 100%);
+  z-index: 2;
+  background: radial-gradient(ellipse 85% 85% at 50% 50%,
+    transparent 55%, rgba(3,1,10,0.60) 100%);
 }
 
 /* ══════════════════════════════════════════════════════════
-   ESQUINAS SCANNER — animadas al entrar
+   ÓVALO SVG — siempre visible, encima del video
+   Usamos SVG puro: no depende de z-index sobre <video>.
+   El SVG tiene pointer-events:none y no interfiere con nada.
    ══════════════════════════════════════════════════════════ */
-.kv-corner {
-  position: absolute;
-  width: 28px;
-  height: 28px;
-  border-color: var(--kv-pink);
-  border-style: solid;
-  opacity: 0;
-  animation: kvCornerIn 0.4s var(--kv-ease-spring) forwards;
-  z-index: 9;
-}
-
-.kv-corner--tl { top: 14px; left: 14px;  border-width: 2px 0 0 2px; border-radius: 5px 0 0 0; animation-delay: 0.05s; }
-.kv-corner--tr { top: 14px; right: 14px; border-width: 2px 2px 0 0; border-radius: 0 5px 0 0; animation-delay: 0.10s; }
-.kv-corner--bl { bottom: 14px; left: 14px;  border-width: 0 0 2px 2px; border-radius: 0 0 0 5px; animation-delay: 0.15s; }
-.kv-corner--br { bottom: 14px; right: 14px; border-width: 0 2px 2px 0; border-radius: 0 0 5px 0; animation-delay: 0.20s; }
-
-@keyframes kvCornerIn {
-  0%   { opacity: 0; transform: scale(1.3); }
-  100% { opacity: 0.75; transform: scale(1); }
-}
-
-/* Brillo suave en los corners al detectar */
-.kv--detected .kv-corner {
-  opacity: 1;
-  filter: drop-shadow(0 0 4px var(--kv-pink));
-  transition: filter 0.4s ease, opacity 0.4s ease;
-}
-
-/* ══════════════════════════════════════════════════════════
-   GUÍA OVAL — face targeting
-   ══════════════════════════════════════════════════════════ */
-.kv-face-guide {
+.kv-oval-svg {
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
-  z-index: 6;
+  z-index: 10; /* siempre sobre el video */
+  overflow: visible;
 }
 
-/* Oval exterior — guía facial siempre visible */
-.kv-face-guide__oval {
-  width: 54%;
-  aspect-ratio: 3/4;
-  border: 2px solid rgba(236,149,184,0.75);
-  border-radius: 50%;
-  position: relative;
-  transition: border-color 0.5s ease, box-shadow 0.5s ease;
-  box-shadow:
-    0 0 0 1px rgba(236,149,184,0.15),
-    0 0 20px rgba(236,149,184,0.20),
-    inset 0 0 20px rgba(236,149,184,0.04);
-  animation: kvOvalBreathing 3s ease-in-out infinite;
+/* Elipse principal — rosa siempre visible */
+.kv-oval-ellipse {
+  fill: none;
+  stroke: rgba(236,149,184,0.85);
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 8px rgba(236,149,184,0.50));
+  animation: kvOvalPulse 2.8s ease-in-out infinite;
+  transition: stroke 0.5s ease, filter 0.5s ease;
 }
 
-@keyframes kvOvalBreathing {
-  0%, 100% {
-    box-shadow:
-      0 0 0 1px rgba(236,149,184,0.15),
-      0 0 20px rgba(236,149,184,0.20),
-      inset 0 0 20px rgba(236,149,184,0.04);
-  }
-  50% {
-    box-shadow:
-      0 0 0 2px rgba(236,149,184,0.10),
-      0 0 32px rgba(236,149,184,0.35),
-      inset 0 0 28px rgba(236,149,184,0.08);
-  }
+@keyframes kvOvalPulse {
+  0%,100% { filter: drop-shadow(0 0 6px rgba(236,149,184,0.40)); }
+  50%     { filter: drop-shadow(0 0 16px rgba(236,149,184,0.75)); }
 }
 
-/* Arco exterior giratorio — rosa */
-.kv-face-guide__oval::before {
-  content: '';
-  position: absolute;
-  inset: -8px;
-  border-radius: 50%;
-  border: 1.5px dashed rgba(236,149,184,0.35);
-  animation: kvOvalRotate 10s linear infinite;
+/* Estado OK — verde brillante */
+.kv-oval-svg.kv--ok .kv-oval-ellipse {
+  stroke: rgba(34,197,94,0.90);
+  filter: drop-shadow(0 0 14px rgba(34,197,94,0.65));
+  animation: kvOvalOk 1.2s ease-in-out infinite;
 }
 
-/* Arco interior giratorio — azul */
-.kv-face-guide__oval::after {
-  content: '';
-  position: absolute;
-  inset: -18px;
-  border-radius: 50%;
-  border: 1px solid transparent;
-  border-top-color: rgba(58,122,245,0.50);
-  border-right-color: rgba(58,122,245,0.20);
-  border-bottom-color: rgba(236,149,184,0.40);
-  animation: kvOvalRotate 5s linear infinite reverse;
+@keyframes kvOvalOk {
+  0%,100% { filter: drop-shadow(0 0 10px rgba(34,197,94,0.55)); }
+  50%     { filter: drop-shadow(0 0 22px rgba(34,197,94,0.90)); }
 }
 
-@keyframes kvOvalRotate {
-  to { transform: rotate(360deg); }
+/* Estado warn — amarillo (poca luz) */
+.kv-oval-svg.kv--warn .kv-oval-ellipse {
+  stroke: rgba(245,158,11,0.90);
+  filter: drop-shadow(0 0 12px rgba(245,158,11,0.55));
+  animation: none;
 }
 
-/* Estado: rostro detectado */
-.kv-face-guide__oval.kv--detected {
-  border-color: var(--kv-pink);
-  border-width: 2px;
-  box-shadow:
-    0 0 0 1px rgba(236,149,184,0.15),
-    0 0 24px rgba(236,149,184,0.45),
-    inset 0 0 30px rgba(236,149,184,0.08);
-  animation: kvOvalHeartbeat 1.4s ease-in-out infinite;
+/* Arco giratorio exterior */
+.kv-oval-arc {
+  fill: none;
+  stroke: rgba(236,149,184,0.30);
+  stroke-width: 1;
+  stroke-dasharray: 12 8;
+  animation: kvArcSpin 10s linear infinite;
+  transform-origin: 50% 50%;
 }
 
-.kv-face-guide__oval.kv--detected::before {
-  border-color: rgba(236,149,184,0.25);
+.kv-oval-svg.kv--ok .kv-oval-arc {
+  stroke: rgba(34,197,94,0.35);
   animation-duration: 4s;
 }
 
-@keyframes kvOvalHeartbeat {
-  0%,100% {
-    box-shadow:
-      0 0 0 1px rgba(236,149,184,0.15),
-      0 0 24px rgba(236,149,184,0.45),
-      inset 0 0 30px rgba(236,149,184,0.08);
-  }
-  50% {
-    box-shadow:
-      0 0 0 3px rgba(236,149,184,0.10),
-      0 0 48px rgba(236,149,184,0.70),
-      inset 0 0 40px rgba(236,149,184,0.14);
-  }
+@keyframes kvArcSpin {
+  to { transform: rotate(360deg); }
 }
 
-/* ══════════════════════════════════════════════════════════
-   FACE MESH SVG — puntos biométricos sobre el rostro
-   ══════════════════════════════════════════════════════════ */
-.kv-face-mesh {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 7;
-  opacity: 0;
-  transition: opacity 0.6s ease;
-}
-
-.kv-face-mesh.kv--active {
-  opacity: 1;
-}
-
-.kv-mesh-svg {
-  width: 100%;
-  height: 100%;
-}
-
-/* Puntos del mesh */
-.kv-mesh-point {
+/* Marcadores de los 4 puntos cardinales del óvalo */
+.kv-oval-dot {
   fill: var(--kv-pink);
-  opacity: 0;
-  animation: kvMeshPointIn 0.3s ease forwards;
+  opacity: 0.70;
+  filter: drop-shadow(0 0 3px rgba(236,149,184,0.80));
+  animation: kvDotBlink 2.8s ease-in-out infinite;
+}
+.kv-oval-dot:nth-child(2) { animation-delay: 0.7s; }
+.kv-oval-dot:nth-child(3) { animation-delay: 1.4s; }
+.kv-oval-dot:nth-child(4) { animation-delay: 2.1s; }
+
+@keyframes kvDotBlink {
+  0%,100% { opacity: 0.60; }
+  50%     { opacity: 1.00; }
 }
 
-/* Líneas del mesh */
-.kv-mesh-line {
-  stroke: rgba(236,149,184,0.25);
-  stroke-width: 0.5;
-  fill: none;
-  opacity: 0;
-  stroke-dasharray: 4 3;
-  animation: kvMeshLineIn 0.5s ease forwards;
-}
-
-/* Zonas iluminadas durante el análisis */
-.kv-mesh-zone {
-  fill: transparent;
-  stroke: none;
-  transition: fill 0.4s ease, stroke 0.4s ease;
-}
-
-.kv-mesh-zone.kv--scanning {
-  fill: rgba(236,149,184,0.06);
-  stroke: rgba(236,149,184,0.35);
-  stroke-width: 1;
-  animation: kvZoneGlow 0.8s ease-in-out infinite alternate;
-}
-
-.kv-mesh-zone.kv--done {
-  fill: rgba(58,122,245,0.05);
-  stroke: rgba(58,122,245,0.20);
-  stroke-width: 0.8;
-}
-
-@keyframes kvMeshPointIn {
-  0%   { opacity: 0; r: 0; }
-  100% { opacity: 0.7; }
-}
-
-@keyframes kvMeshLineIn {
-  0%   { opacity: 0; stroke-dashoffset: 10; }
-  100% { opacity: 1; stroke-dashoffset: 0; }
-}
-
-@keyframes kvZoneGlow {
-  0%   { fill: rgba(236,149,184,0.04); }
-  100% { fill: rgba(236,149,184,0.10); }
+.kv-oval-svg.kv--ok .kv-oval-dot {
+  fill: var(--kv-green);
+  filter: drop-shadow(0 0 4px rgba(34,197,94,0.80));
 }
 
 /* ══════════════════════════════════════════════════════════
-   GLASSES TIP — aparece sobre el viewfinder tras detectar rostro
-   ══════════════════════════════════════════════════════════ */
-.kv-glasses-tip {
-  position: absolute;
-  bottom: 52px; /* encima del HUD */
-  left: 12px;
-  right: 12px;
-  background: rgba(7, 4, 20, 0.88);
-  border: 1px solid rgba(236,149,184,0.25);
-  border-radius: 14px;
-  padding: 12px 14px;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  z-index: 12;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow:
-    0 4px 24px rgba(0,0,0,0.50),
-    0 0 0 1px rgba(236,149,184,0.08);
-  /* Oculto por defecto */
-  opacity: 0;
-  transform: translateY(12px);
-  pointer-events: none;
-  transition: opacity 0.35s ease, transform 0.35s var(--kv-ease-spring);
-}
-
-.kv-glasses-tip.kv--active {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: all;
-}
-
-/* Línea de color superior */
-.kv-glasses-tip::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 16px; right: 16px;
-  height: 1.5px;
-  background: linear-gradient(90deg, transparent, var(--kv-pink), transparent);
-  border-radius: 2px;
-}
-
-.kv-glasses-tip__icon {
-  font-size: 22px;
-  flex-shrink: 0;
-  line-height: 1;
-  margin-top: 1px;
-  filter: drop-shadow(0 0 6px rgba(236,149,184,0.40));
-}
-
-.kv-glasses-tip__body {
-  flex: 1;
-  min-width: 0;
-}
-
-.kv-glasses-tip__text {
-  font-size: 11px;
-  color: rgba(255,255,255,0.75);
-  line-height: 1.55;
-  margin-bottom: 10px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-}
-
-.kv-glasses-tip__actions {
-  display: flex;
-  gap: 7px;
-}
-
-.kv-glasses-btn {
-  flex: 1;
-  padding: 7px 10px;
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  border: none;
-  font-family: inherit;
-  letter-spacing: 0.03em;
-  transition: all 0.2s ease;
-  line-height: 1;
-}
-
-/* "Continuar con gafas" — secundario */
-.kv-glasses-btn--ok {
-  background: rgba(255,255,255,0.07);
-  color: rgba(255,255,255,0.55);
-  border: 1px solid rgba(255,255,255,0.12);
-}
-.kv-glasses-btn--ok:hover {
-  background: rgba(255,255,255,0.12);
-  color: rgba(255,255,255,0.80);
-}
-
-/* "Me las quité ✓" — primario */
-.kv-glasses-btn--remove {
-  background: rgba(236,149,184,0.15);
-  color: var(--kv-pink);
-  border: 1px solid rgba(236,149,184,0.35);
-}
-.kv-glasses-btn--remove:hover {
-  background: rgba(236,149,184,0.25);
-  border-color: rgba(236,149,184,0.60);
-  transform: translateY(-1px);
-}
-
-/* ══════════════════════════════════════════════════════════
-   LÍNEAS DE SCAN — 3 zonas simultáneas
-   ══════════════════════════════════════════════════════════ */
-.kv-scan-line {
-  position: absolute;
-  left: 0; right: 0;
-  height: 1.5px;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(236,149,184,0.4) 15%,
-    rgba(236,149,184,1) 50%,
-    rgba(236,149,184,0.4) 85%,
-    transparent 100%
-  );
-  box-shadow:
-    0 0 10px var(--kv-pink),
-    0 0 30px rgba(236,149,184,0.30),
-    0 -1px 0 rgba(236,149,184,0.15),
-    0  1px 0 rgba(236,149,184,0.15);
-  display: none;
-  pointer-events: none;
-  z-index: 8;
-}
-
-.kv-scan-line.kv--scanning {
-  display: block;
-  animation: kvScanDown 1.8s cubic-bezier(0.4,0,0.6,1) infinite;
-}
-
-/* Segunda línea — azul, offset de tiempo */
-.kv-scan-line-2 {
-  position: absolute;
-  left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(58,122,245,0.3) 15%,
-    rgba(58,122,245,0.8) 50%,
-    rgba(58,122,245,0.3) 85%,
-    transparent 100%
-  );
-  box-shadow: 0 0 8px var(--kv-blue), 0 0 20px rgba(58,122,245,0.25);
-  display: none;
-  pointer-events: none;
-  z-index: 8;
-}
-
-.kv-scan-line-2.kv--scanning {
-  display: block;
-  animation: kvScanDown 1.8s cubic-bezier(0.4,0,0.6,1) 0.9s infinite;
-}
-
-@keyframes kvScanDown {
-  0%   { top: 5%;  opacity: 0; }
-  8%   { opacity: 1; }
-  92%  { opacity: 1; }
-  100% { top: 95%; opacity: 0; }
-}
-
-/* ══════════════════════════════════════════════════════════
-   PARTÍCULAS DE DATOS FLOTANTES
-   ══════════════════════════════════════════════════════════ */
-.kv-particles {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 7;
-  display: none;
-}
-
-.kv-particles.kv--active { display: block; }
-
-.kv-particle {
-  position: absolute;
-  font-family: 'Courier New', 'SF Mono', monospace;
-  font-size: 8px;
-  font-weight: 600;
-  color: var(--kv-pink);
-  opacity: 0;
-  white-space: nowrap;
-  letter-spacing: 0.08em;
-  animation: kvParticleFloat linear infinite;
-  pointer-events: none;
-  text-shadow: 0 0 6px var(--kv-pink-glow);
-}
-
-/* Partículas azules alternas */
-.kv-particle.kv--blue {
-  color: var(--kv-cyan);
-  text-shadow: 0 0 6px rgba(103,232,249,0.40);
-}
-
-@keyframes kvParticleFloat {
-  0%   { opacity: 0;    transform: translateY(0)    translateX(0)   scale(0.8); }
-  15%  { opacity: 0.75; transform: translateY(-6px) translateX(2px) scale(1); }
-  85%  { opacity: 0.50; transform: translateY(-34px) translateX(-3px) scale(0.95); }
-  100% { opacity: 0;    transform: translateY(-45px) translateX(5px) scale(0.85); }
-}
-
-/* ══════════════════════════════════════════════════════════
-   HUD — información en tiempo real
-   ══════════════════════════════════════════════════════════ */
-.kv-hud {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  padding: 14px 16px 12px;
-  background: linear-gradient(to top, rgba(3,1,10,0.92) 0%, rgba(3,1,10,0.40) 60%, transparent 100%);
-  z-index: 9;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.kv-hud__status {
-  font-size: 11px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.65);
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.kv-hud__dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.25);
-  transition: all 0.4s ease;
-  flex-shrink: 0;
-  position: relative;
-}
-
-.kv-hud__dot.kv--live {
-  background: #22c55e;
-  box-shadow: 0 0 8px rgba(34,197,94,0.70);
-  animation: kvDotLive 1s ease-in-out infinite;
-}
-
-.kv-hud__dot.kv--live::after {
-  content: '';
-  position: absolute;
-  inset: -3px;
-  border-radius: 50%;
-  border: 1px solid rgba(34,197,94,0.35);
-  animation: kvDotRipple 1s ease-out infinite;
-}
-
-.kv-hud__dot.kv--found {
-  background: var(--kv-pink);
-  box-shadow: 0 0 12px var(--kv-pink-glow);
-}
-
-.kv-hud__dot.kv--capture {
-  background: #fff;
-  box-shadow: 0 0 16px rgba(255,255,255,0.90);
-  animation: kvDotCapture 0.3s ease infinite alternate;
-}
-
-@keyframes kvDotLive {
-  0%,100% { opacity: 1; }
-  50%     { opacity: 0.35; }
-}
-
-@keyframes kvDotRipple {
-  0%   { transform: scale(1);   opacity: 1; }
-  100% { transform: scale(2.5); opacity: 0; }
-}
-
-@keyframes kvDotCapture {
-  0%   { box-shadow: 0 0 8px rgba(255,255,255,0.60); }
-  100% { box-shadow: 0 0 24px rgba(255,255,255,1); }
-}
-
-.kv-hud__quality {
-  font-size: 10px;
-  color: var(--kv-pink);
-  font-weight: 800;
-  opacity: 0;
-  transition: opacity 0.5s ease;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  text-shadow: 0 0 8px var(--kv-pink-glow);
-}
-
-.kv-hud__quality.kv--visible { opacity: 1; }
-
-/* ══════════════════════════════════════════════════════════
-   TEXTO GUÍA
+   TEXTO GUÍA — encima del viewfinder
    ══════════════════════════════════════════════════════════ */
 .kv-guide-text {
   position: absolute;
-  top: 12px;
+  bottom: 80px; /* espacio para el botón de captura */
   left: 50%;
   transform: translateX(-50%);
-  font-size: 10px;
+  z-index: 12;
+  font-size: 12px;
   font-weight: 700;
-  color: rgba(255,255,255,0.70);
+  color: #fff;
   background: rgba(3,1,10,0.70);
-  padding: 4px 14px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 6px 16px;
   border-radius: 50px;
-  border: 1px solid rgba(255,255,255,0.10);
+  border: 1px solid rgba(236,149,184,0.25);
   white-space: nowrap;
-  z-index: 10;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  backdrop-filter: blur(6px);
-  transition: all 0.4s ease;
+  letter-spacing: 0.03em;
+  pointer-events: none;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.80);
+  transition: all 0.35s ease;
 }
 
-.kv-guide-text.kv--green {
+.kv-guide-text.kv--ok {
   color: #86efac;
-  border-color: rgba(74,222,128,0.35);
-  background: rgba(3,1,10,0.82);
-  text-shadow: 0 0 8px rgba(74,222,128,0.40);
+  border-color: rgba(34,197,94,0.40);
+  background: rgba(3,1,10,0.75);
+}
+
+.kv-guide-text.kv--warn {
+  color: #fde68a;
+  border-color: rgba(245,158,11,0.40);
 }
 
 /* ══════════════════════════════════════════════════════════
-   COUNTDOWN — sonar + número
+   BOTÓN DE CAPTURA MANUAL — el elemento central del flujo
    ══════════════════════════════════════════════════════════ */
-.kv-countdown {
+.kv-capture-btn-wrap {
   position: absolute;
-  top: 50%;
+  bottom: 14px;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   z-index: 15;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-}
-
-.kv-countdown.kv--active { display: flex; }
-
-/* Ring SVG */
-.kv-countdown__ring {
-  width: 80px;
-  height: 80px;
-  filter: drop-shadow(0 0 8px var(--kv-pink));
-}
-
-.kv-countdown__ring circle {
-  fill: none;
-  stroke-width: 2.5;
-}
-
-.kv-ring-track { stroke: rgba(255,255,255,0.08); }
-
-.kv-ring-fill {
-  stroke: var(--kv-pink);
-  stroke-linecap: round;
-  stroke-dasharray: 188;
-  stroke-dashoffset: 0;
-  transform-origin: center;
-  transform: rotate(-90deg);
-  transition: stroke-dashoffset 0.9s linear;
-}
-
-/* Número en el centro */
-.kv-countdown__num {
-  font-family: 'Prompt', 'Arial Black', sans-serif;
-  font-size: 36px;
-  font-weight: 900;
-  color: #fff;
-  line-height: 1;
-  margin-top: -72px;
-  text-shadow: 0 0 30px rgba(236,149,184,0.90);
-  position: relative;
-  z-index: 2;
-  letter-spacing: -0.02em;
-  animation: kvNumPop 0.25s var(--kv-ease-spring);
-}
-
-@keyframes kvNumPop {
-  0%   { transform: scale(1.4); opacity: 0.5; }
-  100% { transform: scale(1);   opacity: 1; }
-}
-
-/* Ondas de sonar alrededor del countdown */
-.kv-sonar {
-  position: absolute;
-  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: none;
-  z-index: 14;
 }
 
-.kv-sonar__ring {
+.kv-capture-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 28px;
+  border-radius: 50px;
+  background: rgba(236,149,184,0.18);
+  border: 1.5px solid rgba(236,149,184,0.55);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Inter', system-ui, sans-serif;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.25s var(--kv-ease-spring);
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 24px rgba(236,149,184,0.18), 0 1px 0 rgba(255,255,255,0.08) inset;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Shimmer de fondo en el botón */
+.kv-capture-btn::before {
+  content: '';
   position: absolute;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  border: 1px solid rgba(236,149,184,0.5);
-  opacity: 0;
+  inset: 0;
+  background: linear-gradient(105deg,
+    transparent 20%, rgba(255,255,255,0.10) 50%, transparent 80%);
+  background-size: 200% 100%;
+  animation: kvBtnShimmer 2.5s ease-in-out infinite;
 }
 
-.kv-sonar__ring:nth-child(1) { animation: kvSonar 2s ease-out 0.0s infinite; }
-.kv-sonar__ring:nth-child(2) { animation: kvSonar 2s ease-out 0.6s infinite; }
-.kv-sonar__ring:nth-child(3) { animation: kvSonar 2s ease-out 1.2s infinite; }
+@keyframes kvBtnShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
 
-@keyframes kvSonar {
-  0%   { transform: scale(1);   opacity: 0.5; }
-  100% { transform: scale(3.5); opacity: 0; }
+/* Ícono de cámara dentro del botón */
+.kv-capture-btn__icon {
+  font-size: 18px;
+  line-height: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.kv-capture-btn__label {
+  position: relative;
+  z-index: 1;
+}
+
+/* Estado: listo para capturar — brilla más */
+.kv-capture-btn.kv--ready {
+  background: rgba(34,197,94,0.22);
+  border-color: rgba(34,197,94,0.70);
+  box-shadow: 0 4px 28px rgba(34,197,94,0.30), 0 0 0 1px rgba(34,197,94,0.15);
+  animation: kvBtnReady 1.6s ease-in-out infinite;
+}
+
+@keyframes kvBtnReady {
+  0%,100% { box-shadow: 0 4px 24px rgba(34,197,94,0.25), 0 0 0 1px rgba(34,197,94,0.12); }
+  50%     { box-shadow: 0 4px 36px rgba(34,197,94,0.50), 0 0 0 2px rgba(34,197,94,0.25); }
+}
+
+.kv-capture-btn.kv--ready:hover {
+  transform: scale(1.04) translateY(-1px);
+  background: rgba(34,197,94,0.32);
+}
+
+/* Estado: advertencia de luz — amarillo */
+.kv-capture-btn.kv--warn {
+  background: rgba(245,158,11,0.18);
+  border-color: rgba(245,158,11,0.55);
+  box-shadow: 0 4px 24px rgba(245,158,11,0.18);
+}
+
+/* Estado: capturando — deshabilitar */
+.kv-capture-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none !important;
+  animation: none !important;
+}
+
+.kv-capture-btn:hover:not(:disabled):not(.kv--ready) {
+  background: rgba(236,149,184,0.28);
+  border-color: rgba(236,149,184,0.80);
+  transform: scale(1.03) translateY(-1px);
+  box-shadow: 0 6px 32px rgba(236,149,184,0.28);
+}
+
+.kv-capture-btn:active:not(:disabled) {
+  transform: scale(0.97);
+  transition-duration: 0.10s;
 }
 
 /* ══════════════════════════════════════════════════════════
-   FLASH DE CAPTURA — chromatic aberration
+   HUD — esquina superior izquierda del viewfinder
+   ══════════════════════════════════════════════════════════ */
+.kv-hud {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  pointer-events: none;
+}
+
+.kv-hud__status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(3,1,10,0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 4px 10px 4px 7px;
+  border-radius: 50px;
+  border: 1px solid rgba(255,255,255,0.06);
+  font-size: 10px;
+  color: rgba(255,255,255,0.75);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.kv-hud__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.kv-hud__dot.kv--live    { background: var(--kv-green);  animation: kvDotPulse 1.2s ease-in-out infinite; }
+.kv-hud__dot.kv--found   { background: var(--kv-pink);   animation: kvDotPulse 0.8s ease-in-out infinite; }
+.kv-hud__dot.kv--capture { background: var(--kv-cyan);   animation: kvDotPulse 0.4s linear infinite; }
+.kv-hud__dot.kv--warn    { background: var(--kv-yellow); animation: kvDotPulse 1.0s ease-in-out infinite; }
+
+@keyframes kvDotPulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50%     { opacity: 0.45; transform: scale(0.7); }
+}
+
+/* Indicador de luz — esquina superior derecha */
+.kv-hud__light {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(3,1,10,0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 4px 10px 4px 7px;
+  border-radius: 50px;
+  border: 1px solid rgba(255,255,255,0.06);
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.60);
+  pointer-events: none;
+  transition: color 0.35s ease, border-color 0.35s ease;
+}
+
+.kv-hud__light.kv--light-ok   { color: #86efac; border-color: rgba(34,197,94,0.25); }
+.kv-hud__light.kv--light-low  { color: #fde68a; border-color: rgba(245,158,11,0.25); }
+
+.kv-hud__light-icon { font-size: 11px; }
+
+/* ══════════════════════════════════════════════════════════
+   FLASH DE CAPTURA
    ══════════════════════════════════════════════════════════ */
 .kv-capture-flash {
   position: absolute;
   inset: 0;
-  opacity: 0;
+  z-index: 30;
   pointer-events: none;
-  z-index: 20;
-  background: radial-gradient(ellipse at 50% 50%, #ffffff 0%, var(--kv-pink) 40%, var(--kv-blue) 100%);
-  transition: opacity 0.04s ease;
+  opacity: 0;
+  background: #fff;
+  transition: opacity 0.08s ease;
 }
 
 .kv-capture-flash.kv--flash {
-  opacity: 1;
-  animation: kvFlash 0.45s ease forwards;
-}
-
-@keyframes kvFlash {
-  0%   { opacity: 1;    filter: brightness(3) saturate(0); }
-  15%  { opacity: 0.90; filter: brightness(2) saturate(0.5); }
-  40%  { opacity: 0.40; filter: brightness(1.5) saturate(1) hue-rotate(20deg); }
-  70%  { opacity: 0.15; filter: brightness(1) saturate(1); }
-  100% { opacity: 0;    filter: none; }
+  opacity: 0.92;
+  transition: opacity 0.05s ease;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -982,45 +629,24 @@
    ══════════════════════════════════════════════════════════ */
 .kv-analyzing {
   display: none;
-  background: var(--kv-bg);
-  position: relative;
-  overflow: hidden;
+  flex-direction: column;
 }
+.kv-analyzing.kv--active { display: flex; }
 
-.kv-analyzing.kv--active { display: block; }
-
-/* Glow ambiental de fondo */
-.kv-analyzing::before {
-  content: '';
-  position: absolute;
-  top: -40%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(236,149,184,0.08) 0%, transparent 70%);
-  pointer-events: none;
-  animation: kvAnalyzingGlow 3s ease-in-out infinite alternate;
-}
-
-@keyframes kvAnalyzingGlow {
-  0%   { opacity: 0.5; transform: translateX(-50%) scale(1); }
-  100% { opacity: 1;   transform: translateX(-50%) scale(1.3); }
-}
-
-/* Layout: imagen capturada a la izquierda, info a la derecha */
 .kv-analyzing-inner {
   display: flex;
+  flex-direction: column;
   gap: 0;
-  align-items: stretch;
 }
 
-/* Imagen capturada — con efecto de análisis */
+/* Imagen capturada con scanner encima */
 .kv-captured-wrap {
   position: relative;
-  width: 42%;
-  flex-shrink: 0;
+  width: 100%;
+  aspect-ratio: 4/3;
+  background: #000;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .kv-captured-img {
@@ -1028,540 +654,309 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  transform: scaleX(-1);
+  filter: saturate(0%) brightness(0.5);
+  transition: filter 0.8s ease;
   opacity: 0;
-  filter: saturate(0) brightness(0.6);
-  transform: scale(1.05);
-  transition: opacity 0.7s ease, filter 1.5s ease, transform 0.7s ease;
+  transition: opacity 0.4s ease, filter 1s ease;
 }
 
-.kv-captured-img.kv--visible {
-  opacity: 1;
-  transform: scale(1);
-}
+.kv-captured-img.kv--visible { opacity: 1; }
 
-/* ══════════════════════════════════════════════════════════
-   SCANNER CLÍNICO — Beam + Puntos biométricos + Data chips
-   ══════════════════════════════════════════════════════════ */
-
-/* Línea de barrido scanner — sube y baja infinitamente */
+/* Beam de scan sobre la foto */
 .kv-scan-beam {
   position: absolute;
-  top: -4px;
-  left: 0;
-  right: 0;
-  height: 4px;
+  left: 0; right: 0;
+  height: 3px;
   background: linear-gradient(90deg,
     transparent 0%,
-    rgba(236,149,184,0.3) 20%,
+    rgba(236,149,184,0.3) 10%,
     rgba(236,149,184,0.95) 50%,
-    rgba(58,122,245,0.95) 80%,
+    rgba(58,122,245,0.95) 50%,
+    rgba(58,122,245,0.3) 90%,
     transparent 100%
   );
-  box-shadow: 0 0 12px rgba(236,149,184,0.7), 0 0 24px rgba(58,122,245,0.4);
-  z-index: 10;
+  filter: blur(0.5px);
+  z-index: 5;
   opacity: 0;
-  transition: opacity 0.4s ease;
-  pointer-events: none;
+  top: 0;
+  box-shadow: 0 0 12px rgba(236,149,184,0.60), 0 0 4px rgba(58,122,245,0.60);
 }
 
 .kv-scan-beam.kv--active {
   opacity: 1;
-  animation: kvBeamSweep 2.4s ease-in-out infinite;
+  animation: kvBeamScan 2.2s ease-in-out infinite;
 }
 
 .kv-scan-beam.kv--complete {
-  opacity: 0;
-  background: linear-gradient(90deg, transparent, #22c55e, #86efac, #22c55e, transparent);
-  box-shadow: 0 0 20px rgba(34,197,94,0.8);
-  transition: background 0.2s ease, box-shadow 0.2s ease, opacity 0.5s ease 0.4s;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(34,197,94,0.4) 10%,
+    rgba(34,197,94,1) 50%,
+    rgba(34,197,94,1) 50%,
+    rgba(34,197,94,0.4) 90%,
+    transparent 100%
+  );
 }
 
-@keyframes kvBeamSweep {
-  0%   { top: -4px;   }
-  45%  { top: calc(100% + 4px); }
-  50%  { top: calc(100% + 4px); opacity: 0.6; }
-  55%  { top: calc(100% + 4px); }
-  100% { top: -4px;   }
+@keyframes kvBeamScan {
+  0%   { top: 0%;   opacity: 1; }
+  45%  { top: 100%; opacity: 0.8; }
+  50%  { top: 100%; opacity: 0; }
+  51%  { top: 0%;   opacity: 0; }
+  55%  { top: 0%;   opacity: 0.8; }
+  100% { top: 100%; opacity: 1; }
 }
 
-/* Puntos biométricos sobre la foto */
-.kv-bio-points {
-  position: absolute;
-  inset: 0;
-  z-index: 8;
-  pointer-events: none;
-}
-
+/* Puntos biométricos */
 .kv-bio-pt {
   position: absolute;
   width: 8px;
   height: 8px;
   border-radius: 50%;
+  background: var(--kv-pink);
+  box-shadow: 0 0 0 2px rgba(236,149,184,0.25), 0 0 8px rgba(236,149,184,0.60);
   transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.35s var(--kv-ease-spring), opacity 0.35s ease;
+  z-index: 6;
   opacity: 0;
-  transition: transform 0.4s var(--kv-ease-spring), opacity 0.3s ease;
 }
-
 .kv-bio-pt.kv--visible {
   transform: translate(-50%, -50%) scale(1);
   opacity: 1;
 }
 
-/* Colores por zona */
-.kv-bio-pt--tzone   { background: rgba(236,149,184,0.9); box-shadow: 0 0 8px rgba(236,149,184,0.8); }
-.kv-bio-pt--cheekL,
-.kv-bio-pt--cheekR  { background: rgba(58,122,245,0.9);  box-shadow: 0 0 8px rgba(58,122,245,0.8);  }
-.kv-bio-pt--eyeL,
-.kv-bio-pt--eyeR    { background: rgba(103,232,249,0.9); box-shadow: 0 0 8px rgba(103,232,249,0.8); }
-.kv-bio-pt--chin    { background: rgba(236,149,184,0.7); box-shadow: 0 0 6px rgba(236,149,184,0.6); }
-.kv-bio-pt--nose    { background: rgba(255,255,255,0.5); box-shadow: 0 0 6px rgba(255,255,255,0.4); }
-
-/* Pulso continuo en los puntos */
-.kv-bio-pt.kv--visible::after {
+.kv-bio-pt::after {
   content: '';
   position: absolute;
   inset: -4px;
   border-radius: 50%;
-  border: 1px solid currentColor;
-  opacity: 0;
-  animation: kvDotPulse 2s ease-out infinite;
+  border: 1px solid rgba(236,149,184,0.35);
+  animation: kvBioPtRing 2s ease-out infinite;
 }
 
-.kv-bio-pt--tzone::after   { border-color: rgba(236,149,184,0.6); }
-.kv-bio-pt--cheekL::after,
-.kv-bio-pt--cheekR::after  { border-color: rgba(58,122,245,0.6);  }
-.kv-bio-pt--eyeL::after,
-.kv-bio-pt--eyeR::after    { border-color: rgba(103,232,249,0.6); }
-.kv-bio-pt--chin::after,
-.kv-bio-pt--nose::after    { border-color: rgba(255,255,255,0.3); }
-
-@keyframes kvDotPulse {
-  0%   { transform: scale(1); opacity: 0.8; }
-  100% { transform: scale(2.8); opacity: 0; }
+@keyframes kvBioPtRing {
+  0%   { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(2.2); opacity: 0; }
 }
 
-/* Chips de datos sobre la foto */
+/* Chips de datos flotantes */
 .kv-scan-data {
   position: absolute;
   inset: 0;
-  z-index: 9;
+  z-index: 7;
   pointer-events: none;
 }
 
 .kv-scan-data__chip {
   position: absolute;
-  font-size: 8px;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  padding: 3px 6px;
-  border-radius: 3px;
-  font-family: 'Courier New', monospace;
-}
-
-.kv-scan-data__chip--tl {
-  top: 8px; left: 8px;
-  color: rgba(236,149,184,0.8);
-  border: 1px solid rgba(236,149,184,0.25);
-  background: rgba(0,0,0,0.5);
-  animation: kvChipBlink 1.8s ease-in-out infinite;
-}
-
-.kv-scan-data__chip--br {
-  bottom: 8px; right: 8px;
-  color: rgba(103,232,249,0.9);
-  border: 1px solid rgba(103,232,249,0.25);
-  background: rgba(0,0,0,0.6);
-  min-width: 28px;
-  text-align: center;
   font-size: 9px;
-  font-weight: 900;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--kv-cyan);
+  background: rgba(3,1,10,0.70);
+  padding: 3px 7px;
+  border-radius: 4px;
+  border: 1px solid rgba(103,232,249,0.25);
 }
+.kv-scan-data__chip--tl { top: 10px; left: 10px; }
+.kv-scan-data__chip--br { bottom: 10px; right: 10px; font-size: 11px; letter-spacing: 0; }
 
-@keyframes kvChipBlink {
-  0%, 100% { opacity: 0.7; }
-  50%       { opacity: 1;   }
-}
-
-/* Marcos de esquina sobre la foto (tipo viewfinder clínico) */
+/* Esquinas foto */
 .kv-photo-corner {
   position: absolute;
-  width: 12px;
-  height: 12px;
-  z-index: 11;
-  pointer-events: none;
+  width: 18px; height: 18px;
+  border-color: var(--kv-pink);
+  border-style: solid;
+  opacity: 0.60;
+  z-index: 8;
 }
+.kv-photo-corner--tl { top: 8px; left: 8px;    border-width: 1.5px 0 0 1.5px; border-radius: 3px 0 0 0; }
+.kv-photo-corner--tr { top: 8px; right: 8px;   border-width: 1.5px 1.5px 0 0; border-radius: 0 3px 0 0; }
+.kv-photo-corner--bl { bottom: 8px; left: 8px;  border-width: 0 0 1.5px 1.5px; border-radius: 0 0 0 3px; }
+.kv-photo-corner--br { bottom: 8px; right: 8px; border-width: 0 1.5px 1.5px 0; border-radius: 0 0 3px 0; }
 
-.kv-photo-corner--tl { top: 6px;  left: 6px;  border-top: 1.5px solid rgba(236,149,184,0.7); border-left: 1.5px solid rgba(236,149,184,0.7);   }
-.kv-photo-corner--tr { top: 6px;  right: 6px; border-top: 1.5px solid rgba(236,149,184,0.7); border-right: 1.5px solid rgba(236,149,184,0.7);  }
-.kv-photo-corner--bl { bottom: 6px; left: 6px;  border-bottom: 1.5px solid rgba(58,122,245,0.7); border-left: 1.5px solid rgba(58,122,245,0.7);  }
-.kv-photo-corner--br { bottom: 6px; right: 6px; border-bottom: 1.5px solid rgba(58,122,245,0.7); border-right: 1.5px solid rgba(58,122,245,0.7); }
-
-/* ── Header de progreso con porcentaje ── */
-.kv-analysis-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.kv-analysis-pct {
-  font-size: 13px;
-  font-weight: 900;
-  color: var(--kv-pink);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-}
-
-.kv-analysis-progress__sub {
-  font-size: 9px;
-  color: rgba(255,255,255,0.22);
-  letter-spacing: 0.06em;
-  margin-top: 6px;
-  font-style: italic;
-}
-
-/* ── Items: hacerlos más compactos con 8 en pantalla ── */
-.kv-analysis-item {
-  padding: 5px 8px;
-  gap: 7px;
-}
-
-.kv-analysis-item__icon { font-size: 11px; width: 16px; }
-.kv-analysis-item__text { font-size: 10px; }
-.kv-analysis-item__check { font-size: 10px; }
-
-/* Overlay scanlines sobre la imagen capturada */
-.kv-captured-wrap::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(236,149,184,0.03) 2px,
-    rgba(236,149,184,0.03) 4px
-  );
-  pointer-events: none;
-  z-index: 2;
-}
-
-/* Gradiente derecha sobre imagen */
-.kv-captured-wrap::before {
-  content: '';
-  position: absolute;
-  top: 0; right: 0; bottom: 0;
-  width: 40%;
-  background: linear-gradient(to right, transparent, var(--kv-bg));
-  z-index: 3;
-  pointer-events: none;
-}
-
-/* Área de info / progreso */
+/* Información de análisis */
 .kv-analyzing-info {
-  flex: 1;
-  padding: 14px 14px 14px 10px;
+  padding: 16px 20px 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  position: relative;
-  z-index: 5;
-  overflow: hidden;
+  gap: 12px;
 }
 
-.kv-analysis-items {
-  flex: 1;
-  overflow-y: auto;
-  scrollbar-width: none;
-}
-.kv-analysis-items::-webkit-scrollbar { display: none; }
-
-.kv-analysis-progress__label {
-  font-size: 10px;
-  font-weight: 800;
-  color: var(--kv-pink);
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  display: block;
-}
-
-.kv-progress-track {
-  height: 3px;
-  background: rgba(255,255,255,0.06);
-  border-radius: 50px;
-  overflow: hidden;
-  margin-bottom: 10px;
-}
-
-.kv-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--kv-blue), var(--kv-pink));
-  border-radius: 50px;
-  width: 0%;
-  transition: width 0.7s var(--kv-ease-out);
-  box-shadow: 0 0 10px rgba(236,149,184,0.60);
-}
-
-/* Items del análisis */
-.kv-analysis-items {
+.kv-analysis-progress {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
+.kv-analysis-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kv-analysis-progress__label {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.90);
+  letter-spacing: 0.04em;
+}
+
+.kv-analysis-pct {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--kv-pink);
+  font-variant-numeric: tabular-nums;
+}
+
+.kv-progress-track {
+  width: 100%;
+  height: 3px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.kv-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--kv-blue), var(--kv-pink));
+  border-radius: 2px;
+  transition: width 0.4s ease;
+  box-shadow: 0 0 8px rgba(236,149,184,0.50);
+}
+
+.kv-analysis-progress__sub {
+  font-size: 10px;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.03em;
+  margin: 0;
+}
+
+/* Items de análisis */
+.kv-analysis-items {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+
 .kv-analysis-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 7px 10px;
+  gap: 6px;
+  padding: 6px 9px;
   border-radius: 8px;
-  background: rgba(255,255,255,0.02);
+  background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.04);
-  opacity: 0.30;
-  transition: all 0.35s ease;
+  font-size: 10px;
+  color: rgba(255,255,255,0.35);
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
+
+.kv-analysis-item__icon { font-size: 13px; flex-shrink: 0; opacity: 0.5; }
+.kv-analysis-item__text { flex: 1; }
+.kv-analysis-item__check { margin-left: auto; opacity: 0; color: var(--kv-green); font-weight: 700; font-size: 10px; }
 
 .kv-analysis-item.kv--active {
-  opacity: 1;
-  background: rgba(236,149,184,0.08);
-  border-color: rgba(236,149,184,0.22);
-  transform: translateX(2px);
+  color: rgba(255,255,255,0.90);
+  background: rgba(236,149,184,0.07);
+  border-color: rgba(236,149,184,0.18);
 }
-
-.kv-analysis-item.kv--active .kv-analysis-item__text {
-  color: var(--kv-pink);
-}
+.kv-analysis-item.kv--active .kv-analysis-item__icon { opacity: 1; }
 
 .kv-analysis-item.kv--done {
-  opacity: 0.65;
-  background: rgba(34,197,94,0.04);
+  color: rgba(255,255,255,0.50);
+  background: rgba(34,197,94,0.05);
   border-color: rgba(34,197,94,0.12);
 }
-
-.kv-analysis-item.kv--done .kv-analysis-item__text {
-  color: rgba(134,239,172,0.75);
-}
-
-.kv-analysis-item__icon {
-  font-size: 12px;
-  flex-shrink: 0;
-  width: 20px;
-  text-align: center;
-}
-
-.kv-analysis-item__text {
-  font-size: 11px;
-  color: rgba(255,255,255,0.60);
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  transition: color 0.3s ease;
-}
-
-.kv-analysis-item__check {
-  margin-left: auto;
-  font-size: 11px;
-  color: #86efac;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
 .kv-analysis-item.kv--done .kv-analysis-item__check { opacity: 1; }
-
-.kv-analyzing__subtitle {
-  font-size: 11px;
-  color: rgba(255,255,255,0.30);
-  line-height: 1.5;
-}
+.kv-analysis-item.kv--done .kv-analysis-item__icon  { opacity: 0.7; }
 
 /* ══════════════════════════════════════════════════════════
-   RESULTADO PREVIEW — la revelación
+   RESULTADO PREVIEW
    ══════════════════════════════════════════════════════════ */
 .kv-result-preview {
   display: none;
-  padding: 20px 20px 22px;
-  background: var(--kv-bg);
-  position: relative;
-  overflow: hidden;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 24px 20px;
+  text-align: center;
 }
-
-.kv-result-preview.kv--active { display: block; }
-
-/* Glow de fondo en resultado */
-.kv-result-preview::before {
-  content: '';
-  position: absolute;
-  bottom: -30px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 280px;
-  height: 200px;
-  background: radial-gradient(ellipse at 50% 100%, rgba(58,122,245,0.08) 0%, transparent 70%);
-  pointer-events: none;
-}
+.kv-result-preview.kv--active { display: flex; }
 
 .kv-result-preview__title {
-  font-family: 'Prompt', 'Arial Black', sans-serif;
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--kv-pink);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  margin-bottom: 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  opacity: 0;
-  animation: kvFadeUp 0.5s ease 0.1s forwards;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.04em;
 }
 
-.kv-result-preview__title::before {
-  content: '';
-  display: block;
-  width: 12px;
-  height: 1.5px;
-  background: var(--kv-pink);
-  border-radius: 2px;
-  box-shadow: 0 0 6px var(--kv-pink-glow);
-}
-
-/* Grid de zonas */
 .kv-zones {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 7px;
-  margin-bottom: 14px;
+  gap: 8px;
+  width: 100%;
 }
 
-/* Zone card */
 .kv-zone-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border-radius: 12px;
   background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 10px;
-  padding: 10px 7px;
-  text-align: center;
+  border: 1px solid rgba(255,255,255,0.06);
   opacity: 0;
-  transform: translateY(10px) scale(0.95);
-  transition: opacity 0.45s ease, transform 0.45s var(--kv-ease-spring);
-  position: relative;
-  overflow: hidden;
+  transform: translateY(10px);
+  transition: opacity 0.4s ease, transform 0.4s var(--kv-ease-spring);
 }
+.kv-zone-card.kv--visible { opacity: 1; transform: translateY(0); }
 
-/* Línea top de color en cada zona */
-.kv-zone-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1.5px;
-  background: var(--kv-pink);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.4s ease 0.2s;
-}
-
-.kv-zone-card.kv--visible {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-}
-
-.kv-zone-card.kv--visible::before {
-  transform: scaleX(1);
-}
-
-.kv-zone-card__emoji {
-  font-size: 16px;
-  display: block;
-  margin-bottom: 5px;
-}
-
+.kv-zone-card__emoji { font-size: 20px; }
 .kv-zone-card__label {
   font-size: 9px;
-  font-weight: 800;
-  color: rgba(255,255,255,0.35);
-  text-transform: uppercase;
+  font-weight: 700;
+  color: rgba(255,255,255,0.40);
   letter-spacing: 0.08em;
-  display: block;
-  margin-bottom: 4px;
+  text-transform: uppercase;
 }
-
 .kv-zone-card__value {
   font-size: 10px;
-  font-weight: 600;
-  color: var(--kv-pink);
-  display: block;
-  line-height: 1.35;
-  opacity: 0;
-  transition: opacity 0.4s ease 0.3s;
+  color: rgba(255,255,255,0.80);
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.3;
 }
 
-.kv-zone-card.kv--visible .kv-zone-card__value {
-  opacity: 1;
-}
-
-/* CTA principal */
 .kv-result-cta {
-  width: 100%;
-  padding: 13px 20px;
-  background: linear-gradient(135deg, var(--kv-blue) 0%, #6d3acd 50%, var(--kv-pink) 100%);
-  background-size: 200% 100%;
-  border: none;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #fff;
-  cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  padding: 14px 28px;
+  border-radius: 50px;
+  background: linear-gradient(135deg, var(--kv-pink), rgba(58,122,245,0.80));
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s var(--kv-ease-spring), box-shadow 0.2s ease;
+  box-shadow: 0 4px 24px rgba(236,149,184,0.35);
   letter-spacing: 0.02em;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  box-shadow: 0 6px 24px rgba(58,122,245,0.40), 0 0 0 1px rgba(255,255,255,0.08);
-  animation: kvCtaShimmer 3s ease-in-out infinite;
-  opacity: 0;
-  animation: kvFadeUp 0.5s ease 0.6s forwards, kvCtaShimmer 3s ease-in-out 1.5s infinite;
+  width: 100%;
 }
-
 .kv-result-cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 32px rgba(58,122,245,0.55), 0 4px 16px rgba(236,149,184,0.35);
+  box-shadow: 0 8px 32px rgba(236,149,184,0.50);
 }
 
-.kv-result-cta::before {
-  content: '';
-  position: absolute;
-  top: 0; left: -100%;
-  width: 60%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
-  animation: kvCtaSweep 3s ease-in-out 2s infinite;
-}
-
-@keyframes kvCtaSweep {
-  0%,30% { left: -100%; }
-  60%    { left: 160%; }
-  100%   { left: 160%; }
-}
-
-@keyframes kvCtaShimmer {
-  0%,100% { background-position: 0% 50%; }
-  50%     { background-position: 100% 50%; }
-}
-
-/* Nota de privacidad */
 .kv-privacy-note {
-  margin-top: 10px;
   font-size: 10px;
-  color: rgba(255,255,255,0.22);
-  text-align: center;
-  letter-spacing: 0.03em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  opacity: 0;
-  animation: kvFadeUp 0.5s ease 0.8s forwards;
+  color: rgba(255,255,255,0.25);
+  letter-spacing: 0.02em;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1569,806 +964,72 @@
    ══════════════════════════════════════════════════════════ */
 .kv-error-state {
   display: none;
-  padding: 36px 24px;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 24px;
   text-align: center;
 }
+.kv-error-state.kv--active { display: flex; }
 
-.kv-error-state.kv--active { display: block; }
-
-.kv-error-state__icon {
-  font-size: 44px;
-  margin-bottom: 16px;
-  display: block;
-  filter: grayscale(0.4);
-}
-
+.kv-error-state__icon { font-size: 40px; }
 .kv-error-state__title {
-  font-family: 'Prompt', 'Arial Black', sans-serif;
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
   color: #fff;
-  margin-bottom: 10px;
 }
-
 .kv-error-state__desc {
-  font-size: 13px;
-  color: rgba(255,255,255,0.45);
+  font-size: 12px;
+  color: rgba(255,255,255,0.50);
   line-height: 1.6;
-  margin-bottom: 22px;
-  max-width: 340px;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0;
+  max-width: 320px;
 }
 
 .kv-error-alt-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
   padding: 12px 24px;
-  background: rgba(236,149,184,0.10);
-  border: 1px solid rgba(236,149,184,0.28);
-  border-radius: 8px;
+  border-radius: 50px;
+  background: rgba(236,149,184,0.12);
+  border: 1px solid rgba(236,149,184,0.35);
   color: var(--kv-pink);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
 }
-
 .kv-error-alt-btn:hover {
-  background: rgba(236,149,184,0.18);
-  border-color: rgba(236,149,184,0.50);
-  transform: translateY(-1px);
+  background: rgba(236,149,184,0.22);
+  border-color: rgba(236,149,184,0.60);
 }
 
 /* ══════════════════════════════════════════════════════════
-   ANIMACIONES UTILITARIAS
+   ANIMACIÓN DE ENTRADA DEL FLASH
    ══════════════════════════════════════════════════════════ */
-@keyframes kvFadeUp {
-  0%   { opacity: 0; transform: translateY(8px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes kvFadeIn {
+@keyframes kvFlashIn {
   0%   { opacity: 0; }
-  100% { opacity: 1; }
+  15%  { opacity: 0.90; }
+  100% { opacity: 0; }
+}
+
+.kv-capture-flash.kv--flash {
+  animation: kvFlashIn 0.45s ease-out forwards;
 }
 
 /* ══════════════════════════════════════════════════════════
-   MOBILE FULLSCREEN — cámara ocupa toda la pantalla
-   En pantallas ≤ 640px el modal y el panel son 100vw × 100vh.
-   El viewfinder crece para llenar el espacio sin el header,
-   y el ovalo se centra correctamente.
+   RESPONSIVE — pantallas pequeñas
    ══════════════════════════════════════════════════════════ */
-@media (max-width: 640px) {
-
-  /* Modal sin padding — bordes a ras de pantalla */
-  #koi-vision-modal {
-    padding: 0 !important;
-    align-items: stretch !important;
-  }
-
-  /* Panel fullscreen, sin border-radius */
-  .kv-panel {
-    max-width: 100% !important;
-    width: 100% !important;
-    height: 100% !important;
-    min-height: 100dvh !important;
-    border-radius: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-  }
-
-  /* Header compacto */
-  .kv-header {
-    padding: 12px 16px 10px !important;
-    flex-shrink: 0;
-  }
-
-  .kv-header__name    { font-size: 13px !important; }
-  .kv-header__subtitle { font-size: 9px !important; }
-
-  /* Viewfinder: ocupa todo el espacio restante de la pantalla */
-  .kv-viewfinder {
-    flex: 1 !important;
-    width: 100% !important;
-    aspect-ratio: unset !important;  /* quitar ratio fijo — que crezca libre */
-    min-height: 0 !important;
-  }
-
-  /* Video: cubre todo el viewfinder */
-  #koi-vision-video {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-  }
-
-  /* Ovalo más grande en mobile */
-  .kv-face-guide__oval {
-    width: 65% !important;
-  }
-
-  /* Texto guía más legible */
-  .kv-guide-text {
-    font-size: 11px !important;
-    top: 14px !important;
-  }
-
-  /* HUD pegado al fondo con más padding para home indicator iOS */
-  .kv-hud {
-    padding: 14px 16px 28px !important;
-  }
-
-  /* Loading state fullscreen */
-  .kv-loading-state {
-    padding: 80px 24px !important;
-  }
-
-  /* Pantalla de análisis fullscreen */
-  .kv-analyzing-inner {
-    flex-direction: column !important;
-  }
-
-  .kv-captured-wrap {
-    width: 100% !important;
-    max-height: 45vh !important;
-  }
-
-  .kv-captured-img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-  }
-
-  /* Resultado preview: scrollable si es largo */
-  .kv-result-preview {
-    padding: 16px 16px 28px !important;
-  }
-
-  /* Botón CTA más grande para tapping fácil */
-  .kv-result-cta {
-    padding: 16px 20px !important;
-    font-size: 15px !important;
-  }
+@media (max-height: 700px) {
+  .kv-panel { max-height: 95vh; overflow-y: auto; }
+  .kv-analyzing-info { padding: 10px 16px 14px; gap: 8px; }
+  .kv-analysis-items { gap: 3px; }
 }
 
-/* ══════════════════════════════════════════════════════════
-   CARD DE ANÁLISIS EN EL CHAT DE KOI
-   ══════════════════════════════════════════════════════════ */
-.koi-vision-card {
-  background: rgba(236,149,184,0.06);
-  border: 1px solid rgba(236,149,184,0.18);
-  border-radius: 12px;
-  padding: 14px;
-  margin-top: 12px;
-  position: relative;
-  overflow: hidden;
-}
-
-.koi-vision-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1.5px;
-  background: linear-gradient(90deg, var(--kv-blue), var(--kv-pink));
-}
-
-.koi-vision-card__header {
-  font-size: 10px;
-  font-weight: 800;
-  color: var(--kv-pink);
-  text-transform: uppercase;
-  letter-spacing: 0.10em;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.koi-vision-card__zone {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 6px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  font-size: 12px;
-  color: rgba(255,255,255,0.75);
-  line-height: 1.4;
-}
-
-.koi-vision-card__zone:last-child { border-bottom: none; }
-
-.koi-vision-card__zone-pin { flex-shrink: 0; }
-
-.koi-vision-card__zone-label {
-  color: rgba(255,255,255,0.40);
-  font-weight: 700;
-  font-size: 11px;
-}
-
-.koi-vision-card__zone-text { flex: 1; }
-
-/* ══════════════════════════════════════════════════════════
-   KOI TIP — Momento 1 quiz
-   ══════════════════════════════════════════════════════════ */
-.shatokb-koi-tip {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 14px 16px;
-  background: linear-gradient(135deg, rgba(11,3,53,0.06), rgba(58,122,245,0.04));
-  border: 1px solid rgba(58,122,245,0.14);
-  border-left: 3px solid var(--kv-blue);
-  border-radius: 10px;
-  margin-bottom: 16px;
-  opacity: 0;
-  animation: kvFadeUp 0.45s var(--kv-ease-spring) 0.35s forwards;
-}
-
-.shatokb-koi-tip__avatar {
-  font-size: 18px;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-.shatokb-koi-tip__name {
-  font-size: 10px;
-  font-weight: 800;
-  color: var(--kv-blue);
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  margin-bottom: 4px;
-}
-
-.shatokb-koi-tip__text {
-  font-size: 13px;
-  color: rgba(11,3,53,0.75);
-  line-height: 1.55;
-}
-
-.shatokb-koi-tip__text em {
-  font-style: normal;
-  font-weight: 700;
-  color: var(--kv-blue);
-}
-
-/* ══════════════════════════════════════════════════════════
-   CHIP DE CÁMARA — shimmer
-   ══════════════════════════════════════════════════════════ */
-.koi-chip--camera {
-  position: relative;
-  overflow: hidden;
-}
-
-.koi-chip--camera::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -80%;
-  width: 60%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
-  animation: kvChipShimmer 2.8s ease-in-out 1.2s infinite;
-  pointer-events: none;
-}
-
-@keyframes kvChipShimmer {
-  0%,35% { left: -80%; opacity: 0; }
-  40%    { opacity: 1; }
-  65%    { left: 160%; opacity: 0; }
-  100%   { left: 160%; opacity: 0; }
-}
-
-/* ══════════════════════════════════════════════════════════
-   VISION ANALYSIS CARD EN EL CHAT — kva-*
-   Card de análisis avanzado (8 dimensiones) que KOI
-   renderiza en el chat después del módulo de cámara.
-   ══════════════════════════════════════════════════════════ */
-
-.kva-card {
-  background: linear-gradient(160deg, #0c0818 0%, #07040e 100%);
-  border: 1px solid rgba(236,149,184,0.18);
-  border-radius: 16px;
-  overflow: hidden;
-  margin: 10px 0 6px;
-  font-family: 'Arimo', system-ui, sans-serif;
-  position: relative;
-  width: 100%;
-}
-
-.kva-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg,
-    transparent 0%, #3a7af5 20%, #ec95b8 50%, #3a7af5 80%, transparent 100%
-  );
-  background-size: 200% 100%;
-  animation: kvaAurora 4s linear infinite;
-}
-
-@keyframes kvaAurora {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-.kva-card__header {
-  padding: 12px 16px 10px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.kva-card__badge {
-  font-size: 10px;
-  font-weight: 800;
-  color: #ec95b8;
-  background: rgba(236,149,184,0.10);
-  border: 1px solid rgba(236,149,184,0.20);
-  border-radius: 4px;
-  padding: 2px 6px;
-  letter-spacing: 0.06em;
-  flex-shrink: 0;
-}
-
-.kva-card__title {
-  font-size: 12px;
-  font-weight: 800;
-  color: rgba(255,255,255,0.82);
-  letter-spacing: 0.04em;
-}
-
-/* ══════════════════════════════════════════════════════════
-   SCORE GLOBAL — Hero section con gauge SVG
-   ══════════════════════════════════════════════════════════ */
-.kva-score-global {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px 18px;
-  background: linear-gradient(135deg, rgba(58,122,245,0.07) 0%, rgba(236,149,184,0.06) 100%);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  position: relative;
-  overflow: hidden;
-}
-
-.kva-score-global::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 20% 50%, rgba(58,122,245,0.08) 0%, transparent 65%);
-  pointer-events: none;
-}
-
-.kva-sg__gauge-wrap {
-  position: relative;
-  flex-shrink: 0;
-  width: 88px;
-  height: 88px;
-}
-
-.kva-sg__svg {
-  display: block;
-  transform: rotate(-90deg);
-}
-
-.kva-sg__number {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  font-weight: 900;
-  letter-spacing: -0.03em;
-  line-height: 1;
-  padding-bottom: 10px;
-}
-
-.kva-sg__denom {
-  position: absolute;
-  bottom: 18px;
-  left: 0; right: 0;
-  text-align: center;
-  font-size: 9px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.28);
-  letter-spacing: 0.04em;
-}
-
-.kva-sg__right {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-
-.kva-sg__label {
-  font-size: 9px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.28);
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-}
-
-.kva-sg__grade {
-  font-size: 28px;
-  font-weight: 900;
-  letter-spacing: -0.04em;
-  line-height: 1;
-}
-
-.kva-sg__sublabel {
-  font-size: 11px;
-  font-weight: 600;
-  color: rgba(255,255,255,0.52);
-  line-height: 1.4;
-  margin-top: 2px;
-}
-
-/* ── Secciones ── */
-.kva-section {
-  padding: 12px 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-.kva-section:last-child { border-bottom: none; }
-
-.kva-section__title {
-  font-size: 9px;
-  font-weight: 800;
-  color: rgba(255,255,255,0.28);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  margin-bottom: 10px;
-}
-
-/* ── Zonas ── */
-.kva-zones-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-}
-
-.kva-zone {
-  display: flex;
-  align-items: flex-start;
-  gap: 7px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 8px;
-  padding: 7px 9px;
-}
-
-.kva-zone__emoji { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
-
-.kva-zone__info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-
-.kva-zone__label {
-  font-size: 9px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.28);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.kva-zone__val {
-  font-size: 11px;
-  font-weight: 600;
-  color: #ec95b8;
-  line-height: 1.3;
-}
-
-/* ── Dimensiones ── */
-.kva-dims-grid { display: flex; flex-direction: column; gap: 10px; }
-
-.kva-dim { display: flex; flex-direction: column; gap: 3px; }
-
-.kva-dim__top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.kva-dim__name {
-  font-size: 11px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.72);
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.kva-dim__icon {
-  font-size: 12px;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.kva-dim__score {
-  font-size: 11px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-
-.kva-score-bar {
-  height: 3px;
-  background: rgba(255,255,255,0.07);
-  border-radius: 50px;
-  overflow: hidden;
-}
-
-.kva-score-fill {
-  height: 100%;
-  border-radius: 50px;
-  transition: width 0.9s cubic-bezier(0.4,0,0.2,1);
-}
-
-.kva-dim__label {
-  font-size: 10px;
-  font-weight: 600;
-  color: rgba(255,255,255,0.40);
-  font-style: italic;
-}
-
-.kva-dim__detail {
-  font-size: 11px;
-  color: rgba(255,255,255,0.52);
-  line-height: 1.55;
-}
-
-/* ── Findings ── */
-.kva-findings { list-style: none; display: flex; flex-direction: column; gap: 6px; padding: 0; margin: 0; }
-
-.kva-finding {
-  display: flex;
-  align-items: flex-start;
-  gap: 7px;
-  font-size: 12px;
-  color: rgba(255,255,255,0.68);
-  line-height: 1.5;
-}
-
-.kva-finding__arrow { color: #ec95b8; flex-shrink: 0; font-weight: 700; margin-top: 1px; }
-
-/* ── Ingredientes ── */
-.kva-ingredients { display: flex; flex-direction: column; gap: 7px; }
-
-.kva-ingredient {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  background: rgba(58,122,245,0.06);
-  border: 1px solid rgba(58,122,245,0.14);
-  border-radius: 8px;
-  padding: 8px 10px;
-  transition: background 0.2s ease;
-}
-
-.kva-ingredient:hover {
-  background: rgba(58,122,245,0.10);
-}
-
-.kva-ingredient__num {
-  flex-shrink: 0;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: rgba(58,122,245,0.18);
-  border: 1px solid rgba(58,122,245,0.28);
-  font-size: 9px;
-  font-weight: 900;
-  color: #93c5fd;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 1px;
-}
-
-.kva-ingredient__body {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.kva-ingredient__name {
-  display: block;
-  font-size: 11px;
-  font-weight: 800;
-  color: #93c5fd;
-  letter-spacing: 0.04em;
-}
-
-.kva-ingredient__reason {
-  display: block;
-  font-size: 11px;
-  color: rgba(255,255,255,0.52);
-  line-height: 1.5;
-}
-
-/* ── Protocolo urgente ── */
-.kva-protocolo {
-  padding: 12px 16px;
-  background: rgba(236,149,184,0.05);
-  border-top: 1px solid rgba(236,149,184,0.12);
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-}
-
-.kva-protocolo__label {
-  font-size: 10px;
-  font-weight: 800;
-  color: #ec95b8;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  margin-bottom: 5px;
-}
-
-.kva-protocolo__text {
-  font-size: 12px;
-  color: rgba(255,255,255,0.68);
-  line-height: 1.6;
-  margin: 0;
-}
-
-/* ── Meta (edad bio + perfil) ── */
-.kva-meta {
-  padding: 10px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  background: rgba(255,255,255,0.015);
-  border-top: 1px solid rgba(255,255,255,0.05);
-}
-
-.kva-meta__item {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.kva-meta__icon {
-  font-size: 13px;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-.kva-meta__body {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
-}
-
-.kva-meta__key  {
-  font-size: 10px;
-  color: rgba(255,255,255,0.30);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-.kva-meta__val  {
-  font-size: 11px;
-  color: rgba(255,255,255,0.62);
-  font-weight: 500;
-  line-height: 1.4;
-}
-
-/* ══════════════════════════════════════════════════════════
-   RESPONSIVE — MOBILE FULLSCREEN
-   ══════════════════════════════════════════════════════════ */
-@media (max-width: 640px) {
-
-  /* Modal ocupa toda la pantalla — sin márgenes, sin padding */
-  #koi-vision-modal {
-    padding: 0;
-    align-items: stretch;
-    justify-content: stretch;
-  }
-
-  /* Panel = 100% de la pantalla, sin border-radius */
-  .kv-panel {
-    max-width: 100%;
-    width: 100%;
-    height: 100%;
-    min-height: 100dvh;   /* dynamic viewport height — evita el problema de la barra del navegador */
-    border-radius: 0;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* Viewfinder ocupa todo el espacio restante */
-  .kv-viewfinder {
-    flex: 1;
-    min-height: 0;
-  }
-
-  .kv-viewfinder video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  /* Header más compacto */
-  .kv-header {
-    padding: 12px 16px 10px;
-  }
-
-  /* Pantalla de análisis también fullscreen */
-  .kv-analyzing {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-  .kv-analyzing.kv--active {
-    display: flex;
-  }
-
-  .kv-analyzing-inner {
-    flex: 1;
-    flex-direction: column;
-  }
-
-  /* Foto capturada — ocupa la mitad superior */
-  .kv-captured-wrap {
-    width: 100%;
-    height: 45vw;
-    max-height: 260px;
-    flex-shrink: 0;
-  }
-
-  .kv-captured-wrap::before {
-    top: auto;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    height: 40%;
-    background: linear-gradient(to bottom, transparent, var(--kv-bg));
-  }
-
-  /* Info/progreso — mitad inferior */
-  .kv-analyzing-info {
-    flex: 1;
-    padding: 12px 14px;
-    overflow-y: auto;
-  }
-
-  /* Items de análisis más compactos en mobile */
-  .kv-analysis-item {
-    padding: 5px 8px;
-  }
-
-  .kv-analysis-item__text {
-    font-size: 10px;
-  }
-
-  /* Resultado preview */
-  .kv-result-preview {
-    padding: 16px;
-  }
-
-  .kv-zones {
-    gap: 5px;
-  }
-
-  .kv-zone-card {
-    padding: 8px 5px;
-  }
-
-  .kv-zone-card__value {
-    font-size: 9px;
-  }
-
-  /* Countdown */
-  .kv-countdown__num {
-    font-size: 30px;
-  }
-
-  /* Error state */
-  .kv-error-state {
-    padding: 40px 24px;
-  }
+@media (max-width: 400px) {
+  .kv-capture-btn { padding: 12px 20px; font-size: 13px; }
+  .kv-guide-text  { font-size: 11px; bottom: 72px; }
+  .kv-zones       { grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
 }
