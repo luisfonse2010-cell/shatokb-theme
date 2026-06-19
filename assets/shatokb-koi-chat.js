@@ -853,10 +853,10 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
         checks: [
           'Routine AM/PM personnalisée',
           'Pourquoi chaque produit a été choisi',
-          'Ordre d\'application + conseils',
+          "Ordre d'application + conseils",
           'Guide des ingrédients clés',
         ],
-        subtitle:    'Où dois-je vous l\'envoyer ?',
+        subtitle:    "Où dois-je vous l'envoyer ?",
         placeholder: 'vous@email.com',
         btn:         'Envoyer ma routine →',
         note:        '🔒 Uniquement pour votre routine.',
@@ -907,67 +907,74 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     };
     const lbl = LABELS[idioma] || LABELS['en'];
 
-    // OVERLAY: va dentro de .koi-panel (position:absolute inset:0)
-    // → cubre TODA la superficie del panel (header + mini-cart + mensajes)
-    // → z-index:10 supera el header (z-index:1) y el mini-cart-bar (z-index:2)
-    // → overflow:hidden del .koi-panel atrapa el overlay → el chat no puede scrollear
-    // CARD: va en document.body (position:fixed centrada en viewport)
-    // → escapa del transform:matrix() del wrapper
-    // → z-index:2147483647 → siempre encima de todo
+    // Añadir clase al panel para suprimir chips + input
+    panel.classList.add('koi--focus-mode');
+    wrapper.classList.add('koi-wrapper--focus-active');
+
+    // Bloquear scroll — técnica robusta para iOS + desktop
+    const scrollY = window.scrollY;
+    document.documentElement.classList.add('koi-scroll-locked');
+    document.body.style.overflow   = 'hidden';
+    document.body.style.position   = 'fixed';
+    document.body.style.top        = `-${scrollY}px`;
+    document.body.style.left       = '0';
+    document.body.style.right      = '0';
+    document.body.style.width      = '100%';
+
+    // ── Inyectar <style> en <head> con máxima prioridad ──
     const styleTag = document.createElement('style');
     styleTag.id = 'koi-focus-style';
     styleTag.textContent =
-      '#koi-focus-overlay{position:absolute!important;inset:0!important;top:0!important;left:0!important;width:100%!important;height:100%!important;background:rgba(236,149,184,0.18)!important;z-index:10!important;pointer-events:auto!important;display:block!important;border-radius:inherit!important;}' +
-      '#koi-focus-card{position:fixed!important;top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;z-index:2147483647!important;pointer-events:auto!important;display:flex!important;flex-direction:column!important;width:calc(100vw - 40px)!important;max-width:440px!important;background:#1c181a!important;border:1px solid rgba(236,149,184,0.35)!important;border-radius:18px!important;box-shadow:0 24px 64px rgba(0,0,0,0.75)!important;padding:26px 26px 20px!important;gap:16px!important;box-sizing:border-box!important;}' +
-      '#koi-page-backdrop{position:fixed!important;inset:0!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;background:rgba(236,149,184,0.18)!important;z-index:2147483640!important;pointer-events:auto!important;}';
+      '#koi-focus-overlay {' +
+      '  position: fixed !important;' +
+      '  inset: 0 !important;' +
+      '  top: 0 !important; left: 0 !important;' +
+      '  right: 0 !important; bottom: 0 !important;' +
+      '  width: 100vw !important; height: 100vh !important;' +
+      '  background-color: rgba(236,149,184,0.25) !important;' +
+      '  backdrop-filter: blur(3px) !important;' +
+      '  -webkit-backdrop-filter: blur(3px) !important;' +
+      '  z-index: 2147483640 !important;' +
+      '  pointer-events: auto !important;' +
+      '  display: block !important;' +
+      '  transform: none !important;' +
+      '}' +
+      '#koi-focus-card {' +
+      '  position: fixed !important;' +
+      '  top: 50% !important;' +
+      '  left: 50% !important;' +
+      '  transform: translate(-50%, -50%) !important;' +
+      '  z-index: 2147483641 !important;' +
+      '  pointer-events: auto !important;' +
+      '  display: flex !important;' +
+      '  flex-direction: column !important;' +
+      '}' +
+      '#shatokb-koi-wrapper.koi-wrapper--focus-active {' +
+      '  position: relative !important;' +
+      '  z-index: 1 !important;' +
+      '  isolation: auto !important;' +
+      '  transform: none !important;' +
+      '  filter: none !important;' +
+      '}' +
+      '#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-header,' +
+      '#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-mini-cart-bar,' +
+      '#shatokb-koi-wrapper.koi-wrapper--focus-active #koi-mini-cart-bar,' +
+      '#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-panel,' +
+      '#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-messages,' +
+      '#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-input-area,' +
+      '#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-chips,' +
+      '#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-footer {' +
+      '  z-index: 0 !important;' +
+      '  position: relative !important;' +
+      '}';
     document.head.appendChild(styleTag);
 
-    // ── Bloquear scroll: página exterior + panel del chat ────────────────────
-    // Evita que el usuario scrollee el fondo de Shopify o el chat.
-    // Se bloquea tanto <html> como <body> porque distintos temas Shopify
-    // usan uno u otro como scroll root.
-    const _bodyOverflowPrev  = document.body.style.overflow;
-    const _htmlOverflowPrev  = document.documentElement.style.overflow;
-    const _panelOverflowPrev = panel.style.overflow;
-    document.body.style.overflow            = 'hidden';
-    document.documentElement.style.overflow = 'hidden';
-    panel.style.overflow                    = 'hidden';
-
-    // ── Backdrop de página completa (position:fixed cubre todo el viewport) ──
-    const backdrop = document.createElement('div');
-    backdrop.id = 'koi-page-backdrop';
-    document.body.appendChild(backdrop);
-
-    // ── Overlay dentro del .koi-panel — color vino + blur sobre TODO el panel ──
-    // position:absolute inset:0 cubre cada píxel del panel (header, mini-cart,
-    // mensajes). El color #3e2b32 con backdrop-filter:blur desenfoca el contenido
-    // del panel visible detrás de la card. z-index:10 supera header(1) y cart(2).
+    // ── Overlay — inyectado en document.body (NO en panel) ──
     const overlay = document.createElement('div');
     overlay.id = 'koi-focus-overlay';
-    // ── Color DIRECTO en el elemento via style inline ─────────────────────────
-    // El diagnóstico confirmó: el CSS del styleTag no llega (Shopify cachea el JS
-    // viejo). Usar style.setProperty con !important directamente en el elemento
-    // es la única forma garantizada de superar cualquier CSS existente.
-    overlay.style.setProperty('position',   'absolute',                   'important');
-    overlay.style.setProperty('inset',      '0',                          'important');
-    overlay.style.setProperty('width',      '100%',                       'important');
-    overlay.style.setProperty('height',     '100%',                       'important');
-    overlay.style.setProperty('background', 'rgba(236,149,184,0.25)',     'important');
-    overlay.style.setProperty('z-index',    '10',                         'important');
-    overlay.style.setProperty('pointer-events', 'auto',                   'important');
-    overlay.style.setProperty('display',    'block',                      'important');
-    panel.appendChild(overlay);
+    document.body.appendChild(overlay);
 
-    // ── Color vino en .koi-panel directamente ─────────────────────────────
-    // El panel tiene bg rgb(28,24,26). Lo cambiamos a vino para que el overlay
-    // semitransparente encima se vea diferente al negro.
-    panel.style.setProperty('background', '#3e2b32', 'important');
-    panel.style.setProperty('background-color', '#3e2b32', 'important');
-
-    const messages = document.getElementById('koi-messages');
-    const header   = document.querySelector('#shatokb-koi-wrapper .koi-header');
-
-    // Card → document.body (no al wrapper) para escapar del transform:matrix()
+    // ── Card centrada — en document.body, z-index mayor que overlay ──
     const card = document.createElement('div');
     card.id        = 'koi-focus-card';
     card.className = 'koi-focus-card';
@@ -984,7 +991,14 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
         <p class="koi-focus-card__ask">${lbl.subtitle}</p>
       </div>
       <div class="koi-focus-card__form">
-        <input type="email" id="koi-focus-email-input" class="koi-focus-card__input" placeholder="${lbl.placeholder}" autocomplete="email" inputmode="email"/>
+        <input
+          type="email"
+          id="koi-focus-email-input"
+          class="koi-focus-card__input"
+          placeholder="${lbl.placeholder}"
+          autocomplete="email"
+          inputmode="email"
+        />
         <button class="koi-focus-card__btn" id="koi-focus-email-btn">${lbl.btn}</button>
       </div>
       <div class="koi-focus-card__footer">
@@ -992,38 +1006,44 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
         <button class="koi-focus-card__skip" id="koi-focus-skip">${lbl.skip}</button>
       </div>
     `;
-    document.body.appendChild(card); // body, no wrapper — escapa del transform:matrix()
+    document.body.appendChild(card);
 
+    // Animar checkmarks con stagger
     const checkEls = card.querySelectorAll('.koi-envelope__check');
     checkEls.forEach((el, i) => {
       setTimeout(() => el.classList.add('koi-envelope__check--visible'), 200 + i * 180);
     });
 
+    // Foco automático en desktop
     setTimeout(() => {
       const inp = document.getElementById('koi-focus-email-input');
       if (inp && window.innerWidth > 768) inp.focus();
     }, 200 + 4 * 180 + 150);
 
+    // Helper: cerrar el focus mode
     function _cerrarFocusMode () {
-      const o  = document.getElementById('koi-focus-overlay');
-      const c  = document.getElementById('koi-focus-card');
-      const bg = document.getElementById('koi-page-backdrop');
-      if (o)  o.remove();
-      if (c)  c.remove();
-      if (bg) bg.remove();
+      const o = document.getElementById('koi-focus-overlay');
+      const c = document.getElementById('koi-focus-card');
+      if (o) { o.classList.add('koi-focus-overlay--exit'); setTimeout(() => o?.remove(), 350); }
+      if (c) { c.classList.add('koi-focus-card--exit');   setTimeout(() => c?.remove(), 300); }
+      panel.classList.remove('koi--focus-mode');
+      wrapper.classList.remove('koi-wrapper--focus-active');
+      const savedTop = document.body.style.top;
+      document.documentElement.classList.remove('koi-scroll-locked');
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top      = '';
+      document.body.style.left     = '';
+      document.body.style.right    = '';
+      document.body.style.width    = '';
+      if (savedTop) {
+        window.scrollTo(0, -parseInt(savedTop || '0', 10));
+      }
       const st = document.getElementById('koi-focus-style');
       if (st) st.remove();
-      // Restaurar panel, mensajes y header
-      panel.style.removeProperty('background');
-      panel.style.removeProperty('background-color');
-      if (messages) messages.style.removeProperty('background');
-      if (header)   header.style.removeProperty('background');
-      // Restaurar scroll en body, html y panel
-      document.body.style.overflow            = _bodyOverflowPrev;
-      document.documentElement.style.overflow = _htmlOverflowPrev;
-      panel.style.overflow                    = _panelOverflowPrev;
     }
 
+    // Confirmar email
     async function _confirmarFocusEmail () {
       const inp = document.getElementById('koi-focus-email-input');
       const btn = document.getElementById('koi-focus-email-btn');
@@ -1044,12 +1064,14 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       await revelarRutinaConKOI(email);
     }
 
+    // Skip
     function _skipFocusEmail () {
       _cerrarFocusMode();
       setInputHabilitado(true);
       revelarRutinaConKOI('');
     }
 
+    // Eventos
     const inp = document.getElementById('koi-focus-email-input');
     const btn = document.getElementById('koi-focus-email-btn');
     const skip = document.getElementById('koi-focus-skip');
