@@ -1867,7 +1867,11 @@ async function manejarResultadoVision (data) {
                             document.getElementById('shatokb-koi-messages') ||
                             bubble?.parentElement;
       if (chatContainer) {
-        chatContainer.appendChild(cardEl);
+        // Envolver la card en un mensaje KOI para que herede el layout del chat
+        const cardWrapper = document.createElement('div');
+        cardWrapper.className = 'koi-msg koi-msg--koi koi-msg--card';
+        cardWrapper.appendChild(cardEl);
+        chatContainer.appendChild(cardWrapper);
         _animarCardEntrada(cardEl);
       }
     }
