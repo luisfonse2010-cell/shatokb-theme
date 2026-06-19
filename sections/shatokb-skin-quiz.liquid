@@ -67,35 +67,40 @@
   /* ── Wrapper con fondo orgánico ─────────────────── */
   .stk-hook-wrap {
     position: relative;
-    max-width: 700px;
-    margin: 0 auto 60px;
-    padding: 64px 32px 56px;
+    max-width: 900px;         /* más ancho para que el fondo sea horizontal */
+    margin: 0 auto 28px;        /* menos margen abajo → sube el título un 40% */
+    padding: 56px 32px 48px;
     text-align: center;
     overflow: hidden;
-    /* fondo suave como el interior de la primera card */
-    background: radial-gradient(ellipse 80% 70% at 50% 40%,
-      rgba(245,160,187,0.13) 0%,
-      rgba(192,132,252,0.07) 50%,
-      transparent 100%);
-    border-radius: 0; /* sin borde */
+    /* Franja horizontal rosa que se difumina en los bordes izq/der */
+    background:
+      linear-gradient(to right,
+        transparent 0%,
+        rgba(245,160,187,0.11) 15%,
+        rgba(245,160,187,0.15) 50%,
+        rgba(245,160,187,0.11) 85%,
+        transparent 100%);
+    border-radius: 0;
   }
 
-  /* Orbe rosa — fondo izquierdo */
+  /* Orbe rosa izquierdo — alargado horizontalmente, se difumina */
   .stk-hook-orb-1 {
     position: absolute;
-    top: -40px; left: -60px;
-    width: 260px; height: 260px;
-    background: radial-gradient(circle, rgba(245,160,187,0.22) 0%, transparent 70%);
+    top: 50%; left: -80px;
+    transform: translateY(-50%);
+    width: 320px; height: 180px;
+    background: radial-gradient(ellipse, rgba(245,160,187,0.28) 0%, transparent 70%);
     border-radius: 50%;
     pointer-events: none;
     animation: stk-glow-pulse 4s ease-in-out infinite;
   }
-  /* Orbe violeta — fondo derecho */
+  /* Orbe rosa derecho — espejo del izquierdo */
   .stk-hook-orb-2 {
     position: absolute;
-    bottom: -30px; right: -50px;
-    width: 220px; height: 220px;
-    background: radial-gradient(circle, rgba(192,132,252,0.18) 0%, transparent 70%);
+    top: 50%; right: -80px;
+    transform: translateY(-50%);
+    width: 320px; height: 180px;
+    background: radial-gradient(ellipse, rgba(245,160,187,0.22) 0%, transparent 70%);
     border-radius: 50%;
     pointer-events: none;
     animation: stk-glow-pulse-2 5s ease-in-out 1s infinite;
