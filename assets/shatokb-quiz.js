@@ -3399,23 +3399,10 @@ async function shatokbMostrarResultado() {
     localStorage.setItem('shatokb_resultado', JSON.stringify(koiContexto));
   } catch(_) {}
 
-  // Disparar evento custom → shatokb-koi-chat.js lo escucha
-  document.dispatchEvent(new CustomEvent('shatokb:resultado', { detail: koiContexto }));
-
-  // Llamada directa con retry — única ruta que inicia KOI.
-  // El CustomEvent 'shatokb:resultado' tiene un guard en koi-chat.js
-  // para no duplicar si intentarKOI ya lo arrancó primero.
-  (function intentarKOI(intentos) {
-    const resultadoEl = document.getElementById('shatokb-resultado');
-    const koiListo    = typeof window.shatokbIniciarKOI === 'function';
-    const domListo    = resultadoEl && resultadoEl.style.display !== 'none';
-
-    if (koiListo && domListo) {
-      window.shatokbIniciarKOI(koiContexto);
-    } else if (intentos > 0) {
-      setTimeout(function() { intentarKOI(intentos - 1); }, 300);
-    }
-  })(20);
+  // Guardar contexto en variable global — el botón "Open my analysis →"
+  // lo usará cuando el usuario haga clic (shatokbScrollAKOI).
+  // NO se llama a shatokbIniciarKOI aquí — KOI solo arranca al hacer clic.
+  window.SHATOKB_RESULTADO = koiContexto;
 }
 
 
@@ -4040,18 +4027,27 @@ window.shatokbRevelarProductos = function () {
 ============================================================ */
 function shatokbScrollAKOI() {
 
-  // ── Paso 1: asegurar que KOI esté iniciado ───────────────────
-  if (typeof window.shatokbIniciarKOI === 'function') {
-    try {
-      const ctx = window.SHATOKB_RESULTADO
-               || JSON.parse(localStorage.getItem('shatokb_resultado') || 'null');
-      window.shatokbIniciarKOI(ctx || {});
-    } catch(_) {}
+  // ── Paso 1: ocultar el teaser inmediatamente ─────────────────
+  var teaser = document.getElementById('stk-blur-overlay');
+  if (teaser) {
+    teaser.style.transition = 'opacity 0.25s ease';
+    teaser.style.opacity    = '0';
+    teaser.style.pointerEvents = 'none';
+    setTimeout(function() { teaser.style.display = 'none'; }, 260);
   }
 
-  // ── Paso 2: ocultar el resultado y mostrar solo KOI ──────────
-  // El comportamiento correcto: el resultado desaparece y KOI
-  // ocupa toda la pantalla (transición de vista en la misma página).
+  // ── Paso 2: iniciar KOI con el contexto del quiz ─────────────
+  var ctx = window.SHATOKB_RESULTADO
+         || (function() {
+               try { return JSON.parse(localStorage.getItem('shatokb_resultado') || 'null'); }
+               catch(_) { return null; }
+            })();
+
+  if (typeof window.shatokbIniciarKOI === 'function') {
+    window.shatokbIniciarKOI(ctx || {});
+  }
+
+  // ── Paso 3: esperar a que KOI esté en el DOM y mostrarlo ─────
   var intentos = 0;
   var MAX = 40;
 
@@ -4063,11 +4059,10 @@ function shatokbScrollAKOI() {
       // Forzar visible
       wrapper.classList.add('koi--visible');
 
-      // Ocultar toda la sección de resultado (header + teaser + productos)
+      // Ocultar el resto del resultado (header, productos, etc.)
       var revealSection = document.getElementById('stk-reveal-section');
       var resultHeader  = document.querySelector('.shatokb-resultado__header');
       var budgetNote    = document.querySelector('.stk-budget-note');
-      var skinAnalysis  = document.querySelector('.stk-skin-analysis');
 
       if (revealSection) {
         revealSection.style.transition = 'opacity 0.3s ease';
@@ -4079,16 +4074,12 @@ function shatokbScrollAKOI() {
         resultHeader.style.opacity    = '0';
         setTimeout(function() { resultHeader.style.display = 'none'; }, 320);
       }
-      if (budgetNote)   budgetNote.style.display   = 'none';
-      if (skinAnalysis) skinAnalysis.style.display  = 'none';
+      if (budgetNote) budgetNote.style.display = 'none';
 
-      // Hacer que el wrapper KOI ocupe toda la vista
-      wrapper.style.minHeight = '100vh';
-
-      // Scroll al top de la página para que KOI empiece desde arriba
+      // Scroll al top para que KOI empiece desde arriba
       setTimeout(function() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        console.log('[KOI] Vista cambiada — resultado oculto, KOI visible ✅');
+        console.log('[KOI] Vista cambiada — KOI visible ✅');
       }, 350);
 
     } else if (intentos < MAX) {

@@ -2518,19 +2518,9 @@ async function enviarDesdeChip (texto) {
      sin importar la ruta (CustomEvent o llamada directa desde quiz.js).
      ══════════════════════════════════════════════════════════ */
 
-  // Ruta 1: CustomEvent 'shatokb:resultado' disparado por shatokb-quiz.js
-  document.addEventListener('shatokb:resultado', function (e) {
-    window.shatokbIniciarKOI(e.detail || {});
-  });
-
-  // Fallback: si el resultado ya está visible al cargar la página
-  document.addEventListener('DOMContentLoaded', function () {
-    const resultado = document.querySelector('.shatokb-resultado');
-    if (resultado && resultado.style.display !== 'none') {
-      const ctx = obtenerContextoLocal();
-      if (ctx) window.shatokbIniciarKOI(ctx);
-    }
-  });
+  // KOI NO se inicia automáticamente.
+  // Solo arranca cuando el usuario hace clic en "Open my analysis →"
+  // que llama a shatokbScrollAKOI() → shatokbIniciarKOI().
 
   /* ══════════════════════════════════════════════════════════
      ❓ BOTÓN POR PRODUCTO — API pública
