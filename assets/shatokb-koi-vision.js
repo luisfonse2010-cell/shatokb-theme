@@ -720,31 +720,52 @@
      CÁMARA
      ══════════════════════════════════════════════════════════ */
   async function iniciarCamara() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'user',
-          width:      { ideal: 1280 },
-          height:     { ideal: 960 },
-        },
-        audio: false,
-      });
+    // Intentamos con constraints progresivamente más simples
+    // para maximizar compatibilidad entre dispositivos y navegadores.
+    const constraints = [
+      // Intento 1 — ideal para calidad, flexible en resolución
+      { video: { facingMode: { ideal: 'user' }, width: { ideal: 640 }, height: { ideal: 480 } }, audio: false },
+      // Intento 2 — solo facingMode, sin resolución fija
+      { video: { facingMode: 'user' }, audio: false },
+      // Intento 3 — cualquier cámara disponible
+      { video: true, audio: false },
+    ];
 
-      KV_STATE.stream = stream;
+    let stream = null;
+    let lastErr = null;
 
-      const video = document.getElementById('koi-vision-video');
-      if (!video) return;
+    for (let i = 0; i < constraints.length; i++) {
+      try {
+        console.log('[KOI Vision] Intento ' + (i + 1) + ' de cámara…', constraints[i]);
+        stream = await navigator.mediaDevices.getUserMedia(constraints[i]);
+        break; // éxito — salir del loop
+      } catch (err) {
+        console.warn('[KOI Vision] Intento ' + (i + 1) + ' fallido:', err.name, err.message);
+        lastErr = err;
 
-      video.srcObject = stream;
-      await video.play().catch(() => {});
-
-      setPhase('camera');
-      iniciarAnalisisLuz();
-
-    } catch (err) {
-      console.warn('[KOI Vision] Camera error:', err.name, err.message);
-      mostrarError(err);
+        // Si es NotAllowedError o NotFoundError no tiene sentido reintentar
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError' ||
+            err.name === 'NotFoundError'   || err.name === 'DevicesNotFoundError') {
+          break;
+        }
+      }
     }
+
+    if (!stream) {
+      mostrarError(lastErr || new Error('Camera unavailable'));
+      return;
+    }
+
+    KV_STATE.stream = stream;
+
+    const video = document.getElementById('koi-vision-video');
+    if (!video) return;
+
+    video.srcObject = stream;
+    await video.play().catch(() => {});
+
+    setPhase('camera');
+    iniciarAnalisisLuz();
   }
 
   function pararCamara() {
