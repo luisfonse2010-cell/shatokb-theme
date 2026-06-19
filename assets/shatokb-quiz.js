@@ -3192,8 +3192,8 @@ async function shatokbMostrarResultado() {
       </div>`;
       })()}
 
-      <!-- Productos sombreados -->
-      <div class="stk-routine-blurred" id="stk-routine-blurred">
+      <!-- Productos sombreados — ocultos hasta que el usuario abre KOI -->
+      <div class="stk-routine-blurred" id="stk-routine-blurred" style="display:none">
 
         <!-- ══════════════════════════════════════════════════
              SECCIÓN 1 — TODOS LOS PRODUCTOS (numerados 1…N)
@@ -3476,6 +3476,9 @@ window.shatokbRevelarProductos = function () {
   overlay.classList.add('stk-blur-overlay--hidden');
 
   // 3. Disolver el blur de la capa contenedora
+  // Mostrar productos (estaban ocultos con display:none hasta que KOI los revela)
+  blurred.style.removeProperty('display');
+  blurred.style.display = 'block';
   blurred.classList.add('stk-routine-blurred--revealed');
 
   // 4. Revelar cada tarjeta de producto secuencialmente
@@ -4048,6 +4051,8 @@ function shatokbScrollAKOI() {
   }
 
   // ── Paso 3: esperar a que KOI esté en el DOM y mostrarlo ─────
+  // ESTRATEGIA: montar KOI en un overlay fullscreen dentro del <body>
+  // así NO depende de la jerarquía del quiz ni de display:none en ancestros.
   var intentos = 0;
   var MAX = 40;
 
@@ -4056,31 +4061,48 @@ function shatokbScrollAKOI() {
     var wrapper = document.getElementById('shatokb-koi-wrapper');
 
     if (wrapper) {
-      // Forzar visible
-      wrapper.classList.add('koi--visible');
 
-      // Ocultar el resto del resultado (header, productos, etc.)
-      var revealSection = document.getElementById('stk-reveal-section');
-      var resultHeader  = document.querySelector('.shatokb-resultado__header');
-      var budgetNote    = document.querySelector('.stk-budget-note');
-
-      if (revealSection) {
-        revealSection.style.transition = 'opacity 0.3s ease';
-        revealSection.style.opacity    = '0';
-        setTimeout(function() { revealSection.style.display = 'none'; }, 320);
+      // Crear overlay fullscreen si no existe
+      var overlay = document.getElementById('shatokb-koi-overlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'shatokb-koi-overlay';
+        overlay.style.cssText = [
+          'position:fixed',
+          'top:0', 'left:0', 'right:0', 'bottom:0',
+          'z-index:999999',
+          'background:#fff',
+          'overflow-y:auto',
+          '-webkit-overflow-scrolling:touch',
+          'display:flex',
+          'flex-direction:column',
+          'opacity:0',
+          'transition:opacity 0.3s ease',
+        ].join('!important;') + '!important';
+        document.body.appendChild(overlay);
       }
-      if (resultHeader) {
-        resultHeader.style.transition = 'opacity 0.3s ease';
-        resultHeader.style.opacity    = '0';
-        setTimeout(function() { resultHeader.style.display = 'none'; }, 320);
-      }
-      if (budgetNote) budgetNote.style.display = 'none';
 
-      // Scroll al top para que KOI empiece desde arriba
-      setTimeout(function() {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        console.log('[KOI] Vista cambiada — KOI visible ✅');
-      }, 350);
+      // Mover el wrapper KOI dentro del overlay
+      if (wrapper.parentNode !== overlay) {
+        overlay.appendChild(wrapper);
+      }
+
+      // Forzar display:block en el wrapper (por si koi-chat.js lo tiene oculto)
+      wrapper.style.cssText += ';display:block!important;position:relative!important;width:100%!important;height:100%!important;';
+
+      // Prevenir scroll del body detrás
+      document.body.style.overflow = 'hidden';
+
+      // Mostrar overlay con fade-in
+      requestAnimationFrame(function() {
+        overlay.style.opacity = '1';
+      });
+
+      // Scroll al top dentro del overlay
+      overlay.scrollTop = 0;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      console.log('[KOI] Vista cambiada — KOI visible en overlay fullscreen ✅');
 
     } else if (intentos < MAX) {
       setTimeout(tick, 150);
@@ -4090,6 +4112,20 @@ function shatokbScrollAKOI() {
   }
 
   tick();
+}
+
+/* ============================================================
+   Helper: cerrar overlay KOI y volver al resultado del quiz
+   (Por si en el futuro se necesita un botón "Volver")
+============================================================ */
+function shatokbCerrarOverlayKOI() {
+  var overlay = document.getElementById('shatokb-koi-overlay');
+  if (!overlay) return;
+  overlay.style.opacity = '0';
+  setTimeout(function() {
+    overlay.style.display = 'none';
+    document.body.style.overflow = '';
+  }, 300);
 }
 
 
