@@ -4041,12 +4041,30 @@ function shatokbScrollAKOI() {
     setTimeout(function() { teaser.style.display = 'none'; }, 260);
   }
 
+  // Ocultar el header "YOUR PERSONALIZED ROUTINE" (dentro de stk-reveal-section)
   var revealHeader = document.querySelector('#stk-reveal-section .stk-reveal-header');
   if (revealHeader) {
     revealHeader.style.transition = 'opacity 0.25s ease';
     revealHeader.style.opacity    = '0';
     revealHeader.style.pointerEvents = 'none';
     setTimeout(function() { revealHeader.style.display = 'none'; }, 260);
+  }
+
+  // Ocultar el header principal del resultado: "YOUR SKIN PROFILE / THE SPOT ERASER"
+  var resultHeader = document.querySelector('.shatokb-resultado__header');
+  if (resultHeader) {
+    resultHeader.style.transition = 'opacity 0.25s ease';
+    resultHeader.style.opacity    = '0';
+    resultHeader.style.pointerEvents = 'none';
+    setTimeout(function() { resultHeader.style.display = 'none'; }, 260);
+  }
+
+  // Ocultar también el budget note si existe
+  var budgetNote = document.querySelector('.stk-budget-note');
+  if (budgetNote) {
+    budgetNote.style.transition = 'opacity 0.25s ease';
+    budgetNote.style.opacity    = '0';
+    setTimeout(function() { budgetNote.style.display = 'none'; }, 260);
   }
 
   // ── Paso 2: mostrar los productos sombreados inmediatamente ──
