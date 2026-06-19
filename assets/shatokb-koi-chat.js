@@ -2151,7 +2151,7 @@ async function enviarDesdeChip (texto) {
      Se llama cuando el módulo de cámara cierra con datos del Worker.
      Genera el mensaje de KOI en el chat + chip post-visión.
      ══════════════════════════════════════════════════════════ */
-  var _visionResultHandled = false;
+  // Nota: _visionResultHandled ya declarada arriba con `let` para el event listener global
 
   async function manejarResultadoVision (data) {
     const idioma  = detectarIdioma();
