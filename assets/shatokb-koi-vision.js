@@ -48,8 +48,8 @@
 
     // Validación de luz — umbral de brillo medio del canvas (0-255)
     // Por debajo → advertencia. Por debajo de lowMin → no capturar.
-    lightWarnThreshold: 55,    // advertencia amarilla
-    lightMinThreshold:  28,    // bloqueo rojo
+    lightWarnThreshold: 30,    // advertencia amarilla (muy permisivo)
+    lightMinThreshold:   8,    // bloqueo rojo (casi nunca se activa)
 
     // Frecuencia de análisis de luz (ms)
     lightCheckInterval: 800,
@@ -455,6 +455,27 @@
             <span id="kv-light-label">${t.light_ok}</span>
           </div>
 
+          <!-- ══ EFECTOS WOW sobre el video en tiempo real ══ -->
+
+          <!-- Línea de scan horizontal -->
+          <div class="kv-scan-line" id="kv-scan-line"></div>
+
+          <!-- Grid de puntos biométricos sobre el óvalo -->
+          <div class="kv-live-dots" aria-hidden="true">
+            <div class="kv-live-dot" style="top:28%;left:50%"></div>
+            <div class="kv-live-dot" style="top:40%;left:32%"></div>
+            <div class="kv-live-dot" style="top:40%;left:68%"></div>
+            <div class="kv-live-dot" style="top:55%;left:30%"></div>
+            <div class="kv-live-dot" style="top:55%;left:70%"></div>
+            <div class="kv-live-dot" style="top:65%;left:50%"></div>
+            <div class="kv-live-dot" style="top:50%;left:50%"></div>
+          </div>
+
+          <!-- Chips de datos en tiempo real (esquinas) -->
+          <div class="kv-live-chip kv-live-chip--tl">LIVE · AI</div>
+          <div class="kv-live-chip kv-live-chip--tr" id="kv-live-pct">SCAN 0%</div>
+          <div class="kv-live-chip kv-live-chip--bl">KOI VISION</div>
+
           <!-- Flash de captura -->
           <div class="kv-capture-flash" id="kv-capture-flash"></div>
 
@@ -786,6 +807,23 @@
     detenerAnalisisLuz(); // Limpiar cualquier timer previo
     actualizarEstadoLuz(); // Primera lectura inmediata
     KV_STATE.lightCheckTimer = setInterval(actualizarEstadoLuz, KV_CONFIG.lightCheckInterval);
+
+    // Animar el chip "SCAN X%" en tiempo real
+    _animarChipScan();
+  }
+
+  function _animarChipScan() {
+    const chip = document.getElementById('kv-live-pct');
+    if (!chip) return;
+    let pct = 0;
+    const timer = setInterval(function() {
+      if (!KV_STATE.isOpen || KV_STATE.phase !== 'camera') {
+        clearInterval(timer);
+        return;
+      }
+      pct = (pct + Math.floor(Math.random() * 4 + 1)) % 101;
+      chip.textContent = 'SCAN ' + pct + '%';
+    }, 600);
   }
 
   function detenerAnalisisLuz() {
@@ -874,8 +912,8 @@
         captureLbl.textContent = t.capture_warn;
       } else {
         captureBtn.classList.add('kv--warn');
-        captureLbl.textContent = t.capture_warn;
-        captureBtn.disabled = true; // Demasiado oscuro — bloquear
+        captureLbl.textContent = t.capture_btn; // Siempre puede capturar
+        captureBtn.disabled = false; // Nunca bloquear — solo avisar
       }
     }
 

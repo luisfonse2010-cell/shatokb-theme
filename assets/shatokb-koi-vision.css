@@ -1125,3 +1125,106 @@
   .kv-guide-text  { font-size: 11px; bottom: 72px; }
   .kv-zones       { grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
 }
+
+/* ══════════════════════════════════════════════════════════
+   EFECTOS WOW EN EL VIEWFINDER EN TIEMPO REAL
+   ══════════════════════════════════════════════════════════ */
+
+/* Línea de scan horizontal animada */
+.kv-scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(236,149,184,0.0) 10%,
+    rgba(236,149,184,0.80) 50%,
+    rgba(236,149,184,0.0) 90%,
+    transparent 100%);
+  box-shadow: 0 0 12px rgba(236,149,184,0.60), 0 0 4px rgba(236,149,184,0.90);
+  pointer-events: none;
+  z-index: 11;
+  animation: kvScanLine 2.8s ease-in-out infinite;
+}
+
+@keyframes kvScanLine {
+  0%   { top: 15%;  opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { top: 85%;  opacity: 0; }
+}
+
+/* Puntos biométricos en vivo sobre el óvalo */
+.kv-live-dots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 12;
+}
+
+.kv-live-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--kv-pink);
+  box-shadow: 0 0 0 2px rgba(236,149,184,0.20), 0 0 8px rgba(236,149,184,0.70);
+  transform: translate(-50%, -50%) scale(0);
+  animation: kvLiveDotAppear 4s ease-in-out infinite;
+}
+
+/* Delays escalonados para que aparezcan uno a uno */
+.kv-live-dot:nth-child(1) { animation-delay: 0.0s; }
+.kv-live-dot:nth-child(2) { animation-delay: 0.4s; }
+.kv-live-dot:nth-child(3) { animation-delay: 0.8s; }
+.kv-live-dot:nth-child(4) { animation-delay: 1.2s; }
+.kv-live-dot:nth-child(5) { animation-delay: 1.6s; }
+.kv-live-dot:nth-child(6) { animation-delay: 2.0s; }
+.kv-live-dot:nth-child(7) { animation-delay: 2.4s; }
+
+@keyframes kvLiveDotAppear {
+  0%,30%  { transform: translate(-50%,-50%) scale(0); opacity: 0; }
+  40%     { transform: translate(-50%,-50%) scale(1.4); opacity: 1; }
+  55%,80% { transform: translate(-50%,-50%) scale(1); opacity: 0.85; }
+  90%,100%{ transform: translate(-50%,-50%) scale(0); opacity: 0; }
+}
+
+.kv-live-dot::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid rgba(236,149,184,0.35);
+  animation: kvLiveDotRing 2s ease-out infinite;
+}
+
+@keyframes kvLiveDotRing {
+  0%   { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+/* Chips de datos flotantes en los bordes */
+.kv-live-chip {
+  position: absolute;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--kv-cyan);
+  background: rgba(3,1,10,0.65);
+  border: 1px solid rgba(103,232,249,0.20);
+  padding: 3px 8px;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 13;
+  animation: kvChipBlink 2s ease-in-out infinite;
+}
+
+.kv-live-chip--tl { top: 10px; left: 10px; }
+.kv-live-chip--tr { top: 10px; right: 10px; animation-delay: 0.7s; color: var(--kv-pink); border-color: rgba(236,149,184,0.25); }
+.kv-live-chip--bl { bottom: 70px; left: 10px; animation-delay: 1.4s; }
+
+@keyframes kvChipBlink {
+  0%,100% { opacity: 0.60; }
+  50%     { opacity: 1.00; }
+}
