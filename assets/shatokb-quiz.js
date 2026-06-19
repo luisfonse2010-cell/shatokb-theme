@@ -4039,7 +4039,8 @@ window.shatokbRevelarProductos = function () {
    Finds the KOI wrapper and scrolls to it smoothly.
 ============================================================ */
 function shatokbScrollAKOI() {
-  // Si KOI no se ha iniciado todavía, arrancarlo ahora
+
+  // ── Paso 1: asegurar que KOI esté iniciado ───────────────────
   if (typeof window.shatokbIniciarKOI === 'function') {
     try {
       const ctx = window.SHATOKB_RESULTADO
@@ -4048,36 +4049,41 @@ function shatokbScrollAKOI() {
     } catch(_) {}
   }
 
-  function intentarScroll(intentos) {
-    const wrapper = document.getElementById('shatokb-koi-wrapper');
-    const koi     = wrapper
-                 || document.querySelector('.koi-panel')
-                 || document.querySelector('.koi-header');
+  // ── Paso 2: esperar wrapper, forzar visible, hacer scroll ───
+  var intentos = 0;
+  var MAX = 40; // 40 × 150ms = 6 segundos máximo
 
-    if (koi) {
-      // ── FORZAR visibilidad inmediata ──────────────────────────
-      // KOI tiene appearDelay de 1800ms pero el usuario que pulsó
-      // el botón no debe esperar — mostrar al instante.
-      if (wrapper && !wrapper.classList.contains('koi--visible')) {
-        wrapper.classList.add('koi--visible');
-      }
+  function tick() {
+    intentos++;
+    var wrapper = document.getElementById('shatokb-koi-wrapper');
 
-      // Esperar 1 frame para que el browser procese la visibilidad
-      // antes de calcular las coordenadas del scroll
-      requestAnimationFrame(() => {
-        const y = koi.getBoundingClientRect().top + window.pageYOffset - 20;
+    if (wrapper) {
+      // Forzar visible sin importar el appearDelay
+      wrapper.classList.add('koi--visible');
+
+      // Scroll suave al wrapper (1 frame de delay para que el browser
+      // procese la clase antes de calcular la posición)
+      requestAnimationFrame(function() {
+        var rect = wrapper.getBoundingClientRect();
+        var y    = rect.top + window.pageYOffset - 24;
         window.scrollTo({ top: y, behavior: 'smooth' });
-        koi.classList.add('stk-koi-pulse');
-        setTimeout(() => koi.classList.remove('stk-koi-pulse'), 1200);
+
+        // Pulso visual para confirmar al usuario
+        wrapper.classList.add('stk-koi-pulse');
+        setTimeout(function() { wrapper.classList.remove('stk-koi-pulse'); }, 1200);
+
+        console.log('[KOI] Scroll ejecutado — wrapper en y=' + Math.round(y));
       });
 
-    } else if (intentos > 0) {
-      // KOI todavía no está en el DOM — reintentar cada 300ms
-      setTimeout(() => intentarScroll(intentos - 1), 300);
+    } else if (intentos < MAX) {
+      // KOI aún no está en el DOM — reintentar en 150ms
+      setTimeout(tick, 150);
+    } else {
+      console.warn('[KOI] shatokbScrollAKOI: wrapper no apareció tras ' + (MAX * 150 / 1000) + 's');
     }
   }
 
-  intentarScroll(15); // 15 × 300ms = 4.5s de ventana máxima
+  tick();
 }
 
 
