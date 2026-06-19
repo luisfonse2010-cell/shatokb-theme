@@ -26,6 +26,17 @@
 {{ 'shatokb-quiz.css' | asset_url | stylesheet_tag }}
 {{ 'shatokb-koi-chat.css' | asset_url | stylesheet_tag }}
 {{ 'shatokb-koi-vision.css' | asset_url | stylesheet_tag }}
+<script>
+  // Cache-bust guard: si KOI no carga en 3s, reintentamos dinámicamente
+  window.__koiLoadCheck = setTimeout(function() {
+    if (typeof window.shatokbIniciarKOI === 'undefined') {
+      console.warn('[KOI] shatokb-koi-chat-v3.js no cargó — cargando dinámicamente');
+      var s = document.createElement('script');
+      s.src = '{{ "shatokb-koi-chat-v3.js" | asset_url }}?fallback=' + Date.now();
+      document.head.appendChild(s);
+    }
+  }, 3000);
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
 
 <style>
@@ -454,9 +465,9 @@
   <div class="shatokb-resultado__inner"></div>
 </div>
 
-<script src="{{ 'shatokb-quiz.js' | asset_url }}" defer></script>
-<script src="{{ 'shatokb-koi-vision.js' | asset_url }}?v=20260619A" defer></script>
-<script src="{{ 'shatokb-koi-chat.js' | asset_url }}?v=20260619A" defer></script>
+<script src="{{ 'shatokb-quiz.js' | asset_url }}?v=20260620C" defer></script>
+<script src="{{ 'shatokb-koi-vision.js' | asset_url }}?v=20260620C" defer></script>
+<script src="{{ 'shatokb-koi-chat-v3.js' | asset_url }}" defer></script>
 
 {% schema %}
 {
