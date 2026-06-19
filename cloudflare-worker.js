@@ -18,7 +18,7 @@
  *
  * ============================================================
  */
-/* ── Last deploy: 2026-06-18T23:55:55.559Z */
+/* ── Last deploy: 2026-06-19T15:02:16.375Z */
 
 
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
@@ -599,7 +599,7 @@ export default {
 
       // 1. Generar token único
       const token     = generateToken();
-      const reportUrl = `${siteUrl || 'https://shatokb.com'}/skin-report.html?token=${token}`;
+      const reportUrl = `${siteUrl || 'https://shatokb.com'}/pages/skin-report?token=${token}`;
 
       // Enriquecer reportData con la URL final
       reportData.reportUrl  = reportUrl;
