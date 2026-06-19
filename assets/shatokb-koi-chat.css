@@ -1,36 +1,3 @@
-/* ── Focus Mode — PATCHED v20260618F ── */
-html.koi-scroll-locked {
-  overflow: hidden !important;
-}
-#koi-focus-overlay {
-  position: fixed !important;
-  inset: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  background-color: rgba(236,149,184,0.25) !important;
-  backdrop-filter: blur(3px) !important;
-  -webkit-backdrop-filter: blur(3px) !important;
-  z-index: 2147483640 !important;
-  pointer-events: auto !important;
-}
-#koi-focus-card,
-.koi-focus-card {
-  position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  z-index: 2147483641 !important;
-  width: min(480px, 92vw);
-  background: #1c181a;
-  border: 1px solid rgba(236,149,184,0.25);
-  border-radius: 20px;
-  padding: 28px 24px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.6);
-}
-
 /**
  * ============================================================
  * SHATOKB · KOI Chat — Experta K-Beauty con IA
