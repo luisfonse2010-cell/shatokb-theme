@@ -18,7 +18,7 @@
  *
  * ============================================================
  */
-/* ── Last deploy: 2026-06-19T23:29:30.579Z */
+/* ── Last deploy: 2026-06-19T23:42:59.535Z */
 
 
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
@@ -589,64 +589,41 @@ export default {
 
     const url = new URL(request.url);
 
-    // ── Endpoint /report — guardar reporte + enviar a Klaviyo ──
+    // ── Endpoint /report — enviar evento a Klaviyo ────────────
+    // NOTA (Jun 2026): El save a la tabla Genspark se hace desde el
+    // CLIENTE (shatokb-koi-chat.js) directamente via URL relativa,
+    // ya que la API de Genspark no es accesible desde Cloudflare (404).
+    // El Worker recibe el token ya generado por el cliente y solo
+    // se encarga de enviar el evento a Klaviyo.
     if (request.method === 'POST' && url.pathname === '/report') {
       let body;
       try { body = await request.json(); } catch {
         return new Response(JSON.stringify({ error: 'Invalid body' }), { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
       }
 
-      const { email, reportData, siteUrl, tableApiUrl, tableApiKey } = body;
+      const { email, reportData, siteUrl, token: clientToken, reportUrl: clientReportUrl } = body;
 
       if (!email || !reportData) {
         return new Response(JSON.stringify({ error: 'Missing email or reportData' }), { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
       }
 
-      // 1. Generar token único
-      const token     = generateToken();
-      const reportUrl = `${siteUrl || 'https://shatokb.com'}/pages/skin-report?token=${token}`;
+      // Usar token y URL enviados por el cliente (ya guardados en tabla Genspark)
+      // Si el cliente no los envía (compatibilidad), generarlos aquí como fallback
+      const token     = clientToken     || generateToken();
+      const reportUrl = clientReportUrl || `${siteUrl || 'https://shatokb.com'}/pages/skin-report?token=${token}`;
 
-      // Enriquecer reportData con la URL final
-      reportData.reportUrl  = reportUrl;
-      reportData.token      = token;
+      // Asegurar que reportData tiene token y URL
+      reportData.reportUrl = reportData.reportUrl || reportUrl;
+      reportData.token     = reportData.token     || token;
 
-      // 2. Guardar en tabla API (paralelo con Klaviyo para no bloquear)
-      // ⚠️ FIX: tableApiKey debe incluirse en el header Authorization
-      // Sin él, el POST a Genspark falla con 401/403 silenciosamente y la tabla queda vacía.
-      const apiBase = (tableApiUrl || 'https://www.genspark.ai/api/v1/project/8b11bf35-e038-4848-9fe1-fffa1edac409').replace(/\/$/, '');
-      const saveHeaders = { 'Content-Type': 'application/json' };
-      if (tableApiKey) saveHeaders['Authorization'] = `Bearer ${tableApiKey}`;
-      const savePromise = fetch(`${apiBase}/tables/skin_reports`, {
-        method:  'POST',
-        headers: saveHeaders,
-        body: JSON.stringify({
-          token,
-          email,
-          perfil_id:     reportData.perfil?.id          || '',
-          perfil_nombre: reportData.perfil?.nombre       || '',
-          report_data:   JSON.stringify(reportData),
-          klaviyo_sent:  false,
-          idioma:        reportData.idioma               || 'es',
-          total_carrito: reportData.totalCarrito         || 0,
-        }),
-      }).then(async r => {
-        if (!r.ok) {
-          const errBody = await r.text().catch(() => '');
-          console.error(`[Report] Save HTTP ${r.status}:`, errBody.slice(0, 300));
-        } else {
-          console.log('[Report] Saved successfully, status:', r.status);
-        }
-      }).catch(e => console.error('[Report] Save network error:', e.message));
-
-      // 3. Enviar evento a Klaviyo
+      // Enviar evento a Klaviyo
       const klaviyoKey = env.KLAVIYO_API_KEY || '';
       let klaviyoResult = { ok: false, error: 'No API key configured' };
       if (klaviyoKey) {
         klaviyoResult = await enviarEventoKlaviyo(email, reportData, reportUrl, klaviyoKey);
       }
 
-      // Esperar a que se guarde (no bloquea la respuesta al usuario)
-      await savePromise;
+      console.log('[Report] Klaviyo result:', JSON.stringify(klaviyoResult));
 
       return new Response(
         JSON.stringify({ ok: true, token, reportUrl, klaviyo: klaviyoResult }),
