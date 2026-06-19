@@ -505,8 +505,8 @@
 {%- comment -%} ── SCRIPTS ───────────────────────────────────────── {%- endcomment -%}
 <script src="{{ 'shatokb-excel-intel.js' | asset_url }}" defer></script>
 <script src="{{ 'shatokb-quiz.js' | asset_url }}" defer></script>
-<script src="{{ 'shatokb-koi-vision.js' | asset_url }}?v=20260619A" defer></script>
-<script src="{{ 'shatokb-koi-chat.js' | asset_url }}?v=20260618" defer></script>
+<script src="{{ 'shatokb-koi-vision.js' | asset_url }}" defer></script>
+<script src="{{ 'shatokb-koi-chat.js' | asset_url }}" defer></script>
 
 {% schema %}
 {
@@ -604,7 +604,8 @@
       "type": "text",
       "id": "btn_whatsapp_number",
       "label": "WhatsApp number (with country code, no +)",
-      "default": ""
+      "placeholder": "34612345678",
+      "default": "34612345678"
     },
     {
       "type": "text",
