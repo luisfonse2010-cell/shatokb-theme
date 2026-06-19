@@ -1271,7 +1271,49 @@
     },
     "shatokb-hero": {
       "type": "shatokb-hero",
-      "settings": {}
+      "blocks": {
+        "benefit_1": {
+          "type": "benefit",
+          "settings": {
+            "icon_emoji": "🎯",
+            "title": "Personalised recommendation",
+            "description": "We match products to your exact skin needs - no one-size-fits-all approach."
+          }
+        },
+        "benefit_2": {
+          "type": "benefit",
+          "settings": {
+            "icon_emoji": "🌿",
+            "title": "Routines for your skin type",
+            "description": "Morning and night. Step by step. Tailored to oily, dry, sensitive or combination skin."
+          }
+        },
+        "benefit_3": {
+          "type": "benefit",
+          "settings": {
+            "icon_emoji": "🇰🇷",
+            "title": "Authentic K-Beauty products",
+            "description": "Genuine Korean brands with science-backed ingredients trusted by millions worldwide."
+          }
+        },
+        "benefit_4": {
+          "type": "benefit",
+          "settings": {
+            "icon_emoji": "💬",
+            "title": "Guided shopping via WhatsApp",
+            "description": "Have questions? Our team helps you choose and build your ideal routine before you buy."
+          }
+        }
+      },
+      "block_order": [
+        "benefit_1",
+        "benefit_2",
+        "benefit_3",
+        "benefit_4"
+      ],
+      "settings": {
+        "benefits_title": "Why choose your routine with us?"
+      }
     },
     "marquee_CPUri8": {
       "type": "marquee",
