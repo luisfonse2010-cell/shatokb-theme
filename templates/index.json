@@ -9,6 +9,180 @@
  */
 {
   "sections": {
+    "164007305002c9359c": {
+      "type": "slide-show",
+      "blocks": {
+        "16400840814a261dba-0": {
+          "type": "image",
+          "settings": {
+            "image_slide": "shopify://shop_images/1500x720.png",
+            "alignment": "left",
+            "enable_custom_position": true,
+            "custom_horizontal": "17",
+            "custom_vertical": "50",
+            "enable_position_outside_image": false,
+            "enable_border_line": false,
+            "padding_vertical": 30,
+            "content_width": 475,
+            "text_alignment": "left",
+            "text_alignment_mb": "center",
+            "enable_content_fullwidth": false,
+            "border_color_content": "",
+            "bg_color_content": "",
+            "profile_spacing_bottom": 50,
+            "profile_name": "",
+            "profile_name_color": "",
+            "profile_name_fs": 20,
+            "profile_name_fs_mb": 20,
+            "profile_name_fw": "normal",
+            "profile_title": "",
+            "profile_title_color": "",
+            "profile_title_fs": 20,
+            "profile_title_fs_mb": 20,
+            "profile_title_fw": "normal",
+            "sub_heading": "Special Offer",
+            "letter_spacing_sub_title": "",
+            "font_size_sub_heading": 14,
+            "sub_heading_spacing_bottom": 17,
+            "sub_heading_font": "font_2",
+            "font_weight_sub_heading": "700",
+            "border_sub_heading": "solid",
+            "sub_title_position": "sub_title_above",
+            "color_sub_heading": "#ffffff",
+            "heading": "<strong style=\"color: #10ffda;\">The Ultimate </strong>  <br> 6-IN-1",
+            "letter_spacing_heading": "",
+            "enable_border_heading": false,
+            "font_style_heading": "normal",
+            "font_size_heading": 70,
+            "line_height_heading": 80,
+            "heading_spacing_bottom": 20,
+            "color_heading": "#ffffff",
+            "slide-des": "Skincare Booster",
+            "font_size_des": 30,
+            "line_height_des": 22,
+            "des_spacing_bottom": 50,
+            "color_des": "#ffffff",
+            "sub_heading_mb": "",
+            "font_size_sub_heading_mb": 10,
+            "sub_heading_spacing_bottom_mb": 10,
+            "font_weight_sub_heading_mb": "400",
+            "border_sub_heading_mb": "none",
+            "color_sub_heading_mb": "#ffffff",
+            "heading_mb": "<strong style=\"color: #10ffda;\">The Ultimate</strong> <br> 6-IN-1",
+            "font_style_heading_mb": "normal",
+            "font_size_heading_mb": 28,
+            "line_height_heading_mb": 30,
+            "heading_spacing_bottom_mb": 0,
+            "color_heading_mb": "#ffffff",
+            "slide-des-mb": "Skincare Booster",
+            "font_size_des_mb": 22,
+            "des_spacing_bottom_mb": 13,
+            "color_des_mb": "#ffffff",
+            "enable_icon_button": false,
+            "enable_button_link": false,
+            "enable_underline": true,
+            "font_size_link": 20,
+            "button_slide": "Shop Now",
+            "link": "shopify://collections/medicube",
+            "button_style": "button_1",
+            "button_slide_2": "",
+            "link_2": "",
+            "min_width_banner_button": 100,
+            "color_button": "#ffffff",
+            "border_button": "#ffffff",
+            "bg_button": "rgba(0,0,0,0)",
+            "bg_button_gradient": "",
+            "color_button_hover": "#0b0335",
+            "border_button_hover": "#544e71",
+            "bg_button_hover": "#ffffff",
+            "bg_button_gradient_hover": "",
+            "use_contrasting_colors": false,
+            "lb_product_1": "",
+            "horizontal_pos_1": 0,
+            "vertical_pos_1": 0,
+            "lookbook_pos_1": "right",
+            "lb_product_2": "",
+            "horizontal_pos_2": 0,
+            "vertical_pos_2": 0,
+            "lookbook_pos_2": "right",
+            "lb_product_3": "",
+            "horizontal_pos_3": 0,
+            "vertical_pos_3": 0,
+            "lookbook_pos_3": "right"
+          }
+        }
+      },
+      "block_order": [
+        "16400840814a261dba-0"
+      ],
+      "settings": {
+        "container": "fullwidth",
+        "padding_full_width": 0,
+        "slideshow_background": "",
+        "slideshow_background_gradient": "",
+        "autoplay": true,
+        "slideshow_speed": "5000",
+        "slideshow_transition": "true",
+        "dots": "true",
+        "dots_color": "#707979",
+        "dots_border_color": "#707979",
+        "dots_active_color": "rgba(0,0,0,0)",
+        "dots_active_border_color": "#505656",
+        "dots_direction": "bottom",
+        "dots_shape": "disc",
+        "position_slick_dots": "34px",
+        "dots_opacity": false,
+        "dot_with_image": false,
+        "dot_width": 66,
+        "dot_width_active": 130,
+        "dot_width_mb": 38,
+        "dot_width_active_mb": 65,
+        "arrow_active": true,
+        "enable_custom_arrow": false,
+        "arrow_width": 35,
+        "arrow_height": 35,
+        "arrow_size_icon": 17,
+        "arrow_color": "#666d6d",
+        "arrow_border_color": "#666d6d",
+        "arrow_bg_color": "#ffffff",
+        "arrow_color_hover": "",
+        "arrow_border_color_hover": "",
+        "arrow_bg_color_hover": "",
+        "position_slick_arrow": "10%",
+        "position_vertical_slick_arrow": "50%",
+        "image_behavior": "zoom-in",
+        "video_height": "41.7%",
+        "video_height_mb": "41.7%",
+        "auto_playvideo": true,
+        "enable_categories": false,
+        "text_categories": "Shop by categories",
+        "title_color": "#ffffff",
+        "bg_title": "#fd6506",
+        "text_icon_color": "#202020",
+        "menu_category": "",
+        "enable_banner": false,
+        "lookbook_style": "1",
+        "enable_lookbook_width": false,
+        "lookbook_width": 250,
+        "dot_desktop_size": 24,
+        "dot_mobile_size": 16,
+        "dot_inner_color": "#000000",
+        "dot_shadow_color": "#ffffff",
+        "dot_outer_color": "#ffffff",
+        "show_dot_number": false,
+        "show_dot_number_mobile": false,
+        "show_plus_icon": false,
+        "number_desktop_size": 24,
+        "number_mobile_size": 16,
+        "lookbook_truncate": "1",
+        "mg_top_desktop": 0,
+        "mg_top_tablet": 0,
+        "mg_top_mobile": 0,
+        "mg_bottom_desktop": 50,
+        "mg_bottom_tablet": 50,
+        "mg_bottom_mobile": 40
+      }
+    },
     "shatokb-hero": {
       "type": "shatokb-hero",
       "blocks": {
@@ -54,18 +228,880 @@
         "btn_catalogue_show": true,
         "btn_catalogue_text": "Explore the full catalogue",
         "btn_catalogue_url": "/collections/all",
-        "btn_whatsapp_show": true,
-        "btn_whatsapp_text": "Talk to a skin expert",
-        "btn_whatsapp_number": "12345678900",
-        "btn_whatsapp_message": "Hi! I just took the skin quiz and need help with my routine.",
-        "btn_retake_show": true,
-        "btn_retake_text": "My skin feels different — redo",
+        "btn_whatsapp_show": false,
+        "btn_retake_show": false,
         "total_bar_label": "🛒 Your personalised routine",
         "total_bar_cta": "Add all to cart"
+      }
+    },
+    "spotlight_block_jQwANf": {
+      "type": "spotlight-block",
+      "blocks": {
+        "image_pVhamG": {
+          "type": "image",
+          "settings": {
+            "enable_image": true,
+            "image": "shopify://shop_images/Sitio-web-de-boda-fotografico-en-crema-y-negro-2000-x-800-px-2000-x-780-px-1800-x-780-px-1800-x-400-px-2000-x-780-px-2000-x-500-px-2000-x-780-px-1800-x-780-px-2000-x-2000-px.png",
+            "title_align": "center",
+            "enable_absolute": false,
+            "align_items": "bottom",
+            "align_items_spacing_top_bottom_position": 0,
+            "align_items_spacing_top_bottom_position_mb": 35,
+            "bg_color_content": "",
+            "align_items_spacing_top": 40,
+            "align_items_spacing_bottom": 40,
+            "align_items_spacing_lr": 40,
+            "sub_title": "",
+            "border_sub_title": false,
+            "color_sub_title": "#232323",
+            "fontsize_sub_title": 24,
+            "font_weight_sub_title": "500",
+            "mg_bottom_sub_title": 10,
+            "title": "Medicube Age-R Booster Pro | 6-in-1 Real Glass Glow Device",
+            "color_title": "#0b0335",
+            "fontsize_title": 24,
+            "fontsize_title_mb": 20,
+            "font_weight_title": "500",
+            "enable_style_italic": false,
+            "border_title": "none",
+            "border_color_title": "rgba(0,0,0,0)",
+            "des": "All-in-One Glass Glow Device: Achieve your glass skin goals with innovative technology.",
+            "color_des": "#0b0335",
+            "fontsize_des": 12,
+            "mg_top_des": 10,
+            "enable_des_hover": false,
+            "button_style": "button_1",
+            "button": "Shop Now",
+            "link": "shopify://products/medicube-age-r-booster-pro-6-in-1-real-glass-glow-device",
+            "fontsize_btn": 12,
+            "button_width": 160,
+            "bg_opacity_button": 1,
+            "enable_button_custom_border": false,
+            "enable_button_hover": false,
+            "btn_text_transform": "uppercase",
+            "btn_icon": "",
+            "mg_top_btn": 22,
+            "color_button": "#ffffff",
+            "border_color_button": "#0b0335",
+            "bg_color_button": "#0b0335",
+            "bg_color_button_gradient": "",
+            "color_button_hover": "#0b0335",
+            "border_color_button_hover": "#0b0335",
+            "bg_color_button_hover": "#ffffff",
+            "bg_color_button_gradient_hover": ""
+          }
+        },
+        "image_zgVEg4": {
+          "type": "image",
+          "settings": {
+            "enable_image": true,
+            "image": "shopify://shop_images/MicrosoftTeams-image_893.png",
+            "title_align": "center",
+            "enable_absolute": false,
+            "align_items": "center",
+            "align_items_spacing_top_bottom_position": 75,
+            "align_items_spacing_top_bottom_position_mb": 35,
+            "bg_color_content": "",
+            "align_items_spacing_top": 40,
+            "align_items_spacing_bottom": 40,
+            "align_items_spacing_lr": 40,
+            "sub_title": "",
+            "border_sub_title": false,
+            "color_sub_title": "#232323",
+            "fontsize_sub_title": 20,
+            "font_weight_sub_title": "500",
+            "mg_bottom_sub_title": 10,
+            "title": "Collage Jelly Cream",
+            "color_title": "#0b0335",
+            "fontsize_title": 24,
+            "fontsize_title_mb": 20,
+            "font_weight_title": "500",
+            "enable_style_italic": false,
+            "border_title": "none",
+            "border_color_title": "",
+            "des": "Awaken Your Glow: Quick Dry Easy Peel Overnight Collagen Facial Mask",
+            "color_des": "#0b0335",
+            "fontsize_des": 12,
+            "mg_top_des": 10,
+            "enable_des_hover": false,
+            "button_style": "button_1",
+            "button": "Shop Now",
+            "link": "shopify://products/medicube-collagen-jelly-cream-with-niacinamide-and-freeze-dried-hydrolyzed-collagen-50ml-1-69fl-oz",
+            "fontsize_btn": 12,
+            "button_width": 160,
+            "bg_opacity_button": 1,
+            "enable_button_custom_border": false,
+            "enable_button_hover": false,
+            "btn_text_transform": "uppercase",
+            "btn_icon": "",
+            "mg_top_btn": 22,
+            "color_button": "#ffffff",
+            "border_color_button": "#0b0335",
+            "bg_color_button": "#0b0335",
+            "bg_color_button_gradient": "",
+            "color_button_hover": "#0b0335",
+            "border_color_button_hover": "#0b0335",
+            "bg_color_button_hover": "#ffffff",
+            "bg_color_button_gradient_hover": ""
+          }
+        },
+        "image_VVH7Rc": {
+          "type": "image",
+          "settings": {
+            "enable_image": true,
+            "image": "shopify://shop_images/SDFSDF_1.png",
+            "title_align": "center",
+            "enable_absolute": false,
+            "align_items": "center",
+            "align_items_spacing_top_bottom_position": 75,
+            "align_items_spacing_top_bottom_position_mb": 35,
+            "bg_color_content": "",
+            "align_items_spacing_top": 40,
+            "align_items_spacing_bottom": 40,
+            "align_items_spacing_lr": 40,
+            "sub_title": "",
+            "border_sub_title": false,
+            "color_sub_title": "#232323",
+            "fontsize_sub_title": 20,
+            "font_weight_sub_title": "500",
+            "mg_bottom_sub_title": 10,
+            "title": "Collagen Night Wrapping Mask",
+            "color_title": "#0b0335",
+            "fontsize_title": 24,
+            "fontsize_title_mb": 20,
+            "font_weight_title": "500",
+            "enable_style_italic": false,
+            "border_title": "none",
+            "border_color_title": "",
+            "des": "Awaken Your Glow: Quick Dry Easy Peel Overnight Collagen Facial Mask",
+            "color_des": "#0b0335",
+            "fontsize_des": 12,
+            "mg_top_des": 10,
+            "enable_des_hover": false,
+            "button_style": "button_1",
+            "button": "Shop Now",
+            "link": "shopify://products/medicube-collagen-overnight-wrapping-peel-off-facial-mask-pack",
+            "fontsize_btn": 12,
+            "button_width": 160,
+            "bg_opacity_button": 1,
+            "enable_button_custom_border": false,
+            "enable_button_hover": false,
+            "btn_text_transform": "uppercase",
+            "btn_icon": "",
+            "mg_top_btn": 22,
+            "color_button": "#ffffff",
+            "border_color_button": "#0b0335",
+            "bg_color_button": "#0b0335",
+            "bg_color_button_gradient": "",
+            "color_button_hover": "#0b0335",
+            "border_color_button_hover": "#0b0335",
+            "bg_color_button_hover": "#ffffff",
+            "bg_color_button_gradient_hover": ""
+          }
+        }
+      },
+      "block_order": [
+        "image_pVhamG",
+        "image_zgVEg4",
+        "image_VVH7Rc"
+      ],
+      "settings": {
+        "container": "container",
+        "padding_full_width": 0,
+        "disable_padding_content": false,
+        "mg_minus_desktop": 0,
+        "block_layout": "grid",
+        "spotlight_block_swipe_on_mobile": "list",
+        "column": "3",
+        "column_mb": "1",
+        "center_mode": false,
+        "item_distance": 15,
+        "item_radius": 0,
+        "enable_arrows": true,
+        "enable_arrows_mb": false,
+        "position_horizontal_slick_arrow": "0",
+        "enable_dots": true,
+        "enable_dots_mb": true,
+        "display_border_bottom": false,
+        "border_color": "#e3e3e3",
+        "spotlight_bg": "#ffffff",
+        "spotlight_bg_gradient": "",
+        "enable_custom_position_title": false,
+        "spotlight_block_title": "",
+        "enable_border_title": false,
+        "color_title": "#232323",
+        "color_title_mb": "",
+        "fontsize_title": 16,
+        "fontsize_title_mb": 12,
+        "margin_bottom_title": 45,
+        "spotlight_block_des": "",
+        "color_des": "#3c3c3c",
+        "margin_bottom_des": 30,
+        "fontsize_des": 16,
+        "title_align": "center",
+        "view_all_style": "style_1",
+        "view_all": "",
+        "view_all_fs": 12,
+        "view_all_align": "center",
+        "font_weight_view_all": "400",
+        "mg_bottom_view": 30,
+        "enable_border_view_all": true,
+        "link_view_all": "",
+        "color_view_all": "#3c3c3c",
+        "display_spotlight_button": false,
+        "button_position": "bottom",
+        "spotlight_button_text": "",
+        "spotlight_button_link": "",
+        "color_button": "#ffffff",
+        "border_color_button": "#232323",
+        "bg_color_button": "#232323",
+        "bg_color_gradient_button": "",
+        "color_button_hover": "#232323",
+        "border_color_button_hover": "#ffffff",
+        "bg_color_button_hover": "#ffffff",
+        "bg_color_gradient_button_hover": "",
+        "maxwidth_button": 230,
+        "mg_top_button": 30,
+        "mg_bottom_button": 30,
+        "enable_plus_icon": false,
+        "color_plus_icon": "#ffffff",
+        "enable_content_border": false,
+        "content_border_color": "#e2e2e2",
+        "enable_shadow": false,
+        "shadow_horizontal_length": 0,
+        "shadow_vertical_length": 0,
+        "shadow_blur_radius": 0,
+        "shadow_spread": 0,
+        "shadow_color": "transparent",
+        "shadow_inset": "no",
+        "mg_top_desktop": 60,
+        "mg_top_tablet": 50,
+        "mg_top_mobile": 45,
+        "mg_bottom_desktop": 55,
+        "mg_bottom_tablet": 45,
+        "mg_bottom_mobile": 40
+      }
+    },
+    "163835209394385a65": {
+      "type": "brand-slider",
+      "blocks": {
+        "00eb63be-e2e6-42a3-beba-b86835209958": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/202405210800000_logo_2.png",
+            "title": "",
+            "color_text": "#000000",
+            "color_text_hover": "#3e8cc4",
+            "description": "",
+            "color_des": "#3c3c3c",
+            "link": ""
+          }
+        },
+        "9b762b19-9ce6-468e-92d9-240827f2b367": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/202405240307055_logo_1_2.png",
+            "title": "",
+            "color_text": "#000000",
+            "color_text_hover": "#3e8cc4",
+            "description": "",
+            "color_des": "#3c3c3c",
+            "link": ""
+          }
+        },
+        "cd71499c-3d12-4a79-9431-61934301ef2d": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/2024052108085151_logo_10_2.png",
+            "title": "",
+            "color_text": "#000000",
+            "color_text_hover": "#3e8cc4",
+            "description": "",
+            "color_des": "#3c3c3c",
+            "link": ""
+          }
+        },
+        "4a13b25b-5b3f-4ca9-a700-513944c6d200": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/2024052401475555_logo_5_3.png",
+            "title": "",
+            "color_text": "#000000",
+            "color_text_hover": "#3e8cc4",
+            "description": "",
+            "color_des": "#3c3c3c",
+            "link": ""
+          }
+        },
+        "image_cm76A4": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/202405210801088_logo_2_1.png",
+            "title": "",
+            "color_text": "#000000",
+            "color_text_hover": "#3e8cc4",
+            "description": "",
+            "color_des": "#3c3c3c",
+            "link": ""
+          }
+        },
+        "image_YjwmmG": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/202405210909011_mixsoon.png",
+            "title": "",
+            "color_text": "#000000",
+            "color_text_hover": "#3e8cc4",
+            "description": "",
+            "color_des": "#3c3c3c",
+            "link": ""
+          }
+        },
+        "image_QadpjV": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/202405230939077_biodance_1.png",
+            "title": "",
+            "color_text": "#000000",
+            "color_text_hover": "#3e8cc4",
+            "description": "",
+            "color_des": "#3c3c3c",
+            "link": ""
+          }
+        },
+        "image_KUiqdL": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/202405240223055_logo_2_1.png",
+            "title": "",
+            "color_text": "#000000",
+            "color_text_hover": "#3e8cc4",
+            "description": "",
+            "color_des": "#3c3c3c",
+            "link": ""
+          }
+        },
+        "image_JQ4ypx": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/202405240230022_logo_1_1.png",
+            "title": "",
+            "color_text": "#000000",
+            "color_text_hover": "#3e8cc4",
+            "description": "",
+            "color_des": "#3c3c3c",
+            "link": ""
+          }
+        },
+        "image_PhK6HR": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/202412180517033_dalba.png",
+            "title": "",
+            "color_text": "#000000",
+            "color_text_hover": "#3e8cc4",
+            "description": "",
+            "color_des": "#3c3c3c",
+            "link": ""
+          }
+        }
+      },
+      "block_order": [
+        "00eb63be-e2e6-42a3-beba-b86835209958",
+        "9b762b19-9ce6-468e-92d9-240827f2b367",
+        "cd71499c-3d12-4a79-9431-61934301ef2d",
+        "4a13b25b-5b3f-4ca9-a700-513944c6d200",
+        "image_cm76A4",
+        "image_YjwmmG",
+        "image_QadpjV",
+        "image_KUiqdL",
+        "image_JQ4ypx",
+        "image_PhK6HR"
+      ],
+      "settings": {
+        "container": "container",
+        "brand_title": "Brand We Love",
+        "mg_top_desktop": 0,
+        "mg_bottom_desktop": 50,
+        "mg_bottom_tablet": 45,
+        "mg_bottom_mobile": 45
+      }
+    },
+    "16408514995dc83c95": {
+      "type": "product-block",
+      "settings": {
+        "container": "container",
+        "product_block_collection": "collection-home-09-flash-deals",
+        "product_block_limit": 8,
+        "product_block_title": "Flash Deals",
+        "color_title": "#f42b23",
+        "mg_top_desktop": 0,
+        "mg_bottom_desktop": 30,
+        "mg_bottom_tablet": 25,
+        "mg_bottom_mobile": 10
+      }
+    },
+    "163945138066afddf5": {
+      "type": "product-block",
+      "settings": {
+        "container": "container",
+        "product_block_collection": "best-seller",
+        "product_block_limit": 10,
+        "product_block_title": "Recommended for you",
+        "color_title": "#0b0335",
+        "mg_top_desktop": 55,
+        "mg_bottom_desktop": 60,
+        "mg_bottom_tablet": 40,
+        "mg_bottom_mobile": 40
+      }
+    },
+    "164077099606fca4f1": {
+      "type": "spotlight-block",
+      "blocks": {
+        "16403121354f65d628-0": {
+          "type": "image",
+          "settings": {
+            "enable_image": true,
+            "image": "shopify://shop_images/a6bb2f70-9503-48c6-af43-3852386d9ee9_1.png",
+            "link": "shopify://collections/best-seller"
+          }
+        },
+        "16403121354f65d628-1": {
+          "type": "image",
+          "settings": {
+            "enable_image": true,
+            "image": "shopify://shop_images/5779eeb4-9c02-45ba-8a5d-77167b6f4715.png",
+            "link": "shopify://collections/beauty-of-joseon"
+          }
+        }
+      },
+      "block_order": [
+        "16403121354f65d628-0",
+        "16403121354f65d628-1"
+      ],
+      "settings": {
+        "container": "container",
+        "column": "2",
+        "mg_top_desktop": 10,
+        "mg_bottom_desktop": 45
+      }
+    },
+    "164007103401d99dd4": {
+      "type": "product-tab-block",
+      "blocks": {
+        "754a9b2c-0b43-4bbf-839c-c229e8f156eb": {
+          "type": "ProductTabs",
+          "settings": {
+            "title": "SKINFOOD",
+            "collection": "skinfood"
+          }
+        }
+      },
+      "block_order": [
+        "754a9b2c-0b43-4bbf-839c-c229e8f156eb"
+      ],
+      "settings": {
+        "container": "container",
+        "product_block_title": "Top Brand",
+        "mg_top_desktop": 0,
+        "mg_bottom_desktop": 20
+      }
+    },
+    "16409351200694b44e": {
+      "type": "product-tab-block",
+      "blocks": {
+        "754a9b2c-0b43-4bbf-839c-c229e8f156eb": {
+          "type": "ProductTabs",
+          "settings": {
+            "title": "HARUHARU WONDER",
+            "collection": "haruharu-wonder"
+          }
+        }
+      },
+      "block_order": [
+        "754a9b2c-0b43-4bbf-839c-c229e8f156eb"
+      ],
+      "settings": {
+        "container": "container",
+        "mg_top_desktop": 0,
+        "mg_bottom_desktop": 20
+      }
+    },
+    "product_tab_block_BNFmHc": {
+      "type": "product-tab-block",
+      "blocks": {
+        "product_tabs_RyiwrL": {
+          "type": "ProductTabs",
+          "settings": {
+            "title": "K-Beauty Face Moisturizers",
+            "collection": "moisturizer"
+          }
+        }
+      },
+      "block_order": [
+        "product_tabs_RyiwrL"
+      ],
+      "settings": {
+        "container": "container",
+        "product_block_title": "Shop the Best Korean Moisturizers:",
+        "mg_top_desktop": 50,
+        "mg_bottom_desktop": 50
+      }
+    },
+    "product_tab_block_AfLYBd": {
+      "type": "product-tab-block",
+      "blocks": {
+        "product_tabs_MwVLLr": {
+          "type": "ProductTabs",
+          "settings": {
+            "title": "K-Beauty Skincare Toners",
+            "collection": "toner"
+          }
+        }
+      },
+      "block_order": [
+        "product_tabs_MwVLLr"
+      ],
+      "settings": {
+        "container": "container",
+        "product_block_title": "Shop the Best Korean Toners & Toner Pads:",
+        "mg_top_desktop": 50,
+        "mg_bottom_desktop": 50
+      }
+    },
+    "product_tab_block_qRR89q": {
+      "type": "product-tab-block",
+      "blocks": {
+        "product_tabs_CMcC9X": {
+          "type": "ProductTabs",
+          "settings": {
+            "title": "K-Beauty Serums",
+            "collection": "essence-serum-ampoule"
+          }
+        }
+      },
+      "block_order": [
+        "product_tabs_CMcC9X"
+      ],
+      "settings": {
+        "container": "container",
+        "product_block_title": "Shop the Best Korean Serums:",
+        "mg_top_desktop": 50,
+        "mg_bottom_desktop": 50
+      }
+    },
+    "16409351391bc6ccf9": {
+      "type": "product-tab-block",
+      "blocks": {
+        "754a9b2c-0b43-4bbf-839c-c229e8f156eb": {
+          "type": "ProductTabs",
+          "settings": {
+            "title": "COS DE BAHA",
+            "collection": "cos-de-baha"
+          }
+        }
+      },
+      "block_order": [
+        "754a9b2c-0b43-4bbf-839c-c229e8f156eb"
+      ],
+      "settings": {
+        "container": "container",
+        "product_block_title": "Top Brand",
+        "mg_top_desktop": 0,
+        "mg_bottom_desktop": 20
+      }
+    },
+    "16409351508cd2f3e1": {
+      "type": "product-tab-block",
+      "blocks": {
+        "754a9b2c-0b43-4bbf-839c-c229e8f156eb": {
+          "type": "ProductTabs",
+          "settings": {
+            "title": "PURITO SEOUL",
+            "collection": "purito-seoul"
+          }
+        }
+      },
+      "block_order": [
+        "754a9b2c-0b43-4bbf-839c-c229e8f156eb"
+      ],
+      "settings": {
+        "container": "container",
+        "mg_top_desktop": 0,
+        "mg_bottom_desktop": 55
+      }
+    },
+    "product_tab_block_hEKJFW": {
+      "type": "product-tab-block",
+      "blocks": {
+        "product_tabs_dmaQMq": {
+          "type": "ProductTabs",
+          "settings": {
+            "title": "K-Beauty Cleansers",
+            "collection": "cleansing-oil-water"
+          }
+        }
+      },
+      "block_order": [
+        "product_tabs_dmaQMq"
+      ],
+      "settings": {
+        "container": "container",
+        "product_block_title": "Shop the Best Korean Cleansers:",
+        "mg_top_desktop": 50,
+        "mg_bottom_desktop": 50
+      }
+    },
+    "product_tab_block_NyhkEw": {
+      "type": "product-tab-block",
+      "blocks": {
+        "product_tabs_cTnFzt": {
+          "type": "ProductTabs",
+          "settings": {
+            "title": "K-Beauty Masks",
+            "collection": "masks-packs"
+          }
+        }
+      },
+      "block_order": [
+        "product_tabs_cTnFzt"
+      ],
+      "settings": {
+        "container": "container",
+        "product_block_title": "Shop the Best Korean Face Masks & Patches:",
+        "mg_top_desktop": 50,
+        "mg_bottom_desktop": 50
+      }
+    },
+    "1638443951da7732e8": {
+      "type": "spotlight-block",
+      "blocks": {
+        "1640313556c1073db4-0": {
+          "type": "image",
+          "settings": {
+            "enable_image": true,
+            "image": "shopify://shop_images/Sin_titulo_250_x_250_px_1200_x_1200_px_1.jpg",
+            "title": "Honey Melting Lip",
+            "des": "Soft Lip Stick",
+            "button": "Shop Now",
+            "link": "shopify://products/nature-republic-honey-melting-lip-soft-lip-stick"
+          }
+        },
+        "1640313556c1073db4-1": {
+          "type": "image",
+          "settings": {
+            "enable_image": true,
+            "image": "shopify://shop_images/Sin_titulo_250_x_250_px_1200_x_1200_px_2.jpg",
+            "title": "ArtClass by Rodin Shading",
+            "des": "Contour Palette",
+            "button": "Shop Now",
+            "link": "shopify://products/too-cool-for-school-artclass-by-rodin-shading-warm-tone-1-classic"
+          }
+        },
+        "1640313556c1073db4-2": {
+          "type": "image",
+          "settings": {
+            "enable_image": true,
+            "image": "shopify://shop_images/71IpmqiZQ4L._SL1500_9008c6bf-3054-4170-942e-069c9068b10d.jpg",
+            "title": "THE SAEM Cover Perfection",
+            "des": "Tip Concealer",
+            "button": "Shop Now",
+            "link": "shopify://products/the-saem-cover-perfection-tip-concealer"
+          }
+        }
+      },
+      "block_order": [
+        "1640313556c1073db4-0",
+        "1640313556c1073db4-1",
+        "1640313556c1073db4-2"
+      ],
+      "settings": {
+        "container": "container",
+        "column": "3",
+        "mg_top_desktop": 60,
+        "mg_bottom_desktop": 55
+      }
+    },
+    "product_tab_block_aw4mdg": {
+      "type": "product-tab-block",
+      "blocks": {
+        "product_tabs_W6EVE3": {
+          "type": "ProductTabs",
+          "settings": {
+            "title": "K-Beauty Eye Cream",
+            "collection": "eye-cream"
+          }
+        }
+      },
+      "block_order": [
+        "product_tabs_W6EVE3"
+      ],
+      "settings": {
+        "container": "container",
+        "product_block_title": "Shop the Best Korean Under Eye Cream",
+        "mg_top_desktop": 50,
+        "mg_bottom_desktop": 50
+      }
+    },
+    "product_tab_block_fd9EKh": {
+      "type": "product-tab-block",
+      "blocks": {
+        "product_tabs_x3rUzz": {
+          "type": "ProductTabs",
+          "settings": {
+            "title": "K-Beauty Make-Up",
+            "collection": "make-up-1"
+          }
+        }
+      },
+      "block_order": [
+        "product_tabs_x3rUzz"
+      ],
+      "settings": {
+        "container": "container",
+        "product_block_title": "Shop the Best Korean Make-Up",
+        "mg_top_desktop": 50,
+        "mg_bottom_desktop": 50
+      }
+    },
+    "custom_service_block_jhr9Kh": {
+      "type": "custom-service-block",
+      "blocks": {
+        "text_Qt69Dm": {
+          "type": "Text",
+          "settings": {
+            "text": "Guaranteed Quality",
+            "description": "Experience the power of the best Korean skin care products, featuring good Korean skincare formulas designed to nourish and revitalize your skin."
+          }
+        }
+      },
+      "block_order": [
+        "text_Qt69Dm"
+      ],
+      "settings": {
+        "container": "container",
+        "service_block_title": "Why shop with us?",
+        "mg_top_desktop": 50,
+        "mg_bottom_desktop": 50
+      }
+    },
+    "1640661849c9458fec": {
+      "type": "custom-service-block",
+      "blocks": {
+        "cbece3c5-69e7-4ac0-9014-0d3771d72d19": {
+          "type": "Text",
+          "settings": {
+            "text": "QUALITY AND SAVING",
+            "description": "Comprehensive quality control and affordable prices"
+          }
+        },
+        "150cc01c-9394-4067-b3a3-4cbadd5f4083": {
+          "type": "Text",
+          "settings": {
+            "text": "FAST SHIPPING",
+            "description": "Fast and convenient door to door delivery"
+          }
+        },
+        "fa71b4aa-cce0-43b7-8f5d-12fb9b713fd2": {
+          "type": "Text",
+          "settings": {
+            "text": "PAYMENT SECURITY",
+            "description": "Your payment is 100% secure."
+          }
+        },
+        "7edc8c7e-9638-4b3c-8936-858f838024ed": {
+          "type": "Text",
+          "settings": {
+            "text": "HAVE QUESTIONS?",
+            "description": "24/7 Customer Service - We're here and happy to help!"
+          }
+        }
+      },
+      "block_order": [
+        "cbece3c5-69e7-4ac0-9014-0d3771d72d19",
+        "150cc01c-9394-4067-b3a3-4cbadd5f4083",
+        "fa71b4aa-cce0-43b7-8f5d-12fb9b713fd2",
+        "7edc8c7e-9638-4b3c-8936-858f838024ed"
+      ],
+      "settings": {
+        "container": "container",
+        "mg_top_desktop": 0,
+        "mg_bottom_desktop": 0
+      }
+    },
+    "1639989383a6d05981": {
+      "type": "featured-blog",
+      "settings": {
+        "container": "container",
+        "featured_blog_title": "Latest Posts",
+        "color_title": "#0b0335",
+        "blog_posts": "news",
+        "post_limit": 2,
+        "mg_top_desktop": 50,
+        "mg_bottom_desktop": 60
+      }
+    },
+    "rich_text_3GmHwC": {
+      "type": "rich-text",
+      "blocks": {
+        "text_4E8iiW": {
+          "type": "text",
+          "settings": {
+            "text": "\"Discover The Best Korean Skincare & Beauty Products – Top-Selling, Popular & Highly-Rated K-Beauty Essentials\"",
+            "text_size": 14
+          }
+        }
+      },
+      "block_order": [
+        "text_4E8iiW"
+      ],
+      "settings": {
+        "container": "container",
+        "content_align": "center",
+        "mg_top_desktop": 50,
+        "mg_bottom_desktop": 50
+      }
+    },
+    "1738694158c436eae8": {
+      "type": "apps",
+      "blocks": {
+        "instareel_instagram_reels_feed_instagram_reels_feed_YzPNQw": {
+          "type": "shopify://apps/instareel-ig-reels/blocks/instagram-reels-feed/6399ee9c-54c8-4f76-97d7-8f02f7662aa1",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "instareel_instagram_reels_feed_instagram_reels_feed_YzPNQw"
+      ],
+      "settings": {
+        "include_margins": false
       }
     }
   },
   "order": [
-    "shatokb-hero"
+    "164007305002c9359c",
+    "shatokb-hero",
+    "spotlight_block_jQwANf",
+    "163835209394385a65",
+    "16408514995dc83c95",
+    "163945138066afddf5",
+    "164077099606fca4f1",
+    "164007103401d99dd4",
+    "16409351200694b44e",
+    "product_tab_block_BNFmHc",
+    "product_tab_block_AfLYBd",
+    "product_tab_block_qRR89q",
+    "16409351391bc6ccf9",
+    "16409351508cd2f3e1",
+    "product_tab_block_hEKJFW",
+    "product_tab_block_NyhkEw",
+    "1638443951da7732e8",
+    "product_tab_block_aw4mdg",
+    "product_tab_block_fd9EKh",
+    "custom_service_block_jhr9Kh",
+    "1640661849c9458fec",
+    "1639989383a6d05981",
+    "rich_text_3GmHwC",
+    "1738694158c436eae8"
   ]
 }
