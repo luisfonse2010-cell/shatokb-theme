@@ -710,15 +710,46 @@ async function ksrInit() {
   }
 
   try {
-    const apiBase = window.KSR_TABLE_API || '/';
-    const res = await fetch(`${apiBase}tables/skin_reports?search=${encodeURIComponent(token)}&limit=1`);
+    // Garantizar que apiBase siempre termina en '/'
+    let apiBase = window.KSR_TABLE_API || '/';
+    if (!apiBase.endsWith('/')) apiBase += '/';
 
-    if (!res.ok) throw new Error(`API ${res.status}`);
+    let record = null;
 
-    const json = await res.json();
-    const record = json.data && json.data[0];
+    // ── Intento 1: GET directo por ID (el Worker usa el UUID del registro como token) ──
+    try {
+      const resById = await fetch(`${apiBase}tables/skin_reports/${encodeURIComponent(token)}`);
+      if (resById.ok) {
+        const byId = await resById.json();
+        // Endpoint de registro único devuelve el objeto directamente (no envuelto en data[])
+        if (byId && (byId.id || byId.report_data)) record = byId;
+      }
+    } catch (_) { /* silencioso — pasa al intento 2 */ }
+
+    // ── Intento 2: búsqueda por campo token exacto ──
+    if (!record) {
+      const resByToken = await fetch(`${apiBase}tables/skin_reports?search=${encodeURIComponent(token)}&limit=1`);
+      if (resByToken.ok) {
+        const jsonToken = await resByToken.json();
+        const found = jsonToken.data && jsonToken.data.find(r =>
+          r.token === token || r.id === token
+        );
+        if (found) record = found;
+      }
+    }
+
+    // ── Intento 3: búsqueda amplia (fallback final) ──
+    if (!record) {
+      const resSearch = await fetch(`${apiBase}tables/skin_reports?limit=100`);
+      if (resSearch.ok) {
+        const jsonSearch = await resSearch.json();
+        const all = jsonSearch.data || [];
+        record = all.find(r => r.token === token || r.id === token) || null;
+      }
+    }
 
     if (!record) {
+      console.warn('[KSR] No record found for token:', token);
       showError();
       return;
     }
