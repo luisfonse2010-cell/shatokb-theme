@@ -18,7 +18,7 @@
  *
  * ============================================================
  */
-/* ── Last deploy: 2026-06-19T15:02:16.375Z */
+/* ── Last deploy: 2026-06-19T15:15:27.076Z */
 
 
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
@@ -606,7 +606,7 @@ export default {
       reportData.token      = token;
 
       // 2. Guardar en tabla API (paralelo con Klaviyo para no bloquear)
-      const apiBase = tableApiUrl || 'https://shatokb.com';
+      const apiBase = tableApiUrl || 'https://www.genspark.ai/api/v1/project/8b11bf35-e038-4848-9fe1-fffa1edac409';
       const savePromise = fetch(`${apiBase}/tables/skin_reports`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
