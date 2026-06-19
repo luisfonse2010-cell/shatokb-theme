@@ -3300,7 +3300,7 @@ async function shatokbMostrarResultado() {
         </div>
 
         <!-- CTAs — rendered dynamically from Theme Editor config -->
-        <div class="shatokb-resultado__ctas" id="shatokb-ctas" style="margin-top: 40px;"></div>
+        <div class="shatokb-resultado__ctas" id="shatokb-ctas" style="margin-top: 16px;"></div>
 
         <!-- Sticky total bar -->
         <div class="stk-total-bar" id="stk-total-bar">

@@ -225,6 +225,8 @@
       if (blurred && blurred.parentNode) {
         // Insertar KOI DESPUÉS de #stk-routine-blurred (al final de los productos)
         blurred.parentNode.appendChild(wrapper);
+        // Reducir espacio entre el botón "redo" y KOI
+        wrapper.style.marginTop = '8px';
         console.log('[KOI] insertado después de #stk-routine-blurred (al final) ✅');
         return true;
       }
