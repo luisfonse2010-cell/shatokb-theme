@@ -28,6 +28,11 @@
     // URL de la tabla API (Genspark project — tabla skin_reports)
     tableApiUrl: 'https://www.genspark.ai/api/v1/project/8b11bf35-e038-4848-9fe1-fffa1edac409',
 
+    // API Key de Genspark para autenticar el POST a la tabla skin_reports
+    // (El Worker la incluye en el header Authorization: Bearer <key>)
+    // Obtener en: genspark.ai → proyecto → Settings → API Keys
+    tableApiKey: '',  // ← RELLENAR si la tabla requiere autenticación
+
     // Límite de mensajes en el historial (memoria de conversación)
     maxHistory: 20,
 
@@ -1403,28 +1408,69 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       cartUrl:               'https://shatokb.com/cart',
     };
 
-    // Llamada silenciosa al Worker — no interrumpe el flujo
-    // tableApiUrl = URL del proyecto Genspark donde vive la tabla skin_reports
-    const tableApiUrl = KOI_CONFIG.tableApiUrl;
+    // ══════════════════════════════════════════════════════════════
+    // ARQUITECTURA CORRECTA (Jun 2026):
+    //
+    //  1. Frontend genera el token UUID aquí mismo (no en el Worker)
+    //  2. Frontend guarda el registro en la tabla Genspark directamente
+    //     via URL relativa `tables/skin_reports` — funciona porque
+    //     la API de Genspark solo es accesible desde el mismo origen
+    //     (el Worker de Cloudflare recibe 404 al intentar accederla)
+    //  3. Frontend llama al Worker solo para Klaviyo (con el token ya generado)
+    //
+    //  Flujo: Shopify → POST tabla Genspark ✅  +  POST Worker Klaviyo ✅
+    // ══════════════════════════════════════════════════════════════
 
-    // ── Campos planos al nivel raíz para Klaviyo ──────────────────────
-    // El Worker los pasa directamente como event.* en la plantilla de Klaviyo.
-    // Los duplicamos aquí para que siempre lleguen con los nombres correctos,
-    // independientemente de cómo el Worker parsee el reportData anidado.
-    const rutinasAM = (reportData.rutinaAM || []).join('\n');
-    const rutinasPM = (reportData.rutinaPM || []).join('\n');
+    // 1. Generar token único en el cliente (UUID v4 simple)
+    const token = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = Math.random() * 16 | 0;
+      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+    const siteUrl    = KOI_CONFIG.siteUrl || 'https://shatokb.com';
+    const reportUrl  = `${siteUrl}/pages/skin-report?token=${token}`;
+
+    // Enriquecer reportData con token y URL
+    reportData.token     = token;
+    reportData.reportUrl = reportUrl;
+
+    // ── Campos planos para Klaviyo event.* ──────────────────────
+    const rutinasAM      = (reportData.rutinaAM || []).join('\n');
+    const rutinasPM      = (reportData.rutinaPM || []).join('\n');
     const productosLista = (reportData.productosSeleccionados || [])
       .map((p, i) => `${i + 1}. ${p.nombre}${p.precio ? ' — ' + p.precio : ''}${p.momento && p.momento !== 'ambos' ? ' (' + p.momento.toUpperCase() + ')' : ''}`)
       .join('\n');
 
+    // 2. Guardar en tabla Genspark directamente (URL relativa — mismo origen)
+    fetch('tables/skin_reports', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token,
+        email,
+        perfil_id:     perfilId,
+        perfil_nombre: perfilNombre,
+        report_data:   JSON.stringify(reportData),
+        klaviyo_sent:  false,
+        idioma:        reportData.idioma       || 'es',
+        total_carrito: reportData.totalCarrito || 0,
+      }),
+    })
+    .then(r => {
+      if (r.ok) console.log('[KOI] Registro guardado en tabla. Token:', token);
+      else r.text().then(t => console.warn('[KOI] Table save HTTP', r.status, t.slice(0, 200)));
+    })
+    .catch(e => console.warn('[KOI] Table save error:', e.message));
+
+    // 3. Llamar al Worker solo para Klaviyo (silencioso — no interrumpe flujo)
     fetch(KOI_CONFIG.reportUrl, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
         email,
         reportData,
-        siteUrl:         KOI_CONFIG.siteUrl,
-        tableApiUrl,
+        token,        // ← token ya generado en cliente
+        reportUrl,    // ← URL ya construida
+        siteUrl,
         // ── Campos planos para Klaviyo event.* ──
         perfil_id:       perfilId,
         perfil_nombre:   perfilNombre,
@@ -1439,9 +1485,8 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     .then(r => r.json())
     .then(data => {
       if (data.ok) {
-        // Guardar la URL del reporte en el estado por si la necesitamos
-        KOI_STATE.reportUrl = data.reportUrl;
-        console.log('[KOI] Skin Report generado:', data.reportUrl);
+        KOI_STATE.reportUrl = data.reportUrl || reportUrl;
+        console.log('[KOI] Klaviyo enviado. Report URL:', KOI_STATE.reportUrl);
       }
     })
     .catch(() => {}); // silencioso — nunca interrumpir la experiencia
