@@ -4292,9 +4292,16 @@ window.shatokbCambiarPerfil = async function (nuevoPerfilId, respuestasEnriqueci
    2. Start fetching the live catalogue in the background so
       it's ready by the time the user finishes all 6 questions.
 ============================================================ */
-// ── Exponer función en window para garantizar scope global ──────
-// (necesario por 'use strict' + posibles iframes/shadow DOM en Halo)
-window.shatokbIniciarQuiz = shatokbIniciarQuiz;
+// ── Exponer en window para garantizar scope global ──────────────
+// koi-chat.js (IIFE) necesita estos para añadir al carrito:
+//   • shatokbState.selectedProducts  → qué producto eligió el usuario
+//   • SHATOKB_CATALOGO               → de qué handle es cada producto
+//   • shatokbEjecutarAddToCart       → la función que hace el fetch /cart/add.js
+window.shatokbIniciarQuiz         = shatokbIniciarQuiz;
+window.shatokbState               = shatokbState;
+window.SHATOKB_CATALOGO           = SHATOKB_CATALOGO;
+window.shatokbEjecutarAddToCart   = shatokbEjecutarAddToCart;
+window.shatokbAddAllToCart        = shatokbAddAllToCart;
 
 document.addEventListener('DOMContentLoaded', function () {
   shatokbApplyConfigToUI();
