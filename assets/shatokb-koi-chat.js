@@ -1843,14 +1843,108 @@ async function manejarResultadoVision (data) {
     setTimeout(() => mostrarChips('post_vision'), 700);
 
   } else {
-    // ── Fallback: sin resultado del Worker ────────────────────
-    // En lugar de mostrar un mensaje intermedio + chip → ir directo al reveal.
-    // Esto evita: fallback msg → usuario pulsa chip → reveal msg (duplicado).
-    await new Promise(r => setTimeout(r, 1200));
+    // ── Fallback: sin resultado del Worker — mensaje seductor por perfil ──────
+    // Construir un mensaje íntimo, clínico y específico usando los datos del quiz.
+    // El usuario debe sentir que KOI leyó su piel, no que es un template.
+
+    await new Promise(r => setTimeout(r, 1400));
     ocultarTyping();
 
-    KOI_STATE.revealPhase = 'email';
-    await revelarRutinaConKOI('');
+    // ── Extraer datos del contexto del quiz ──────────────────
+    const ctx       = KOI_STATE.contexto || {};
+    const resp      = ctx.respuestas   || ctx.answers    || {};
+    const perfil    = ctx.perfil       || ctx.profile    || {};
+    const perfilId  = (perfil.id       || perfil.perfil_id || ctx.perfil_id || '').toLowerCase();
+    const preoc     = (resp.preocupacion || resp.concern || resp.skin_concern || resp.preocupacion_principal || '').toLowerCase();
+    const tipoP     = (resp.tipo_piel  || resp.skin_type || resp.tipo        || '').toLowerCase();
+    const zona      = (resp.zona_problematica || resp.problem_zone || '').toLowerCase();
+    const edad      = resp.edad || resp.age || '';
+
+    // ── Resolver concern dominante: primero preocupacion, luego perfil_id ──
+    const hayAcne   = preoc.includes('acn') || preoc.includes('grano') || preoc.includes('blemish') || perfilId.includes('acne');
+    const hayManchas= preoc.includes('mancha') || preoc.includes('pigment') || preoc.includes('spot') || preoc.includes('dark') || perfilId.includes('pigment') || perfilId.includes('mancha');
+    const hayPoros  = preoc.includes('por') || preoc.includes('pore') || preoc.includes('textur') || perfilId.includes('pore');
+    const hayArrugas= preoc.includes('arruga') || preoc.includes('aging') || preoc.includes('firmez') || preoc.includes('wrink') || perfilId.includes('aging') || perfilId.includes('anti_age');
+    const hayRojez  = preoc.includes('rojez') || preoc.includes('sensibl') || preoc.includes('redness') || preoc.includes('rosacea') || perfilId.includes('sensit') || perfilId.includes('calming');
+    const hayDeshi  = preoc.includes('deshidrat') || preoc.includes('sequ') || preoc.includes('dry') || preoc.includes('tight') || tipoP.includes('seca') || tipoP.includes('dry') || perfilId.includes('dry') || perfilId.includes('barrier');
+    const hayBrillo = preoc.includes('brillo') || preoc.includes('oil') || preoc.includes('seborr') || tipoP.includes('grasa') || tipoP.includes('oily') || perfilId.includes('oily');
+
+    // ── Seleccionar mensaje según concern dominante ──
+    let mensajeFallback = '';
+
+    if (idioma === 'es') {
+      if (hayAcne) {
+        mensajeFallback = `Revisé tu perfil y hay algo que me llama mucho la atención. 🔬\n\nCuando el acné aparece una y otra vez, casi siempre es porque hay inflamación dentro del poro — no en la superficie. Lo que ves afuera es solo la señal de algo que está pasando más adentro. Y cuando intentas secarlo con productos fuertes, tu piel se defiende produciendo más grasa, y eso... alimenta el problema.\n\nEl truco no es atacar el grano. Es calmar la inflamación, equilibrar la piel y cerrar el ciclo desde dentro. Ya sé qué necesita tu piel para hacer exactamente eso. ¿Vemos tu rutina?`;
+      } else if (hayManchas) {
+        mensajeFallback = `Lo que me dice tu análisis explica mucho de lo que probablemente ya viviste. 🔬\n\nLas manchas que no se van con crema tienen una razón: están en una capa más profunda de la piel, donde la mayoría de los productos no llegan. Por eso se aclaran un poco y vuelven — porque nunca se trabajó donde realmente están.\n\nPara borrarlas de verdad, hay que frenar la producción de pigmento desde dentro, no solo aclarar por fuera. Eso requiere los ingredientes correctos, en el orden correcto. Ya los tengo identificados para tu caso. ¿Los vemos?`;
+      } else if (hayPoros) {
+        mensajeFallback = `Tu análisis me cuenta algo que tiene mucho sentido. 🔬\n\nLos poros no se "cierran" — eso es un mito. Lo que sí pasa es que cuando se acumula grasa y células muertas dentro, se estiran y se ven más grandes. Tu piel está produciendo más grasa de la que necesita, y eso agranda el poro y da esa textura que tanto molesta.\n\nLa solución no es limpiar más fuerte — es regular la producción de grasa y renovar la piel suavemente. Con los ingredientes correctos, los poros se ven notablemente más pequeños en semanas. Tu rutina ya tiene eso. ¿La vemos?`;
+      } else if (hayArrugas) {
+        mensajeFallback = `Tu análisis me habla de algo que es completamente normal, pero que tiene solución. 🔬\n\nA partir de cierta edad, la piel produce menos colágeno — esa proteína que la mantiene firme y tersa. Las líneas que ves son la señal de que ese proceso empezó. No es un defecto, es biología. Pero sí se puede frenar y revertir en parte.\n\nHay ingredientes que le dan a la piel la señal de volver a producir colágeno — y funcionan de verdad cuando se usan correctamente. Ya tengo el protocolo exacto para tu perfil. ¿Lo vemos?`;
+      } else if (hayRojez) {
+        mensajeFallback = `Lo que veo en tu perfil me dice que tu piel está a la defensiva. 🔬\n\nCuando la piel se pone roja fácilmente, se irrita con productos que a otros no les hacen nada, o sientes calor o escozor sin razón aparente — eso no es que seas "exagerada". Es que tu barrera protectora está debilitada y deja entrar cosas que no debería.\n\nLa clave no es evitar todo — es reconstruir esa barrera para que la piel vuelva a protegerse sola. Con los ingredientes correctos, la piel deja de reaccionar tanto en pocas semanas. Tu rutina está pensada exactamente para eso. ¿La vemos?`;
+      } else if (hayDeshi) {
+        mensajeFallback = `Tu perfil me cuenta algo que mucha gente confunde. 🔬\n\nEsa sensación de tirantez, esa opacidad, esas líneas finas que aparecen aunque uses crema — no siempre es que la piel sea "seca". Muchas veces es que la piel está perdiendo agua más rápido de lo que puede retenerla. Es diferente, y se trata diferente.\n\nLo que necesitas no es solo más hidratante — es sellar la piel para que el agua que ya tiene no se evapore. Hay ingredientes que hacen exactamente eso. Ya los tengo listos en tu rutina. ¿La vemos?`;
+      } else if (hayBrillo) {
+        mensajeFallback = `Tu análisis me confirma algo que muchas personas con piel grasa no saben. 🔬\n\nCuando la piel brilla demasiado, el instinto es secarla. Pero eso empeora el problema — porque la piel interpreta esa sequedad como una amenaza y produce aún más grasa para compensar. Es un círculo vicioso.\n\nLo que realmente funciona es enseñarle a la piel que no necesita producir tanta grasa. Con los ingredientes correctos, en pocas semanas el brillo se regula solo y la piel queda mate sin sentirse apretada. Tu rutina ya tiene eso. ¿La vemos?`;
+      } else {
+        mensajeFallback = `Tu perfil me da información muy clara sobre lo que está pasando en tu piel. 🔬\n\nLo que yo hago es leer esas señales y traducirlas en un plan concreto. Porque la piel siempre tiene una razón detrás de cada problema — y cuando encuentras esa razón, la solución deja de ser ensayo y error.\n\nYa tengo tu rutina armada con los ingredientes exactos para lo que tu piel necesita ahora. Cada paso tiene un porqué específico para ti. ¿La vemos juntas?`;
+      }
+    } else if (idioma === 'fr') {
+      if (hayAcne) {
+        mensajeFallback = `Ce que je vois dans ton profil est très clair. 🔬\n\nQuand l'acné revient sans cesse, c'est presque toujours parce qu'il y a une inflammation à l'intérieur du pore — pas en surface. Ce que tu vois dehors n'est que le signal de quelque chose qui se passe plus en profondeur. Et quand tu essaies de l'assécher avec des produits forts, ta peau se défend en produisant plus de sébum, ce qui aggrave le problème.\n\nJ'ai identifié exactement ce dont ta peau a besoin pour briser ce cycle. Ta routine est prête. On la voit ?`;
+      } else if (hayManchas) {
+        mensajeFallback = `Ton analyse m'explique beaucoup de choses. 🔬\n\nLes taches qui ne partent pas avec les crèmes habituelles sont souvent dans une couche plus profonde de la peau — là où la plupart des produits n'arrivent pas. C'est pourquoi elles s'éclaircissent un peu puis reviennent.\n\nPour les effacer vraiment, il faut freiner la production de pigment de l'intérieur. J'ai les ingrédients exacts pour ton cas. Ta routine est personnalisée. On la découvre ?`;
+      } else if (hayArrugas) {
+        mensajeFallback = `Ton analyse me parle de quelque chose de très normal, mais qui a une solution. 🔬\n\nÀ partir d'un certain âge, la peau produit moins de collagène — cette protéine qui la maintient ferme et lisse. Les rides que tu vois sont le signe que ce processus a commencé. Ce n'est pas un défaut, c'est de la biologie. Mais on peut le ralentir et en partie l'inverser.\n\nJ'ai les ingrédients qui donnent à la peau le signal de relancer sa production de collagène. Ta routine est prête avec le protocole exact pour ton profil. On la voit ?`;
+      } else if (hayRojez) {
+        mensajeFallback = `Ce que je lis dans ton profil me dit que ta peau est sur la défensive. 🔬\n\nQuand la peau rougit facilement ou réagit à des produits qui ne posent aucun problème aux autres, ce n'est pas une coïncidence — c'est que ta barrière protectrice est fragilisée. La clé, c'est de la reconstruire pour que la peau recommence à se protéger toute seule.\n\nTa routine est pensée exactement pour ça. On la voit ensemble ?`;
+      } else {
+        mensajeFallback = `Ton profil me donne des informations très claires sur ce qui se passe dans ta peau. 🔬\n\nCe que je fais, c'est lire ces signaux et les traduire en un plan concret. Parce que la peau a toujours une raison derrière chaque problème — et quand on trouve cette raison, la solution n'est plus un essai-erreur.\n\nTa routine est déjà construite avec les ingrédients exacts pour ce dont ta peau a besoin. Chaque étape a un pourquoi précis pour toi. On la découvre ?`;
+      }
+    } else if (idioma === 'pt') {
+      if (hayAcne) {
+        mensajeFallback = `O que vejo no seu perfil é muito claro. 🔬\n\nQuando a acne volta repetidamente, quase sempre é porque há inflamação dentro do poro — não na superfície. Quanto mais você tenta secar com produtos fortes, mais a pele se defende produzindo mais gordura, e isso... alimenta o problema.\n\nJá identifiquei o que sua pele precisa para romper esse ciclo de verdade. Sua rotina está pronta. Vamos vê-la?`;
+      } else if (hayManchas) {
+        mensajeFallback = `Sua análise me explica muito. 🔬\n\nAs manchas que não somem com crème estão numa camada mais profunda da pele — onde a maioria dos produtos não chega. Por isso clareiam um pouco e voltam.\n\nPara apagá-las de verdade, é preciso frear a produção de pigmento por dentro. Já tenho os ingredientes certos para o seu caso. Sua rotina está personalizada. Vamos vê-la?`;
+      } else if (hayArrugas) {
+        mensajeFallback = `Sua análise fala de algo completamente normal, mas que tem solução. 🔬\n\nCom o tempo, a pele produz menos colágeno — a proteína que a mantém firme. As linhas que você vê são o sinal disso. Mas é possível desacelerar e parcialmente reverter esse processo com os ingredientes certos.\n\nJá tenho o protocolo exato para o seu perfil. Sua rotina está pronta. Vamos vê-la?`;
+      } else {
+        mensajeFallback = `Seu perfil me dá informações muito claras sobre o que está acontecendo na sua pele. 🔬\n\nO que eu faço é ler esses sinais e transformá-los num plano concreto. Porque a pele sempre tem um motivo por trás de cada problema — e quando você encontra esse motivo, a solução deixa de ser tentativa e erro.\n\nSua rotina já está montada com os ingredientes exatos para o que sua pele precisa agora. Vamos vê-la?`;
+      }
+    } else {
+      // English (default + de, it, etc.)
+      if (hayAcne) {
+        mensajeFallback = `Your profile tells me something that explains a lot. 🔬\n\nWhen breakouts keep coming back, it's almost always because there's inflammation building up inside the pore — not just on the surface. What you see on the outside is just the signal of something happening deeper in. And when you try to dry it out with strong products, your skin fights back by producing more oil, which makes it worse.\n\nThe trick isn't attacking the pimple — it's calming the inflammation and breaking the cycle from within. I already know what your skin needs to do exactly that. Ready to see your routine?`;
+      } else if (hayManchas) {
+        mensajeFallback = `What your analysis tells me explains a lot of what you've probably already experienced. 🔬\n\nSpots that won't go away with regular creams are usually sitting in a deeper layer of the skin — where most products can't reach. That's why they fade a little and come back — because nothing ever worked where they actually are.\n\nTo truly erase them, you need to slow down pigment production from the inside, not just lighten from the outside. That takes the right ingredients, in the right order. I've already got them identified for your case. Shall we look?`;
+      } else if (hayPoros) {
+        mensajeFallback = `Your analysis tells me something that makes a lot of sense. 🔬\n\nPores don't actually "open" or "close" — that's a myth. What really happens is that when oil and dead skin cells build up inside, they stretch and look bigger. Your skin is producing more oil than it needs right now, and that's what's causing that texture you don't like.\n\nThe solution isn't scrubbing harder — it's gently regulating your skin's oil and speeding up cell renewal. With the right ingredients, pores look noticeably smaller within weeks. Your routine already has that covered. Want to see it?`;
+      } else if (hayArrugas) {
+        mensajeFallback = `Your analysis speaks to something completely normal — but with a real solution. 🔬\n\nFrom a certain age, the skin produces less collagen — the protein that keeps it firm and smooth. The lines you're seeing are the signal that this process has started. It's not a flaw, it's just biology. But it can be slowed down, and partly reversed.\n\nThere are ingredients that give the skin the signal to start producing collagen again — and they genuinely work when used correctly. I already have the exact protocol for your profile. Shall we look at it?`;
+      } else if (hayRojez) {
+        mensajeFallback = `What I see in your profile tells me your skin is on the defensive. 🔬\n\nWhen skin flushes easily, reacts to products that don't bother anyone else, or feels hot or tingly for no clear reason — that's not just sensitivity. It means your skin's protective barrier has weakened and is letting things in that it shouldn't.\n\nThe key isn't avoiding everything — it's rebuilding that barrier so your skin can protect itself again. With the right ingredients, the reactivity calms down in just a few weeks. Your routine is designed specifically for this. Shall we see it?`;
+      } else if (hayDeshi) {
+        mensajeFallback = `Your profile tells me something a lot of people get confused about. 🔬\n\nThat tight feeling, that dull look, those fine lines that show up even when you moisturize — that's not always "dry skin." A lot of the time it means your skin is losing water faster than it can hold onto it. That's a different problem, and it needs a different fix.\n\nWhat you need isn't just more moisturizer — it's sealing the skin so the water already in it stops evaporating. There are ingredients that do exactly that. They're already in your routine. Shall we look?`;
+      } else if (hayBrillo) {
+        mensajeFallback = `Your analysis confirms something a lot of people with oily skin don't know. 🔬\n\nWhen skin gets too shiny, the instinct is to dry it out. But that actually makes it worse — because skin reads that dryness as a threat and produces even more oil to compensate. It's a cycle that keeps feeding itself.\n\nWhat actually works is teaching your skin it doesn't need to produce so much oil in the first place. With the right ingredients, shine regulates on its own within weeks — and your skin stays matte without feeling tight. Your routine already has this. Want to see it?`;
+      } else {
+        mensajeFallback = `Your profile gives me a very clear picture of what's going on with your skin. 🔬\n\nWhat I do is read those signals and turn them into a concrete plan. Because skin always has a reason behind every problem — and when you find that reason, the solution stops being trial and error.\n\nYour routine is already built with the exact ingredients your skin needs right now. Every step has a specific reason for being there — for you. Ready to take a look?`;
+      }
+    }
+
+    // ── Mostrar mensaje con efecto typewriter ────────────────
+    const textEl = agregarMensaje('koi', '', false);
+    await escribirConEfecto(textEl, mensajeFallback);
+    KOI_STATE.historial.push({ role: 'koi', content: mensajeFallback });
+
+    guardarHistorialLocal();
+
+    await new Promise(r => setTimeout(r, 600));
+
+    // ── Chips post_vision: solo "muéstrame mi rutina" ────────
+    KOI_STATE.revealPhase = 'post_vision';
+    mostrarChips('post_vision');
   }
 
   scrollAlFinal();
@@ -2199,57 +2293,10 @@ async function enviarDesdeChip (texto) {
     }
   }
 
-  /* ══════════════════════════════════════════════════════════
-     MANEJO DEL RESULTADO DE KOI VISION
-     Se llama cuando el módulo de cámara cierra con datos del Worker.
-     Genera el mensaje de KOI en el chat + chip post-visión.
-     ══════════════════════════════════════════════════════════ */
-  // Nota: _visionResultHandled ya declarada arriba con `let` para el event listener global
-
-  async function manejarResultadoVision (data) {
-    const idioma  = detectarIdioma();
-    const result  = data?.result || {};
-
-    // Guardar resultado para contexto futuro
-    KOI_STATE.visionResult  = result;
-    KOI_STATE.revealPhase   = 'post_vision';
-
-    // ── Mensaje de KOI — SIEMPRE positivo, nunca menciona "calidad" ──────────
-    // Si el Worker devuelve mensaje_koi usable, lo usamos.
-    // Si menciona calidad/limitaciones/imagen oscura, usamos fallback entusiasta.
-    const MSG_KW = ['calidad', 'quality', 'limit', 'oscur', 'dark', 'unclear',
-                    'cannot', 'no pud', 'unable', 'difícil', 'difficult',
-                    'imagen', 'image quality', 'lighting', 'iluminac'];
-
-    let mensajeKoi = result?.mensaje_koi || '';
-
-    const esMensajeNegativo = MSG_KW.some(kw =>
-      mensajeKoi.toLowerCase().includes(kw)
-    );
-
-    if (!mensajeKoi || esMensajeNegativo) {
-      // Fallback localizado — siempre positivo y orientado al reveal
-      const fallbacks = {
-        es: `Tu piel tiene señales claras que puedo leer incluso así. 🔬\n\nVeo el patrón en tu zona T, la textura en mejillas y el estado de tu barrera. Tus respuestas del quiz confirman lo que observo.\n\nTu rutina ya está construida en base a tu perfil exacto. ¿La vemos?`,
-        en: `Your skin tells a clear story — I can read it. 🔬\n\nI can see the pattern in your T-zone, cheek texture and barrier status. Your quiz answers confirm what I'm observing.\n\nYour routine is already built around your exact profile. Ready to see it?`,
-        fr: `Votre peau raconte une histoire claire — je peux la lire. 🔬\n\nJe vois le schéma dans votre zone T, la texture des joues et l'état de votre barrière. Vos réponses confirment ce que j'observe.\n\nVotre routine est déjà construite pour votre profil exact. On y va ?`,
-        pt: `Sua pele conta uma história clara — eu consigo ler. 🔬\n\nVejo o padrão na sua zona T, textura das bochechas e estado da barreira. Suas respostas do quiz confirmam o que observo.\n\nSua rotina já foi construída com base no seu perfil exato. Quer ver?`,
-        de: `Deine Haut erzählt eine klare Geschichte — ich kann sie lesen. 🔬\n\nIch sehe das Muster in deiner T-Zone, die Wangenstruktur und den Barrierezustand. Deine Quiz-Antworten bestätigen, was ich beobachte.\n\nDeine Routine ist bereits auf dein genaues Profil zugeschnitten. Sehen wir sie uns an?`,
-        it: `La tua pelle racconta una storia chiara — riesco a leggerla. 🔬\n\nVedo il modello nella tua zona T, la texture delle guance e lo stato della barriera. Le tue risposte al quiz confermano ciò che osservo.\n\nLa tua routine è già costruita per il tuo profilo esatto. La vediamo?`,
-      };
-      mensajeKoi = fallbacks[idioma] || fallbacks.en;
-    }
-
-    // Mostrar mensaje de KOI con efecto de escritura
-    const textEl = agregarMensaje('koi', '');
-    if (textEl) await escribirConEfecto(textEl, mensajeKoi);
-
-    KOI_STATE.historial.push({ role: 'assistant', content: mensajeKoi });
-    guardarHistorialLocal();
-
-    // Mostrar chip post-visión: solo "✨ Muéstrame mi rutina ahora"
-    setTimeout(() => mostrarChips('post_vision'), 500);
-  }
+  // manejarResultadoVision está definida más arriba (línea ~1725) con el flujo completo:
+  // card de análisis dimensional, enriquecimiento de respuestas con scores reales,
+  // reasignación de perfil si la foto lo indica, etc.
+  // ⚠️ NO re-definir aquí — la segunda definición sobrescribiría la buena.
 
   /* ── Detecta chip post-visión (después del análisis) ────── */
   function esChipPostVision (texto) {
@@ -2438,6 +2485,27 @@ async function enviarDesdeChip (texto) {
     const rutinaAM = (ctx.rutinaAM || []).join(' → ');
     const rutinaPM = (ctx.rutinaPM || []).join(' → ');
 
+    // ── Incluir análisis fotográfico real si existe ───────────
+    // visionResult viene del Worker /vision (GPT-4o Vision).
+    // Se pasa al Worker /chat para que KOI lo use en TODAS las
+    // respuestas posteriores — nunca mensajes genéricos.
+    const vision = KOI_STATE.visionResult || null;
+    let visionResumen = '';
+    if (vision && vision.dimensiones) {
+      const dim = vision.dimensiones;
+      const scores = Object.entries(dim)
+        .map(([k, v]) => `${k}: ${v?.score ?? '?'}/10`)
+        .join(', ');
+      const edad = vision.edad_biologica_estimada
+        ? `Edad biológica estimada: ${vision.edad_biologica_estimada} años. `
+        : '';
+      const criticos = (vision.puntos_criticos || []).join('; ');
+      const ings = (vision.ingredientes_prioritarios || []).join(', ');
+      visionResumen = `${edad}Scores dimensionales (0-10): ${scores}.` +
+        (criticos ? ` Hallazgos críticos: ${criticos}.` : '') +
+        (ings     ? ` Activos prioritarios: ${ings}.`   : '');
+    }
+
     return {
       perfil_id:          ctx.perfil?.id          || '',
       perfil_nombre:      ctx.perfil?.nombre       || '',
@@ -2449,6 +2517,11 @@ async function enviarDesdeChip (texto) {
       presupuesto:        ctx.presupuesto          || '',
       experiencia:        ctx.experiencia          || '',
       total_carrito:      ctx.totalCarrito         || 0,
+      // ── Análisis fotográfico real de la piel ─────────────
+      vision_analizado:   vision ? true : false,
+      vision_resumen:     visionResumen,
+      vision_score_global: vision?.score_global    || null,
+      vision_mensaje:     vision?.mensaje_reveal   || '',
     };
   }
 
