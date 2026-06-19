@@ -25,9 +25,8 @@
     // URL base del sitio (para construir el link del reporte)
     siteUrl:    'https://shatokb.com',
 
-    // URL de la tabla API (para guardar el reporte)
-    // ⚠️ Reemplazar con la URL real de la tabla API del proyecto
-    tableApiUrl: window.location.origin,
+    // URL de la tabla API (Genspark project — tabla skin_reports)
+    tableApiUrl: 'https://www.genspark.ai/api/v1/project/8b11bf35-e038-4848-9fe1-fffa1edac409',
 
     // Límite de mensajes en el historial (memoria de conversación)
     maxHistory: 20,
@@ -835,10 +834,10 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
         checks: [
           'Routine AM/PM personnalisée',
           'Pourquoi chaque produit a été choisi',
-          "Ordre d'application + conseils",
+          'Ordre d\'application + conseils',
           'Guide des ingrédients clés',
         ],
-        subtitle:    "Où dois-je vous l'envoyer ?",
+        subtitle:    'Où dois-je vous l\'envoyer ?',
         placeholder: 'vous@email.com',
         btn:         'Envoyer ma routine →',
         note:        '🔒 Uniquement pour votre routine.',
@@ -889,74 +888,67 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     };
     const lbl = LABELS[idioma] || LABELS['en'];
 
-    // Añadir clase al panel para suprimir chips + input
-    panel.classList.add('koi--focus-mode');
-    wrapper.classList.add('koi-wrapper--focus-active');
-
-    // Bloquear scroll — técnica robusta para iOS + desktop
-    const scrollY = window.scrollY;
-    document.documentElement.classList.add('koi-scroll-locked');
-    document.body.style.overflow   = 'hidden';
-    document.body.style.position   = 'fixed';
-    document.body.style.top        = `-${scrollY}px`;
-    document.body.style.left       = '0';
-    document.body.style.right      = '0';
-    document.body.style.width      = '100%';
-
-    // ── Inyectar <style> en <head> con máxima prioridad ──
+    // OVERLAY: va dentro de .koi-panel (position:absolute inset:0)
+    // → cubre TODA la superficie del panel (header + mini-cart + mensajes)
+    // → z-index:10 supera el header (z-index:1) y el mini-cart-bar (z-index:2)
+    // → overflow:hidden del .koi-panel atrapa el overlay → el chat no puede scrollear
+    // CARD: va en document.body (position:fixed centrada en viewport)
+    // → escapa del transform:matrix() del wrapper
+    // → z-index:2147483647 → siempre encima de todo
     const styleTag = document.createElement('style');
     styleTag.id = 'koi-focus-style';
     styleTag.textContent =
-      '#koi-focus-overlay {' +
-      '  position: fixed !important;' +
-      '  inset: 0 !important;' +
-      '  top: 0 !important; left: 0 !important;' +
-      '  right: 0 !important; bottom: 0 !important;' +
-      '  width: 100vw !important; height: 100vh !important;' +
-      '  background-color: rgba(236,149,184,0.25) !important;' +
-      '  backdrop-filter: blur(3px) !important;' +
-      '  -webkit-backdrop-filter: blur(3px) !important;' +
-      '  z-index: 2147483640 !important;' +
-      '  pointer-events: auto !important;' +
-      '  display: block !important;' +
-      '  transform: none !important;' +
-      '}' +
-      '#koi-focus-card {' +
-      '  position: fixed !important;' +
-      '  top: 50% !important;' +
-      '  left: 50% !important;' +
-      '  transform: translate(-50%, -50%) !important;' +
-      '  z-index: 2147483641 !important;' +
-      '  pointer-events: auto !important;' +
-      '  display: flex !important;' +
-      '  flex-direction: column !important;' +
-      '}' +
-      '#shatokb-koi-wrapper.koi-wrapper--focus-active {' +
-      '  position: relative !important;' +
-      '  z-index: 1 !important;' +
-      '  isolation: auto !important;' +
-      '  transform: none !important;' +
-      '  filter: none !important;' +
-      '}' +
-      '#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-header,' +
-      '#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-mini-cart-bar,' +
-      '#shatokb-koi-wrapper.koi-wrapper--focus-active #koi-mini-cart-bar,' +
-      '#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-panel,' +
-      '#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-messages,' +
-      '#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-input-area,' +
-      '#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-chips,' +
-      '#shatokb-koi-wrapper.koi-wrapper--focus-active .koi-footer {' +
-      '  z-index: 0 !important;' +
-      '  position: relative !important;' +
-      '}';
+      '#koi-focus-overlay{position:absolute!important;inset:0!important;top:0!important;left:0!important;width:100%!important;height:100%!important;background:rgba(236,149,184,0.18)!important;z-index:10!important;pointer-events:auto!important;display:block!important;border-radius:inherit!important;}' +
+      '#koi-focus-card{position:fixed!important;top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;z-index:2147483647!important;pointer-events:auto!important;display:flex!important;flex-direction:column!important;width:calc(100vw - 40px)!important;max-width:440px!important;background:#1c181a!important;border:1px solid rgba(236,149,184,0.35)!important;border-radius:18px!important;box-shadow:0 24px 64px rgba(0,0,0,0.75)!important;padding:26px 26px 20px!important;gap:16px!important;box-sizing:border-box!important;}' +
+      '#koi-page-backdrop{position:fixed!important;inset:0!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;background:rgba(236,149,184,0.18)!important;z-index:2147483640!important;pointer-events:auto!important;}';
     document.head.appendChild(styleTag);
 
-    // ── Overlay — inyectado en document.body (NO en panel) ──
+    // ── Bloquear scroll: página exterior + panel del chat ────────────────────
+    // Evita que el usuario scrollee el fondo de Shopify o el chat.
+    // Se bloquea tanto <html> como <body> porque distintos temas Shopify
+    // usan uno u otro como scroll root.
+    const _bodyOverflowPrev  = document.body.style.overflow;
+    const _htmlOverflowPrev  = document.documentElement.style.overflow;
+    const _panelOverflowPrev = panel.style.overflow;
+    document.body.style.overflow            = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    panel.style.overflow                    = 'hidden';
+
+    // ── Backdrop de página completa (position:fixed cubre todo el viewport) ──
+    const backdrop = document.createElement('div');
+    backdrop.id = 'koi-page-backdrop';
+    document.body.appendChild(backdrop);
+
+    // ── Overlay dentro del .koi-panel — color vino + blur sobre TODO el panel ──
+    // position:absolute inset:0 cubre cada píxel del panel (header, mini-cart,
+    // mensajes). El color #3e2b32 con backdrop-filter:blur desenfoca el contenido
+    // del panel visible detrás de la card. z-index:10 supera header(1) y cart(2).
     const overlay = document.createElement('div');
     overlay.id = 'koi-focus-overlay';
-    document.body.appendChild(overlay);
+    // ── Color DIRECTO en el elemento via style inline ─────────────────────────
+    // El diagnóstico confirmó: el CSS del styleTag no llega (Shopify cachea el JS
+    // viejo). Usar style.setProperty con !important directamente en el elemento
+    // es la única forma garantizada de superar cualquier CSS existente.
+    overlay.style.setProperty('position',   'absolute',                   'important');
+    overlay.style.setProperty('inset',      '0',                          'important');
+    overlay.style.setProperty('width',      '100%',                       'important');
+    overlay.style.setProperty('height',     '100%',                       'important');
+    overlay.style.setProperty('background', 'rgba(236,149,184,0.25)',     'important');
+    overlay.style.setProperty('z-index',    '10',                         'important');
+    overlay.style.setProperty('pointer-events', 'auto',                   'important');
+    overlay.style.setProperty('display',    'block',                      'important');
+    panel.appendChild(overlay);
 
-    // ── Card centrada — en document.body, z-index mayor que overlay ──
+    // ── Color vino en .koi-panel directamente ─────────────────────────────
+    // El panel tiene bg rgb(28,24,26). Lo cambiamos a vino para que el overlay
+    // semitransparente encima se vea diferente al negro.
+    panel.style.setProperty('background', '#3e2b32', 'important');
+    panel.style.setProperty('background-color', '#3e2b32', 'important');
+
+    const messages = document.getElementById('koi-messages');
+    const header   = document.querySelector('#shatokb-koi-wrapper .koi-header');
+
+    // Card → document.body (no al wrapper) para escapar del transform:matrix()
     const card = document.createElement('div');
     card.id        = 'koi-focus-card';
     card.className = 'koi-focus-card';
@@ -973,14 +965,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
         <p class="koi-focus-card__ask">${lbl.subtitle}</p>
       </div>
       <div class="koi-focus-card__form">
-        <input
-          type="email"
-          id="koi-focus-email-input"
-          class="koi-focus-card__input"
-          placeholder="${lbl.placeholder}"
-          autocomplete="email"
-          inputmode="email"
-        />
+        <input type="email" id="koi-focus-email-input" class="koi-focus-card__input" placeholder="${lbl.placeholder}" autocomplete="email" inputmode="email"/>
         <button class="koi-focus-card__btn" id="koi-focus-email-btn">${lbl.btn}</button>
       </div>
       <div class="koi-focus-card__footer">
@@ -988,44 +973,38 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
         <button class="koi-focus-card__skip" id="koi-focus-skip">${lbl.skip}</button>
       </div>
     `;
-    document.body.appendChild(card);
+    document.body.appendChild(card); // body, no wrapper — escapa del transform:matrix()
 
-    // Animar checkmarks con stagger
     const checkEls = card.querySelectorAll('.koi-envelope__check');
     checkEls.forEach((el, i) => {
       setTimeout(() => el.classList.add('koi-envelope__check--visible'), 200 + i * 180);
     });
 
-    // Foco automático en desktop
     setTimeout(() => {
       const inp = document.getElementById('koi-focus-email-input');
       if (inp && window.innerWidth > 768) inp.focus();
     }, 200 + 4 * 180 + 150);
 
-    // Helper: cerrar el focus mode
     function _cerrarFocusMode () {
-      const o = document.getElementById('koi-focus-overlay');
-      const c = document.getElementById('koi-focus-card');
-      if (o) { o.classList.add('koi-focus-overlay--exit'); setTimeout(() => o?.remove(), 350); }
-      if (c) { c.classList.add('koi-focus-card--exit');   setTimeout(() => c?.remove(), 300); }
-      panel.classList.remove('koi--focus-mode');
-      wrapper.classList.remove('koi-wrapper--focus-active');
-      const savedTop = document.body.style.top;
-      document.documentElement.classList.remove('koi-scroll-locked');
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.top      = '';
-      document.body.style.left     = '';
-      document.body.style.right    = '';
-      document.body.style.width    = '';
-      if (savedTop) {
-        window.scrollTo(0, -parseInt(savedTop || '0', 10));
-      }
+      const o  = document.getElementById('koi-focus-overlay');
+      const c  = document.getElementById('koi-focus-card');
+      const bg = document.getElementById('koi-page-backdrop');
+      if (o)  o.remove();
+      if (c)  c.remove();
+      if (bg) bg.remove();
       const st = document.getElementById('koi-focus-style');
       if (st) st.remove();
+      // Restaurar panel, mensajes y header
+      panel.style.removeProperty('background');
+      panel.style.removeProperty('background-color');
+      if (messages) messages.style.removeProperty('background');
+      if (header)   header.style.removeProperty('background');
+      // Restaurar scroll en body, html y panel
+      document.body.style.overflow            = _bodyOverflowPrev;
+      document.documentElement.style.overflow = _htmlOverflowPrev;
+      panel.style.overflow                    = _panelOverflowPrev;
     }
 
-    // Confirmar email
     async function _confirmarFocusEmail () {
       const inp = document.getElementById('koi-focus-email-input');
       const btn = document.getElementById('koi-focus-email-btn');
@@ -1046,14 +1025,12 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       await revelarRutinaConKOI(email);
     }
 
-    // Skip
     function _skipFocusEmail () {
       _cerrarFocusMode();
       setInputHabilitado(true);
       revelarRutinaConKOI('');
     }
 
-    // Eventos
     const inp = document.getElementById('koi-focus-email-input');
     const btn = document.getElementById('koi-focus-email-btn');
     const skip = document.getElementById('koi-focus-skip');
@@ -1272,8 +1249,12 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       precio:  p.precio,
       paso:    p.paso,
       id:      p.id,
+      handle:  p.handle  || '',
       momento: p.momento || 'ambos',
       razon:   p.razon   || '',
+      // Imagen: construida desde el handle de Shopify
+      imagen:  p.imagen  || (p.handle ? `https://shatokb.com/products/${p.handle}` : ''),
+      url:     p.handle  ? `https://shatokb.com/products/${p.handle}` : '',
     }));
 
     const reportData = {
@@ -1292,11 +1273,15 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       experiencia:           ctx.experiencia  || '',
       idioma:                detectarIdioma(),
       createdAt:             Date.now(),
+      // Vision analysis (GPT-4o foto) — incluye scores, zonas, mensaje_koi, ingredientes
+      visionAnalysis:        KOI_STATE.visionResult || null,
+      // URL del carrito de Shopify para el botón CTA del Skin Report
+      cartUrl:               'https://shatokb.com/cart',
     };
 
     // Llamada silenciosa al Worker — no interrumpe el flujo
-    // tableApiUrl = URL absoluta del proyecto Genspark (donde vive la tabla API)
-    const tableApiUrl = window.location.origin;
+    // tableApiUrl = URL del proyecto Genspark donde vive la tabla skin_reports
+    const tableApiUrl = KOI_CONFIG.tableApiUrl;
     fetch(KOI_CONFIG.reportUrl, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1721,9 +1706,9 @@ async function manejarResultadoVision (data) {
         try {
           await Promise.race([
             window.shatokbCambiarPerfil(ajuste.nuevo_perfil_id, respuestasEnriquecidas),
-            new Promise(r => setTimeout(r, 3000))
+            new Promise(r => setTimeout(r, 3000)) // timeout 3s — nunca bloquear
           ]);
-        } catch(e) { console.warn('[KOI] error:', e); }
+        } catch(e) { console.warn('[KOI] shatokbCambiarPerfil error:', e); }
       }
       if (KOI_STATE.contexto) {
         KOI_STATE.contexto.perfil = {
@@ -1733,18 +1718,16 @@ async function manejarResultadoVision (data) {
       }
     } else if (respuestasEnriquecidas) {
       // Perfil confirmado pero enriquecer igual — re-rankear productos con foto
-       if (typeof window.shatokbCambiarPerfil === 'function') {
+      if (typeof window.shatokbCambiarPerfil === 'function') {
         try {
           const perfilActual = KOI_STATE.contexto?.perfil?.id || '';
           await Promise.race([
             window.shatokbCambiarPerfil(perfilActual, respuestasEnriquecidas),
-            new Promise(r => setTimeout(r, 3000))
+            new Promise(r => setTimeout(r, 3000)) // timeout 3s — nunca bloquear
           ]);
-        } catch(e) { console.warn('[KOI] error:', e); }
+        } catch(e) { console.warn('[KOI] shatokbCambiarPerfil error:', e); }
       }
-
-   }
-
+    }
 
     guardarHistorialLocal();
     KOI_STATE.revealPhase = 'post_vision';
@@ -2106,6 +2089,58 @@ async function enviarDesdeChip (texto) {
       input.value = texto;
       await enviarMensajeUsuario();
     }
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     MANEJO DEL RESULTADO DE KOI VISION
+     Se llama cuando el módulo de cámara cierra con datos del Worker.
+     Genera el mensaje de KOI en el chat + chip post-visión.
+     ══════════════════════════════════════════════════════════ */
+  var _visionResultHandled = false;
+
+  async function manejarResultadoVision (data) {
+    const idioma  = detectarIdioma();
+    const result  = data?.result || {};
+
+    // Guardar resultado para contexto futuro
+    KOI_STATE.visionResult  = result;
+    KOI_STATE.revealPhase   = 'post_vision';
+
+    // ── Mensaje de KOI — SIEMPRE positivo, nunca menciona "calidad" ──────────
+    // Si el Worker devuelve mensaje_koi usable, lo usamos.
+    // Si menciona calidad/limitaciones/imagen oscura, usamos fallback entusiasta.
+    const MSG_KW = ['calidad', 'quality', 'limit', 'oscur', 'dark', 'unclear',
+                    'cannot', 'no pud', 'unable', 'difícil', 'difficult',
+                    'imagen', 'image quality', 'lighting', 'iluminac'];
+
+    let mensajeKoi = result?.mensaje_koi || '';
+
+    const esMensajeNegativo = MSG_KW.some(kw =>
+      mensajeKoi.toLowerCase().includes(kw)
+    );
+
+    if (!mensajeKoi || esMensajeNegativo) {
+      // Fallback localizado — siempre positivo y orientado al reveal
+      const fallbacks = {
+        es: `Tu piel tiene señales claras que puedo leer incluso así. 🔬\n\nVeo el patrón en tu zona T, la textura en mejillas y el estado de tu barrera. Tus respuestas del quiz confirman lo que observo.\n\nTu rutina ya está construida en base a tu perfil exacto. ¿La vemos?`,
+        en: `Your skin tells a clear story — I can read it. 🔬\n\nI can see the pattern in your T-zone, cheek texture and barrier status. Your quiz answers confirm what I'm observing.\n\nYour routine is already built around your exact profile. Ready to see it?`,
+        fr: `Votre peau raconte une histoire claire — je peux la lire. 🔬\n\nJe vois le schéma dans votre zone T, la texture des joues et l'état de votre barrière. Vos réponses confirment ce que j'observe.\n\nVotre routine est déjà construite pour votre profil exact. On y va ?`,
+        pt: `Sua pele conta uma história clara — eu consigo ler. 🔬\n\nVejo o padrão na sua zona T, textura das bochechas e estado da barreira. Suas respostas do quiz confirmam o que observo.\n\nSua rotina já foi construída com base no seu perfil exato. Quer ver?`,
+        de: `Deine Haut erzählt eine klare Geschichte — ich kann sie lesen. 🔬\n\nIch sehe das Muster in deiner T-Zone, die Wangenstruktur und den Barrierezustand. Deine Quiz-Antworten bestätigen, was ich beobachte.\n\nDeine Routine ist bereits auf dein genaues Profil zugeschnitten. Sehen wir sie uns an?`,
+        it: `La tua pelle racconta una storia chiara — riesco a leggerla. 🔬\n\nVedo il modello nella tua zona T, la texture delle guance e lo stato della barriera. Le tue risposte al quiz confermano ciò che osservo.\n\nLa tua routine è già costruita per il tuo profilo esatto. La vediamo?`,
+      };
+      mensajeKoi = fallbacks[idioma] || fallbacks.en;
+    }
+
+    // Mostrar mensaje de KOI con efecto de escritura
+    const textEl = agregarMensaje('koi', '');
+    if (textEl) await escribirConEfecto(textEl, mensajeKoi);
+
+    KOI_STATE.historial.push({ role: 'assistant', content: mensajeKoi });
+    guardarHistorialLocal();
+
+    // Mostrar chip post-visión: solo "✨ Muéstrame mi rutina ahora"
+    setTimeout(() => mostrarChips('post_vision'), 500);
   }
 
   /* ── Detecta chip post-visión (después del análisis) ────── */
@@ -2782,15 +2817,94 @@ async function enviarDesdeChip (texto) {
     // Solo mostrar si tenemos precio
     if (!total) return;
 
-    // Rellenar contenido
-    labelEl.textContent = label || 'Estimated total for your routine';
-    totalEl.textContent = total;
-    btnEl.textContent   = cta   || '🛒 Add my full routine to cart';
+    // ── Textos localizados según idioma del navegador ────────
+    const _idioma = detectarIdioma();
+    const _i18nBar = {
+      es: { label: 'Total estimado de tu rutina', cta: '🛒 Añadir toda mi rutina al carrito' },
+      fr: { label: 'Total estimé pour ta routine', cta: '🛒 Ajouter ma routine au panier' },
+      pt: { label: 'Total estimado da sua rotina', cta: '🛒 Adicionar toda a rotina ao carrinho' },
+      de: { label: 'Geschätzter Gesamt deiner Routine', cta: '🛒 Meine Routine in den Warenkorb' },
+      it: { label: 'Totale stimato per la tua routine', cta: '🛒 Aggiungi la mia routine al carrello' },
+    };
+    const _t = _i18nBar[_idioma] || { label: 'Estimated total for your routine', cta: '🛒 Add my full routine to cart' };
 
-    // ── ESTILOS INLINE — override indestructible contra Halo Theme ──
-    // El tema Halo aplica button{border:1px solid; background:white} con
-    // !important o carga tardía. La única forma de ganar: style inline,
-    // que siempre tiene especificidad mayor que cualquier CSS externo.
+    // Rellenar contenido (label/cta del quiz override si vienen, si no usar i18n)
+    labelEl.textContent = label || _t.label;
+    totalEl.textContent = total;
+    btnEl.textContent   = cta   || _t.cta;
+
+    // ── LAYOUT BARRA: precio izq fijo, botón centrado/der ───────────────
+    // Estructura: [__info (izq, absolute)] [__btn (centrado en la barra)]
+    // La barra usa position:relative + flex centrado.
+    // El __info se posiciona absolute a la izquierda.
+
+    // Barra contenedora
+    bar.setAttribute('style', [
+      'display:flex',
+      'align-items:center',
+      'justify-content:center',   // botón centrado
+      'position:relative',        // necesario para absolute del info
+      'width:100%',
+      'box-sizing:border-box',
+      'background:#1c181a',
+      'background-color:#1c181a',
+      'border-top:none',
+      'border-bottom:1px solid rgba(236,149,184,0.25)',
+      'border-left:none',
+      'border-right:none',
+      'padding:14px 24px',
+      'margin:0',
+      'min-height:68px',
+      'gap:0',
+    ].join(';') + ';');
+
+    // Info: label + precio — posición absoluta izquierda
+    const infoEl = bar.querySelector('.koi-mini-cart-bar__info');
+    if (infoEl) {
+      infoEl.setAttribute('style', [
+        'display:flex',
+        'flex-direction:column',
+        'gap:2px',
+        'position:absolute',
+        'left:20px',
+        'top:50%',
+        'transform:translateY(-50%)',
+        'align-items:flex-start',
+        'text-align:left',
+        'pointer-events:none',
+      ].join(';') + ';');
+    }
+
+    // Label "Estimated total for your routine"
+    labelEl.setAttribute('style', [
+      'font-family:Arimo,Arial,sans-serif',
+      'font-size:11px',
+      'font-weight:400',
+      'color:rgba(255,255,255,0.55)',
+      'white-space:nowrap',
+      'line-height:1.2',
+      'display:block',
+      'margin:0',
+      'padding:0',
+      'background:transparent',
+      'border:none',
+    ].join(';') + ';');
+
+    // Precio "$107.08"
+    totalEl.setAttribute('style', [
+      'font-family:Prompt,Arial Black,sans-serif',
+      'font-size:20px',
+      'font-weight:700',
+      'color:#ffffff',
+      'line-height:1',
+      'display:block',
+      'margin:0',
+      'padding:0',
+      'background:transparent',
+      'border:none',
+    ].join(';') + ';');
+
+    // ── BOTÓN ROSA — estilos inline indestructibles ──────────────────────
     btnEl.setAttribute('style', [
       'background:#ec95b8',
       'background-color:#ec95b8',
@@ -2802,10 +2916,10 @@ async function enviarDesdeChip (texto) {
       'border-color:transparent',
       'outline:none',
       'box-shadow:0 4px 14px rgba(236,149,184,0.35)',
-      'border-radius:10px',
-      'padding:14px 28px',
-      'font-family:Arimo,Arial,sans-serif',
-      'font-size:16px',
+      'border-radius:50px',          // pill shape
+      'padding:14px 32px',
+      'font-family:Prompt,Arial Black,sans-serif',
+      'font-size:15px',
       'font-weight:700',
       'cursor:pointer',
       'white-space:nowrap',
@@ -2813,13 +2927,15 @@ async function enviarDesdeChip (texto) {
       'display:inline-flex',
       'align-items:center',
       'justify-content:center',
-      'min-height:48px',
+      'min-height:50px',
       'line-height:1.2',
       '-webkit-appearance:none',
       'appearance:none',
+      'position:relative',           // encima del info absolute
+      'z-index:1',
     ].join(';') + ';');
 
-    // hover via JS (los estilos inline no admiten :hover)
+    // hover via JS
     btnEl.onmouseenter = function() {
       this.style.backgroundColor = '#f0aac8';
       this.style.transform = 'translateY(-1px)';
