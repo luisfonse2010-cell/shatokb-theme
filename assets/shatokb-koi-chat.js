@@ -1350,6 +1350,22 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     const ctx    = KOI_STATE.contexto;
     if (!ctx || !email) return;
 
+    // ── Mapa de fallback ID → nombre bonito (por si ctx.perfil.nombre llega vacío) ──
+    const PERFIL_NOMBRES = {
+      grasa_acne:       'Oil Balance & Clarity',
+      grasa_poros:      'Pore Refinement',
+      mixta_general:    'Zone Balance',
+      mixta_manchas:    'Balance & Brighten',
+      seca_hidratacion: 'Hydration Restore',
+      seca_antiaging:   'Age Defense',
+      sensible_rojeces: 'Calm & Repair',
+      barrera_daniada:  'Barrier Recovery',
+      general_glow:     'Glass Skin Glow',
+    };
+
+    const perfilId     = ctx.perfil?.id     || '';
+    const perfilNombre = ctx.perfil?.nombre || PERFIL_NOMBRES[perfilId] || perfilId || '';
+
     // Construir los productos seleccionados actualmente
     // (los que el usuario eligió en los cards de la rutina)
     const productosSeleccionados = (ctx.productos || []).map(p => ({
@@ -1368,8 +1384,8 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     const reportData = {
       email,
       perfil: {
-        id:          ctx.perfil?.id          || '',
-        nombre:      ctx.perfil?.nombre      || '',
+        id:          perfilId,
+        nombre:      perfilNombre,
         descripcion: ctx.perfil?.descripcion || '',
         tags:        ctx.perfil?.tags        || [],
       },
@@ -1390,14 +1406,34 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     // Llamada silenciosa al Worker — no interrumpe el flujo
     // tableApiUrl = URL del proyecto Genspark donde vive la tabla skin_reports
     const tableApiUrl = KOI_CONFIG.tableApiUrl;
+
+    // ── Campos planos al nivel raíz para Klaviyo ──────────────────────
+    // El Worker los pasa directamente como event.* en la plantilla de Klaviyo.
+    // Los duplicamos aquí para que siempre lleguen con los nombres correctos,
+    // independientemente de cómo el Worker parsee el reportData anidado.
+    const rutinasAM = (reportData.rutinaAM || []).join('\n');
+    const rutinasPM = (reportData.rutinaPM || []).join('\n');
+    const productosLista = (reportData.productosSeleccionados || [])
+      .map((p, i) => `${i + 1}. ${p.nombre}${p.precio ? ' — ' + p.precio : ''}${p.momento && p.momento !== 'ambos' ? ' (' + p.momento.toUpperCase() + ')' : ''}`)
+      .join('\n');
+
     fetch(KOI_CONFIG.reportUrl, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
         email,
         reportData,
-        siteUrl:     KOI_CONFIG.siteUrl,
+        siteUrl:         KOI_CONFIG.siteUrl,
         tableApiUrl,
+        // ── Campos planos para Klaviyo event.* ──
+        perfil_id:       perfilId,
+        perfil_nombre:   perfilNombre,
+        perfil_desc:     reportData.perfil?.descripcion || '',
+        rutina_am:       rutinasAM,
+        rutina_pm:       rutinasPM,
+        productos_lista: productosLista,
+        total_carrito:   reportData.totalCarrito        || 0,
+        idioma:          reportData.idioma              || 'en',
       }),
     })
     .then(r => r.json())
