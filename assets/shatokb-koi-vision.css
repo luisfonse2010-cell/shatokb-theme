@@ -1006,6 +1006,98 @@
   border-color: rgba(236,149,184,0.60);
 }
 
+/* ── Pasos de desbloqueo ── */
+.kv-error-steps {
+  list-style: none;
+  counter-reset: kv-steps;
+  padding: 0;
+  margin: 4px 0 0;
+  text-align: left;
+  max-width: 320px;
+  width: 100%;
+}
+.kv-error-steps li {
+  counter-increment: kv-steps;
+  position: relative;
+  padding: 8px 12px 8px 38px;
+  margin-bottom: 6px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  font-size: 12px;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.5;
+}
+.kv-error-steps li::before {
+  content: counter(kv-steps);
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(236,149,184,0.25);
+  border: 1px solid rgba(236,149,184,0.50);
+  color: var(--kv-pink);
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 18px;
+  text-align: center;
+}
+.kv-error-steps li b {
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ── Tip Chrome ── */
+.kv-error-chrome-tip {
+  font-size: 10px;
+  color: rgba(255,255,255,0.35);
+  margin: 0;
+  max-width: 320px;
+  line-height: 1.5;
+  text-align: center;
+}
+.kv-error-chrome-tip code {
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: monospace;
+  font-size: 10px;
+  color: rgba(255,255,255,0.55);
+}
+
+/* ── Botón Reintentar ── */
+.kv-error-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 28px;
+  border-radius: 50px;
+  background: linear-gradient(135deg, rgba(236,149,184,0.20) 0%, rgba(155,93,229,0.20) 100%);
+  border: 1px solid rgba(236,149,184,0.50);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.02em;
+  margin-top: 4px;
+}
+.kv-error-retry-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(236,149,184,0.35) 0%, rgba(155,93,229,0.35) 100%);
+  border-color: rgba(236,149,184,0.80);
+  transform: translateY(-1px);
+}
+.kv-error-retry-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 /* ══════════════════════════════════════════════════════════
    ANIMACIÓN DE ENTRADA DEL FLASH
    ══════════════════════════════════════════════════════════ */
