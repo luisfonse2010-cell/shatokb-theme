@@ -107,6 +107,17 @@
       error_title:     'Camera not available',
       error_desc:      "We need camera permission to analyze your skin. You can still explore your routine — tap below.",
       error_alt:       '✨ Continue without camera',
+      error_blocked_title: 'Camera blocked by browser',
+      error_blocked_desc:  'Your browser blocked camera access. Follow these steps:',
+      error_blocked_steps: [
+        '🔒 Click the <b>lock icon</b> in the address bar',
+        '📷 Find <b>Camera</b> → change to <b>Allow</b>',
+        '🔄 Reload the page and tap VISION again',
+      ],
+      error_blocked_chrome: 'Or in Chrome: <code>chrome://settings/content/camera</code>',
+      error_notfound_title: 'No camera found',
+      error_notfound_desc:  'No camera detected on your device. You can still explore your routine.',
+      error_retry:          '🔄 Try again',
       zones: {
         tzone:   { emoji: '💦', label: 'T-Zone',    value: 'Analyzing…' },
         cheeks:  { emoji: '🌸', label: 'Cheeks',    value: 'Analyzing…' },
@@ -146,6 +157,17 @@
       error_title:     'Cámara no disponible',
       error_desc:      'Necesitamos permiso de cámara para analizar tu piel. Puedes continuar explorando tu rutina.',
       error_alt:       '✨ Continuar sin cámara',
+      error_blocked_title: 'Cámara bloqueada por el navegador',
+      error_blocked_desc:  'Tu navegador bloqueó el acceso a la cámara. Sigue estos pasos para permitirlo:',
+      error_blocked_steps: [
+        '🔒 Haz click en el ícono de <b>candado 🔒</b> en la barra de direcciones',
+        '📷 Busca <b>Cámara</b> → cámbialo a <b>Permitir</b>',
+        '🔄 Recarga la página y toca VISIÓN de nuevo',
+      ],
+      error_blocked_chrome: 'O en Chrome: <code>chrome://settings/content/camera</code>',
+      error_notfound_title: 'No se encontró cámara',
+      error_notfound_desc:  'No detectamos ninguna cámara en tu dispositivo. Puedes continuar explorando tu rutina.',
+      error_retry:          '🔄 Reintentar',
       zones: {
         tzone:   { emoji: '💦', label: 'Zona T',         value: 'Analizando…' },
         cheeks:  { emoji: '🌸', label: 'Mejillas',        value: 'Analizando…' },
@@ -185,6 +207,17 @@
       error_title:     'Caméra non disponible',
       error_desc:      'Nous avons besoin de l\'autorisation de la caméra pour analyser votre peau.',
       error_alt:       '✨ Continuer sans caméra',
+      error_blocked_title: 'Caméra bloquée par le navigateur',
+      error_blocked_desc:  'Votre navigateur a bloqué la caméra. Suivez ces étapes:',
+      error_blocked_steps: [
+        '🔒 Cliquez sur l\'icône de <b>cadenas 🔒</b> dans la barre d\'adresse',
+        '📷 Trouvez <b>Caméra</b> → changez en <b>Autoriser</b>',
+        '🔄 Rechargez la page et appuyez sur VISION',
+      ],
+      error_blocked_chrome: 'Ou dans Chrome: <code>chrome://settings/content/camera</code>',
+      error_notfound_title: 'Aucune caméra trouvée',
+      error_notfound_desc:  'Aucune caméra détectée sur votre appareil.',
+      error_retry:          '🔄 Réessayer',
       zones: {
         tzone:   { emoji: '💦', label: 'Zone T',      value: 'Analyse…' },
         cheeks:  { emoji: '🌸', label: 'Joues',       value: 'Analyse…' },
@@ -224,6 +257,17 @@
       error_title:     'Câmera não disponível',
       error_desc:      'Precisamos de permissão da câmera para analisar sua pele.',
       error_alt:       '✨ Continuar sem câmera',
+      error_blocked_title: 'Câmera bloqueada pelo navegador',
+      error_blocked_desc:  'Seu navegador bloqueou o acesso à câmera. Siga estes passos:',
+      error_blocked_steps: [
+        '🔒 Clique no ícone de <b>cadeado 🔒</b> na barra de endereços',
+        '📷 Encontre <b>Câmera</b> → mude para <b>Permitir</b>',
+        '🔄 Recarregue a página e toque em VISÃO novamente',
+      ],
+      error_blocked_chrome: 'Ou no Chrome: <code>chrome://settings/content/camera</code>',
+      error_notfound_title: 'Nenhuma câmera encontrada',
+      error_notfound_desc:  'Nenhuma câmera detectada no seu dispositivo.',
+      error_retry:          '🔄 Tentar novamente',
       zones: {
         tzone:   { emoji: '💦', label: 'Zona T',        value: 'Analisando…' },
         cheeks:  { emoji: '🌸', label: 'Bochechas',      value: 'Analisando…' },
@@ -263,6 +307,17 @@
       error_title:     'Kamera nicht verfügbar',
       error_desc:      'Wir benötigen Kameraberechtigungen zur Hautanalyse.',
       error_alt:       '✨ Ohne Kamera fortfahren',
+      error_blocked_title: 'Kamera vom Browser gesperrt',
+      error_blocked_desc:  'Dein Browser hat den Kamerazugriff blockiert. Folge diesen Schritten:',
+      error_blocked_steps: [
+        '🔒 Klicke auf das <b>Schloss-Symbol 🔒</b> in der Adressleiste',
+        '📷 Finde <b>Kamera</b> → ändere auf <b>Zulassen</b>',
+        '🔄 Lade die Seite neu und tippe wieder auf VISION',
+      ],
+      error_blocked_chrome: 'Oder in Chrome: <code>chrome://settings/content/camera</code>',
+      error_notfound_title: 'Keine Kamera gefunden',
+      error_notfound_desc:  'Kein Kameragerät auf deinem Gerät erkannt.',
+      error_retry:          '🔄 Erneut versuchen',
       zones: {
         tzone:   { emoji: '💦', label: 'T-Zone',   value: 'Analysiert…' },
         cheeks:  { emoji: '🌸', label: 'Wangen',   value: 'Analysiert…' },
@@ -483,9 +538,20 @@
 
         <!-- ─── ERROR STATE ─── -->
         <div class="kv-error-state" id="kv-error-state">
-          <span class="kv-error-state__icon">📷</span>
+          <span class="kv-error-state__icon" id="kv-error-icon">📷</span>
           <div class="kv-error-state__title" id="kv-error-title">${t.error_title}</div>
-          <p class="kv-error-state__desc"  id="kv-error-desc">${t.error_desc}</p>
+          <p class="kv-error-state__desc" id="kv-error-desc">${t.error_desc}</p>
+
+          <!-- Pasos para desbloquear — solo visibles en NotAllowedError -->
+          <ol class="kv-error-steps" id="kv-error-steps" style="display:none;">
+          </ol>
+          <p class="kv-error-chrome-tip" id="kv-error-chrome" style="display:none;"></p>
+
+          <!-- Botón reintentar — solo visible en NotAllowedError -->
+          <button class="kv-error-retry-btn" id="kv-error-retry" type="button" style="display:none;">
+            🔄 Reintentar
+          </button>
+
           <div class="kv-error-alt-btn" id="kv-error-alt" role="button" tabindex="0">${t.error_alt}</div>
         </div>
 
@@ -530,6 +596,17 @@
         if (typeof window.koiVisionAlternativo === 'function') {
           window.koiVisionAlternativo();
         }
+      }, true);
+    }
+
+    // Botón reintentar — vuelve a pedir permisos
+    const retryBtn = document.getElementById('kv-error-retry');
+    if (retryBtn) {
+      retryBtn.addEventListener('click', async () => {
+        retryBtn.disabled = true;
+        retryBtn.textContent = '⏳ …';
+        setPhase('loading');
+        await iniciarCamara();
       }, true);
     }
 
@@ -1100,21 +1177,72 @@
 
   /* ══════════════════════════════════════════════════════════
      ERROR — cámara no disponible
+     Distingue 3 casos:
+       NotAllowedError  → permiso bloqueado (muestra pasos + reintentar)
+       NotFoundError    → no hay cámara físicamente
+       Otros            → error genérico
      ══════════════════════════════════════════════════════════ */
   function mostrarError(err) {
     const t = getT();
     setPhase('error');
 
-    const titleEl = document.getElementById('kv-error-title');
-    const descEl  = document.getElementById('kv-error-desc');
+    const iconEl   = document.getElementById('kv-error-icon');
+    const titleEl  = document.getElementById('kv-error-title');
+    const descEl   = document.getElementById('kv-error-desc');
+    const stepsEl  = document.getElementById('kv-error-steps');
+    const chromeEl = document.getElementById('kv-error-chrome');
+    const retryBtn = document.getElementById('kv-error-retry');
 
-    if (err && err.name === 'NotAllowedError') {
-      if (titleEl) titleEl.textContent = t.error_title;
-      if (descEl)  descEl.textContent  = t.error_desc;
+    const errName = err ? err.name : '';
+
+    // ── Caso 1: Permiso bloqueado ──────────────────────────────
+    if (errName === 'NotAllowedError' || errName === 'PermissionDeniedError') {
+      if (iconEl)  iconEl.textContent      = '🔒';
+      if (titleEl) titleEl.textContent     = t.error_blocked_title || t.error_title;
+      if (descEl)  descEl.textContent      = t.error_blocked_desc  || t.error_desc;
+
+      // Mostrar pasos numerados
+      if (stepsEl && t.error_blocked_steps) {
+        stepsEl.innerHTML = t.error_blocked_steps
+          .map(step => `<li>${step}</li>`)
+          .join('');
+        stepsEl.style.display = 'block';
+      }
+
+      // Mostrar tip de Chrome
+      if (chromeEl && t.error_blocked_chrome) {
+        chromeEl.innerHTML     = t.error_blocked_chrome;
+        chromeEl.style.display = 'block';
+      }
+
+      // Mostrar botón reintentar
+      if (retryBtn) {
+        retryBtn.textContent    = t.error_retry || '🔄 Reintentar';
+        retryBtn.style.display  = 'block';
+        retryBtn.disabled       = false;
+      }
+
+    // ── Caso 2: No hay cámara física ──────────────────────────
+    } else if (errName === 'NotFoundError' || errName === 'DevicesNotFoundError') {
+      if (iconEl)  iconEl.textContent  = '📵';
+      if (titleEl) titleEl.textContent = t.error_notfound_title || t.error_title;
+      if (descEl)  descEl.textContent  = t.error_notfound_desc  || t.error_desc;
+
+    // ── Caso 3: Error genérico (NotReadableError, etc.) ───────
     } else {
+      if (iconEl)  iconEl.textContent  = '📷';
       if (titleEl) titleEl.textContent = t.error_title;
       if (descEl)  descEl.textContent  = t.error_desc;
+
+      // Reintentar disponible igualmente por si es un error transitorio
+      if (retryBtn) {
+        retryBtn.textContent   = t.error_retry || '🔄 Reintentar';
+        retryBtn.style.display = 'block';
+        retryBtn.disabled      = false;
+      }
     }
+
+    console.warn('[KOI Vision] Error type:', errName, '| message:', err?.message);
   }
 
   /* ══════════════════════════════════════════════════════════
