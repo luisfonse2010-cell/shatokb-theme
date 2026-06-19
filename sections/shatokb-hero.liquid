@@ -206,6 +206,66 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════
+     2b. SECOND CTA — Debajo de benefit cards
+═══════════════════════════════════════════════════════════ -->
+<div id="stk-benefit-cta" style="text-align:center; padding:8px 24px 56px;">
+
+  <style>
+    /* ── Second CTA Button ───────────────────────────────────── */
+    #stk-benefit-cta-btn {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      padding: 16px 40px !important;
+      background: transparent !important;
+      border: 2px solid #f5a0bb !important;
+      border-radius: 6px !important;
+      color: #0b0335 !important;
+      font-family: 'Arimo', Arial, sans-serif !important;
+      font-size: 15px !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.02em !important;
+      cursor: pointer !important;
+      text-decoration: none !important;
+      transition: background 0.22s ease, color 0.22s ease, transform 0.15s ease, box-shadow 0.22s ease !important;
+      box-shadow: 0 0 0 0 rgba(245,160,187,0) !important;
+      position: relative !important;
+    }
+    #stk-benefit-cta-btn:hover {
+      background: rgba(245,160,187,0.12) !important;
+      color: #0b0335 !important;
+      transform: translateY(-2px) !important;
+      box-shadow: 0 8px 28px rgba(245,160,187,0.30) !important;
+      border-color: #f5a0bb !important;
+    }
+    #stk-benefit-cta-btn .stk-cta-arrow {
+      display: inline-block;
+      transition: transform 0.22s ease;
+      font-style: normal;
+    }
+    #stk-benefit-cta-btn:hover .stk-cta-arrow {
+      transform: translateX(5px);
+    }
+    #stk-benefit-microcopy {
+      font-family: 'Arimo', Arial, sans-serif;
+      font-size: 12px;
+      color: #9ca3af;
+      margin: 10px 0 0;
+      letter-spacing: 0.01em;
+    }
+  </style>
+
+  <a id="stk-benefit-cta-btn"
+     href="#shatokb-quiz"
+     onclick="event.preventDefault(); var el = document.getElementById('shatokb-quiz'); if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); } return false;">
+    Build My Skin Routine — It's Free <span class="stk-cta-arrow">→</span>
+  </a>
+
+  <p id="stk-benefit-microcopy">Takes 3 minutes · No account needed · +50,000 routines created</p>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
      3. QUIZ — Skin Diagnosis (only shown when show_quiz = true)
 ═══════════════════════════════════════════════════════════ -->
 {%- if section.settings.show_quiz -%}
