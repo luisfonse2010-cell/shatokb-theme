@@ -2580,11 +2580,13 @@ function shatokbIniciarQuiz() {
   const cabecera  = document.getElementById('shatokb-quiz-cabecera');
   const progreso  = document.getElementById('shatokb-progreso');
   const preguntas = document.getElementById('shatokb-quiz-form');
+  const hookBlock = document.getElementById('stk-hook-block'); // ← bloque copy D
 
-  if (inicio)    inicio.style.display    = 'none';
-  if (cabecera)  cabecera.style.display  = 'none';
-  if (progreso)  progreso.style.display  = 'block';
-  if (preguntas) preguntas.style.display = 'block';
+  if (inicio)     inicio.style.display    = 'none';
+  if (cabecera)   cabecera.style.display  = 'none';
+  if (hookBlock)  hookBlock.style.display = 'none'; // ← ocultar al iniciar quiz
+  if (progreso)   progreso.style.display  = 'block';
+  if (preguntas)  preguntas.style.display = 'block';
 
   shatokbRenderPregunta(0);
 }
@@ -3779,14 +3781,25 @@ function shatokbIniciarTimer() {
   const el = document.getElementById('stk-timer');
   if (!el) return;
 
+  // ── Textos del timer según idioma del navegador ──────────
+  const _lang = (navigator.language || 'en').split('-')[0].toLowerCase();
+  const _timerI18n = {
+    es: { running: 'Rutina guardada por',    expired: '⚠️ Sesión expirada — vuelve a hacer el quiz' },
+    fr: { running: 'Routine sauvegardée',    expired: '⚠️ Session expirée — refais le quiz' },
+    pt: { running: 'Rotina salva por',       expired: '⚠️ Sessão expirada — refaça o quiz' },
+    de: { running: 'Routine gespeichert für', expired: '⚠️ Sitzung abgelaufen — Quiz wiederholen' },
+    it: { running: 'Routine salvata per',    expired: '⚠️ Sessione scaduta — rifai il quiz' },
+  };
+  const _tt = _timerI18n[_lang] || { running: 'Routine saved for', expired: '⚠️ Session expired — retake quiz to save your routine' };
+
   const tick = () => {
     if (s < 0) { clearInterval(shatokbTimerInterval); return; }
     const m   = String(Math.floor(s / 60)).padStart(2, '0');
     const sec = String(s % 60).padStart(2, '0');
-    el.textContent = `⏱️ Routine saved for ${m}:${sec}`;
+    el.textContent = `⏱️ ${_tt.running} ${m}:${sec}`;
     if (s <= 60)  el.classList.add('stk-total-bar__timer--urgent');
     if (s === 0) {
-      el.textContent = '⚠️ Session expired — retake quiz to save your routine';
+      el.textContent = _tt.expired;
       clearInterval(shatokbTimerInterval);
     }
     s--;
@@ -3979,11 +3992,14 @@ function shatokbReiniciar() {
   const cabecera    = document.getElementById('shatokb-quiz-cabecera');
   const inicio      = document.getElementById('shatokb-quiz-inicio');
 
+  const hookBlock = document.getElementById('stk-hook-block');
+
   if (resultadoEl) resultadoEl.style.display = 'none';
   if (form)        form.style.display        = 'none';
   if (progreso)    progreso.style.display    = 'none';
   if (cabecera)    cabecera.style.display    = 'block';
   if (inicio)      inicio.style.display      = 'block';
+  if (hookBlock)   hookBlock.style.display   = 'block'; // ← vuelve a mostrarse al reiniciar
 
   const quizSection = document.getElementById('shatokb-quiz');
   if (quizSection) quizSection.scrollIntoView({ behavior: 'smooth' });
