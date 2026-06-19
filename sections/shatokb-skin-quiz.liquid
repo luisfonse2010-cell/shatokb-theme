@@ -30,9 +30,9 @@
   // Cache-bust guard: si KOI no carga en 3s, reintentamos dinámicamente
   window.__koiLoadCheck = setTimeout(function() {
     if (typeof window.shatokbIniciarKOI === 'undefined') {
-      console.warn('[KOI] shatokb-koi-chat-v3.js no cargó — cargando dinámicamente');
+      console.warn('[KOI] shatokb-koi-chat.js no cargó — cargando dinámicamente');
       var s = document.createElement('script');
-      s.src = '{{ "shatokb-koi-chat-v3.js" | asset_url }}?fallback=' + Date.now();
+      s.src = '{{ "shatokb-koi-chat.js" | asset_url }}?fallback=' + Date.now();
       document.head.appendChild(s);
     }
   }, 3000);
@@ -465,9 +465,9 @@
   <div class="shatokb-resultado__inner"></div>
 </div>
 
-<script src="{{ 'shatokb-quiz.js' | asset_url }}?v=20260620C" defer></script>
-<script src="{{ 'shatokb-koi-vision.js' | asset_url }}?v=20260620C" defer></script>
-<script src="{{ 'shatokb-koi-chat-v3.js' | asset_url }}" defer></script>
+<script src="{{ 'shatokb-quiz.js' | asset_url }}" defer></script>
+<script src="{{ 'shatokb-koi-vision.js' | asset_url }}" defer></script>
+<script src="{{ 'shatokb-koi-chat.js' | asset_url }}" defer></script>
 
 {% schema %}
 {

@@ -134,18 +134,47 @@
     KOI_STATE.contexto = contextoQuiz || obtenerContextoLocal();
 
     // Crear y montar el DOM del chat
-    const wrapper = crearDOM();
-    if (!wrapper) return;
-
-    // Animar entrada después del delay
-    setTimeout(() => {
-      wrapper.classList.add('koi--visible');
-
-      // Primer mensaje proactivo de KOI
+    // crearDOM tiene retry interno si el contenedor no existe aún
+    function iniciarConWrapper(w) {
+      if (!w) return;
+      // Animar entrada después del delay
       setTimeout(() => {
-        enviarMensajeKOI_proactivo();
-      }, KOI_CONFIG.firstMsgDelay);
-    }, KOI_CONFIG.appearDelay);
+        w.classList.add('koi--visible');
+        // Primer mensaje proactivo de KOI
+        setTimeout(() => {
+          enviarMensajeKOI_proactivo();
+        }, KOI_CONFIG.firstMsgDelay);
+      }, KOI_CONFIG.appearDelay);
+    }
+
+    const wrapper = crearDOM(0);
+    if (wrapper) {
+      iniciarConWrapper(wrapper);
+    } else {
+      // Si crearDOM retornó null, esperar a que el retry interno lo cree
+      // Hacemos polling para detectar cuando el wrapper aparece en el DOM
+      var pollIniciar = 0;
+      var pollTimer = setInterval(function() {
+        pollIniciar++;
+        var w = document.getElementById('shatokb-koi-wrapper');
+        if (w) {
+          clearInterval(pollTimer);
+          iniciarConWrapper(w);
+        } else if (pollIniciar > 20) {
+          clearInterval(pollTimer);
+          console.warn('[KOI] shatokbIniciarKOI: wrapper nunca apareció tras polling');
+        }
+      }, 150);
+    }
+  };
+
+  /**
+   * Reset del estado de KOI para permitir re-inicialización.
+   * Útil cuando shatokbScrollAKOI necesita forzar una segunda llamada.
+   */
+  window.shatokbResetKOI = function () {
+    KOI_STATE.isReady = false;
+    console.log('[KOI] Estado reseteado — próxima llamada a shatokbIniciarKOI creará el DOM de nuevo.');
   };
 
   /* ── Obtener contexto del localStorage como fallback ────── */
@@ -170,14 +199,21 @@
   /* ══════════════════════════════════════════════════════════
      CONSTRUCCIÓN DEL DOM
      ══════════════════════════════════════════════════════════ */
-  function crearDOM () {
+  function crearDOM (intentoNum) {
+    intentoNum = intentoNum || 0;
     // Buscar el contenedor del resultado del quiz
     const resultado = document.querySelector('.shatokb-resultado__inner')
                    || document.querySelector('.shatokb-resultado')
                    || document.querySelector('#shatokb-resultado');
 
     if (!resultado) {
-      console.warn('[KOI] Could not find the quiz result container.');
+      if (intentoNum < 10) {
+        // Retry hasta 10 veces (2 segundos total) — el quiz puede no haber insertado el contenedor aún
+        console.warn('[KOI] crearDOM: contenedor no encontrado, reintentando (' + (intentoNum+1) + '/10)...');
+        setTimeout(function() { crearDOM(intentoNum + 1); }, 200);
+      } else {
+        console.warn('[KOI] crearDOM: contenedor de resultado no apareció tras 2s — abortando.');
+      }
       return null;
     }
 

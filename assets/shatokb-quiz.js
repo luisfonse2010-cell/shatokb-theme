@@ -4079,7 +4079,30 @@ function shatokbScrollAKOI() {
       // KOI aún no está en el DOM — reintentar en 150ms
       setTimeout(tick, 150);
     } else {
-      console.warn('[KOI] shatokbScrollAKOI: wrapper no apareció tras ' + (MAX * 150 / 1000) + 's');
+      // Último recurso: intentar crear KOI directamente
+      console.warn('[KOI] shatokbScrollAKOI: wrapper no apareció tras ' + (MAX * 150 / 1000) + 's — intentando forzar...');
+      if (typeof window.shatokbIniciarKOI === 'function') {
+        try {
+          // Exponer una función de reset si KOI la ofrece
+          if (typeof window.shatokbResetKOI === 'function') window.shatokbResetKOI();
+          const ctx = window.SHATOKB_RESULTADO
+                   || JSON.parse(localStorage.getItem('shatokb_resultado') || 'null');
+          window.shatokbIniciarKOI(ctx || {});
+          // Esperar y hacer scroll si aparece
+          setTimeout(function() {
+            var w = document.getElementById('shatokb-koi-wrapper');
+            if (w) {
+              w.classList.add('koi--visible');
+              var rect = w.getBoundingClientRect();
+              window.scrollTo({ top: rect.top + window.pageYOffset - 24, behavior: 'smooth' });
+            } else {
+              console.error('[KOI] shatokbScrollAKOI: fallo definitivo. Comprueba que el contenedor .shatokb-resultado__inner existe en el DOM.');
+            }
+          }, 1000);
+        } catch(e) {
+          console.error('[KOI] shatokbScrollAKOI error forzado:', e);
+        }
+      }
     }
   }
 
