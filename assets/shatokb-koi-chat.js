@@ -199,26 +199,74 @@
   /* ══════════════════════════════════════════════════════════
      CONSTRUCCIÓN DEL DOM
      ══════════════════════════════════════════════════════════ */
+  // ── Versión del archivo para diagnóstico en consola ──────────
+  console.log('[KOI] shatokb-koi-chat.js v3.1 cargado — crearDOM con MutationObserver activo');
+
+  /**
+   * Insertar KOI cuando #stk-routine-blurred esté disponible en el DOM.
+   * Usa MutationObserver como método principal (instantáneo) y polling
+   * como fallback.
+   */
+  function _insertarKOICuandoListo(wrapper) {
+    function _doInsert() {
+      const blurred = document.getElementById('stk-routine-blurred');
+      if (blurred && blurred.parentNode) {
+        console.log('[KOI] _insertarKOICuandoListo: insertando antes de #stk-routine-blurred ✅');
+        blurred.parentNode.insertBefore(wrapper, blurred);
+        return true;
+      }
+      return false;
+    }
+
+    // Intento inmediato
+    if (_doInsert()) return;
+
+    // MutationObserver: detecta cuando el quiz inserta #stk-routine-blurred
+    var observer = new MutationObserver(function(mutations) {
+      if (_doInsert()) {
+        observer.disconnect();
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // Timeout de seguridad: desconectar tras 8 segundos
+    setTimeout(function() {
+      observer.disconnect();
+      // Último intento con fallback al contenedor del resultado
+      if (!document.getElementById('shatokb-koi-wrapper') ||
+          document.getElementById('shatokb-koi-wrapper').parentNode === document.body) {
+        var resultado = document.querySelector('.shatokb-resultado__inner')
+                     || document.querySelector('#shatokb-resultado');
+        if (resultado) {
+          console.warn('[KOI] _insertarKOICuandoListo: timeout — appending al contenedor resultado');
+          resultado.appendChild(wrapper);
+        }
+      }
+    }, 8000);
+  }
+
   function crearDOM (intentoNum) {
     intentoNum = intentoNum || 0;
-    // Buscar el contenedor del resultado del quiz
+
+    // Evitar duplicados antes de buscar nada
+    if (document.getElementById('shatokb-koi-wrapper')) {
+      return document.getElementById('shatokb-koi-wrapper');
+    }
+
+    // El contenedor raíz del resultado debe existir
     const resultado = document.querySelector('.shatokb-resultado__inner')
                    || document.querySelector('.shatokb-resultado')
                    || document.querySelector('#shatokb-resultado');
 
     if (!resultado) {
-      if (intentoNum < 10) {
-        // Retry hasta 10 veces (2 segundos total) — el quiz puede no haber insertado el contenedor aún
-        console.warn('[KOI] crearDOM: contenedor no encontrado, reintentando (' + (intentoNum+1) + '/10)...');
+      if (intentoNum < 15) {
+        console.log('[KOI] crearDOM: esperando contenedor resultado (' + (intentoNum+1) + '/15)...');
         setTimeout(function() { crearDOM(intentoNum + 1); }, 200);
       } else {
-        console.warn('[KOI] crearDOM: contenedor de resultado no apareció tras 2s — abortando.');
+        console.warn('[KOI] crearDOM: contenedor no apareció tras 3s — abortando.');
       }
       return null;
     }
-
-    // Evitar duplicados
-    if (document.getElementById('shatokb-koi-wrapper')) return null;
 
     const wrapper = document.createElement('div');
     wrapper.id = 'shatokb-koi-wrapper';
@@ -289,27 +337,15 @@
       </div>
     `;
 
-    // Insertar justo ANTES de stk-routine-blurred (los productos borrosos),
-    // dentro de stk-reveal-section → KOI queda entre el teaser y los productos.
+    // Insertar justo ANTES de #stk-routine-blurred.
+    // Si aún no existe (el quiz no terminó de renderizar), MutationObserver
+    // lo detectará en cuanto aparezca y lo moverá al lugar correcto.
     // Estructura final:
     //   stk-reveal-section
-    //     stk-koi-teaser (botón "Open my analysis")
-    //     #shatokb-koi-wrapper  ← aquí
-    //     stk-routine-blurred   (productos)
-    const blurredSection = document.getElementById('stk-routine-blurred')
-                        || resultado.querySelector('.stk-routine-blurred');
-    const revealSection  = resultado.querySelector('#stk-reveal-section')
-                        || resultado.querySelector('.stk-reveal-section');
-
-    if (blurredSection && blurredSection.parentNode) {
-      // Insertar justo antes de los productos borrosos
-      blurredSection.parentNode.insertBefore(wrapper, blurredSection);
-    } else if (revealSection) {
-      // Fallback: antes de toda la sección de rutina
-      resultado.insertBefore(wrapper, revealSection);
-    } else {
-      resultado.appendChild(wrapper);
-    }
+    //     stk-koi-teaser#stk-blur-overlay  ← teaser "Open my analysis"
+    //     #shatokb-koi-wrapper             ← KOI chat aquí ✅
+    //     div.stk-routine-blurred          ← productos sombreados
+    _insertarKOICuandoListo(wrapper);
 
     // Vincular eventos
     vincularEventos();
