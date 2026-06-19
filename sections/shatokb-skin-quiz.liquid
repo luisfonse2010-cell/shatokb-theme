@@ -25,171 +25,177 @@
 <style>
 
   /* ══════════════════════════════════════════════
-     BLOQUE COPY D — al estilo del theme Halo/shatokb
-     Paleta: navy #0b0335 · rosa #f5a0bb · azul #3a7af5
-     Fuentes: Prompt (headings) · Arimo (body)
+     BLOQUE COPY D v3 — horizontal, sin caja,
+     efectos WOW integrados con el theme
      ══════════════════════════════════════════════ */
 
-  @keyframes stk-reveal-up {
-    from { opacity: 0; transform: translateY(24px); }
-    to   { opacity: 1; transform: translateY(0); }
+  @keyframes stk-fade-up   { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes stk-fade-up-2 { 0%,28%{opacity:0;transform:translateY(16px)} 100%{opacity:1;transform:translateY(0)} }
+  @keyframes stk-fade-up-3 { 0%,52%{opacity:0;transform:translateY(12px)} 100%{opacity:1;transform:translateY(0)} }
+  @keyframes stk-fade-up-4 { 0%,70%{opacity:0;transform:translateY(10px)} 100%{opacity:1;transform:translateY(0)} }
+
+  @keyframes stk-shimmer {
+    0%   { background-position: -600px 0; }
+    100% { background-position: 600px 0; }
   }
-  @keyframes stk-reveal-up-2 {
-    0%,30%  { opacity: 0; transform: translateY(18px); }
-    100%    { opacity: 1; transform: translateY(0); }
+  @keyframes stk-underline {
+    from { transform: scaleX(0); opacity:0; }
+    to   { transform: scaleX(1); opacity:1; }
   }
-  @keyframes stk-reveal-up-3 {
-    0%,55%  { opacity: 0; transform: translateY(14px); }
-    100%    { opacity: 1; transform: translateY(0); }
+  @keyframes stk-dot-beat {
+    0%,100% { transform: scale(1);   opacity:1; }
+    50%     { transform: scale(0.55); opacity:0.35; }
   }
-  @keyframes stk-underline-grow {
-    from { transform: scaleX(0); }
-    to   { transform: scaleX(1); }
-  }
-  @keyframes stk-dot-pulse {
-    0%,100% { opacity: 1; transform: scale(1); }
-    50%     { opacity: 0.4; transform: scale(0.7); }
-  }
-  @keyframes stk-word-in {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
+  @keyframes stk-float-slow {
+    0%,100% { transform: translateY(0); }
+    50%     { transform: translateY(-6px); }
   }
 
-  /* Contenedor — sin card, fluye con la página */
+  /* Wrapper — sin fondo, sin borde */
   .stk-hook-wrap {
-    max-width: 580px;
-    margin: 0 auto 52px;
+    max-width: 680px;
+    margin: 0 auto 56px;
     padding: 0 20px;
     text-align: center;
   }
 
-  /* Eyebrow — etiqueta pequeña estilo theme */
+  /* Eyebrow pill — idéntico al badge del Hero */
   .stk-hook-eyebrow {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    background: rgba(245,160,187,0.10);
+    border: 1px solid rgba(245,160,187,0.35);
+    border-radius: 50px;
+    padding: 7px 20px;
     font-family: 'Arimo', Arial, sans-serif;
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #f5a0bb;
-    margin-bottom: 20px;
-    animation: stk-reveal-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.1s both;
+    color: #c26b8e;
+    margin-bottom: 32px;
+    animation: stk-fade-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.1s both,
+               stk-float-slow 4s ease-in-out 1s infinite;
   }
-  .stk-hook-eyebrow::before,
-  .stk-hook-eyebrow::after {
-    content: '';
-    display: block;
-    width: 28px;
-    height: 1px;
+  .stk-hook-eyebrow-dot {
+    width: 5px; height: 5px;
     background: #f5a0bb;
-    opacity: 0.6;
+    border-radius: 50%;
+    flex-shrink: 0;
+    animation: stk-dot-beat 1.6s ease-in-out infinite;
   }
 
-  /* Texto principal — fuerte, Prompt, navy */
+  /* Headline principal — una sola línea horizontal grande */
   .stk-hook-headline {
     font-family: 'Prompt', 'Arial Black', sans-serif;
-    font-size: 32px;
+    font-size: 38px;
     font-weight: 800;
     color: #0b0335;
-    line-height: 1.2;
-    margin: 0 0 10px;
-    letter-spacing: -0.02em;
-    animation: stk-reveal-up 0.8s cubic-bezier(0.22,1,0.36,1) 0.25s both;
+    line-height: 1.15;
+    margin: 0 0 6px;
+    letter-spacing: -0.025em;
+    animation: stk-fade-up 0.85s cubic-bezier(0.22,1,0.36,1) 0.2s both;
   }
-  .stk-hook-headline span {
+
+  /* "al azar" — shimmer animado */
+  .stk-hook-azar {
     position: relative;
     display: inline-block;
-    white-space: nowrap;
   }
-  /* Subrayado rosa animado bajo "al azar" */
-  .stk-hook-headline span::after {
+  .stk-hook-azar-text {
+    background: linear-gradient(90deg,
+      #0b0335 0%,
+      #f5a0bb 30%,
+      #ec95b8 50%,
+      #f5a0bb 70%,
+      #0b0335 100%);
+    background-size: 600px 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: stk-shimmer 3s linear 1s infinite;
+  }
+  /* Subrayado ondulado bajo "al azar" */
+  .stk-hook-azar::after {
     content: '';
     position: absolute;
-    left: 0; bottom: -3px;
+    left: 0; bottom: -5px;
     width: 100%; height: 3px;
-    background: #f5a0bb;
+    background: linear-gradient(90deg, #f5a0bb, #ec95b8, #f5a0bb);
+    background-size: 200% 100%;
     border-radius: 2px;
-    transform: scaleX(0);
     transform-origin: left;
-    animation: stk-underline-grow 0.6s cubic-bezier(0.22,1,0.36,1) 1s both;
+    animation: stk-underline 0.7s cubic-bezier(0.22,1,0.36,1) 1.1s both,
+               stk-shimmer 2.5s linear 2s infinite;
   }
 
   /* Segunda línea del headline */
-  .stk-hook-headline-2 {
+  .stk-hook-headline-b {
     font-family: 'Prompt', 'Arial Black', sans-serif;
-    font-size: 32px;
+    font-size: 38px;
     font-weight: 800;
     color: #0b0335;
-    line-height: 1.2;
-    margin: 0 0 28px;
-    letter-spacing: -0.02em;
-    animation: stk-reveal-up-2 1s cubic-bezier(0.22,1,0.36,1) both;
+    line-height: 1.15;
+    margin: 0 0 36px;
+    letter-spacing: -0.025em;
+    animation: stk-fade-up-2 1.1s cubic-bezier(0.22,1,0.36,1) both;
   }
 
-  /* Separador — línea fina */
-  .stk-hook-divider {
-    width: 40px;
-    height: 2px;
-    background: #0b0335;
-    margin: 0 auto 24px;
-    opacity: 0.12;
-  }
-
-  /* Remate — "Ese momento puede ser hoy." */
+  /* Remate — texto más suave, Arimo */
   .stk-hook-remate {
     font-family: 'Arimo', Arial, sans-serif;
-    font-size: 17px;
+    font-size: 18px;
     font-weight: 400;
     color: #6b7280;
-    line-height: 1.6;
-    margin: 0 0 28px;
-    animation: stk-reveal-up-2 1s cubic-bezier(0.22,1,0.36,1) 0.1s both;
-  }
-  .stk-hook-remate strong {
-    font-family: 'Prompt', 'Arial Black', sans-serif;
-    font-weight: 800;
-    font-size: 19px;
-    color: #3a7af5;
-    display: block;
-    margin-top: 6px;
-    animation: stk-reveal-up-3 1.3s cubic-bezier(0.22,1,0.36,1) both;
+    line-height: 1.65;
+    margin: 0 0 10px;
+    animation: stk-fade-up-3 1.3s cubic-bezier(0.22,1,0.36,1) both;
   }
 
-  /* Pill social proof — igual al badge del Hero */
+  /* "Ese momento puede ser hoy." — highlight rosa */
+  .stk-hook-hoy {
+    font-family: 'Arimo', Arial, sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #0b0335;
+    margin: 0 0 32px;
+    animation: stk-fade-up-3 1.3s cubic-bezier(0.22,1,0.36,1) 0.05s both;
+  }
+  .stk-hook-hoy em {
+    font-style: normal;
+    color: #f5a0bb;
+  }
+
+  /* Social proof pill */
   .stk-hook-social {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    background: transparent;
-    border: 1px solid rgba(245,160,187,0.45);
+    gap: 8px;
+    border: 1px solid rgba(245,160,187,0.4);
     border-radius: 50px;
-    padding: 8px 18px;
+    padding: 9px 22px;
     font-family: 'Arimo', Arial, sans-serif;
     font-size: 12px;
     font-weight: 600;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
     color: #6b7280;
-    animation: stk-reveal-up-3 1.3s cubic-bezier(0.22,1,0.36,1) 0.1s both;
+    animation: stk-fade-up-4 1.5s cubic-bezier(0.22,1,0.36,1) both;
   }
-  .stk-hook-social strong {
-    color: #f5a0bb;
-  }
+  .stk-hook-social strong { color: #f5a0bb; }
   .stk-hook-social-dot {
-    width: 6px;
-    height: 6px;
-    background: #3a7af5;
+    width: 6px; height: 6px;
+    background: #22c55e;
     border-radius: 50%;
     flex-shrink: 0;
-    animation: stk-dot-pulse 1.8s ease-in-out infinite;
+    animation: stk-dot-beat 1.8s ease-in-out infinite;
   }
 
-  @media (max-width: 600px) {
+  @media (max-width: 640px) {
     .stk-hook-headline,
-    .stk-hook-headline-2 { font-size: 26px; }
-    .stk-hook-remate     { font-size: 15px; }
-    .stk-hook-remate strong { font-size: 17px; }
+    .stk-hook-headline-b { font-size: 28px; }
+    .stk-hook-remate      { font-size: 16px; }
+    .stk-hook-hoy         { font-size: 17px; }
   }
 
   /* ── Quiz section — override Halo html{font-size:62.5%} base 10px ── */
@@ -251,30 +257,32 @@
 >
   <div class="shatokb-quiz-section__inner">
 
-    {%- comment -%} ── Hook copy D — estilo Halo/shatokb ── {%- endcomment -%}
+    {%- comment -%} ── Hook copy D v3 — horizontal, sin caja ── {%- endcomment -%}
     <div class="stk-hook-wrap" id="stk-hook-block">
 
-      <!-- Eyebrow -->
-      <p class="stk-hook-eyebrow" aria-hidden="true">Tu piel lo está esperando</p>
-
-      <!-- Headline — línea 1 -->
-      <h3 class="stk-hook-headline">
-        En algún momento dejarás de probar<br>
-        productos <span>al azar</span>
-      </h3>
-
-      <!-- Headline — línea 2 -->
-      <p class="stk-hook-headline-2">
-        y empezarás con tu rutina exacta.
+      <!-- Pill eyebrow flotante -->
+      <p class="stk-hook-eyebrow">
+        <span class="stk-hook-eyebrow-dot" aria-hidden="true"></span>
+        Tu piel lo está esperando
+        <span class="stk-hook-eyebrow-dot" aria-hidden="true"></span>
       </p>
 
-      <!-- Separador -->
-      <div class="stk-hook-divider" aria-hidden="true"></div>
+      <!-- Headline línea 1 -->
+      <h3 class="stk-hook-headline">
+        En algún momento dejarás de probar productos&nbsp;<span class="stk-hook-azar"><span class="stk-hook-azar-text">al azar</span></span>
+      </h3>
+
+      <!-- Headline línea 2 -->
+      <p class="stk-hook-headline-b">
+        y empezarás con tu rutina exacta.
+      </p>
 
       <!-- Remate emocional -->
       <p class="stk-hook-remate">
         Ese momento puede ser hoy.
-        <strong>Descúbrelo en 3 minutos.</strong>
+      </p>
+      <p class="stk-hook-hoy">
+        <em>Hoy.</em> Descúbrelo en 3 minutos.
       </p>
 
       <!-- Social proof pill -->
