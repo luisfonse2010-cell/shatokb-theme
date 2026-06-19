@@ -4039,21 +4039,45 @@ window.shatokbRevelarProductos = function () {
    Finds the KOI wrapper and scrolls to it smoothly.
 ============================================================ */
 function shatokbScrollAKOI() {
+  // Si KOI no se ha iniciado todavía, arrancarlo ahora
+  if (typeof window.shatokbIniciarKOI === 'function') {
+    try {
+      const ctx = window.SHATOKB_RESULTADO
+               || JSON.parse(localStorage.getItem('shatokb_resultado') || 'null');
+      window.shatokbIniciarKOI(ctx || {});
+    } catch(_) {}
+  }
+
   function intentarScroll(intentos) {
-    const koi = document.getElementById('shatokb-koi-wrapper')
-             || document.querySelector('.koi-panel')
-             || document.querySelector('.koi-header');
+    const wrapper = document.getElementById('shatokb-koi-wrapper');
+    const koi     = wrapper
+                 || document.querySelector('.koi-panel')
+                 || document.querySelector('.koi-header');
+
     if (koi) {
-      // Scroll manual con offset para que se vea completo
-      const y = koi.getBoundingClientRect().top + window.pageYOffset - 20;
-      window.scrollTo({ top: y, behavior: 'smooth' });
-      koi.classList.add('stk-koi-pulse');
-      setTimeout(() => koi.classList.remove('stk-koi-pulse'), 1200);
+      // ── FORZAR visibilidad inmediata ──────────────────────────
+      // KOI tiene appearDelay de 1800ms pero el usuario que pulsó
+      // el botón no debe esperar — mostrar al instante.
+      if (wrapper && !wrapper.classList.contains('koi--visible')) {
+        wrapper.classList.add('koi--visible');
+      }
+
+      // Esperar 1 frame para que el browser procese la visibilidad
+      // antes de calcular las coordenadas del scroll
+      requestAnimationFrame(() => {
+        const y = koi.getBoundingClientRect().top + window.pageYOffset - 20;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+        koi.classList.add('stk-koi-pulse');
+        setTimeout(() => koi.classList.remove('stk-koi-pulse'), 1200);
+      });
+
     } else if (intentos > 0) {
+      // KOI todavía no está en el DOM — reintentar cada 300ms
       setTimeout(() => intentarScroll(intentos - 1), 300);
     }
   }
-  intentarScroll(13);
+
+  intentarScroll(15); // 15 × 300ms = 4.5s de ventana máxima
 }
 
 
