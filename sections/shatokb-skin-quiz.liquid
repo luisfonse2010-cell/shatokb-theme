@@ -21,7 +21,6 @@
 
 {{ 'shatokb-quiz.css' | asset_url | stylesheet_tag }}
 {{ 'shatokb-koi-chat.css' | asset_url | stylesheet_tag }}
-{{ 'shatokb-koi-vision.css' | asset_url | stylesheet_tag }}
 
 <style>
   /* ── Quiz section — override Halo html{font-size:62.5%} base 10px ── */
@@ -85,18 +84,13 @@
 
     {%- comment -%} ── Section header ──────────────────────────── {%- endcomment -%}
     <header class="shatokb-quiz-section__header" id="shatokb-quiz-cabecera">
-      {%- if section.settings.badge != blank -%}
-        <span class="shatokb-hero__badge" style="margin-bottom:16px; display:inline-block;">
-          {{ section.settings.badge }}
-        </span>
-      {%- endif -%}
+      {%- comment -%} badge ocultado — emoji 🇰🇷 eliminado {%- endcomment -%}
       <h2 class="shatokb-quiz-section__titulo">{{ section.settings.titulo }}</h2>
       <p class="shatokb-quiz-section__subtitulo">{{ section.settings.subtitulo }}</p>
     </header>
 
     {%- comment -%} ── Quiz start screen ──────────────────────── {%- endcomment -%}
     <div id="shatokb-quiz-inicio" style="text-align:center; padding:12px 0 40px;">
-      <div style="font-size:36px; margin-bottom:16px; line-height:1;">🔬✨</div>
       <p style="font-family:'Arimo',Arial,sans-serif; font-size:15px; color:#6b7280; line-height:1.65; max-width:480px; margin:0 auto 28px;">
         Most people spend years — and hundreds of dollars — trying random products that don't work for their skin.<br><br>
         <strong>This quiz ends that.</strong> In 2 minutes you'll know your exact skin profile and the Korean products proven to work for it.
@@ -134,6 +128,7 @@
       id="shatokb-quiz-form"
       class="shatokb-quiz-form"
       style="display:none;"
+      aria-live="polite"
       aria-label="Quiz questions">
       <noscript>
         <p style="text-align:center; color:#f42b23; font-weight:600; padding:24px 0;">
@@ -181,21 +176,8 @@
   <div class="shatokb-resultado__inner"></div>
 </div>
 
-{%- comment -%}
-  LOAD ORDER — CRITICAL:
-  1. shatokb-excel-intel.js  MUST load before shatokb-quiz.js
-     It defines SHATOKB_EXCEL_INTEL, shatokbGetIntel(),
-     shatokbBuildUserVector(), and shatokbVectorFitScore()
-     which are consumed by shatokbMapProduct() and
-     shatokbScoreProducto() at quiz runtime.
-  2. shatokb-quiz.js         Main engine v5.1 — reads intel globals
-  3. shatokb-koi-vision.js   KOI vision scanner
-  4. shatokb-koi-chat.js     KOI AI chat assistant
-{%- endcomment -%}
-<script src="{{ 'shatokb-excel-intel.js' | asset_url }}" defer></script>
 <script src="{{ 'shatokb-quiz.js' | asset_url }}" defer></script>
-<script src="{{ 'shatokb-koi-vision.js' | asset_url }}" defer></script>
-<script src="{{ 'shatokb-koi-chat.js' | asset_url }}?v=20260618F" defer></script>
+<script src="{{ 'shatokb-koi-chat.js' | asset_url }}" defer></script>
 
 {% schema %}
 {
