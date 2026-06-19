@@ -18,7 +18,7 @@
  *
  * ============================================================
  */
-/* ── Last deploy: 2026-06-19T15:15:27.076Z */
+/* ── Last deploy: 2026-06-19T16:53:34.896Z */
 
 
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
@@ -513,6 +513,11 @@ async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
             type: 'profile',
             attributes: {
               email,
+              first_name:  perfil.nombre      || '',
+              last_name:   '',
+              location: {
+                timezone: reportData.idioma === 'en' ? 'America/New_York' : 'America/Bogota',
+              },
               properties: {
                 skin_profile_id:    perfil.id          || '',
                 skin_profile_name:  perfil.nombre      || '',
