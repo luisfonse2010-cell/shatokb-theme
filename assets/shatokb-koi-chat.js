@@ -208,27 +208,23 @@
    * como fallback.
    */
   function _insertarKOICuandoListo(wrapper) {
-    // El quiz hace inner.innerHTML = `...` que BORRA cualquier nodo
-    // insertado dentro de .shatokb-resultado__inner antes de terminar.
-    // Por eso insertamos KOI como hermano DESPUÉS de #stk-reveal-section,
-    // NO dentro de él. Así el innerHTML del quiz no lo borra.
-    // Estructura final:
-    //   .shatokb-resultado__inner
-    //     .shatokb-resultado__header
-    //     #stk-reveal-section        ← el quiz pone todo aquí
-    //       .stk-reveal-header  "YOUR PERSONALIZED ROUTINE"
-    //       #stk-blur-overlay   teaser "Open my analysis"
-    //       #stk-routine-blurred    productos
-    //     #shatokb-koi-wrapper  ← KOI aquí (FUERA de stk-reveal-section)
+    // Estructura del quiz:
+    //   #stk-reveal-section
+    //     .stk-reveal-header     "YOUR PERSONALIZED ROUTINE"
+    //     #stk-blur-overlay      teaser "Open my analysis"  ← insertar DESPUÉS de aquí
+    //     #stk-routine-blurred   productos borrosos         ← insertar ANTES de aquí
+    //     #shatokb-koi-wrapper   ← KOI va aquí ✅
+    //
+    // IMPORTANTE: el quiz escribe inner.innerHTML UNA SOLA VEZ y luego
+    // no lo toca más. Así que insertar dentro de #stk-reveal-section es seguro
+    // siempre que lo hagamos DESPUÉS de que el quiz haya terminado de renderizar.
 
     function _doInsert() {
-      // Ancla: DESPUÉS de #stk-reveal-section (hermano siguiente)
-      const revealSection = document.getElementById('stk-reveal-section');
-      if (revealSection && revealSection.parentNode) {
-        // Insertar justo después de stk-reveal-section
-        const nextSibling = revealSection.nextSibling;
-        revealSection.parentNode.insertBefore(wrapper, nextSibling);
-        console.log('[KOI] _insertarKOICuandoListo: insertado después de #stk-reveal-section ✅');
+      const blurred = document.getElementById('stk-routine-blurred');
+      if (blurred && blurred.parentNode) {
+        // Insertar KOI justo ANTES de #stk-routine-blurred
+        blurred.parentNode.insertBefore(wrapper, blurred);
+        console.log('[KOI] insertado antes de #stk-routine-blurred ✅');
         return true;
       }
       return false;
@@ -237,9 +233,14 @@
     // Intento inmediato
     if (_doInsert()) return;
 
-    // MutationObserver: espera a que el quiz inserte #stk-reveal-section
+    // MutationObserver: espera a que el quiz inserte #stk-routine-blurred
+    // Usamos un pequeño delay (100ms) para asegurarnos de que innerHTML
+    // terminó de escribir antes de insertar KOI
     var observer = new MutationObserver(function() {
-      if (_doInsert()) observer.disconnect();
+      if (document.getElementById('stk-routine-blurred')) {
+        observer.disconnect();
+        setTimeout(function() { _doInsert(); }, 100);
+      }
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
@@ -250,7 +251,7 @@
         var resultado = document.querySelector('.shatokb-resultado__inner')
                      || document.querySelector('#shatokb-resultado');
         if (resultado) {
-          console.warn('[KOI] timeout — appending al final del contenedor');
+          console.warn('[KOI] timeout — appending al contenedor');
           resultado.appendChild(wrapper);
         }
       }

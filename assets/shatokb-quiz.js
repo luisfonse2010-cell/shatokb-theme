@@ -4049,60 +4049,52 @@ function shatokbScrollAKOI() {
     } catch(_) {}
   }
 
-  // ── Paso 2: esperar wrapper, forzar visible, hacer scroll ───
+  // ── Paso 2: ocultar el resultado y mostrar solo KOI ──────────
+  // El comportamiento correcto: el resultado desaparece y KOI
+  // ocupa toda la pantalla (transición de vista en la misma página).
   var intentos = 0;
-  var MAX = 40; // 40 × 150ms = 6 segundos máximo
+  var MAX = 40;
 
   function tick() {
     intentos++;
     var wrapper = document.getElementById('shatokb-koi-wrapper');
 
     if (wrapper) {
-      // Forzar visible sin importar el appearDelay
+      // Forzar visible
       wrapper.classList.add('koi--visible');
 
-      // Scroll suave al wrapper (1 frame de delay para que el browser
-      // procese la clase antes de calcular la posición)
-      requestAnimationFrame(function() {
-        var rect = wrapper.getBoundingClientRect();
-        var y    = rect.top + window.pageYOffset - 24;
-        window.scrollTo({ top: y, behavior: 'smooth' });
+      // Ocultar toda la sección de resultado (header + teaser + productos)
+      var revealSection = document.getElementById('stk-reveal-section');
+      var resultHeader  = document.querySelector('.shatokb-resultado__header');
+      var budgetNote    = document.querySelector('.stk-budget-note');
+      var skinAnalysis  = document.querySelector('.stk-skin-analysis');
 
-        // Pulso visual para confirmar al usuario
-        wrapper.classList.add('stk-koi-pulse');
-        setTimeout(function() { wrapper.classList.remove('stk-koi-pulse'); }, 1200);
+      if (revealSection) {
+        revealSection.style.transition = 'opacity 0.3s ease';
+        revealSection.style.opacity    = '0';
+        setTimeout(function() { revealSection.style.display = 'none'; }, 320);
+      }
+      if (resultHeader) {
+        resultHeader.style.transition = 'opacity 0.3s ease';
+        resultHeader.style.opacity    = '0';
+        setTimeout(function() { resultHeader.style.display = 'none'; }, 320);
+      }
+      if (budgetNote)   budgetNote.style.display   = 'none';
+      if (skinAnalysis) skinAnalysis.style.display  = 'none';
 
-        console.log('[KOI] Scroll ejecutado — wrapper en y=' + Math.round(y));
-      });
+      // Hacer que el wrapper KOI ocupe toda la vista
+      wrapper.style.minHeight = '100vh';
+
+      // Scroll al top de la página para que KOI empiece desde arriba
+      setTimeout(function() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        console.log('[KOI] Vista cambiada — resultado oculto, KOI visible ✅');
+      }, 350);
 
     } else if (intentos < MAX) {
-      // KOI aún no está en el DOM — reintentar en 150ms
       setTimeout(tick, 150);
     } else {
-      // Último recurso: intentar crear KOI directamente
-      console.warn('[KOI] shatokbScrollAKOI: wrapper no apareció tras ' + (MAX * 150 / 1000) + 's — intentando forzar...');
-      if (typeof window.shatokbIniciarKOI === 'function') {
-        try {
-          // Exponer una función de reset si KOI la ofrece
-          if (typeof window.shatokbResetKOI === 'function') window.shatokbResetKOI();
-          const ctx = window.SHATOKB_RESULTADO
-                   || JSON.parse(localStorage.getItem('shatokb_resultado') || 'null');
-          window.shatokbIniciarKOI(ctx || {});
-          // Esperar y hacer scroll si aparece
-          setTimeout(function() {
-            var w = document.getElementById('shatokb-koi-wrapper');
-            if (w) {
-              w.classList.add('koi--visible');
-              var rect = w.getBoundingClientRect();
-              window.scrollTo({ top: rect.top + window.pageYOffset - 24, behavior: 'smooth' });
-            } else {
-              console.error('[KOI] shatokbScrollAKOI: fallo definitivo. Comprueba que el contenedor .shatokb-resultado__inner existe en el DOM.');
-            }
-          }, 1000);
-        } catch(e) {
-          console.error('[KOI] shatokbScrollAKOI error forzado:', e);
-        }
-      }
+      console.warn('[KOI] shatokbScrollAKOI: wrapper no apareció tras 6s');
     }
   }
 
