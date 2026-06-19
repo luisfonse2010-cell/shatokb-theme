@@ -173,6 +173,17 @@ function formatDate(ts) {
 
 function el(id) { return document.getElementById(id); }
 
+// Intenta obtener la imagen real del producto via Shopify API
+async function fetchProductImage(handle) {
+  if (!handle) return null;
+  try {
+    const res = await fetch(`https://shatokb.com/products/${handle}.js`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.featured_image || (data.images && data.images[0]) || null;
+  } catch(_) { return null; }
+}
+
 function inferHowToUse(product) {
   const n = (product.nombre || '').toLowerCase();
   const p = (product.paso || '').toLowerCase();
@@ -400,6 +411,16 @@ function renderRoutine(data) {
       el(`ksr-panel-${target}`).removeAttribute('hidden');
     });
   });
+}
+
+async function loadProductImages(products) {
+  await Promise.all(products.map(async prod => {
+    if (prod.imagen && prod.imagen.startsWith('http') && !prod.imagen.includes('/products/') || prod.imagen?.includes('cdn.shopify')) return;
+    if (prod.handle) {
+      const img = await fetchProductImage(prod.handle);
+      if (img) prod.imagen = img;
+    }
+  }));
 }
 
 function renderPanel(panelId, products, period) {
@@ -663,7 +684,11 @@ function initStickyBar() {
 }
 
 /* ── MAIN RENDER ────────────────────────────────────────────────── */
-function renderReport(reportData) {
+async function renderReport(reportData) {
+  // Pre-cargar imágenes reales de Shopify antes de renderizar
+  const prods = reportData.productosSeleccionados || [];
+  if (prods.length) await loadProductImages(prods);
+
   renderHero(reportData);
   renderDiagnosis(reportData);
   renderRoutine(reportData);
