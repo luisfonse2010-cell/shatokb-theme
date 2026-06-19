@@ -1718,7 +1718,12 @@ async function manejarResultadoVision (data) {
     if (hayReasignacion) {
       // Cambiar perfil Y pasar respuestas enriquecidas al scorer
       if (typeof window.shatokbCambiarPerfil === 'function') {
-        await window.shatokbCambiarPerfil(ajuste.nuevo_perfil_id, respuestasEnriquecidas);
+        try {
+          await Promise.race([
+            window.shatokbCambiarPerfil(ajuste.nuevo_perfil_id, respuestasEnriquecidas),
+            new Promise(r => setTimeout(r, 3000))
+          ]);
+        } catch(e) { console.warn('[KOI] error:', e); }
       }
       if (KOI_STATE.contexto) {
         KOI_STATE.contexto.perfil = {
@@ -1728,10 +1733,17 @@ async function manejarResultadoVision (data) {
       }
     } else if (respuestasEnriquecidas) {
       // Perfil confirmado pero enriquecer igual — re-rankear productos con foto
-      if (typeof window.shatokbCambiarPerfil === 'function') {
-        const perfilActual = KOI_STATE.contexto?.perfil?.id || '';
-        await window.shatokbCambiarPerfil(perfilActual, respuestasEnriquecidas);
+           if (typeof window.shatokbCambiarPerfil === 'function') {
+        try {
+          const perfilActual = KOI_STATE.contexto?.perfil?.id || '';
+          await Promise.race([
+            window.shatokbCambiarPerfil(perfilActual, respuestasEnriquecidas),
+            new Promise(r => setTimeout(r, 3000))
+          ]);
+        } catch(e) { console.warn('[KOI] error:', e); }
       }
+
+
     }
 
     guardarHistorialLocal();
