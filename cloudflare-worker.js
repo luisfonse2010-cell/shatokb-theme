@@ -18,7 +18,7 @@
  *
  * ============================================================
  */
-/* ── Last deploy: 2026-06-19T16:53:34.896Z */
+/* ── Last deploy: 2026-06-19T23:25:41.855Z */
 
 
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
@@ -611,10 +611,14 @@ export default {
       reportData.token      = token;
 
       // 2. Guardar en tabla API (paralelo con Klaviyo para no bloquear)
-      const apiBase = tableApiUrl || 'https://www.genspark.ai/api/v1/project/8b11bf35-e038-4848-9fe1-fffa1edac409';
+      // ⚠️ FIX: tableApiKey debe incluirse en el header Authorization
+      // Sin él, el POST a Genspark falla con 401/403 silenciosamente y la tabla queda vacía.
+      const apiBase = (tableApiUrl || 'https://www.genspark.ai/api/v1/project/8b11bf35-e038-4848-9fe1-fffa1edac409').replace(/\/$/, '');
+      const saveHeaders = { 'Content-Type': 'application/json' };
+      if (tableApiKey) saveHeaders['Authorization'] = `Bearer ${tableApiKey}`;
       const savePromise = fetch(`${apiBase}/tables/skin_reports`, {
         method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: saveHeaders,
         body: JSON.stringify({
           token,
           email,
@@ -625,7 +629,14 @@ export default {
           idioma:        reportData.idioma               || 'es',
           total_carrito: reportData.totalCarrito         || 0,
         }),
-      }).catch(e => console.error('[Report] Save error:', e.message));
+      }).then(async r => {
+        if (!r.ok) {
+          const errBody = await r.text().catch(() => '');
+          console.error(`[Report] Save HTTP ${r.status}:`, errBody.slice(0, 300));
+        } else {
+          console.log('[Report] Saved successfully, status:', r.status);
+        }
+      }).catch(e => console.error('[Report] Save network error:', e.message));
 
       // 3. Enviar evento a Klaviyo
       const klaviyoKey = env.KLAVIYO_API_KEY || '';
@@ -817,6 +828,35 @@ ABSOLUTE RULES — violation means the analysis is worthless:
 
         const visionData = await visionResponse.json();
         const rawContent = visionData.choices?.[0]?.message?.content || '';
+
+        // ── Detectar rechazo de OpenAI (filtros de seguridad) ──
+        const isRefusal = !rawContent.trim().startsWith('{') &&
+          (rawContent.toLowerCase().includes("i'm sorry") ||
+           rawContent.toLowerCase().includes("i can't assist") ||
+           rawContent.toLowerCase().includes("i cannot assist") ||
+           rawContent.toLowerCase().includes("i'm not able") ||
+           rawContent.toLowerCase().includes("unable to assist") ||
+           rawContent.toLowerCase().includes("can't help with that"));
+
+        if (isRefusal) {
+          console.warn('[KOI Vision] OpenAI refused the image — using fallback');
+          return new Response(
+            JSON.stringify({
+              _error: true,
+              _error_type: 'openai_refusal',
+              zonas: {},
+              dimensiones: {},
+              puntos_criticos: [],
+              ingredientes_prioritarios: [],
+              protocolo_urgente: null,
+              confirmacion_perfil: true,
+              ajuste_perfil: null,
+              score_global: null,
+              mensaje_koi: null,
+            }),
+            { status: 200, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
+          );
+        }
 
         // ── JSON parsing robusto (multi-paso) ──────────────────
         let analysisResult;
