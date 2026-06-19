@@ -1269,6 +1269,10 @@
         "mg_bottom_mobile": 0
       }
     },
+    "shatokb-hero": {
+      "type": "shatokb-hero",
+      "settings": {}
+    },
     "marquee_CPUri8": {
       "type": "marquee",
       "blocks": {
@@ -4545,6 +4549,7 @@
     "164007305002c9359c",
     "slide_show_twt8Y6",
     "marquee_CPUri8",
+    "shatokb-hero",
     "163945138066afddf5",
     "164077099606fca4f1",
     "163835209394385a65",
