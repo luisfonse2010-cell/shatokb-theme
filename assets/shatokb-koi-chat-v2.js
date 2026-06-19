@@ -253,8 +253,27 @@
       </div>
     `;
 
-    // Insertar después del resultado
-    resultado.appendChild(wrapper);
+    // Insertar justo ANTES de stk-routine-blurred (los productos borrosos),
+    // dentro de stk-reveal-section → KOI queda entre el teaser y los productos.
+    // Estructura final:
+    //   stk-reveal-section
+    //     stk-koi-teaser (botón "Open my analysis")
+    //     #shatokb-koi-wrapper  ← aquí
+    //     stk-routine-blurred   (productos)
+    const blurredSection = document.getElementById('stk-routine-blurred')
+                        || resultado.querySelector('.stk-routine-blurred');
+    const revealSection  = resultado.querySelector('#stk-reveal-section')
+                        || resultado.querySelector('.stk-reveal-section');
+
+    if (blurredSection && blurredSection.parentNode) {
+      // Insertar justo antes de los productos borrosos
+      blurredSection.parentNode.insertBefore(wrapper, blurredSection);
+    } else if (revealSection) {
+      // Fallback: antes de toda la sección de rutina
+      resultado.insertBefore(wrapper, revealSection);
+    } else {
+      resultado.appendChild(wrapper);
+    }
 
     // Vincular eventos
     vincularEventos();
