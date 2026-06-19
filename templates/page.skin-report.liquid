@@ -1,0 +1,212 @@
+{% comment %}
+  ╔══════════════════════════════════════════════════════════════════╗
+  ║  KOI SKIN REPORT — Shopify Page Template                        ║
+  ║  URL: /pages/skin-report?token=UUID                             ║
+  ║  Halo Theme v6.7.1  ·  shatokb.com                             ║
+  ╚══════════════════════════════════════════════════════════════════╝
+{% endcomment %}
+
+{{ 'shatokb-skin-report.css' | asset_url | stylesheet_tag }}
+
+<div id="ksr-root">
+
+  <!-- ── LOADING ──────────────────────────────────────────────── -->
+  <div id="ksr-loading" aria-live="polite" role="status">
+    <div class="ksr-loading__orb"></div>
+    <div class="ksr-loading__brand">KOI</div>
+    <div class="ksr-loading__text">Preparing your personal Skin Report…</div>
+  </div>
+
+  <!-- ── ERROR ────────────────────────────────────────────────── -->
+  <div id="ksr-error" hidden>
+    <div class="ksr-error__icon">🌸</div>
+    <h1 class="ksr-error__title">Report not found</h1>
+    <p class="ksr-error__text">This link may have expired or is invalid.<br>Return to the store and generate your routine again.</p>
+    <a href="https://shatokb.com" class="ksr-btn ksr-btn--rose">Go to SHATOKB →</a>
+  </div>
+
+  <!-- ── MAIN CONTENT ──────────────────────────────────────────── -->
+  <main id="ksr-content" hidden>
+
+    <!-- 1. HERO ─────────────────────────────────────────────── -->
+    <section class="ksr-hero" id="ksr-sec-hero">
+      <div class="ksr-hero__bg-glow"></div>
+      <div class="ksr-hero__inner">
+        <div class="ksr-hero__badge">
+          <span class="ksr-badge-dot"></span>
+          KOI Skin Analysis · <span id="ksr-date"></span>
+        </div>
+        <h1 class="ksr-hero__title" id="ksr-profile-name">Your Skin Report</h1>
+        <p class="ksr-hero__subtitle" id="ksr-profile-desc"></p>
+        <div class="ksr-hero__tags" id="ksr-profile-tags"></div>
+        <div class="ksr-hero__email-badge" id="ksr-email-badge"></div>
+        <div class="ksr-hero__score-ring" id="ksr-score-ring-wrap" hidden>
+          <svg class="ksr-ring" viewBox="0 0 120 120" aria-hidden="true">
+            <circle class="ksr-ring__track" cx="60" cy="60" r="52"/>
+            <circle class="ksr-ring__fill" id="ksr-ring-fill" cx="60" cy="60" r="52"
+                    stroke-dasharray="326.7"
+                    stroke-dashoffset="326.7"/>
+          </svg>
+          <div class="ksr-ring__label">
+            <span class="ksr-ring__score" id="ksr-ring-score">—</span>
+            <span class="ksr-ring__sub">/ 10</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. PHOTO DIAGNOSIS ──────────────────────────────────── -->
+    <section class="ksr-section ksr-section--dark" id="ksr-sec-diagnosis" hidden>
+      <div class="ksr-container">
+        <div class="ksr-section-label">📸 AI Photo Diagnosis</div>
+        <h2 class="ksr-section-title">What KOI saw in your skin</h2>
+        <p class="ksr-section-intro" id="ksr-mensaje-koi"></p>
+
+        <!-- Skin Scores Grid -->
+        <div class="ksr-scores-grid" id="ksr-scores-grid"></div>
+
+        <!-- Zone Map -->
+        <div class="ksr-zones" id="ksr-zones"></div>
+
+        <!-- Critical Points -->
+        <div class="ksr-critical" id="ksr-critical"></div>
+
+        <!-- Urgent Protocol -->
+        <div class="ksr-urgent" id="ksr-urgent" hidden>
+          <div class="ksr-urgent__icon">⚡</div>
+          <div>
+            <div class="ksr-urgent__label">KOI Priority Protocol</div>
+            <div class="ksr-urgent__text" id="ksr-urgent-text"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. ROUTINE ───────────────────────────────────────────── -->
+    <section class="ksr-section" id="ksr-sec-routine">
+      <div class="ksr-container">
+        <div class="ksr-section-label">✨ Your Custom Routine</div>
+        <h2 class="ksr-section-title">Built exclusively for your skin</h2>
+        <p class="ksr-section-intro">Every product, every step — sequenced and selected for <strong id="ksr-routine-profile-name"></strong>. Follow this protocol exactly for measurable results.</p>
+
+        <div class="ksr-routine-tabs">
+          <button class="ksr-tab ksr-tab--active" data-tab="am">🌅 Morning Routine</button>
+          <button class="ksr-tab" data-tab="pm">🌙 Evening Routine</button>
+        </div>
+
+        <div class="ksr-routine-panel" id="ksr-panel-am"></div>
+        <div class="ksr-routine-panel" id="ksr-panel-pm" hidden></div>
+      </div>
+    </section>
+
+    <!-- 4. PRODUCTS ─────────────────────────────────────────── -->
+    <section class="ksr-section ksr-section--blush" id="ksr-sec-products">
+      <div class="ksr-container">
+        <div class="ksr-section-label">📦 Your KOI Selection</div>
+        <h2 class="ksr-section-title">Every product KOI chose for you</h2>
+        <p class="ksr-section-intro">Clinically sequenced. K-Beauty formulated. Selected for your exact skin profile — not a generic recommendation.</p>
+        <div class="ksr-products-grid" id="ksr-products-grid"></div>
+      </div>
+    </section>
+
+    <!-- 5. INGREDIENTS ─────────────────────────────────────── -->
+    <section class="ksr-section ksr-section--dark" id="ksr-sec-ingredients">
+      <div class="ksr-container">
+        <div class="ksr-section-label">🧪 Active Ingredients</div>
+        <h2 class="ksr-section-title">The science behind your routine</h2>
+        <p class="ksr-section-intro">These are the actives working for your skin — and why they were chosen.</p>
+        <div class="ksr-ingredients-grid" id="ksr-ingredients-grid"></div>
+
+        <!-- Do Not Mix Warning -->
+        <div class="ksr-donotmix" id="ksr-donotmix">
+          <div class="ksr-donotmix__title">⚠️ Do Not Combine</div>
+          <div class="ksr-donotmix__list" id="ksr-donotmix-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. TIMELINE ─────────────────────────────────────────── -->
+    <section class="ksr-section" id="ksr-sec-timeline">
+      <div class="ksr-container">
+        <div class="ksr-section-label">📅 Results Timeline</div>
+        <h2 class="ksr-section-title">What to expect — week by week</h2>
+        <p class="ksr-section-intro">Skin transformation takes time. Here's what the science says — and what you'll actually feel.</p>
+        <div class="ksr-timeline" id="ksr-timeline"></div>
+      </div>
+    </section>
+
+    <!-- 7. CART / CTA ───────────────────────────────────────── -->
+    <section class="ksr-section ksr-section--cta" id="ksr-sec-cta">
+      <div class="ksr-container ksr-container--narrow">
+        <div class="ksr-cta__glow"></div>
+        <div class="ksr-section-label ksr-section-label--light">🛒 Your Routine — Ready to Order</div>
+        <h2 class="ksr-cta__title" id="ksr-cta-title">Everything KOI selected is waiting in your cart</h2>
+        <p class="ksr-cta__sub" id="ksr-cta-sub">KOI built this routine for your exact skin. Every product earns its place — nothing added to fill a cart.</p>
+        <div class="ksr-cta__total-wrap">
+          <div class="ksr-cta__total-label">Complete routine total</div>
+          <div class="ksr-cta__total" id="ksr-cta-total">$0.00</div>
+        </div>
+        <a id="ksr-cart-btn" href="/cart" class="ksr-btn ksr-btn--rose ksr-btn--lg">
+          Complete My Routine →
+        </a>
+        <div class="ksr-cta__trust">
+          <span>✅ Free shipping on orders $50+</span>
+          <span>🔒 Secure checkout</span>
+          <span>↩️ 30-day returns</span>
+        </div>
+        <div class="ksr-cta__urgency" id="ksr-urgency">
+          ⏳ Your cart is saved for <strong>48 hours</strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. APPLICATION GUIDE ────────────────────────────────── -->
+    <section class="ksr-section" id="ksr-sec-guide">
+      <div class="ksr-container">
+        <div class="ksr-section-label">📖 Application Guide</div>
+        <h2 class="ksr-section-title">How to use your routine — correctly</h2>
+        <div class="ksr-guide-grid" id="ksr-guide-grid"></div>
+      </div>
+    </section>
+
+    <!-- 9. SUPPORT ──────────────────────────────────────────── -->
+    <section class="ksr-section ksr-section--blush" id="ksr-sec-support">
+      <div class="ksr-container ksr-container--narrow ksr-support">
+        <div class="ksr-support__icon">💬</div>
+        <h2 class="ksr-support__title">Have a question about your routine?</h2>
+        <p class="ksr-support__text">KOI is available in the store — ask anything about your products, ingredients, or how to layer them.</p>
+        <a href="https://shatokb.com/#ksr-koi" class="ksr-btn ksr-btn--outline">
+          Ask KOI a question
+        </a>
+        <div class="ksr-support__retake">
+          Skin changes over time. <a href="https://shatokb.com/pages/skin-quiz">Retake the quiz in 3 months →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. FOOTER ─────────────────────────────────────────── -->
+    <footer class="ksr-footer">
+      <div class="ksr-footer__logo">KOI by SHATOKB</div>
+      <p class="ksr-footer__text">Your personal Skin Report · Prepared by KOI AI · <a href="https://shatokb.com">shatokb.com</a></p>
+      <button class="ksr-footer__print" onclick="window.print()">🖨️ Save as PDF</button>
+    </footer>
+
+  </main>
+
+  <!-- STICKY MOBILE BAR -->
+  <div class="ksr-sticky-bar" id="ksr-sticky-bar" hidden>
+    <div class="ksr-sticky-bar__left">
+      <div class="ksr-sticky-bar__label">Your routine</div>
+      <div class="ksr-sticky-bar__total" id="ksr-sticky-total">$0.00</div>
+    </div>
+    <a id="ksr-sticky-btn" href="/cart" class="ksr-btn ksr-btn--rose ksr-btn--sm">
+      Go to Cart →
+    </a>
+  </div>
+
+</div><!-- #ksr-root -->
+
+<script>
+  window.KSR_TABLE_API = '/';
+</script>
+{{ 'shatokb-skin-report.js' | asset_url | script_tag }}
