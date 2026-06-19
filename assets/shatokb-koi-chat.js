@@ -1733,7 +1733,7 @@ async function manejarResultadoVision (data) {
       }
     } else if (respuestasEnriquecidas) {
       // Perfil confirmado pero enriquecer igual — re-rankear productos con foto
-           if (typeof window.shatokbCambiarPerfil === 'function') {
+       if (typeof window.shatokbCambiarPerfil === 'function') {
         try {
           const perfilActual = KOI_STATE.contexto?.perfil?.id || '';
           await Promise.race([
@@ -1743,8 +1743,8 @@ async function manejarResultadoVision (data) {
         } catch(e) { console.warn('[KOI] error:', e); }
       }
 
+   }
 
-    }
 
     guardarHistorialLocal();
     KOI_STATE.revealPhase = 'post_vision';
