@@ -1735,126 +1735,164 @@ async function manejarResultadoVision (data) {
   if (!yaEstaEnHistorial) {
     const chipTexto = idioma === 'es' ? '📸 Analicé mi piel con la cámara' : '📸 I analyzed my skin with the camera';
     KOI_STATE.historial.push({ role: 'user', content: chipTexto });
-    // Solo añadir al DOM si no fue el chip quien ya lo hizo
     if (!yaEstaEnDOM) agregarMensaje('user', chipTexto);
   }
 
-  // Mostrar typing mientras KOI procesa
   mostrarTyping();
 
-  const perfilId    = KOI_STATE.contexto?.perfil?.id || '';
-  const perfilNombre = KOI_STATE.contexto?.perfil?.nombre || 'your profile';
+  // ══════════════════════════════════════════════════════════════════
+  // ★★★ ENRIQUECIMIENTO FOTO + QUIZ — v8.0 "COMBINADO REAL" ★★★
+  //
+  // IMPORTANTE: este bloque se ejecuta SIEMPRE que el Worker devuelva
+  // dimensiones — independientemente de si hay mensaje_koi o no.
+  // Es el núcleo de la promesa "quiz + foto combinados".
+  //
+  // Flujo:
+  //   1. Worker /vision devuelve dimensiones (8 scores clínicos reales)
+  //   2. shatokbEnriquecerRespuestasConVision() traduce esos scores
+  //      a señales que el scorer ya conoce (tipo_piel, concerns, sensibilidad)
+  //   3. shatokbCalcularPerfil() recalcula el perfil óptimo con la señal combinada
+  //   4. shatokbCambiarPerfil() re-rankea los 250 productos con ese perfil
+  //      y las respuestas enriquecidas → rutina personalizada por piel REAL
+  //
+  // Solo se salta si el Worker no devolvió ninguna dimensión (error real).
+  // ══════════════════════════════════════════════════════════════════
+  const tieneDimensiones = result && result.dimensiones
+    && typeof result.dimensiones === 'object'
+    && Object.keys(result.dimensiones).length > 0;
 
-  // ── Si tenemos resultado real del Worker ───────────────────
-  if (result && result.mensaje_koi) {
-    // ★ Guardar resultado completo para que revelarRutinaConKOI() lo use
+  let respuestasEnriquecidas = null;
+  let perfilRecalculado      = null;
+  let huboCambioPerfilReal   = false;
+
+  if (tieneDimensiones) {
+    // Guardar resultado completo en estado global
     KOI_STATE.visionResult = result;
 
+    // ── A) Enriquecer respuestas del quiz con los 8 scores fotográficos ──
+    if (typeof window.shatokbEnriquecerRespuestasConVision === 'function') {
+      const respuestasBase = KOI_STATE.contexto?.respuestas || {};
+      respuestasEnriquecidas = window.shatokbEnriquecerRespuestasConVision(respuestasBase, result);
+
+      console.log('[KOI Vision v8] ✅ Respuestas enriquecidas foto+quiz:', {
+        tipo_piel:    respuestasBase.tipo_piel + ' → ' + respuestasEnriquecidas.tipo_piel,
+        sensibilidad: respuestasBase.sensibilidad + ' → ' + respuestasEnriquecidas.sensibilidad,
+        concerns:     [respuestasEnriquecidas.preocupacion, ...(respuestasEnriquecidas.preocupacion_secundaria || [])],
+        score_global: result.score_global,
+      });
+    }
+
+    // ── B) Re-aplicar al scorer — siempre, aunque el perfil no cambie ──
+    // La foto puede no cambiar el perfil pero sí los concerns secundarios
+    // y la sensibilidad → los productos rankeados serán diferentes y más precisos.
+    if (typeof window.shatokbCambiarPerfil === 'function') {
+      // Determinar perfil de destino:
+      //   1. Si el Worker propuso ajuste_perfil → usarlo como hint
+      //   2. shatokbCambiarPerfil recalcula internamente con las respuestas enriquecidas
+      //      usando shatokbCalcularPerfil() → señal foto+quiz combinada
+      const ajuste = result.ajuste_perfil;
+      const perfilHint = (ajuste && ajuste.nuevo_perfil_id)
+        ? ajuste.nuevo_perfil_id
+        : (KOI_STATE.contexto?.perfil?.id || '');
+
+      const perfilAntes = KOI_STATE.contexto?.perfil?.id || '';
+
+      try {
+        const exito = await Promise.race([
+          window.shatokbCambiarPerfil(perfilHint, respuestasEnriquecidas),
+          new Promise(r => setTimeout(r, 4000)) // timeout 4s — nunca bloquear UI
+        ]);
+
+        // Detectar si el perfil real cambió (para mensaje WOW)
+        const perfilDespues = window.shatokbState?.perfilOverride || perfilHint;
+        huboCambioPerfilReal = exito === true && perfilDespues !== perfilAntes;
+        perfilRecalculado    = perfilDespues;
+
+        if (huboCambioPerfilReal) {
+          console.log('[KOI Vision v8] 🔄 Perfil reasignado por foto:', perfilAntes, '→', perfilDespues);
+        } else {
+          console.log('[KOI Vision v8] ✅ Mismo perfil, productos re-rankeados con foto:', perfilDespues);
+        }
+
+        // Actualizar contexto de KOI con el perfil final
+        if (KOI_STATE.contexto && perfilDespues) {
+          KOI_STATE.contexto.perfil = {
+            id:     perfilDespues,
+            nombre: perfilDespues,
+          };
+        }
+      } catch(e) {
+        console.warn('[KOI Vision v8] shatokbCambiarPerfil error:', e);
+      }
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // ★ MENSAJE DE KOI — después del enriquecimiento
+  // ══════════════════════════════════════════════════════════════════
+
+  // ── Si tenemos resultado real del Worker con mensaje ──────────────
+  if (result && result.mensaje_koi) {
     await new Promise(r => setTimeout(r, 900));
     ocultarTyping();
 
     // 1. Mensaje principal de KOI con typewriter
     const textEl = agregarMensaje('koi', '', false);
-    await escribirConEfecto(textEl, result.mensaje_koi);
-    KOI_STATE.historial.push({ role: 'koi', content: result.mensaje_koi });
+
+    // Si la foto recalculó un perfil diferente al del quiz → añadir nota WOW
+    let mensajeFinal = result.mensaje_koi;
+    if (huboCambioPerfilReal && perfilRecalculado) {
+      const notaReasignacion = {
+        es: `\n\n✦ *Nota: tu foto reveló que tu piel es diferente a lo que indicaste en el quiz. He ajustado tu rutina en tiempo real basándome en lo que realmente veo.*`,
+        en: `\n\n✦ *Note: your photo revealed your skin differs from your quiz answers. I've updated your routine in real time based on what I actually see.*`,
+        fr: `\n\n✦ *Note: votre photo révèle que votre peau est différente de vos réponses au quiz. J'ai mis à jour votre routine en temps réel.*`,
+        pt: `\n\n✦ *Nota: sua foto revelou que sua pele é diferente do que você indicou no quiz. Atualizei sua rotina em tempo real.*`,
+      };
+      mensajeFinal += (notaReasignacion[idioma] || notaReasignacion.en);
+    }
+
+    await escribirConEfecto(textEl, mensajeFinal);
+    KOI_STATE.historial.push({ role: 'koi', content: mensajeFinal });
 
     await new Promise(r => setTimeout(r, 400));
 
-    // 2. Card de análisis avanzado — se inyecta como segundo mensaje de KOI
+    // 2. Card de análisis avanzado — 8 dimensiones clínicas
     const bubble = textEl.closest
       ? textEl.closest('.koi-msg') || textEl.parentElement
       : textEl.parentElement;
 
     const cardEl = _construirCardAnalisis(result, idioma);
     if (cardEl) {
-      // Añadir debajo del primer bubble (nuevo mensaje de KOI visual)
       const chatContainer = document.getElementById('koi-messages') ||
                             document.getElementById('shatokb-koi-messages') ||
                             bubble?.parentElement;
       if (chatContainer) {
         chatContainer.appendChild(cardEl);
-        // Animar entrada con stagger
         _animarCardEntrada(cardEl);
       }
     }
 
     guardarHistorialLocal();
-
-    // 3. ★★ ENRIQUECIMIENTO + REASIGNACIÓN SILENCIOSA — v7.3 ★★
-    // El usuario NUNCA ha visto la rutina — la ve por primera vez en el reveal.
-    // Antes de mostrarla, hacemos dos cosas en silencio:
-    //   A) Enriquecer las respuestas del quiz con los scores reales de la foto
-    //   B) Reasignar el perfil si la foto contradice el quiz
-    // Resultado: los 250 productos se rankean por piel REAL (foto + quiz combinados)
-
-    // A) Enriquecer respuestas con scores de visión
-    let respuestasEnriquecidas = null;
-    if (typeof window.shatokbEnriquecerRespuestasConVision === 'function') {
-      const respuestasBase = KOI_STATE.contexto?.respuestas || {};
-      respuestasEnriquecidas = window.shatokbEnriquecerRespuestasConVision(respuestasBase, result);
-      console.log('[KOI Vision] ✅ Respuestas enriquecidas con foto:', {
-        tipo_piel_base: respuestasBase.tipo_piel,
-        tipo_piel_final: respuestasEnriquecidas.tipo_piel,
-        concerns_final: [respuestasEnriquecidas.preocupacion, ...(respuestasEnriquecidas.preocupacion_secundaria || [])],
-        sensibilidad_final: respuestasEnriquecidas.sensibilidad,
-      });
-    }
-
-    // B) Reasignación de perfil si la foto lo indica
-    const ajuste = result.ajuste_perfil;
-    const hayReasignacion = !result.confirmacion_perfil
-      && ajuste
-      && typeof ajuste === 'object'
-      && ajuste.nuevo_perfil_id
-      && ajuste.nuevo_perfil_id !== (KOI_STATE.contexto?.perfil?.id || '');
-
-    if (hayReasignacion) {
-      // Cambiar perfil Y pasar respuestas enriquecidas al scorer
-      if (typeof window.shatokbCambiarPerfil === 'function') {
-        try {
-          await Promise.race([
-            window.shatokbCambiarPerfil(ajuste.nuevo_perfil_id, respuestasEnriquecidas),
-            new Promise(r => setTimeout(r, 3000)) // timeout 3s — nunca bloquear
-          ]);
-        } catch(e) { console.warn('[KOI] shatokbCambiarPerfil error:', e); }
-      }
-      if (KOI_STATE.contexto) {
-        KOI_STATE.contexto.perfil = {
-          id:     ajuste.nuevo_perfil_id,
-          nombre: ajuste.nuevo_perfil_id,
-        };
-      }
-    } else if (respuestasEnriquecidas) {
-      // Perfil confirmado pero enriquecer igual — re-rankear productos con foto
-      if (typeof window.shatokbCambiarPerfil === 'function') {
-        try {
-          const perfilActual = KOI_STATE.contexto?.perfil?.id || '';
-          await Promise.race([
-            window.shatokbCambiarPerfil(perfilActual, respuestasEnriquecidas),
-            new Promise(r => setTimeout(r, 3000)) // timeout 3s — nunca bloquear
-          ]);
-        } catch(e) { console.warn('[KOI] shatokbCambiarPerfil error:', e); }
-      }
-    }
-
-    guardarHistorialLocal();
     KOI_STATE.revealPhase = 'post_vision';
-    // Post-análisis: solo chip para revelar la rutina (ya se analizó la piel)
     setTimeout(() => mostrarChips('post_vision'), 700);
 
   } else {
-    // ── Fallback: sin resultado del Worker — mensaje seductor por perfil ──────
-    // Construir un mensaje íntimo, clínico y específico usando los datos del quiz.
-    // El usuario debe sentir que KOI leyó su piel, no que es un template.
+    // ── Fallback: Worker no devolvió mensaje_koi ──────────────────────
+    // El enriquecimiento foto+quiz YA se ejecutó arriba si había dimensiones.
+    // Aquí solo mostramos el mensaje al usuario.
+    // Si tieneDimensiones=true, el scorer ya re-rankeó los productos.
+    // Si tieneDimensiones=false, trabajamos solo con el quiz.
 
     await new Promise(r => setTimeout(r, 1400));
     ocultarTyping();
 
-    // ── Extraer datos del contexto del quiz ──────────────────
+    // ── Extraer datos: preferir respuestas enriquecidas si existen ───
     const ctx       = KOI_STATE.contexto || {};
-    const resp      = ctx.respuestas   || ctx.answers    || {};
+    // Usar respuestas enriquecidas con foto si ya se calcularon arriba,
+    // si no, usar las respuestas base del quiz
+    const resp      = respuestasEnriquecidas || ctx.respuestas || ctx.answers || {};
     const perfil    = ctx.perfil       || ctx.profile    || {};
-    const perfilId  = (perfil.id       || perfil.perfil_id || ctx.perfil_id || '').toLowerCase();
+    const perfilId  = (perfilRecalculado || perfil.id || perfil.perfil_id || ctx.perfil_id || '').toLowerCase();
     const preoc     = (resp.preocupacion || resp.concern || resp.skin_concern || resp.preocupacion_principal || '').toLowerCase();
     const tipoP     = (resp.tipo_piel  || resp.skin_type || resp.tipo        || '').toLowerCase();
     const zona      = (resp.zona_problematica || resp.problem_zone || '').toLowerCase();
@@ -1931,6 +1969,17 @@ async function manejarResultadoVision (data) {
       } else {
         mensajeFallback = `Your profile gives me a very clear picture of what's going on with your skin. 🔬\n\nWhat I do is read those signals and turn them into a concrete plan. Because skin always has a reason behind every problem — and when you find that reason, the solution stops being trial and error.\n\nYour routine is already built with the exact ingredients your skin needs right now. Every step has a specific reason for being there — for you. Ready to take a look?`;
       }
+    }
+
+    // ── Si la foto recalculó un perfil diferente, añadir nota WOW ──
+    if (huboCambioPerfilReal && perfilRecalculado) {
+      const notaReasignacionFallback = {
+        es: `\n\n✦ *Algo importante: tu foto reveló que tu piel es diferente a lo que indicaste en el quiz. He ajustado tu rutina en tiempo real para reflejar lo que realmente veo en tu piel.*`,
+        en: `\n\n✦ *Something important: your photo revealed your skin is different from what you indicated in the quiz. I've updated your routine in real time to reflect what I actually see.*`,
+        fr: `\n\n✦ *Important: votre photo révèle que votre peau est différente de vos réponses. J'ai mis à jour votre routine en temps réel.*`,
+        pt: `\n\n✦ *Importante: sua foto revelou que sua pele é diferente do que você indicou. Atualizei sua rotina em tempo real.*`,
+      };
+      mensajeFallback += (notaReasignacionFallback[idioma] || notaReasignacionFallback.en);
     }
 
     // ── Mostrar mensaje con efecto typewriter ────────────────

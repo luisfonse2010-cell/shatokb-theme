@@ -4259,6 +4259,22 @@ window.shatokbCambiarPerfil = async function (nuevoPerfilId, respuestasEnriqueci
     'seca_hidratacion','seca_antiaging','sensible_rojeces','general_glow'
   ];
 
+  // ── Capturar perfil anterior ANTES de cualquier cambio ───────────
+  // Necesario para el log y el evento — sin esta línea era ReferenceError.
+  const perfilActual = shatokbState.perfilOverride || shatokbState.perfilId || nuevoPerfilId;
+
+  // ── Si hay respuestas enriquecidas con foto, recalcular el perfil
+  // más adecuado usando el scorer de perfiles, en lugar de confiar
+  // ciegamente en el perfil_id que propone el Worker (que puede ser
+  // genérico). La foto + quiz juntos producen una señal más precisa.
+  if (respuestasEnriquecidas && respuestasEnriquecidas._vision_enriched) {
+    const perfilCalculado = shatokbCalcularPerfil(respuestasEnriquecidas);
+    if (PERFILES_VALIDOS.includes(perfilCalculado) && perfilCalculado !== nuevoPerfilId) {
+      console.log('[KOI Vision] 🔬 Perfil recalculado con foto+quiz:', nuevoPerfilId, '→', perfilCalculado);
+      nuevoPerfilId = perfilCalculado;
+    }
+  }
+
   if (!PERFILES_VALIDOS.includes(nuevoPerfilId)) {
     console.warn('[KOI Vision] Perfil inválido ignorado:', nuevoPerfilId);
     return false;
@@ -4349,10 +4365,16 @@ window.shatokbCambiarPerfil = async function (nuevoPerfilId, respuestasEnriqueci
 
   // 8. Emitir evento para que otros módulos (KOI cart, etc.) se enteren
   document.dispatchEvent(new CustomEvent('koi:perfil-actualizado', {
-    detail: { perfilAnterior: perfilActual, perfilNuevo: nuevoPerfilId, perfil: nuevoPerfil }
+    detail: {
+      perfilAnterior:       perfilActual,
+      perfilNuevo:          nuevoPerfilId,
+      perfil:               nuevoPerfil,
+      visionEnriquecido:    !!(respuestasEnriquecidas && respuestasEnriquecidas._vision_enriched),
+      visionScoreGlobal:    respuestasEnriquecidas?._vision_score_global || null,
+    }
   }));
 
-  console.log(`[KOI Vision] ✅ Perfil cambiado: ${perfilActual} → ${nuevoPerfilId}`);
+  console.log(`[KOI Vision] ✅ Perfil cambiado: ${perfilActual} → ${nuevoPerfilId} | vision_enriched: ${!!(respuestasEnriquecidas?._vision_enriched)}`);
   return true;
 };
 
