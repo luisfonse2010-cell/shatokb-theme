@@ -208,11 +208,27 @@
    * como fallback.
    */
   function _insertarKOICuandoListo(wrapper) {
+    // El quiz hace inner.innerHTML = `...` que BORRA cualquier nodo
+    // insertado dentro de .shatokb-resultado__inner antes de terminar.
+    // Por eso insertamos KOI como hermano DESPUÉS de #stk-reveal-section,
+    // NO dentro de él. Así el innerHTML del quiz no lo borra.
+    // Estructura final:
+    //   .shatokb-resultado__inner
+    //     .shatokb-resultado__header
+    //     #stk-reveal-section        ← el quiz pone todo aquí
+    //       .stk-reveal-header  "YOUR PERSONALIZED ROUTINE"
+    //       #stk-blur-overlay   teaser "Open my analysis"
+    //       #stk-routine-blurred    productos
+    //     #shatokb-koi-wrapper  ← KOI aquí (FUERA de stk-reveal-section)
+
     function _doInsert() {
-      const blurred = document.getElementById('stk-routine-blurred');
-      if (blurred && blurred.parentNode) {
-        console.log('[KOI] _insertarKOICuandoListo: insertando antes de #stk-routine-blurred ✅');
-        blurred.parentNode.insertBefore(wrapper, blurred);
+      // Ancla: DESPUÉS de #stk-reveal-section (hermano siguiente)
+      const revealSection = document.getElementById('stk-reveal-section');
+      if (revealSection && revealSection.parentNode) {
+        // Insertar justo después de stk-reveal-section
+        const nextSibling = revealSection.nextSibling;
+        revealSection.parentNode.insertBefore(wrapper, nextSibling);
+        console.log('[KOI] _insertarKOICuandoListo: insertado después de #stk-reveal-section ✅');
         return true;
       }
       return false;
@@ -221,24 +237,20 @@
     // Intento inmediato
     if (_doInsert()) return;
 
-    // MutationObserver: detecta cuando el quiz inserta #stk-routine-blurred
-    var observer = new MutationObserver(function(mutations) {
-      if (_doInsert()) {
-        observer.disconnect();
-      }
+    // MutationObserver: espera a que el quiz inserte #stk-reveal-section
+    var observer = new MutationObserver(function() {
+      if (_doInsert()) observer.disconnect();
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
-    // Timeout de seguridad: desconectar tras 8 segundos
+    // Timeout de seguridad a 8s
     setTimeout(function() {
       observer.disconnect();
-      // Último intento con fallback al contenedor del resultado
-      if (!document.getElementById('shatokb-koi-wrapper') ||
-          document.getElementById('shatokb-koi-wrapper').parentNode === document.body) {
+      if (!_doInsert()) {
         var resultado = document.querySelector('.shatokb-resultado__inner')
                      || document.querySelector('#shatokb-resultado');
         if (resultado) {
-          console.warn('[KOI] _insertarKOICuandoListo: timeout — appending al contenedor resultado');
+          console.warn('[KOI] timeout — appending al final del contenedor');
           resultado.appendChild(wrapper);
         }
       }
