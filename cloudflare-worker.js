@@ -18,7 +18,7 @@
  *
  * ============================================================
  */
-/* ── Last deploy: 2026-06-20T02:00:30.528Z */
+/* ── Last deploy: 2026-06-20T18:03:33.140Z */
 
 
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
@@ -496,11 +496,33 @@ function buildSystemPrompt (context) {
 async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
   if (!klaviyoKey) return { ok: false, error: 'No Klaviyo key' };
 
+  // Mapa canónico de IDs → nombres bonitos (fallback en Worker por si el cliente
+  // envía el título largo o el ID raw — e.g. 'The Deep Hydration Protocol' o 'seca_hidratacion')
+  const PERFIL_NOMBRES_MAP = {
+    grasa_acne:       'Oil Balance & Clarity',
+    grasa_poros:      'Pore Refinement',
+    mixta_general:    'Zone Balance',
+    mixta_manchas:    'Balance & Brighten',
+    seca_hidratacion: 'Hydration Restore',
+    seca_antiaging:   'Age Defense',
+    sensible_rojeces: 'Calm & Repair',
+    barrera_daniada:  'Barrier Recovery',
+    general_glow:     'Glass Skin Glow',
+  };
+
   const perfil     = reportData.perfil     || {};
   const productos  = reportData.productosSeleccionados || [];
   const rutinaAM   = reportData.rutinaAM   || [];
   const rutinaPM   = reportData.rutinaPM   || [];
   const total      = reportData.totalCarrito || 0;
+
+  // Garantizar nombre bonito del perfil — si el nombre recibido coincide con una clave
+  // del mapa (es el ID raw), o no está en el mapa de nombres bonitos, usar el mapa.
+  const perfilId      = perfil.id || '';
+  const perfilNombreCanon = PERFIL_NOMBRES_MAP[perfilId]
+    || (PERFIL_NOMBRES_MAP[perfil.nombre] ? PERFIL_NOMBRES_MAP[perfil.nombre] : perfil.nombre)
+    || perfilId
+    || '';
 
   // Payload para Klaviyo Track API v2
   const payload = {
@@ -513,14 +535,14 @@ async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
             type: 'profile',
             attributes: {
               email,
-              first_name:  perfil.nombre      || '',
+              first_name:  perfilNombreCanon,
               last_name:   '',
               location: {
                 timezone: reportData.idioma === 'en' ? 'America/New_York' : 'America/Bogota',
               },
               properties: {
-                skin_profile_id:    perfil.id          || '',
-                skin_profile_name:  perfil.nombre      || '',
+                skin_profile_id:    perfilId,
+                skin_profile_name:  perfilNombreCanon,
                 skin_profile_desc:  perfil.descripcion || '',
                 skin_tags:          (perfil.tags || []).join(', '),
                 rutina_am:          rutinaAM.join(' → '),
@@ -534,13 +556,30 @@ async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
         },
         properties: {
           report_url:          reportUrl,
-          perfil_nombre:       perfil.nombre      || '',
-          perfil_id:           perfil.id          || '',
+          perfil_nombre:       perfilNombreCanon,
+          perfil_id:           perfilId,
           rutina_am:           rutinaAM.join(' → '),
           rutina_pm:           rutinaPM.join(' → '),
           total_carrito:       total,
           productos_count:     productos.length,
-          productos_lista:     productos.map(p => p.nombre).join(', '),
+          // Array estructurado — usado en template Klaviyo con {% for product in event.productos %}
+          productos: productos.map(p => {
+            // Imagen: solo incluir si es una URL CDN real (no una URL de página de producto)
+            const imgRaw = p.imagen || '';
+            const imgValid = imgRaw.startsWith('http') && !imgRaw.includes('/products/')
+              ? imgRaw
+              : imgRaw.includes('cdn.shopify.com') || imgRaw.includes('.jpg') || imgRaw.includes('.png') || imgRaw.includes('.webp')
+                ? imgRaw
+                : '';
+            return {
+              nombre:  p.nombre  || '',
+              precio:  p.precio  || '',
+              paso:    p.paso    || '',
+              momento: p.momento || 'ambos',
+              imagen:  imgValid,
+              url:     p.url || (p.handle ? `https://shatokb.com/products/${p.handle}` : ''),
+            };
+          }),
           idioma:              reportData.idioma  || 'es',
         },
       }
