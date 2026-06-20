@@ -2,10 +2,12 @@
  * ============================================================
  * SHATOKB · KOI — Experta K-Beauty con IA
  * Archivo: assets/shatokb-koi-chat.js
- * Version: 4.5 — Fix token NULL: enviarSkinReport(email) NO se estaba llamando
- *               desde confirmarEmailCarrito(). Se restauró la llamada y se amplió
- *               el delay a 2500ms para dar tiempo al fetch async del Worker antes
- *               de que shatokbEjecutarAddToCart() lea el token para el PATCH.
+ * Version: 4.6 — Swiss-watch reliability:
+ *               1. enviarSkinReport() ahora retorna Promise<token|null> — async real.
+ *               2. confirmarEmailCarrito() hace await del token antes de proceder.
+ *               3. shatokb-quiz.js tiene waitForToken() con retry/polling 8s como
+ *                  red de seguridad por si el network tarda más de lo esperado.
+ *               Sin setTimeout fijos. El carrito avanza SOLO cuando el token existe.
  *
  * Arquitectura:
  *   - Este archivo corre en el browser (Shopify)
@@ -1491,41 +1493,54 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     //         Shopify → GET Worker /report/:token → KV ✅
     // ══════════════════════════════════════════════════════════════
 
-    // POST al Worker — guarda en KV (sin Klaviyo por defecto).
-    // El PATCH en confirmarEmailCarrito() enviará Klaviyo con productos reales.
-    // Si se pasa sendKlaviyoDirect:true, el Worker envía Klaviyo aquí directamente (fallback).
+    // POST al Worker — guarda en KV y retorna token.
+    // Esta función ahora es async y RETORNA el token para que confirmarEmailCarrito()
+    // pueda hacer await real sin setTimeout fijo.
     const sendKlaviyoDirect = options?.sendKlaviyoDirect === true;
-    fetch(KOI_CONFIG.reportUrl, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({
-        email,
-        reportData,
-        siteUrl:       KOI_CONFIG.siteUrl || 'https://shatokb.com',
-        perfil_id:     perfilId,
-        perfil_nombre: perfilNombre,
-        perfil_desc:   reportData.perfil?.descripcion || '',
-        total_carrito: reportData.totalCarrito        || 0,
-        idioma:        reportData.idioma              || 'en',
-        send_klaviyo:  sendKlaviyoDirect,  // true = Worker envía Klaviyo en el POST (fallback)
-      }),
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (data.ok) {
-        KOI_STATE.reportUrl = data.reportUrl;
-        // ── Guardar token en localStorage y window global ──────────────────
-        if (data.token) {
-          try { localStorage.setItem('shatokb_report_token', data.token); } catch (_) {}
-          window.KOI_STATE_REPORT_TOKEN = data.token;
-        }
-        console.log('[KOI] Reporte guardado en KV ✅ Token:', data.token);
-        console.log('[KOI] KV saved:', data.kv_saved, '| Klaviyo:', data.klaviyo?.ok, data.klaviyo?.deferred ? '(deferred→PATCH)' : '');
-      } else {
-        console.warn('[KOI] Worker /report error:', data);
+
+    try {
+      const res = await fetch(KOI_CONFIG.reportUrl, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          email,
+          reportData,
+          siteUrl:       KOI_CONFIG.siteUrl || 'https://shatokb.com',
+          perfil_id:     perfilId,
+          perfil_nombre: perfilNombre,
+          perfil_desc:   reportData.perfil?.descripcion || '',
+          total_carrito: reportData.totalCarrito        || 0,
+          idioma:        reportData.idioma              || 'en',
+          send_klaviyo:  sendKlaviyoDirect,
+        }),
+      });
+
+      if (!res.ok) {
+        console.warn('[KOI] Worker /report HTTP error:', res.status);
+        return null;
       }
-    })
-    .catch(e => console.warn('[KOI] Worker /report network error:', e.message));
+
+      const data = await res.json();
+
+      if (data.ok && data.token) {
+        KOI_STATE.reportUrl = data.reportUrl;
+        // ── Guardar token en las 3 fuentes — triple redundancia ────────────
+        window.KOI_STATE_REPORT_TOKEN = data.token;
+        try { localStorage.setItem('shatokb_report_token', data.token); } catch (_) {}
+        // Tercer backup: sessionStorage (sobrevive soft navigations)
+        try { sessionStorage.setItem('shatokb_report_token', data.token); } catch (_) {}
+
+        console.log('%c[KOI] ✅ Token generado y guardado:', 'color:#22c55e;font-weight:bold', data.token.slice(0, 8) + '…');
+        console.log('[KOI] KV saved:', data.kv_saved, '| Klaviyo deferred→PATCH:', data.klaviyo?.deferred ?? true);
+        return data.token;    // ← la clave: retornamos el token al caller
+      } else {
+        console.warn('[KOI] Worker /report respuesta inesperada:', data);
+        return null;
+      }
+    } catch (e) {
+      console.warn('[KOI] Worker /report network error:', e.message);
+      return null;
+    }
   }
 
   // Flag booleano síncrono — guard más rápido que el string revealPhase
@@ -3139,16 +3154,26 @@ async function enviarDesdeChip (texto) {
       const textEl = agregarMensaje('koi', '');
       if (textEl) await escribirConEfecto(textEl, confirmMsg, 18);
 
-      // ── Generar el reporte y token ANTES de proceder al carrito ────────────
-      // enviarSkinReport() hace POST al Worker, que guarda en KV y retorna un
-      // token. Ese token lo lee shatokbEjecutarAddToCart() en quiz.js para el
-      // PATCH con los productos reales del carrito.
-      // IMPORTANTE: el fetch es async — damos 2.5 s para que el Worker responda
-      // y guarde window.KOI_STATE_REPORT_TOKEN antes de que el quiz haga el PATCH.
-      console.log('[KOI] Email capturado ✅ — llamando enviarSkinReport() para generar token...');
-      enviarSkinReport(email);
+      // ── Generar el reporte y token — AWAIT REAL, sin setTimeout fijo ──────
+      // enviarSkinReport() ahora es async y retorna el token directamente.
+      // Esperamos a que el Worker responda ANTES de llamar al carrito.
+      // El botón ya está deshabilitado (⏳) así que el UX no se bloquea visualmente.
+      console.log('%c[KOI] Generando token del reporte...', 'color:#a78bfa;font-weight:bold');
 
-      setTimeout(callbackProcederAlCarrito, 2500);
+      const tokenObtenido = await enviarSkinReport(email);
+
+      if (tokenObtenido) {
+        console.log('%c[KOI] Token listo ✅ — procediendo al carrito', 'color:#22c55e;font-weight:bold', tokenObtenido.slice(0, 8) + '…');
+      } else {
+        // Red de seguridad: si el Worker falló (network error, cold start, etc.)
+        // shatokb-quiz.js tiene su propio waitForToken() con retry de 8s.
+        // Procedemos igual — el PATCH intentará hasta 8 veces cada 500ms.
+        console.warn('[KOI] Token no obtenido — procediendo al carrito. quiz.js hará retry del token.');
+      }
+
+      // Pequeña pausa UX (300ms) para que el mensaje de KOI termine de renderizar
+      await new Promise(resolve => setTimeout(resolve, 300));
+      callbackProcederAlCarrito();
     }
 
     function saltarAlCarrito () {

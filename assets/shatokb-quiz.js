@@ -3905,17 +3905,39 @@ async function shatokbEjecutarAddToCart(handles, btn) {
     // También reenvía el evento Klaviyo con los datos correctos.
     try {
       const workerBase  = 'https://koi-proxy.luisfonse2010.workers.dev';
-      // El token fue guardado en KOI_STATE.reportUrl por enviarSkinReport() en koi-chat.js
-      // Extraerlo de window.KOI_STATE si está disponible, o de localStorage
-      let reportToken = null;
 
-      // Fuente 1: KOI_STATE_REPORT_TOKEN (inyectado por shatokb-koi-chat.js)
-      if (window.KOI_STATE_REPORT_TOKEN) {
-        reportToken = window.KOI_STATE_REPORT_TOKEN;
-      }
-      // Fuente 2: localStorage (guardado como backup)
+      // ── waitForToken — lee el token de 3 fuentes con retry ────────────────
+      // koi-chat.js lo guarda en window + localStorage + sessionStorage
+      // cuando enviarSkinReport() recibe la respuesta del Worker.
+      // Si aún no llegó (network lento / cold start) reintentamos hasta 8 s.
+      // IMPORTANTE: solo lee el token — no toca NADA del reporte ni del carrito.
+      const readToken = () =>
+        window.KOI_STATE_REPORT_TOKEN ||
+        localStorage.getItem('shatokb_report_token') ||
+        sessionStorage.getItem('shatokb_report_token') ||
+        null;
+
+      let reportToken = readToken();
+
       if (!reportToken) {
-        reportToken = localStorage.getItem('shatokb_report_token');
+        console.log('[SHATOKB] Token aún no disponible — esperando (máx 8s)...');
+        // Polling cada 400ms, máximo 20 intentos = 8 segundos
+        await new Promise(resolve => {
+          let intentos = 0;
+          const poll = setInterval(() => {
+            intentos++;
+            reportToken = readToken();
+            if (reportToken) {
+              clearInterval(poll);
+              console.log('%c[SHATOKB] Token recibido en intento ' + intentos + ' ✅', 'color:#22c55e;font-weight:bold');
+              resolve();
+            } else if (intentos >= 20) {
+              clearInterval(poll);
+              console.warn('[SHATOKB] Token no llegó tras 8s — PATCH se saltará.');
+              resolve();
+            }
+          }, 400);
+        });
       }
 
       console.log('%c[SHATOKB] PATCH token:', 'color:#22c55e;font-weight:bold', reportToken ? reportToken.slice(0,8) + '…' : '❌ SIN TOKEN — PATCH saltado');
