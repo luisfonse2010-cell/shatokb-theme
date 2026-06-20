@@ -724,7 +724,8 @@
 .ksr-product-card__img-wrap img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  padding: 12px;
   transition: transform 0.3s ease;
 }
 .ksr-product-card:hover .ksr-product-card__img-wrap img { transform: scale(1.04); }
