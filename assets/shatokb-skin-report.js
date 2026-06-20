@@ -451,8 +451,10 @@ async function loadProductImages(products) {
     console.log(`[KSR] prod[${i}] → fetchando /products/${handle}.js ...`);
     const img = await fetchProductImage(handle);
     if (img) {
-      console.log(`[KSR] prod[${i}] → imagen resuelta: ${img.substring(0,80)}`);
-      prod.imagen = img;
+        // Normalizar protocolo relativo //cdn.shopify.com → https://cdn.shopify.com
+      const imgNorm = img.startsWith('//') ? 'https:' + img : img;
+      console.log(`[KSR] prod[${i}] → imagen resuelta: ${imgNorm.substring(0,80)}`);
+      prod.imagen = imgNorm;
     } else {
       console.warn(`[KSR] prod[${i}] → fetchProductImage("${handle}") devolvió null`);
     }
@@ -476,7 +478,7 @@ function renderPanel(panelId, products, period) {
     const stepId = `ksr-accordion-${period}-${i}`;
     const delay = 0.06 * i;
 
-    const hasImg = prod.imagen && prod.imagen.startsWith('http');
+    const hasImg = prod.imagen && (prod.imagen.startsWith('http') || prod.imagen.startsWith('//'));
     const imgHtml = hasImg
       ? `<img src="${escHtml(prod.imagen)}" alt="${escHtml(prod.nombre)}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=ksr-step__img-placeholder>🌸</span>'">`
       : `<span class="ksr-step__img-placeholder">🌸</span>`;
@@ -541,7 +543,7 @@ function renderProducts(data) {
 
   gridEl.innerHTML = '';
   prods.forEach((prod, i) => {
-    const hasImg = prod.imagen && prod.imagen.startsWith('http');
+    const hasImg = prod.imagen && (prod.imagen.startsWith('http') || prod.imagen.startsWith('//'));
     const imgHtml = hasImg
       ? `<img src="${escHtml(prod.imagen)}" alt="${escHtml(prod.nombre)}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">`
       : '';
