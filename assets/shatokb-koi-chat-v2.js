@@ -1331,6 +1331,12 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
         // Guardar la URL del reporte en el estado por si la necesitamos
         KOI_STATE.reportUrl = data.reportUrl;
         console.log('[KOI] Skin Report generado:', data.reportUrl);
+        // ── Guardar token para que shatokbEjecutarAddToCart pueda hacer el PATCH ──
+        if (data.token) {
+          try { localStorage.setItem('shatokb_report_token', data.token); } catch (_) {}
+          window.KOI_STATE_REPORT_TOKEN = data.token;
+          console.log('[KOI v2] Token guardado para PATCH post-carrito:', data.token);
+        }
       }
     })
     .catch(() => {}); // silencioso — nunca interrumpir la experiencia
