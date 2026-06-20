@@ -18,7 +18,7 @@
  *
  * ============================================================
  */
-/* ── Last deploy: 2026-06-20T18:03:33.140Z */
+/* ── Last deploy: 2026-06-20T20:05:34.209Z */
 
 
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
@@ -434,7 +434,7 @@ You do not refer them elsewhere. You do not suggest other channels. Every questi
    ══════════════════════════════════════════════════════════ */
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin':  '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
@@ -564,13 +564,18 @@ async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
           productos_count:     productos.length,
           // Array estructurado — usado en template Klaviyo con {% for product in event.productos %}
           productos: productos.map(p => {
-            // Imagen: solo incluir si es una URL CDN real (no una URL de página de producto)
+            // Imagen: incluir si es URL de CDN válida.
+            // REGLA: es válida si contiene cdn.shopify.com, o termina en imagen (.jpg,.png,.webp,.gif)
+            // NO válida: si es solo una URL de página de producto sin extensión de imagen
+            //            (e.g. https://shatokb.com/products/some-handle sin extensión)
             const imgRaw = p.imagen || '';
-            const imgValid = imgRaw.startsWith('http') && !imgRaw.includes('/products/')
+            const isCDN     = imgRaw.includes('cdn.shopify.com');
+            const isImgExt  = /\.(jpg|jpeg|png|webp|gif|avif)(\?|$)/i.test(imgRaw);
+            const isPageUrl = imgRaw.startsWith('http') && !isCDN && !isImgExt
+                              && imgRaw.includes('/products/') && !imgRaw.includes('files');
+            const imgValid  = imgRaw.startsWith('http') && (isCDN || isImgExt) && !isPageUrl
               ? imgRaw
-              : imgRaw.includes('cdn.shopify.com') || imgRaw.includes('.jpg') || imgRaw.includes('.png') || imgRaw.includes('.webp')
-                ? imgRaw
-                : '';
+              : '';
             return {
               nombre:  p.nombre  || '',
               precio:  p.precio  || '',
@@ -645,6 +650,98 @@ export default {
         return new Response(JSON.stringify({ error: 'Report not found', token }), { status: 404, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
       }
       return new Response(raw, { status: 200, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
+    }
+
+    // ── Endpoint PATCH /report/:token — actualizar productos en KV ─
+    // Llamado desde shatokb-quiz.js DESPUÉS de cart/add.js exitoso.
+    // Recibe los productos reales que el usuario añadió al carrito,
+    // actualiza el KV y reenvía el evento Klaviyo con datos correctos.
+    // Este es el FIX DEFINITIVO al timing bug: el POST /report se envía
+    // al capturar el email (productos por defecto), y el PATCH se envía
+    // cuando el usuario ejecuta "Add to cart" (productos reales finales).
+    if (request.method === 'PATCH' && url.pathname.startsWith('/report/')) {
+      const token = url.pathname.replace('/report/', '').trim();
+      if (!token) {
+        return new Response(JSON.stringify({ error: 'Missing token' }), { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
+      }
+
+      let body;
+      try { body = await request.json(); } catch {
+        return new Response(JSON.stringify({ error: 'Invalid body' }), { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
+      }
+
+      const { productos, email: patchEmail, totalCarrito: patchTotal } = body;
+
+      if (!productos || !Array.isArray(productos) || productos.length === 0) {
+        return new Response(JSON.stringify({ error: 'Missing or empty productos array' }), { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
+      }
+
+      const kv = env.SKIN_REPORTS;
+      if (!kv) {
+        return new Response(JSON.stringify({ error: 'KV not configured' }), { status: 503, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
+      }
+
+      // Leer el reporte existente
+      const raw = await kv.get(token);
+      if (!raw) {
+        return new Response(JSON.stringify({ error: 'Report not found', token }), { status: 404, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
+      }
+
+      let kvRecord;
+      try { kvRecord = JSON.parse(raw); } catch {
+        return new Response(JSON.stringify({ error: 'Corrupted KV record' }), { status: 500, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
+      }
+
+      // Parsear el reportData interno
+      let reportData;
+      try { reportData = JSON.parse(kvRecord.report_data || '{}'); } catch { reportData = {}; }
+
+      const email     = patchEmail || kvRecord.email || reportData.email || '';
+      const reportUrl = reportData.reportUrl || `https://shatokb.com/pages/skin-report?token=${token}`;
+
+      // Reconstruir rutinaAM y rutinaPM desde los nuevos productos
+      const isAM = p => p.momento === 'am' || p.momento === 'ambos' || !p.momento;
+      const isPM = p => p.momento === 'pm' || p.momento === 'ambos';
+      const rutinaAMnueva = productos.filter(isAM).map(p => p.nombre).filter(Boolean);
+      const rutinaPMnueva = productos.filter(isPM).map(p => p.nombre).filter(Boolean);
+
+      const totalNuevo = patchTotal || productos.reduce((s, p) => {
+        const n = parseFloat(String(p.precio || '0').replace(/[^0-9.]/g, '')) || 0;
+        return s + n;
+      }, 0);
+
+      // Actualizar el reportData con los productos finales del carrito
+      reportData.productosSeleccionados = productos;
+      reportData.rutinaAM               = rutinaAMnueva.length > 0 ? rutinaAMnueva : reportData.rutinaAM;
+      reportData.rutinaPM               = rutinaPMnueva.length > 0 ? rutinaPMnueva : reportData.rutinaPM;
+      reportData.totalCarrito           = totalNuevo;
+      reportData.updatedAt              = Date.now();
+      reportData.productos_actualizados = true; // flag para saber que fue corregido post-carrito
+
+      // Guardar de nuevo en KV (mantiene el mismo token y TTL de 90 días)
+      const kvPayloadActualizado = JSON.stringify({
+        ...kvRecord,
+        email,
+        total_carrito:  totalNuevo,
+        report_data:    JSON.stringify(reportData),
+        klaviyo_sent:   false,
+        updatedAt:      reportData.updatedAt,
+      });
+      await kv.put(token, kvPayloadActualizado, { expirationTtl: 60 * 60 * 24 * 90 });
+      console.log('[Report PATCH] KV updated. Token:', token, '| productos:', productos.length);
+
+      // Reenviar evento Klaviyo con los datos correctos (con productos reales)
+      const klaviyoKey = env.KLAVIYO_API_KEY || '';
+      let klaviyoResult = { ok: false, error: 'No API key configured' };
+      if (klaviyoKey && email) {
+        klaviyoResult = await enviarEventoKlaviyo(email, reportData, reportUrl, klaviyoKey);
+        console.log('[Report PATCH] Klaviyo re-sent:', JSON.stringify(klaviyoResult));
+      }
+
+      return new Response(
+        JSON.stringify({ ok: true, token, reportUrl, klaviyo: klaviyoResult, productos_count: productos.length }),
+        { status: 200, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
+      );
     }
 
     // ── Endpoint POST /report — guardar en KV + enviar Klaviyo ─
