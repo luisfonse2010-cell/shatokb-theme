@@ -18,7 +18,7 @@
  *
  * ============================================================
  */
-/* ── Last deploy: 2026-06-20T21:03:33.644Z */
+/* ── Last deploy: 2026-06-20T21:40:57.714Z */
 
 
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
@@ -836,14 +836,27 @@ export default {
         console.warn('[Report] SKIN_REPORTS KV not bound — report NOT saved. Configure KV in Cloudflare dashboard.');
       }
 
-      // 2. NO enviar Klaviyo aquí — los productos aún son los por defecto del quiz.
-      // El email real con productos correctos se envía en el PATCH /report/:token
-      // que se llama DESPUÉS de que el usuario hace add-to-cart con sus selecciones finales.
-      // Esto elimina el timing bug definitivamente.
-      console.log('[Report POST] KV guardado. Klaviyo se enviará en PATCH post-carrito. Token:', token);
+      // 2. Enviar Klaviyo si se solicita explícitamente via send_klaviyo:true
+      // Por defecto deferred:false = el PATCH post-carrito lo envía con productos reales.
+      // Pero si el cliente envía send_klaviyo:true (fallback), enviar aquí directamente.
+      const sendKlaviyoNow = body.send_klaviyo === true;
+      const klaviyoKey = env.KLAVIYO_API_KEY || '';
+      let klaviyoResult = { ok: false, deferred: true };
+
+      if (sendKlaviyoNow && klaviyoKey && email) {
+        try {
+          klaviyoResult = await enviarEventoKlaviyo(email, reportData, reportUrl, klaviyoKey);
+          console.log('[Report POST] Klaviyo enviado (send_klaviyo:true):', JSON.stringify(klaviyoResult));
+        } catch (kErr) {
+          console.error('[Report POST] Klaviyo error:', kErr.message);
+          klaviyoResult = { ok: false, error: kErr.message };
+        }
+      } else {
+        console.log('[Report POST] KV guardado. Klaviyo se enviará en PATCH post-email. Token:', token);
+      }
 
       return new Response(
-        JSON.stringify({ ok: true, token, reportUrl, klaviyo: { ok: false, deferred: true, msg: 'Klaviyo will be sent after cart add (PATCH)' }, kv_saved: !!kv }),
+        JSON.stringify({ ok: true, token, reportUrl, klaviyo: klaviyoResult, kv_saved: !!kv }),
         { status: 200, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
       );
     }
