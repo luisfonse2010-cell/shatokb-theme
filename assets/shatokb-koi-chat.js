@@ -1409,29 +1409,18 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     };
 
     // ══════════════════════════════════════════════════════════════
-    // ARQUITECTURA CORRECTA (Jun 2026):
+    // ARQUITECTURA FINAL (Jun 2026):
     //
-    //  1. Frontend genera el token UUID aquí mismo (no en el Worker)
-    //  2. Frontend guarda el registro en la tabla Genspark directamente
-    //     via URL relativa `tables/skin_reports` — funciona porque
-    //     la API de Genspark solo es accesible desde el mismo origen
-    //     (el Worker de Cloudflare recibe 404 al intentar accederla)
-    //  3. Frontend llama al Worker solo para Klaviyo (con el token ya generado)
+    //  El Worker de Cloudflare es el único storage del reporte.
+    //  Guarda en Cloudflare KV (namespace SKIN_REPORTS) y envía
+    //  evento Klaviyo en un solo POST.
     //
-    //  Flujo: Shopify → POST tabla Genspark ✅  +  POST Worker Klaviyo ✅
+    //  shatokb-skin-report.js lee el reporte via GET /report/:token
+    //  al Worker — que responde desde KV.
+    //
+    //  Flujo: Shopify → POST Worker /report → KV + Klaviyo ✅
+    //         Shopify → GET Worker /report/:token → KV ✅
     // ══════════════════════════════════════════════════════════════
-
-    // 1. Generar token único en el cliente (UUID v4 simple)
-    const token = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-      const r = Math.random() * 16 | 0;
-      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-    });
-    const siteUrl    = KOI_CONFIG.siteUrl || 'https://shatokb.com';
-    const reportUrl  = `${siteUrl}/pages/skin-report?token=${token}`;
-
-    // Enriquecer reportData con token y URL
-    reportData.token     = token;
-    reportData.reportUrl = reportUrl;
 
     // ── Campos planos para Klaviyo event.* ──────────────────────
     const rutinasAM      = (reportData.rutinaAM || []).join('\n');
@@ -1440,37 +1429,14 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       .map((p, i) => `${i + 1}. ${p.nombre}${p.precio ? ' — ' + p.precio : ''}${p.momento && p.momento !== 'ambos' ? ' (' + p.momento.toUpperCase() + ')' : ''}`)
       .join('\n');
 
-    // 2. Guardar en tabla Genspark directamente (URL relativa — mismo origen)
-    fetch('tables/skin_reports', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        token,
-        email,
-        perfil_id:     perfilId,
-        perfil_nombre: perfilNombre,
-        report_data:   JSON.stringify(reportData),
-        klaviyo_sent:  false,
-        idioma:        reportData.idioma       || 'es',
-        total_carrito: reportData.totalCarrito || 0,
-      }),
-    })
-    .then(r => {
-      if (r.ok) console.log('[KOI] Registro guardado en tabla. Token:', token);
-      else r.text().then(t => console.warn('[KOI] Table save HTTP', r.status, t.slice(0, 200)));
-    })
-    .catch(e => console.warn('[KOI] Table save error:', e.message));
-
-    // 3. Llamar al Worker solo para Klaviyo (silencioso — no interrumpe flujo)
+    // POST al Worker — guarda en KV + envía Klaviyo (silencioso)
     fetch(KOI_CONFIG.reportUrl, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
         email,
         reportData,
-        token,        // ← token ya generado en cliente
-        reportUrl,    // ← URL ya construida
-        siteUrl,
+        siteUrl: KOI_CONFIG.siteUrl || 'https://shatokb.com',
         // ── Campos planos para Klaviyo event.* ──
         perfil_id:       perfilId,
         perfil_nombre:   perfilNombre,
@@ -1485,11 +1451,15 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     .then(r => r.json())
     .then(data => {
       if (data.ok) {
-        KOI_STATE.reportUrl = data.reportUrl || reportUrl;
-        console.log('[KOI] Klaviyo enviado. Report URL:', KOI_STATE.reportUrl);
+        KOI_STATE.reportUrl = data.reportUrl;
+        console.log('[KOI] Reporte guardado en KV ✅ Token:', data.token);
+        console.log('[KOI] Report URL:', data.reportUrl);
+        console.log('[KOI] KV saved:', data.kv_saved, '| Klaviyo:', data.klaviyo?.ok);
+      } else {
+        console.warn('[KOI] Worker /report error:', data);
       }
     })
-    .catch(() => {}); // silencioso — nunca interrumpir la experiencia
+    .catch(e => console.warn('[KOI] Worker /report network error:', e.message));
   }
 
   // Flag booleano síncrono — guard más rápido que el string revealPhase
