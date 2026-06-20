@@ -1533,6 +1533,14 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
         console.log('[KOI] Reporte guardado en KV ✅ Token:', data.token);
         console.log('[KOI] Report URL:', data.reportUrl);
         console.log('[KOI] KV saved:', data.kv_saved, '| Klaviyo:', data.klaviyo?.ok);
+        // ── Guardar token en localStorage y window global ──────────────────
+        // shatokb-quiz.js (shatokbEjecutarAddToCart) lo leerá al hacer el
+        // PATCH /report/:token con los productos reales del carrito.
+        if (data.token) {
+          try { localStorage.setItem('shatokb_report_token', data.token); } catch (_) {}
+          window.KOI_STATE_REPORT_TOKEN = data.token;
+          console.log('[KOI] Token guardado para PATCH post-carrito:', data.token);
+        }
       } else {
         console.warn('[KOI] Worker /report error:', data);
       }
