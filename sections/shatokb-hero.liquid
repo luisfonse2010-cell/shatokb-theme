@@ -18,7 +18,6 @@
 
 {{ 'shatokb-quiz.css' | asset_url | stylesheet_tag }}
 {{ 'shatokb-koi-chat.css' | asset_url | stylesheet_tag }}
-{{ 'shatokb-koi-vision.css' | asset_url | stylesheet_tag }}
 
 <style>
   /* ── HERO — C3 Charcoal + Rose ───────────────────────────── */
@@ -365,9 +364,8 @@
 {%- endif -%}
 
 {%- if section.settings.show_quiz -%}
-<script src="{{ 'shatokb-quiz.js' | asset_url }}" defer></script>
-<script src="{{ 'shatokb-koi-vision.js' | asset_url }}?v=20260619A" defer></script>
-<script src="{{ 'shatokb-koi-chat.js' | asset_url }}?v=20260619A" defer></script>
+<script src="{{ 'shatokb-quiz.js' | asset_url }}&v=78" defer></script>
+<script src="{{ 'shatokb-koi-chat.js' | asset_url }}&v=78" defer></script>
 {%- endif -%}
 
 {% schema %}
