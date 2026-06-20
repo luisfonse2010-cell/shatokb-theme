@@ -2,10 +2,10 @@
  * ============================================================
  * SHATOKB · KOI — Experta K-Beauty con IA
  * Archivo: assets/shatokb-koi-chat.js
- * Version: 4.4 — Fix timing PATCH Klaviyo: eliminado PATCH prematuro de
- *               confirmarEmailCarrito() (el carrito está vacío en ese punto).
- *               El único PATCH ahora es el de shatokbEjecutarAddToCart() en
- *               shatokb-quiz.js, que corre DESPUÉS de /cart/add.js. Cache-bust v82.
+ * Version: 4.5 — Fix token NULL: enviarSkinReport(email) NO se estaba llamando
+ *               desde confirmarEmailCarrito(). Se restauró la llamada y se amplió
+ *               el delay a 2500ms para dar tiempo al fetch async del Worker antes
+ *               de que shatokbEjecutarAddToCart() lea el token para el PATCH.
  *
  * Arquitectura:
  *   - Este archivo corre en el browser (Shopify)
@@ -3139,14 +3139,16 @@ async function enviarDesdeChip (texto) {
       const textEl = agregarMensaje('koi', '');
       if (textEl) await escribirConEfecto(textEl, confirmMsg, 18);
 
-      // ── El PATCH Klaviyo con productos reales lo ejecuta shatokb-quiz.js ────
-      // shatokbEjecutarAddToCart() corre DESPUÉS de /cart/add.js exitoso,
-      // por lo que tiene acceso a los datos reales del carrito (handle, precio,
-      // imagen desde /products/handle.js). Aquí solo avanzamos al carrito.
-      // NO hacemos PATCH aquí — el carrito aún está vacío en este punto.
-      console.log('[KOI] Email capturado ✅ — el PATCH Klaviyo lo ejecuta shatokbEjecutarAddToCart() en quiz.js tras /cart/add.js');
+      // ── Generar el reporte y token ANTES de proceder al carrito ────────────
+      // enviarSkinReport() hace POST al Worker, que guarda en KV y retorna un
+      // token. Ese token lo lee shatokbEjecutarAddToCart() en quiz.js para el
+      // PATCH con los productos reales del carrito.
+      // IMPORTANTE: el fetch es async — damos 2.5 s para que el Worker responda
+      // y guarde window.KOI_STATE_REPORT_TOKEN antes de que el quiz haga el PATCH.
+      console.log('[KOI] Email capturado ✅ — llamando enviarSkinReport() para generar token...');
+      enviarSkinReport(email);
 
-      setTimeout(callbackProcederAlCarrito, 800);
+      setTimeout(callbackProcederAlCarrito, 2500);
     }
 
     function saltarAlCarrito () {
