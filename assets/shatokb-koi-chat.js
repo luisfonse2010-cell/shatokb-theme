@@ -209,7 +209,7 @@
      CONSTRUCCIÓN DEL DOM
      ══════════════════════════════════════════════════════════ */
   // ── Versión del archivo para diagnóstico en consola ──────────
-  console.log('[KOI] shatokb-koi-chat.js v3.1 cargado — crearDOM con MutationObserver activo');
+  // (log de versión ya está en línea 19 — este era residuo de v3.1, eliminado)
 
   /**
    * Insertar KOI cuando #stk-routine-blurred esté disponible en el DOM.

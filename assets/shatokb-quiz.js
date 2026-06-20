@@ -3851,18 +3851,42 @@ async function shatokbAddAllToCart() {
 
 async function shatokbEjecutarAddToCart(handles, btn) {
   try {
-    const variantRequests = handles.map(handle =>
+    // ── 1. Obtener variantId + datos de producto para cada handle ──────────────────
+    // Necesitamos los datos completos del producto (no solo variantId) para
+    // construir el payload de actualización del skin report con imágenes reales.
+    const productRequests = handles.map(handle =>
       fetch(`/products/${handle}.js`)
         .then(res => { if (!res.ok) throw new Error(`Not found: ${handle}`); return res.json(); })
-        .then(data => ({ handle, variantId: data.variants?.[0]?.id || null }))
-        .catch(() => ({ handle, variantId: null }))
+        .then(data => {
+          // Imagen: featured_image puede ser string URL o null en /products/handle.js
+          // images[] es array de strings (URLs CDN directas)
+          const imgRaw = typeof data.featured_image === 'string'
+            ? data.featured_image
+            : (data.images && data.images[0]) ? data.images[0] : '';
+          // Asegurar protocolo completo
+          const imagen = imgRaw.startsWith('//') ? 'https:' + imgRaw
+                       : imgRaw.startsWith('http') ? imgRaw
+                       : '';
+          return {
+            handle,
+            variantId: data.variants?.[0]?.id || null,
+            nombre:    data.title || handle,
+            precio:    data.variants?.[0]?.price
+                         ? (parseFloat(data.variants[0].price) / 100).toFixed(2)
+                         : '',
+            imagen,
+            url: `https://shatokb.com/products/${handle}`,
+          };
+        })
+        .catch(() => ({ handle, variantId: null, nombre: handle, precio: '', imagen: '', url: '' }))
     );
 
-    const resolved = await Promise.all(variantRequests);
-    const items    = resolved.filter(r => r.variantId !== null).map(r => ({ id: r.variantId, quantity: 1 }));
+    const productData = await Promise.all(productRequests);
+    const items       = productData.filter(r => r.variantId !== null).map(r => ({ id: r.variantId, quantity: 1 }));
 
     if (items.length === 0) throw new Error('Could not retrieve product information. Please try again.');
 
+    // ── 2. Añadir al carrito de Shopify ──────────────────────────────────────────
     const cartRes = await fetch('/cart/add.js', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -3874,8 +3898,127 @@ async function shatokbEjecutarAddToCart(handles, btn) {
       throw new Error(err.description || 'Could not add products to cart.');
     }
 
+    // ── 3. PATCH al Worker — actualizar Skin Report con productos reales ──────────
+    // Este es el FIX DEFINITIVO del timing bug:
+    // El POST /report se envió al capturar el email (productos por defecto).
+    // Ahora actualizamos el KV con los productos REALES que se añadieron al carrito.
+    // También reenvía el evento Klaviyo con los datos correctos.
+    try {
+      const workerBase  = 'https://koi-proxy.luisfonse2010.workers.dev';
+      // El token fue guardado en KOI_STATE.reportUrl por enviarSkinReport() en koi-chat.js
+      // Extraerlo de window.KOI_STATE si está disponible, o de localStorage
+      let reportToken = null;
+
+      // Fuente 1: KOI_STATE_REPORT_TOKEN (inyectado por shatokb-koi-chat.js)
+      if (window.KOI_STATE_REPORT_TOKEN) {
+        reportToken = window.KOI_STATE_REPORT_TOKEN;
+      }
+      // Fuente 2: localStorage (guardado como backup)
+      if (!reportToken) {
+        reportToken = localStorage.getItem('shatokb_report_token');
+      }
+
+      console.log('%c[SHATOKB] PATCH token:', 'color:#22c55e;font-weight:bold', reportToken ? reportToken.slice(0,8) + '…' : '❌ SIN TOKEN — PATCH saltado');
+
+      if (reportToken) {
+        // Construir array de productos con los datos reales de Shopify
+        // Enriquecer con metadatos del quiz si están disponibles (paso, momento, razon)
+        const catalogoVivo  = window.SHATOKB_CATALOGO || [];
+        const selectedProds = window.shatokbState?.selectedProducts || {};
+
+        // Mapa de stepIdx → prodId para recuperar metadatos del quiz
+        const stepToId = {};
+        Object.entries(selectedProds).forEach(([stepIdx, prodId]) => { stepToId[stepIdx] = prodId; });
+
+        const productosParaPatch = productData
+          .filter(r => r.variantId !== null)
+          .map(r => {
+            // Buscar en el catálogo para obtener metadata del quiz (paso, momento, razon)
+            const catalogoItem = catalogoVivo.find(c => c.handle === r.handle || c.id === r.handle);
+
+            // Imagen: usar la del catálogo si la del producto no es CDN
+            let imagen = r.imagen || '';
+            if ((!imagen || !imagen.includes('cdn.shopify.com')) && catalogoItem?.imagen) {
+              imagen = catalogoItem.imagen;
+            }
+            // Normalizar imagen: Shopify devuelve solo la ruta relativa en featured_image a veces
+            if (imagen && !imagen.startsWith('http')) {
+              imagen = 'https:' + imagen;
+            }
+
+            return {
+              nombre:  r.nombre  || catalogoItem?.nombre || r.handle,
+              precio:  r.precio  || catalogoItem?.precio || '',
+              paso:    catalogoItem?.categoria || catalogoItem?.paso || '',
+              id:      catalogoItem?.id || r.handle,
+              handle:  r.handle,
+              momento: catalogoItem?.momento || 'ambos',
+              razon:   catalogoItem?.desc    || '',
+              imagen,
+              url:     r.url,
+            };
+          });
+
+        const totalCarritoNuevo = productosParaPatch.reduce((s, p) => {
+          const n = parseFloat(String(p.precio || '0').replace(/[^0-9.]/g, '')) || 0;
+          return s + n;
+        }, 0);
+
+        // Obtener email del localStorage o KOI_STATE
+        const emailGuardado = localStorage.getItem('shatokb_email') || '';
+
+        const patchPayload = JSON.stringify({
+          productos:    productosParaPatch,
+          email:        emailGuardado,
+          totalCarrito: totalCarritoNuevo,
+        });
+
+        const patchUrl = `${workerBase}/report/${reportToken}`;
+
+        // Intentar con fetch+keepalive primero (respuesta legible)
+        // Si falla o payload > 64KB, usar sendBeacon como fallback
+        let patchOk = false;
+        try {
+          const patchRes = await fetch(patchUrl, {
+            method:    'PATCH',
+            headers:   { 'Content-Type': 'application/json' },
+            body:      patchPayload,
+            keepalive: true,
+          });
+          if (patchRes.ok) {
+            const patchData = await patchRes.json().catch(() => ({}));
+            patchOk = true;
+            console.log('[SHATOKB] Skin Report PATCH exitoso ✅', {
+              token:     reportToken,
+              productos: productosParaPatch.length,
+              klaviyo:   patchData.klaviyo?.ok,
+            });
+          } else {
+            console.warn('[SHATOKB] PATCH HTTP error:', patchRes.status);
+          }
+        } catch (fetchErr) {
+          console.warn('[SHATOKB] fetch PATCH falló, intentando sendBeacon:', fetchErr.message);
+        }
+
+        // Fallback: sendBeacon — garantizado que sobrevive la navegación
+        // sendBeacon solo soporta POST, así que el Worker debe aceptar
+        // POST /report/:token/beacon como alias del PATCH
+        if (!patchOk && navigator.sendBeacon) {
+          const blob = new Blob([patchPayload], { type: 'application/json' });
+          const beaconSent = navigator.sendBeacon(patchUrl.replace('/report/', '/report-beacon/'), blob);
+          console.log('[SHATOKB] sendBeacon enviado:', beaconSent);
+        }
+      } else {
+        console.warn('[SHATOKB] No se encontró report token — PATCH saltado. El email se habrá enviado con productos por defecto.');
+      }
+    } catch (patchErr) {
+      // El PATCH falla silenciosamente — no interrumpir el flujo del carrito
+      console.warn('[SHATOKB] Skin Report PATCH error (silencioso):', patchErr.message);
+    }
+
     btn.textContent = '✅ Added! Redirecting...';
-    window.location.href = '/cart';
+    // Pequeño delay para dar tiempo al PATCH de completarse antes de navegar
+    setTimeout(() => { window.location.href = '/cart'; }, 1200);
 
   } catch (err) {
     console.error('[SHATOKB] addAllToCart error:', err);
