@@ -2,8 +2,8 @@
  * ============================================================
  * SHATOKB · KOI — Experta K-Beauty con IA
  * Archivo: assets/shatokb-koi-chat.js
- * Version: 4.2 — PATCH fix: Klaviyo se envía en confirmarEmailCarrito
- *                con ctx.productos como fuente primaria (catálogo siempre disponible)
+ * Version: 4.3 — Fix sintaxis if(false) + /cart.js como fuente de verdad
+ *                del carrito en confirmarEmailCarrito (PATCH con productos reales)
  *
  * Arquitectura:
  *   - Este archivo corre en el browser (Shopify)
@@ -16,7 +16,7 @@
 
 (function () {
   'use strict';
-  console.log('[KOI] shatokb-koi-chat.js v4.2 cargado — PATCH fix activo ✅');
+  console.log('[KOI] shatokb-koi-chat.js v4.3 cargado — /cart.js fix activo ✅');
 
   /* ── Configuración ──────────────────────────────────────── */
   const KOI_CONFIG = {
@@ -3137,96 +3137,125 @@ async function enviarDesdeChip (texto) {
       const textEl = agregarMensaje('koi', '');
       if (textEl) await escribirConEfecto(textEl, confirmMsg, 18);
 
-      // ── PATCH: enviar Klaviyo con productos reales ─────────────
-      // Flujo: POST /report guarda el token (sin Klaviyo).
-      //        Aquí, mientras el usuario ve el mensaje de confirmación,
-      //        enviamos el PATCH con los productos actuales del quiz
-      //        (window.shatokbState.selectedProducts + SHATOKB_CATALOGO).
-      //        El PATCH actualiza KV y envía Klaviyo con datos correctos.
-      // TIMING: el efecto de escritura dura ~600ms, luego esperamos 800ms
-      //         antes de ir al carrito → hay >1.4s para completar el PATCH.
+      // ── PATCH: enviar Klaviyo con productos REALES del carrito ────
+      // FUENTE DE VERDAD: /cart.js de Shopify — contiene exactamente
+      // los productos que el usuario tiene en el carrito en este momento.
+      // Luego enriquecemos con datos del catálogo (imagen, paso, momento).
       try {
-        // 1. Obtener token — del POST /report (guardado en window o localStorage)
+        // 1. Obtener token
         const token = window.KOI_STATE_REPORT_TOKEN
           || (() => { try { return localStorage.getItem('shatokb_report_token'); } catch(_) { return null; } })();
 
         if (!token) {
-          // Si no hay token todavía, hacer el POST completo con Klaviyo directamente
           console.warn('[KOI] Sin token para PATCH — enviando report completo con Klaviyo directo');
           enviarSkinReport(email, { sendKlaviyoDirect: true });
         } else {
-          // 2. Construir array de productos para el PATCH
-          // PRIORIDAD:
-          //   1. ctx.productos (KOI_STATE.contexto.productos) — SIEMPRE disponible,
-          //      contiene los productos que el quiz mostró al usuario (con nombre, precio,
-          //      paso, momento, razon). Esta es la fuente más fiable en este contexto.
-          //   2. window.shatokbState.selectedProducts + SHATOKB_CATALOGO — solo si el
-          //      catálogo está disponible (a veces no lo está si el quiz cargó tarde).
+          // 2. Leer el carrito de Shopify — FUENTE DE VERDAD
           let productosParaPatch = [];
+          const liveCatalog = window.SHATOKB_CATALOGO || [];
+          const ctxPs = KOI_STATE.contexto?.productos || [];
 
-          // — Fuente 1: ctx.productos (contexto de KOI — siempre presente) —
-          const ctxPs     = KOI_STATE.contexto?.productos || [];
-          const liveState = window.shatokbState;
-          const liveCatalog = window.SHATOKB_CATALOGO;
+          try {
+            const cartRes  = await fetch('/cart.js');
+            const cartData = await cartRes.json();
+            const items    = cartData.items || [];
 
-          if (ctxPs.length > 0) {
-            // ctx.productos ya tiene nombre, precio, paso, momento, razon
-            // Solo necesitamos enriquecer con imagen desde el catálogo si está disponible
+            if (items.length > 0) {
+              console.log('[KOI] PATCH: leyendo /cart.js —', items.length, 'items en carrito');
+
+              productosParaPatch = items.map(item => {
+                const handle = item.handle || item.url?.split('/products/')[1]?.split('?')[0] || '';
+
+                // Buscar metadatos en catálogo (paso, momento, razon)
+                const cat = liveCatalog.find(c =>
+                  c.handle === handle || c.id === handle ||
+                  item.title?.toLowerCase().includes((c.nombre || '').toLowerCase().slice(0, 20))
+                );
+
+                // Buscar metadatos en ctx.productos (paso, razon del quiz)
+                const ctxP = ctxPs.find(p =>
+                  p.handle === handle ||
+                  item.title?.toLowerCase().includes((p.nombre || '').toLowerCase().slice(0, 20))
+                );
+
+                // Imagen: usar la del item de Shopify (siempre disponible y correcta)
+                let imagen = '';
+                if (item.image) {
+                  imagen = item.image.startsWith('//') ? 'https:' + item.image
+                         : item.image.startsWith('http') ? item.image : '';
+                }
+                if (!imagen && cat?.imagen?.startsWith('http')) imagen = cat.imagen;
+
+                const precio = (item.price / 100).toFixed(2);
+                const momento = cat?.momento || ctxP?.momento || 'ambos';
+                const momentoNorm = (momento === 'both' || !momento) ? 'ambos'
+                                  : (momento === 'am') ? 'am'
+                                  : (momento === 'pm') ? 'pm' : 'ambos';
+
+                return {
+                  nombre:  item.title || '',
+                  precio,
+                  paso:    ctxP?.paso  || cat?.categoria || '',
+                  handle,
+                  momento: momentoNorm,
+                  razon:   ctxP?.razon || cat?.desc || '',
+                  imagen,
+                  url:     handle ? `https://shatokb.com/products/${handle}` : '',
+                };
+              }).filter(p => p.nombre);
+
+              console.log('[KOI] PATCH: productos del carrito:', productosParaPatch.map(p => p.nombre));
+            }
+          } catch(cartErr) {
+            console.warn('[KOI] /cart.js falló — usando ctx.productos como fallback:', cartErr.message);
+          }
+
+          // Fallback: ctx.productos si el carrito estaba vacío o falló
+          if (productosParaPatch.length === 0) {
             productosParaPatch = ctxPs.map(p => {
               let imagen = (p.imagen && p.imagen.startsWith('http')) ? p.imagen : '';
-              // Intentar enriquecer imagen desde catálogo vivo si no la tiene
-              if (!imagen && liveCatalog?.length > 0) {
+              if (!imagen && liveCatalog.length > 0) {
                 const cat = liveCatalog.find(c => c.id === p.id || c.handle === p.handle);
-                if (cat?.imagen && cat.imagen.startsWith('http')) imagen = cat.imagen;
+                if (cat?.imagen?.startsWith('http')) imagen = cat.imagen;
               }
               const momento = (p.momento === 'both' || !p.momento) ? 'ambos'
-                            : (p.momento === 'am')  ? 'am'
-                            : (p.momento === 'pm')  ? 'pm'
-                            : (p.momento || 'ambos');
+                            : (p.momento === 'am') ? 'am'
+                            : (p.momento === 'pm') ? 'pm' : (p.momento || 'ambos');
               return {
-                nombre:  p.nombre  || '',
-                precio:  p.precio  || '',
-                paso:    p.paso    || '',
-                handle:  p.handle  || p.id || '',
+                nombre:  p.nombre || '',
+                precio:  p.precio || '',
+                paso:    p.paso   || '',
+                handle:  p.handle || p.id || '',
                 momento,
-                razon:   p.razon   || '',
+                razon:   p.razon  || '',
                 imagen,
                 url:     p.handle ? `https://shatokb.com/products/${p.handle}` : '',
               };
             }).filter(p => p.nombre);
-            console.log('[KOI] PATCH: usando ctx.productos —', productosParaPatch.length, 'productos');
+            console.log('[KOI] PATCH: fallback ctx.productos —', productosParaPatch.length, 'productos');
           }
 
-          // — Fuente 2: selectedProducts + catálogo (si el anterior dio 0) —
-          if (productosParaPatch.length === 0 && liveState?.selectedProducts && liveCatalog?.length > 0) {
-            const ctxProds  = (window.SHATOKB_RESULTADO?.productos || ctxPs);
-            const pasosMeta = {};
-            ctxProds.forEach((p, i) => {
-              pasosMeta[i] = { paso: p.paso || '', momento: p.momento || 'ambos', razon: p.razon || '' };
-            });
+          // — Fuente 3 (último recurso): selectedProducts + catálogo —
+          if (productosParaPatch.length === 0 && window.shatokbState?.selectedProducts && liveCatalog.length > 0) {
+            const liveState = window.shatokbState;
             productosParaPatch = Object.entries(liveState.selectedProducts)
               .sort(([a], [b]) => Number(a) - Number(b))
-              .map(([stepIdx, prodId]) => {
+              .map(([, prodId]) => {
                 const prod = liveCatalog.find(c => c.id === prodId);
                 if (!prod) return null;
-                const meta    = pasosMeta[stepIdx] || {};
-                const momento = (prod.momento || meta.momento || 'both') === 'both' ? 'ambos'
-                              : (prod.momento || meta.momento || 'both') === 'am'   ? 'am'
-                              : (prod.momento || meta.momento || 'both') === 'pm'   ? 'pm' : 'ambos';
-                const imagen  = (prod.imagen && prod.imagen.startsWith('http')) ? prod.imagen : '';
+                const imagen = (prod.imagen && prod.imagen.startsWith('http')) ? prod.imagen : '';
                 return {
-                  nombre:  prod.nombre  || '',
-                  precio:  prod.precio  || '',
-                  paso:    meta.paso    || prod.categoria || '',
-                  handle:  prod.handle  || prod.id || '',
-                  momento,
-                  razon:   meta.razon   || prod.desc || '',
+                  nombre:  prod.nombre    || '',
+                  precio:  prod.precio    || '',
+                  paso:    prod.categoria || '',
+                  handle:  prod.handle    || prod.id || '',
+                  momento: prod.momento === 'am' ? 'am' : prod.momento === 'pm' ? 'pm' : 'ambos',
+                  razon:   prod.desc      || '',
                   imagen,
                   url:     prod.handle ? `https://shatokb.com/products/${prod.handle}` : '',
                 };
-              })
-              .filter(Boolean);
-            console.log('[KOI] PATCH: usando selectedProducts+catálogo —', productosParaPatch.length, 'productos');
+              }).filter(Boolean);
+            console.log('[KOI] PATCH: selectedProducts+catálogo —', productosParaPatch.length, 'productos');
           }
 
           const totalPatch = productosParaPatch.reduce((s, p) => {
