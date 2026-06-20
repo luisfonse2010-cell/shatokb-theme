@@ -1,0 +1,7 @@
+name = "koi-proxy"
+main = "cloudflare-worker.js"
+compatibility_date = "2024-01-01"
+
+[[kv_namespaces]]
+binding = "SKIN_REPORTS"
+id = "5cd9b5eeab9b4c42965c495749f26c23"
