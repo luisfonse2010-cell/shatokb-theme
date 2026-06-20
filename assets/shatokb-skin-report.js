@@ -258,59 +258,197 @@ function showContent() {
   initStickyBar();
 }
 
+/* ── PERFIL MASTER MAP — fallback local si KV llega con dato crudo ── */
+const KSR_PERFILES = {
+  grasa_acne: {
+    nombre:      'Oil Balance & Clarity',
+    headline:    'Your skin is overproducing oil — and your pores are paying the price.',
+    descripcion: 'Your skin works overtime — producing more oil than it needs, which clogs pores and keeps breakouts coming back. The good news? K-Beauty was practically invented for this. These routines don\'t just mask the problem. They retrain your skin.',
+    tags:        ['🫧 Oily & breakout-prone', '🎯 Active treatment', '⚡ Fast visible results'],
+    stats:       [{ label: 'Main concern', value: 'Excess sebum & congestion' }, { label: 'Key actives', value: 'BHA · Niacinamide · Centella' }, { label: 'Expected results', value: '2–4 weeks' }],
+  },
+  grasa_poros: {
+    nombre:      'Pore Refinement',
+    headline:    'Enlarged pores are clogged with oxidized oil — and they can be minimized.',
+    descripcion: 'Enlarged pores aren\'t just genetic — they\'re caused by excess oil and dead skin cells stretching them out over time. Korean chemical exfoliation is the most effective method in the world for gradually refining pore appearance. And it works.',
+    tags:        ['🫧 Oily skin', '🔬 Visible pores', '✨ Texture refinement'],
+    stats:       [{ label: 'Main concern', value: 'Pore size & texture' }, { label: 'Key actives', value: 'BHA · Niacinamide · Retinol' }, { label: 'Expected results', value: '4–8 weeks' }],
+  },
+  mixta_general: {
+    nombre:      'Zone Balance',
+    headline:    'Your T-zone and cheeks have opposite needs — your routine has to address both.',
+    descripcion: 'Combination skin is tricky because it has contradictory needs in different zones. Products that fix one area often make another worse. K-Beauty\'s layering method solves this — you hydrate where you need it and control where you don\'t.',
+    tags:        ['☯️ Combination skin', '💧 Needs balance', '🎯 Zone-specific results'],
+    stats:       [{ label: 'Main concern', value: 'Oil-hydration balance' }, { label: 'Key actives', value: 'Niacinamide · HA · Ceramides' }, { label: 'Expected results', value: '2–3 weeks' }],
+  },
+  mixta_manchas: {
+    nombre:      'Balance & Brighten',
+    headline:    'You\'re fighting excess sebum and dark spots at the same time — and that requires precision.',
+    descripcion: 'You\'re fighting two battles at once — excess sebum and hyperpigmentation. The breakthrough? Korean brightening actives like vitamin C, niacinamide and tranexamic acid work on both simultaneously. Your even tone is closer than you think.',
+    tags:        ['☯️ Combination skin', '🟤 Dark spots & marks', '✨ Even tone incoming'],
+    stats:       [{ label: 'Main concern', value: 'Pigmentation & sebum' }, { label: 'Key actives', value: 'Vitamin C · Niacinamide · AHA' }, { label: 'Expected results', value: '4–6 weeks' }],
+  },
+  seca_hidratacion: {
+    nombre:      'Hydration Restore',
+    headline:    'Your skin is dehydrated at a cellular level — one moisturizer is not enough.',
+    descripcion: 'Your skin is thirsty at a cellular level — and a single moisturizer isn\'t enough. K-Beauty invented layered hydration for exactly this: you build water content from the deepest layer outward, locking each one in before adding the next. The result is skin that stays plump for hours.',
+    tags:        ['🌵 Dry skin', '💧 Hydration is everything', '🛡️ Barrier restoration'],
+    stats:       [{ label: 'Main concern', value: 'Deep dehydration & dryness' }, { label: 'Key actives', value: 'HA · Ceramides · Glycerin · Squalane' }, { label: 'Expected results', value: '1–2 weeks' }],
+  },
+  seca_antiaging: {
+    nombre:      'Age Defense',
+    headline:    'Dry skin ages faster — your barrier needs repair before any anti-aging active can work.',
+    descripcion: 'Dry skin ages faster — that\'s not an opinion, it\'s biology. When your barrier is weakened, collagen breaks down faster and fine lines deepen. The solution is intense, consistent hydration paired with proven actives. K-Beauty does this better than anything else in the world.',
+    tags:        ['🌵 Dry skin', '⏳ Anti-aging focus', '🔬 Clinically proven actives'],
+    stats:       [{ label: 'Main concern', value: 'Fine lines & barrier damage' }, { label: 'Key actives', value: 'Retinol · Vitamin C · Ceramides' }, { label: 'Expected results', value: '6–12 weeks' }],
+  },
+  sensible_rojeces: {
+    nombre:      'Calm & Repair',
+    headline:    'Your skin is reactive — every wrong product triggers redness and irritation.',
+    descripcion: 'Reactive skin needs ingredients that calm, not stimulate. Every harsh cleanser, fragrance, or active you\'ve used has been accumulating stress in your barrier. The K-Beauty approach flips this — it repairs first, then treats.',
+    tags:        ['🌸 Sensitive skin', '🔴 Redness-prone', '🛡️ Barrier-first approach'],
+    stats:       [{ label: 'Main concern', value: 'Redness & reactivity' }, { label: 'Key actives', value: 'Centella · Panthenol · Ceramides' }, { label: 'Expected results', value: '2–4 weeks' }],
+  },
+  barrera_daniada: {
+    nombre:      'Barrier Recovery',
+    headline:    'Your skin barrier is compromised — it needs repair before anything else.',
+    descripcion: 'A damaged barrier lets irritants in and moisture out — creating a cycle of sensitivity, dryness, and breakouts that no single product can break. The only solution is systematic repair: gentle cleansing, barrier-building actives, and zero exfoliation until your skin stabilizes.',
+    tags:        ['🚨 Barrier compromised', '🛡️ Repair protocol', '🌿 Zero actives for now'],
+    stats:       [{ label: 'Main concern', value: 'Barrier dysfunction' }, { label: 'Key actives', value: 'Ceramides · Panthenol · Madecassoside' }, { label: 'Expected results', value: '3–6 weeks' }],
+  },
+  general_glow: {
+    nombre:      'Glass Skin Glow',
+    headline:    'Your skin is ready for the full K-Beauty protocol — and the results will show.',
+    descripcion: 'Glass skin isn\'t a filter. It\'s what happens when your hydration, barrier, and cell renewal are all working together at their peak. This protocol layers the most effective K-Beauty actives in the exact sequence that creates that lit-from-within luminosity.',
+    tags:        ['✨ Glass skin goal', '💎 Full glow protocol', '🌟 Multi-layer hydration'],
+    stats:       [{ label: 'Main concern', value: 'Luminosity & glass skin' }, { label: 'Key actives', value: 'HA · Vitamin C · Essence · Snail' }, { label: 'Expected results', value: '2–3 weeks' }],
+  },
+};
+
 /* ── RENDER HERO ────────────────────────────────────────────────── */
 function renderHero(data) {
-  const perfil = data.perfil || {};
+  const perfil    = data.perfil || {};
+  const perfilId  = perfil.id || '';
+  const vision    = data.visionAnalysis;
 
-  // Date
-  const dateEl = el('ksr-date');
-  if (dateEl) dateEl.textContent = formatDate(data.createdAt);
+  // ── Resolver datos del perfil con fallback local ───────────────
+  // Si el KV guardó el ID raw ('seca_hidratacion') en lugar del nombre bonito,
+  // el mapa local lo corrige. El mapa también provee headline, stats y descripción
+  // completa si llegaron vacíos desde KV.
+  const meta = KSR_PERFILES[perfilId] || KSR_PERFILES[perfil.nombre] || null;
 
-  // Profile name — gradient title
-  const titleEl = el('ksr-profile-name');
-  if (titleEl) titleEl.textContent = perfil.nombre || 'Your Skin Report';
+  const nombre      = meta?.nombre      || perfil.nombre      || 'Your Skin Report';
+  const headline    = meta?.headline    || perfil.descripcion  || 'A personalized skin analysis prepared exclusively for you.';
+  const descripcion = meta?.descripcion || perfil.descripcion  || '';
+  const tags        = (perfil.tags && perfil.tags.length > 0) ? perfil.tags : (meta?.tags || []);
+  const stats       = meta?.stats || [];
 
-  // Subtitle
-  const subtitleEl = el('ksr-hero__subtitle') || document.querySelector('.ksr-hero__subtitle');
-  if (subtitleEl) subtitleEl.textContent = perfil.descripcion || 'A complete, personalized analysis prepared exclusively for your skin.';
-  const descEl = el('ksr-profile-desc');
-  if (descEl) descEl.textContent = perfil.descripcion || '';
+  // ── Score global (de vision si existe, si no calcular del perfil) ──
+  const scoreGlobal = (vision && typeof vision.score_global === 'number') ? vision.score_global : null;
 
-  // Tags
-  const tagsEl = el('ksr-profile-tags');
-  if (tagsEl && perfil.tags && perfil.tags.length) {
-    tagsEl.innerHTML = perfil.tags
-      .map(t => `<span class="ksr-tag">${escHtml(t)}</span>`)
-      .join('');
+  // ── Construir el hero completo via innerHTML ───────────────────
+  const heroInner = el('ksr-hero__inner') || document.querySelector('.ksr-hero__inner');
+  if (!heroInner) return;
+
+  // Colores del score
+  function scoreColor(s) {
+    if (s === null) return 'var(--ksr-rose)';
+    if (s >= 8) return '#4caf7d';
+    if (s >= 6) return '#84cc16';
+    if (s >= 5) return '#f59e0b';
+    return '#ef4444';
+  }
+  function scoreLabel(s) {
+    if (s === null) return '';
+    if (s >= 8) return 'Excellent';
+    if (s >= 6) return 'Good';
+    if (s >= 5) return 'Fair';
+    return 'Needs attention';
   }
 
-  // Email badge
-  const emailEl = el('ksr-email-badge');
-  if (emailEl && data.email) {
-    emailEl.textContent = `Prepared for ${data.email}`;
-  }
+  heroInner.innerHTML = `
+    <!-- Badge superior -->
+    <div class="ksr-hero__badge">
+      <span class="ksr-badge-dot"></span>
+      KOI Skin Analysis &nbsp;·&nbsp; <span id="ksr-date">${formatDate(data.createdAt)}</span>
+    </div>
 
-  // Score ring (from vision analysis)
-  const vision = data.visionAnalysis;
-  if (vision && typeof vision.score_global === 'number') {
-    const ringWrap = el('ksr-score-ring-wrap');
-    if (ringWrap) ringWrap.removeAttribute('hidden');
-    const scoreEl = el('ksr-ring-score');
-    if (scoreEl) scoreEl.textContent = vision.score_global.toFixed(1);
-    // Animate ring after a short delay
+    <!-- Email personalizado -->
+    ${data.email ? `<div class="ksr-hero__email-line">Prepared exclusively for <strong>${escHtml(data.email)}</strong></div>` : ''}
+
+    <!-- Nombre del perfil (título grande) -->
+    <h1 class="ksr-hero__title" id="ksr-profile-name">${escHtml(nombre)}</h1>
+
+    <!-- Headline — el diagnóstico en una frase poderosa -->
+    <p class="ksr-hero__headline">${escHtml(headline)}</p>
+
+    <!-- Tags del tipo de piel -->
+    ${tags.length > 0 ? `
+    <div class="ksr-hero__tags" id="ksr-profile-tags">
+      ${tags.map(t => `<span class="ksr-tag">${escHtml(t)}</span>`).join('')}
+    </div>` : ''}
+
+    <!-- Score ring (solo si hay análisis visual) -->
+    ${scoreGlobal !== null ? `
+    <div class="ksr-hero__score-wrap ksr-animate-in" id="ksr-score-ring-wrap">
+      <div class="ksr-hero__score-ring-outer">
+        <svg class="ksr-ring" viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="ksr-ring__track" cx="60" cy="60" r="52"/>
+          <circle class="ksr-ring__fill" id="ksr-ring-fill" cx="60" cy="60" r="52"
+                  stroke-dasharray="326.7" stroke-dashoffset="326.7"
+                  style="stroke:${scoreColor(scoreGlobal)}"/>
+        </svg>
+        <div class="ksr-ring__label">
+          <span class="ksr-ring__score" id="ksr-ring-score">${scoreGlobal.toFixed(1)}</span>
+          <span class="ksr-ring__sub">/ 10</span>
+        </div>
+      </div>
+      <div class="ksr-hero__score-meta">
+        <div class="ksr-hero__score-label" style="color:${scoreColor(scoreGlobal)}">${scoreLabel(scoreGlobal)}</div>
+        <div class="ksr-hero__score-desc">Overall skin health score<br>based on your photo analysis</div>
+      </div>
+    </div>` : ''}
+
+    <!-- Stats row — datos específicos del perfil -->
+    ${stats.length > 0 ? `
+    <div class="ksr-hero__stats">
+      ${stats.map(s => `
+        <div class="ksr-hero__stat">
+          <div class="ksr-hero__stat-label">${escHtml(s.label)}</div>
+          <div class="ksr-hero__stat-value">${escHtml(s.value)}</div>
+        </div>`).join('')}
+    </div>` : ''}
+
+    <!-- Descripción completa del perfil -->
+    ${descripcion ? `
+    <div class="ksr-hero__desc-block">
+      <p class="ksr-hero__subtitle" id="ksr-profile-desc">${escHtml(descripcion)}</p>
+    </div>` : ''}
+
+    <!-- Divider con CTA scroll -->
+    <div class="ksr-hero__scroll-hint">
+      <span>Your full analysis below</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 5v14M5 12l7 7 7-7"/>
+      </svg>
+    </div>
+  `;
+
+  // Animar el ring después de renderizar
+  if (scoreGlobal !== null) {
     setTimeout(() => {
       const fillEl = el('ksr-ring-fill');
       if (fillEl) {
         const circumference = 326.7;
-        const pct = (vision.score_global / 10) * circumference;
+        const pct = (scoreGlobal / 10) * circumference;
         fillEl.style.strokeDashoffset = (circumference - pct).toFixed(1);
       }
-    }, 600);
+    }, 700);
   }
 
-  // Routine profile name in routine section
+  // Routine section profile name
   const rpEl = el('ksr-routine-profile-name');
-  if (rpEl) rpEl.textContent = perfil.nombre || 'your skin';
+  if (rpEl) rpEl.textContent = nombre;
 }
 
 /* ── RENDER DIAGNOSIS ───────────────────────────────────────────── */
