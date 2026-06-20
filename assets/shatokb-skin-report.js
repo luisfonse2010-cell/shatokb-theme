@@ -1056,6 +1056,56 @@ async function ksrInit() {
     if (!reportData.email && record.email) reportData.email = record.email;
     if (!reportData.createdAt && record.created_at) reportData.createdAt = record.created_at;
 
+    // ══════════════════════════════════════════════════════════════
+    // ENRIQUECER CON CARRITO REAL DE SHOPIFY (fuente de verdad final)
+    // ══════════════════════════════════════════════════════════════
+    try {
+      const cartRes = await fetch('/cart.js', { headers: { 'Accept': 'application/json' } });
+      if (cartRes.ok) {
+        const cartData = await cartRes.json();
+        const cartItems = cartData.items || [];
+        if (cartItems.length > 0) {
+          const productosReporte = reportData.productosSeleccionados || [];
+          const byHandle = {};
+          productosReporte.forEach(p => { if (p.handle) byHandle[p.handle] = p; });
+          const productosCarrito = cartItems.map((item, idx) => {
+            const handle   = item.handle || '';
+            const existing = byHandle[handle] || {};
+            const imgRaw   = item.featured_image?.url || item.image || '';
+            const imagen   = imgRaw.startsWith('//') ? 'https:' + imgRaw : imgRaw;
+            return {
+              nombre:  item.product_title || existing.nombre || item.title || '',
+              precio:  existing.precio || (item.price ? (item.price / 100).toFixed(2) : ''),
+              paso:    existing.paso    || `STEP ${idx + 1}`,
+              id:      existing.id      || handle,
+              handle,
+              momento: existing.momento || 'ambos',
+              razon:   existing.razon   || '',
+              imagen,
+              url:     handle ? `https://shatokb.com/products/${handle}` : '',
+            };
+          });
+          const handlesReporte = productosReporte.map(p => p.handle).sort().join(',');
+          const handlesCarrito = productosCarrito.map(p => p.handle).sort().join(',');
+          if (handlesCarrito !== handlesReporte || !reportData.productos_actualizados) {
+            reportData.productosSeleccionados = productosCarrito;
+            const isAM = p => p.momento === 'am' || p.momento === 'ambos' || !p.momento;
+            const isPM = p => p.momento === 'pm' || p.momento === 'ambos';
+            const rutinaAMC = productosCarrito.filter(isAM).map(p => p.nombre).filter(Boolean);
+            const rutinaPMC = productosCarrito.filter(isPM).map(p => p.nombre).filter(Boolean);
+            if (rutinaAMC.length > 0) reportData.rutinaAM = rutinaAMC;
+            if (rutinaPMC.length > 0) reportData.rutinaPM = rutinaPMC;
+            reportData.totalCarrito = productosCarrito.reduce((s, p) => {
+              return s + (parseFloat(String(p.precio || '0').replace(/[^0-9.]/g, '')) || 0);
+            }, 0);
+            console.log('[KSR] Productos actualizados desde carrito real ✅');
+          }
+        }
+      }
+    } catch (cartErr) {
+      console.warn('[KSR] Cart enrichment skipped:', cartErr.message);
+    }
+
     ksrData = reportData;
     renderReport(reportData);
 
