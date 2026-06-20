@@ -1229,33 +1229,79 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     const ctx    = KOI_STATE.contexto;
     if (!ctx || !email) return;
 
-    // Construir los productos seleccionados actualmente
-    // (los que el usuario eligió en los cards de la rutina)
-    const productosSeleccionados = (ctx.productos || []).map(p => ({
-      nombre:  p.nombre,
-      precio:  p.precio,
-      paso:    p.paso,
-      id:      p.id,
-      handle:  p.handle  || '',
-      momento: p.momento || 'ambos',
-      razon:   p.razon   || '',
-      // Imagen: construida desde el handle de Shopify
-      imagen:  p.imagen  || (p.handle ? `https://shatokb.com/products/${p.handle}` : ''),
-      url:     p.handle  ? `https://shatokb.com/products/${p.handle}` : '',
-    }));
+    // ── Mapa de nombres bonitos para los perfiles de piel ────────────────────
+    const PERFIL_NOMBRES = {
+      grasa_acne:       'Oil Balance & Clarity',
+      grasa_poros:      'Pore Refinement',
+      mixta_general:    'Zone Balance',
+      mixta_manchas:    'Balance & Brighten',
+      seca_hidratacion: 'Hydration Restore',
+      seca_antiaging:   'Age Defense',
+      sensible_rojeces: 'Calm & Repair',
+      barrera_daniada:  'Barrier Recovery',
+      general_glow:     'Glass Skin Glow',
+    };
+    const perfilIdV2 = ctx.perfil?.id || '';
+    // SIEMPRE usar el mapa primero — ctx.perfil.nombre puede tener el título largo o el ID raw
+    const perfilNombreV2 = PERFIL_NOMBRES[perfilIdV2] || ctx.perfil?.nombre || perfilIdV2 || '';
+
+    // ── Productos EN VIVO desde shatokbState.selectedProducts ────────────────
+    let productosSeleccionados = [];
+    const liveStateV2   = window.shatokbState;
+    const liveCatalogV2 = window.SHATOKB_CATALOGO;
+
+    if (liveStateV2?.selectedProducts && liveCatalogV2?.length > 0) {
+      const ctxProds  = (window.SHATOKB_RESULTADO?.productos || ctx.productos || []);
+      const pasosMeta = {};
+      ctxProds.forEach((p, i) => {
+        pasosMeta[i] = { paso: p.paso || '', momento: p.momento || 'ambos', razon: p.razon || '' };
+      });
+      productosSeleccionados = Object.entries(liveStateV2.selectedProducts)
+        .sort(([a], [b]) => Number(a) - Number(b))
+        .map(([stepIdx, prodId]) => {
+          const prod = liveCatalogV2.find(c => c.id === prodId);
+          if (!prod) return null;
+          const meta       = pasosMeta[stepIdx] || {};
+          const momentoRaw = prod.momento || meta.momento || 'both';
+          const momento    = momentoRaw === 'both' ? 'ambos' : momentoRaw === 'am' ? 'am' : momentoRaw === 'pm' ? 'pm' : 'ambos';
+          const imagen     = (prod.imagen && prod.imagen.startsWith('http')) ? prod.imagen : '';
+          return { nombre: prod.nombre || '', precio: prod.precio || '', paso: meta.paso || prod.categoria || '',
+                   id: prod.id || '', handle: prod.handle || prod.id || '', momento, razon: meta.razon || prod.desc || '',
+                   imagen, url: prod.handle ? `https://shatokb.com/products/${prod.handle}` : '' };
+        }).filter(Boolean);
+    } else {
+      productosSeleccionados = (ctx.productos || []).map(p => {
+        let imagen = (p.imagen && p.imagen.startsWith('http')) ? p.imagen : '';
+        if (!imagen && liveCatalogV2?.length > 0) {
+          const cat = liveCatalogV2.find(c => c.id === p.id || c.handle === p.handle);
+          if (cat?.imagen && cat.imagen.startsWith('http')) imagen = cat.imagen;
+        }
+        return { nombre: p.nombre || '', precio: p.precio || '', paso: p.paso || '',
+                 id: p.id || '', handle: p.handle || '', momento: p.momento || 'ambos',
+                 razon: p.razon || '', imagen, url: p.handle ? `https://shatokb.com/products/${p.handle}` : '' };
+      });
+    }
+
+    const totalCarritoVivoV2 = productosSeleccionados.reduce((sum, p) => {
+      return sum + (parseFloat(String(p.precio).replace(/[^0-9.]/g, '')) || 0);
+    }, 0);
+    const isAM_V2 = p => p.momento === 'am' || p.momento === 'ambos' || !p.momento;
+    const isPM_V2 = p => p.momento === 'pm' || p.momento === 'ambos';
+    const rutinaAMvivoV2 = productosSeleccionados.filter(isAM_V2).map(p => p.nombre).filter(Boolean);
+    const rutinaPMvivoV2 = productosSeleccionados.filter(isPM_V2).map(p => p.nombre).filter(Boolean);
 
     const reportData = {
       email,
       perfil: {
-        id:          ctx.perfil?.id          || '',
-        nombre:      ctx.perfil?.nombre      || '',
+        id:          perfilIdV2,
+        nombre:      perfilNombreV2,
         descripcion: ctx.perfil?.descripcion || '',
         tags:        ctx.perfil?.tags        || [],
       },
-      rutinaAM:              ctx.rutinaAM  || [],
-      rutinaPM:              ctx.rutinaPM  || [],
+      rutinaAM: rutinaAMvivoV2.length > 0 ? rutinaAMvivoV2 : (ctx.rutinaAM || []),
+      rutinaPM: rutinaPMvivoV2.length > 0 ? rutinaPMvivoV2 : (ctx.rutinaPM || []),
       productosSeleccionados,
-      totalCarrito:          ctx.totalCarrito || 0,
+      totalCarrito: totalCarritoVivoV2 || ctx.totalCarrito || 0,
       presupuesto:           ctx.presupuesto  || '',
       experiencia:           ctx.experiencia  || '',
       idioma:                detectarIdioma(),
