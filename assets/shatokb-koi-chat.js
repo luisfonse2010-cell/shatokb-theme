@@ -2,8 +2,8 @@
  * ============================================================
  * SHATOKB · KOI — Experta K-Beauty con IA
  * Archivo: assets/shatokb-koi-chat.js
- * Version: 4.3 — Fix sintaxis if(false) + /cart.js como fuente de verdad
- *                del carrito en confirmarEmailCarrito (PATCH con productos reales)
+ * Version: 4.3.1 — Diagnóstico explícito PATCH: logs de token, /cart.js items,
+ *                  y resultado Klaviyo. Cache-bust v81.
  *
  * Arquitectura:
  *   - Este archivo corre en el browser (Shopify)
@@ -16,7 +16,7 @@
 
 (function () {
   'use strict';
-  console.log('[KOI] shatokb-koi-chat.js v4.3 cargado — /cart.js fix activo ✅');
+  console.log('%c[KOI] shatokb-koi-chat.js v4.3.1 cargado ✅ — /cart.js es fuente de verdad del PATCH', 'color:#e75480;font-weight:bold;font-size:13px');
 
   /* ── Configuración ──────────────────────────────────────── */
   const KOI_CONFIG = {
@@ -3141,13 +3141,15 @@ async function enviarDesdeChip (texto) {
       // FUENTE DE VERDAD: /cart.js de Shopify — contiene exactamente
       // los productos que el usuario tiene en el carrito en este momento.
       // Luego enriquecemos con datos del catálogo (imagen, paso, momento).
+      console.log('%c[KOI] ── INICIANDO PATCH KLAVIYO ──', 'color:#e75480;font-weight:bold');
       try {
         // 1. Obtener token
         const token = window.KOI_STATE_REPORT_TOKEN
           || (() => { try { return localStorage.getItem('shatokb_report_token'); } catch(_) { return null; } })();
+        console.log('[KOI] PATCH token:', token ? token.slice(0,8) + '…' : '⚠️ SIN TOKEN');
 
         if (!token) {
-          console.warn('[KOI] Sin token para PATCH — enviando report completo con Klaviyo directo');
+          console.error('[KOI] ❌ SIN TOKEN — no se puede hacer PATCH. Fallback a POST directo con Klaviyo.');
           enviarSkinReport(email, { sendKlaviyoDirect: true });
         } else {
           // 2. Leer el carrito de Shopify — FUENTE DE VERDAD
@@ -3160,8 +3162,8 @@ async function enviarDesdeChip (texto) {
             const cartData = await cartRes.json();
             const items    = cartData.items || [];
 
+            console.log('[KOI] /cart.js OK —', items.length, 'items en carrito:', items.map(i => i.title));
             if (items.length > 0) {
-              console.log('[KOI] PATCH: leyendo /cart.js —', items.length, 'items en carrito');
 
               productosParaPatch = items.map(item => {
                 const handle = item.handle || item.url?.split('/products/')[1]?.split('?')[0] || '';
@@ -3204,10 +3206,12 @@ async function enviarDesdeChip (texto) {
                 };
               }).filter(p => p.nombre);
 
-              console.log('[KOI] PATCH: productos del carrito:', productosParaPatch.map(p => p.nombre));
+              console.log('%c[KOI] PATCH SOURCE 1 ✅ /cart.js —', 'color:green;font-weight:bold', productosParaPatch.map(p => `${p.nombre} ($${p.precio})`));
+            } else {
+              console.warn('[KOI] /cart.js devolvió 0 items — usando fallback');
             }
           } catch(cartErr) {
-            console.warn('[KOI] /cart.js falló — usando ctx.productos como fallback:', cartErr.message);
+            console.error('[KOI] ❌ /cart.js falló:', cartErr.message, '— usando ctx.productos como fallback');
           }
 
           // Fallback: ctx.productos si el carrito estaba vacío o falló
@@ -3232,7 +3236,7 @@ async function enviarDesdeChip (texto) {
                 url:     p.handle ? `https://shatokb.com/products/${p.handle}` : '',
               };
             }).filter(p => p.nombre);
-            console.log('[KOI] PATCH: fallback ctx.productos —', productosParaPatch.length, 'productos');
+            console.log('%c[KOI] PATCH SOURCE 2 (fallback ctx.productos):', 'color:orange;font-weight:bold', productosParaPatch.map(p => p.nombre));
           }
 
           // — Fuente 3 (último recurso): selectedProducts + catálogo —
@@ -3255,14 +3259,15 @@ async function enviarDesdeChip (texto) {
                   url:     prod.handle ? `https://shatokb.com/products/${prod.handle}` : '',
                 };
               }).filter(Boolean);
-            console.log('[KOI] PATCH: selectedProducts+catálogo —', productosParaPatch.length, 'productos');
+            console.log('%c[KOI] PATCH SOURCE 3 (selectedProducts+catálogo):', 'color:orange;font-weight:bold', productosParaPatch.map(p => p.nombre));
           }
 
           const totalPatch = productosParaPatch.reduce((s, p) => {
             return s + (parseFloat(String(p.precio || '0').replace(/[^0-9.]/g, '')) || 0);
           }, 0);
 
-          console.log('[KOI] Enviando PATCH /report/:token con', productosParaPatch.length, 'productos. Token:', token);
+          console.log('%c[KOI] Enviando PATCH /report/:token', 'color:#e75480;font-weight:bold', '| productos:', productosParaPatch.length, '| token:', token?.slice(0,8) + '…');
+          console.table(productosParaPatch.map(p => ({ nombre: p.nombre, precio: p.precio, imagen: p.imagen ? '✅' : '❌', handle: p.handle })));
 
           // 3. PATCH al Worker — síncrono con await, termina ANTES del setTimeout
           const workerBase = 'https://koi-proxy.luisfonse2010.workers.dev';
@@ -3277,15 +3282,15 @@ async function enviarDesdeChip (texto) {
           });
           const patchData = await patchRes.json();
           if (patchData.ok) {
-            console.log('[KOI] PATCH /report exitoso ✅ | Klaviyo:', patchData.klaviyo?.ok, '| productos:', patchData.productos_count);
+            console.log('%c[KOI] PATCH /report exitoso ✅ | Klaviyo:', 'color:green;font-weight:bold', patchData.klaviyo?.ok, '| productos:', patchData.productos_count);
           } else {
-            console.warn('[KOI] PATCH /report error:', patchData);
+            console.error('[KOI] ❌ PATCH /report error:', JSON.stringify(patchData));
             // Fallback: POST directo con Klaviyo
             enviarSkinReport(email);
           }
         }
       } catch (patchErr) {
-        console.warn('[KOI] PATCH /report falló — fallback a POST con Klaviyo directo:', patchErr.message);
+        console.error('[KOI] ❌ PATCH /report excepción — fallback a POST con Klaviyo directo:', patchErr.message, patchErr.stack);
         enviarSkinReport(email, { sendKlaviyoDirect: true });
       }
 
