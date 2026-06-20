@@ -2,8 +2,10 @@
  * ============================================================
  * SHATOKB · KOI — Experta K-Beauty con IA
  * Archivo: assets/shatokb-koi-chat.js
- * Version: 4.3.1 — Diagnóstico explícito PATCH: logs de token, /cart.js items,
- *                  y resultado Klaviyo. Cache-bust v81.
+ * Version: 4.4 — Fix timing PATCH Klaviyo: eliminado PATCH prematuro de
+ *               confirmarEmailCarrito() (el carrito está vacío en ese punto).
+ *               El único PATCH ahora es el de shatokbEjecutarAddToCart() en
+ *               shatokb-quiz.js, que corre DESPUÉS de /cart/add.js. Cache-bust v82.
  *
  * Arquitectura:
  *   - Este archivo corre en el browser (Shopify)
@@ -16,7 +18,7 @@
 
 (function () {
   'use strict';
-  console.log('%c[KOI] shatokb-koi-chat.js v4.3.1 cargado ✅ — /cart.js es fuente de verdad del PATCH', 'color:#e75480;font-weight:bold;font-size:13px');
+  console.log('%c[KOI] shatokb-koi-chat.js v4.4 cargado ✅ — PATCH timing fix (quiz.js lo maneja post-cart/add.js)', 'color:#e75480;font-weight:bold;font-size:13px');
 
   /* ── Configuración ──────────────────────────────────────── */
   const KOI_CONFIG = {
@@ -3137,162 +3139,12 @@ async function enviarDesdeChip (texto) {
       const textEl = agregarMensaje('koi', '');
       if (textEl) await escribirConEfecto(textEl, confirmMsg, 18);
 
-      // ── PATCH: enviar Klaviyo con productos REALES del carrito ────
-      // FUENTE DE VERDAD: /cart.js de Shopify — contiene exactamente
-      // los productos que el usuario tiene en el carrito en este momento.
-      // Luego enriquecemos con datos del catálogo (imagen, paso, momento).
-      console.log('%c[KOI] ── INICIANDO PATCH KLAVIYO ──', 'color:#e75480;font-weight:bold');
-      try {
-        // 1. Obtener token
-        const token = window.KOI_STATE_REPORT_TOKEN
-          || (() => { try { return localStorage.getItem('shatokb_report_token'); } catch(_) { return null; } })();
-        console.log('[KOI] PATCH token:', token ? token.slice(0,8) + '…' : '⚠️ SIN TOKEN');
-
-        if (!token) {
-          console.error('[KOI] ❌ SIN TOKEN — no se puede hacer PATCH. Fallback a POST directo con Klaviyo.');
-          enviarSkinReport(email, { sendKlaviyoDirect: true });
-        } else {
-          // 2. Leer el carrito de Shopify — FUENTE DE VERDAD
-          let productosParaPatch = [];
-          const liveCatalog = window.SHATOKB_CATALOGO || [];
-          const ctxPs = KOI_STATE.contexto?.productos || [];
-
-          try {
-            const cartRes  = await fetch('/cart.js');
-            const cartData = await cartRes.json();
-            const items    = cartData.items || [];
-
-            console.log('[KOI] /cart.js OK —', items.length, 'items en carrito:', items.map(i => i.title));
-            if (items.length > 0) {
-
-              productosParaPatch = items.map(item => {
-                const handle = item.handle || item.url?.split('/products/')[1]?.split('?')[0] || '';
-
-                // Buscar metadatos en catálogo (paso, momento, razon)
-                const cat = liveCatalog.find(c =>
-                  c.handle === handle || c.id === handle ||
-                  item.title?.toLowerCase().includes((c.nombre || '').toLowerCase().slice(0, 20))
-                );
-
-                // Buscar metadatos en ctx.productos (paso, razon del quiz)
-                const ctxP = ctxPs.find(p =>
-                  p.handle === handle ||
-                  item.title?.toLowerCase().includes((p.nombre || '').toLowerCase().slice(0, 20))
-                );
-
-                // Imagen: usar la del item de Shopify (siempre disponible y correcta)
-                let imagen = '';
-                if (item.image) {
-                  imagen = item.image.startsWith('//') ? 'https:' + item.image
-                         : item.image.startsWith('http') ? item.image : '';
-                }
-                if (!imagen && cat?.imagen?.startsWith('http')) imagen = cat.imagen;
-
-                const precio = (item.price / 100).toFixed(2);
-                const momento = cat?.momento || ctxP?.momento || 'ambos';
-                const momentoNorm = (momento === 'both' || !momento) ? 'ambos'
-                                  : (momento === 'am') ? 'am'
-                                  : (momento === 'pm') ? 'pm' : 'ambos';
-
-                return {
-                  nombre:  item.title || '',
-                  precio,
-                  paso:    ctxP?.paso  || cat?.categoria || '',
-                  handle,
-                  momento: momentoNorm,
-                  razon:   ctxP?.razon || cat?.desc || '',
-                  imagen,
-                  url:     handle ? `https://shatokb.com/products/${handle}` : '',
-                };
-              }).filter(p => p.nombre);
-
-              console.log('%c[KOI] PATCH SOURCE 1 ✅ /cart.js —', 'color:green;font-weight:bold', productosParaPatch.map(p => `${p.nombre} ($${p.precio})`));
-            } else {
-              console.warn('[KOI] /cart.js devolvió 0 items — usando fallback');
-            }
-          } catch(cartErr) {
-            console.error('[KOI] ❌ /cart.js falló:', cartErr.message, '— usando ctx.productos como fallback');
-          }
-
-          // Fallback: ctx.productos si el carrito estaba vacío o falló
-          if (productosParaPatch.length === 0) {
-            productosParaPatch = ctxPs.map(p => {
-              let imagen = (p.imagen && p.imagen.startsWith('http')) ? p.imagen : '';
-              if (!imagen && liveCatalog.length > 0) {
-                const cat = liveCatalog.find(c => c.id === p.id || c.handle === p.handle);
-                if (cat?.imagen?.startsWith('http')) imagen = cat.imagen;
-              }
-              const momento = (p.momento === 'both' || !p.momento) ? 'ambos'
-                            : (p.momento === 'am') ? 'am'
-                            : (p.momento === 'pm') ? 'pm' : (p.momento || 'ambos');
-              return {
-                nombre:  p.nombre || '',
-                precio:  p.precio || '',
-                paso:    p.paso   || '',
-                handle:  p.handle || p.id || '',
-                momento,
-                razon:   p.razon  || '',
-                imagen,
-                url:     p.handle ? `https://shatokb.com/products/${p.handle}` : '',
-              };
-            }).filter(p => p.nombre);
-            console.log('%c[KOI] PATCH SOURCE 2 (fallback ctx.productos):', 'color:orange;font-weight:bold', productosParaPatch.map(p => p.nombre));
-          }
-
-          // — Fuente 3 (último recurso): selectedProducts + catálogo —
-          if (productosParaPatch.length === 0 && window.shatokbState?.selectedProducts && liveCatalog.length > 0) {
-            const liveState = window.shatokbState;
-            productosParaPatch = Object.entries(liveState.selectedProducts)
-              .sort(([a], [b]) => Number(a) - Number(b))
-              .map(([, prodId]) => {
-                const prod = liveCatalog.find(c => c.id === prodId);
-                if (!prod) return null;
-                const imagen = (prod.imagen && prod.imagen.startsWith('http')) ? prod.imagen : '';
-                return {
-                  nombre:  prod.nombre    || '',
-                  precio:  prod.precio    || '',
-                  paso:    prod.categoria || '',
-                  handle:  prod.handle    || prod.id || '',
-                  momento: prod.momento === 'am' ? 'am' : prod.momento === 'pm' ? 'pm' : 'ambos',
-                  razon:   prod.desc      || '',
-                  imagen,
-                  url:     prod.handle ? `https://shatokb.com/products/${prod.handle}` : '',
-                };
-              }).filter(Boolean);
-            console.log('%c[KOI] PATCH SOURCE 3 (selectedProducts+catálogo):', 'color:orange;font-weight:bold', productosParaPatch.map(p => p.nombre));
-          }
-
-          const totalPatch = productosParaPatch.reduce((s, p) => {
-            return s + (parseFloat(String(p.precio || '0').replace(/[^0-9.]/g, '')) || 0);
-          }, 0);
-
-          console.log('%c[KOI] Enviando PATCH /report/:token', 'color:#e75480;font-weight:bold', '| productos:', productosParaPatch.length, '| token:', token?.slice(0,8) + '…');
-          console.table(productosParaPatch.map(p => ({ nombre: p.nombre, precio: p.precio, imagen: p.imagen ? '✅' : '❌', handle: p.handle })));
-
-          // 3. PATCH al Worker — síncrono con await, termina ANTES del setTimeout
-          const workerBase = 'https://koi-proxy.luisfonse2010.workers.dev';
-          const patchRes = await fetch(`${workerBase}/report/${token}`, {
-            method:  'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({
-              email,
-              productos:    productosParaPatch,
-              totalCarrito: parseFloat(totalPatch.toFixed(2)),
-            }),
-          });
-          const patchData = await patchRes.json();
-          if (patchData.ok) {
-            console.log('%c[KOI] PATCH /report exitoso ✅ | Klaviyo:', 'color:green;font-weight:bold', patchData.klaviyo?.ok, '| productos:', patchData.productos_count);
-          } else {
-            console.error('[KOI] ❌ PATCH /report error:', JSON.stringify(patchData));
-            // Fallback: POST directo con Klaviyo
-            enviarSkinReport(email);
-          }
-        }
-      } catch (patchErr) {
-        console.error('[KOI] ❌ PATCH /report excepción — fallback a POST con Klaviyo directo:', patchErr.message, patchErr.stack);
-        enviarSkinReport(email, { sendKlaviyoDirect: true });
-      }
+      // ── El PATCH Klaviyo con productos reales lo ejecuta shatokb-quiz.js ────
+      // shatokbEjecutarAddToCart() corre DESPUÉS de /cart/add.js exitoso,
+      // por lo que tiene acceso a los datos reales del carrito (handle, precio,
+      // imagen desde /products/handle.js). Aquí solo avanzamos al carrito.
+      // NO hacemos PATCH aquí — el carrito aún está vacío en este punto.
+      console.log('[KOI] Email capturado ✅ — el PATCH Klaviyo lo ejecuta shatokbEjecutarAddToCart() en quiz.js tras /cart/add.js');
 
       setTimeout(callbackProcederAlCarrito, 800);
     }
