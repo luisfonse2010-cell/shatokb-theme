@@ -18,7 +18,7 @@
  *
  * ============================================================
  */
-/* ── Last deploy: 2026-06-20T21:40:57.714Z */
+/* ── Last deploy: 2026-06-20T23:25:53.971Z */
 
 
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
@@ -566,18 +566,13 @@ async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
           productos_count:     productos.length,
           // Array estructurado — usado en template Klaviyo con {% for product in event.productos %}
           productos: productos.map(p => {
-            // Imagen: incluir si es URL de CDN válida.
-            // REGLA: es válida si contiene cdn.shopify.com, o termina en imagen (.jpg,.png,.webp,.gif)
-            // NO válida: si es solo una URL de página de producto sin extensión de imagen
-            //            (e.g. https://shatokb.com/products/some-handle sin extensión)
             const imgRaw = p.imagen || '';
             const isCDN     = imgRaw.includes('cdn.shopify.com');
             const isImgExt  = /\.(jpg|jpeg|png|webp|gif|avif)(\?|$)/i.test(imgRaw);
             const isPageUrl = imgRaw.startsWith('http') && !isCDN && !isImgExt
                               && imgRaw.includes('/products/') && !imgRaw.includes('files');
             const imgValid  = imgRaw.startsWith('http') && (isCDN || isImgExt) && !isPageUrl
-              ? imgRaw
-              : '';
+              ? imgRaw : '';
             return {
               nombre:  p.nombre  || '',
               precio:  p.precio  || '',
@@ -587,6 +582,51 @@ async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
               url:     p.url || (p.handle ? `https://shatokb.com/products/${p.handle}` : ''),
             };
           }),
+          // HTML pregenerado — Klaviyo no ejecuta {% for %} en HTML editor,
+          // así que generamos el bloque completo en el Worker y lo insertamos
+          // como {{ event.productos_html_am }} / {{ event.productos_html_pm }}
+          productos_html_am: (() => {
+            const prods = productos.filter(p => {
+              const m = p.momento || 'ambos';
+              return m === 'am' || m === 'ambos' || m === 'both' || m === '';
+            });
+            if (prods.length === 0) return rutinaAM.join(' → ');
+            return prods.map((p, i) => {
+              const imgRaw = p.imagen || '';
+              const isCDN    = imgRaw.includes('cdn.shopify.com');
+              const isImgExt = /\.(jpg|jpeg|png|webp|gif|avif)(\?|$)/i.test(imgRaw);
+              const img      = imgRaw.startsWith('http') && (isCDN || isImgExt) ? imgRaw : '';
+              const url      = p.url || (p.handle ? `https://shatokb.com/products/${p.handle}` : '');
+              const paso     = p.paso ? ` · ${p.paso}` : '';
+              const imgHtml  = img
+                ? `<td style="width:68px;vertical-align:top;padding-right:14px;"><img src="${img}" width="64" height="64" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:10px;display:block;border:0;" /></td>`
+                : '';
+              const precioHtml = p.precio ? `<span style="font-size:12px;font-weight:700;color:#3d3540;margin-right:12px;">$${p.precio}</span>` : '';
+              const urlHtml    = url ? `<a href="${url}" style="font-size:11px;font-weight:600;color:#eaa0b4;text-decoration:none;">View product →</a>` : '';
+              return `<table width="100%" cellpadding="0" cellspacing="0" style="border-bottom:1px solid #f5edf2;margin-bottom:0;"><tr>${imgHtml}<td style="vertical-align:top;padding:12px 0;"><div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#eaa0b4;margin-bottom:3px;">Step ${i+1}${paso}</div><div style="font-size:13px;font-weight:700;color:#1c181a;line-height:1.4;margin-bottom:4px;">${p.nombre || ''}</div>${p.razon ? `<div style="font-size:12px;color:#7a6e77;line-height:1.5;margin-bottom:5px;">${p.razon}</div>` : ''}<div>${precioHtml}${urlHtml}</div></td></tr></table>`;
+            }).join('');
+          })(),
+          productos_html_pm: (() => {
+            const prods = productos.filter(p => {
+              const m = p.momento || 'ambos';
+              return m === 'pm' || m === 'ambos' || m === 'both' || m === '';
+            });
+            if (prods.length === 0) return rutinaPM.join(' → ');
+            return prods.map((p, i) => {
+              const imgRaw = p.imagen || '';
+              const isCDN    = imgRaw.includes('cdn.shopify.com');
+              const isImgExt = /\.(jpg|jpeg|png|webp|gif|avif)(\?|$)/i.test(imgRaw);
+              const img      = imgRaw.startsWith('http') && (isCDN || isImgExt) ? imgRaw : '';
+              const url      = p.url || (p.handle ? `https://shatokb.com/products/${p.handle}` : '');
+              const paso     = p.paso ? ` · ${p.paso}` : '';
+              const imgHtml  = img
+                ? `<td style="width:68px;vertical-align:top;padding-right:14px;"><img src="${img}" width="64" height="64" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:10px;display:block;border:0;" /></td>`
+                : '';
+              const precioHtml = p.precio ? `<span style="font-size:12px;font-weight:700;color:#3d3540;margin-right:12px;">$${p.precio}</span>` : '';
+              const urlHtml    = url ? `<a href="${url}" style="font-size:11px;font-weight:600;color:#eaa0b4;text-decoration:none;">View product →</a>` : '';
+              return `<table width="100%" cellpadding="0" cellspacing="0" style="border-bottom:1px solid #f5edf2;margin-bottom:0;"><tr>${imgHtml}<td style="vertical-align:top;padding:12px 0;"><div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#eaa0b4;margin-bottom:3px;">Step ${i+1}${paso}</div><div style="font-size:13px;font-weight:700;color:#1c181a;line-height:1.4;margin-bottom:4px;">${p.nombre || ''}</div>${p.razon ? `<div style="font-size:12px;color:#7a6e77;line-height:1.5;margin-bottom:5px;">${p.razon}</div>` : ''}<div>${precioHtml}${urlHtml}</div></td></tr></table>`;
+            }).join('');
+          })(),
           idioma:              reportData.idioma  || 'es',
         },
       }
