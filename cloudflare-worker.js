@@ -18,7 +18,7 @@
  *
  * ============================================================
  */
-/* ── Last deploy: 2026-06-20T20:29:24.153Z */
+/* ── Last deploy: 2026-06-20T21:03:33.644Z */
 
 
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
@@ -435,7 +435,7 @@ You do not refer them elsewhere. You do not suggest other channels. Every questi
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin':  '*',
   'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Headers': 'Content-Type, Accept',
 };
 
 /* ══════════════════════════════════════════════════════════
@@ -744,6 +744,49 @@ export default {
         JSON.stringify({ ok: true, token, reportUrl, klaviyo: klaviyoResult, productos_count: productos.length }),
         { status: 200, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // ── Endpoint POST /report-beacon/:token — alias del PATCH via sendBeacon ─
+    // sendBeacon solo soporta POST. Este endpoint hace exactamente lo mismo
+    // que PATCH /report/:token pero acepta POST para compatibilidad con sendBeacon.
+    if (request.method === 'POST' && url.pathname.startsWith('/report-beacon/')) {
+      const token = url.pathname.replace('/report-beacon/', '').trim();
+      if (!token) {
+        return new Response('', { status: 400, headers: CORS_HEADERS });
+      }
+      let body;
+      try { body = await request.json(); } catch {
+        return new Response('', { status: 400, headers: CORS_HEADERS });
+      }
+      const { productos, email: bEmail, totalCarrito: bTotal } = body;
+      if (!productos || !Array.isArray(productos) || productos.length === 0) {
+        return new Response('', { status: 400, headers: CORS_HEADERS });
+      }
+      const kv = env.SKIN_REPORTS;
+      if (!kv) return new Response('', { status: 503, headers: CORS_HEADERS });
+      const raw = await kv.get(token);
+      if (!raw) return new Response('', { status: 404, headers: CORS_HEADERS });
+      let kvRecord;
+      try { kvRecord = JSON.parse(raw); } catch { return new Response('', { status: 500, headers: CORS_HEADERS }); }
+      let reportData;
+      try { reportData = JSON.parse(kvRecord.report_data || '{}'); } catch { reportData = {}; }
+      const email     = bEmail || kvRecord.email || reportData.email || '';
+      const reportUrl = reportData.reportUrl || `https://shatokb.com/pages/skin-report?token=${token}`;
+      const isAM = p => p.momento === 'am' || p.momento === 'ambos' || !p.momento;
+      const isPM = p => p.momento === 'pm' || p.momento === 'ambos';
+      reportData.productosSeleccionados = productos;
+      reportData.rutinaAM = productos.filter(isAM).map(p => p.nombre).filter(Boolean);
+      reportData.rutinaPM = productos.filter(isPM).map(p => p.nombre).filter(Boolean);
+      reportData.totalCarrito = parseFloat(Number(bTotal || 0).toFixed(2));
+      reportData.updatedAt = Date.now();
+      reportData.productos_actualizados = true;
+      await kv.put(token, JSON.stringify({ ...kvRecord, email, total_carrito: reportData.totalCarrito, report_data: JSON.stringify(reportData), updatedAt: reportData.updatedAt }), { expirationTtl: 60 * 60 * 24 * 90 });
+      const klaviyoKey = env.KLAVIYO_API_KEY || '';
+      if (klaviyoKey && email) {
+        await enviarEventoKlaviyo(email, reportData, reportUrl, klaviyoKey);
+        console.log('[Report Beacon] Klaviyo enviado via beacon. Token:', token);
+      }
+      return new Response('', { status: 200, headers: CORS_HEADERS });
     }
 
     // ── Endpoint POST /report — guardar en KV + enviar Klaviyo ─
