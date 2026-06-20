@@ -2,7 +2,8 @@
  * ============================================================
  * SHATOKB · KOI — Experta K-Beauty con IA
  * Archivo: assets/shatokb-koi-chat.js
- * Version: 2.0 — "The Reveal" flow: blur → insight → email gate → reveal
+ * Version: 4.2 — PATCH fix: Klaviyo se envía en confirmarEmailCarrito
+ *                con ctx.productos como fuente primaria (catálogo siempre disponible)
  *
  * Arquitectura:
  *   - Este archivo corre en el browser (Shopify)
@@ -15,6 +16,7 @@
 
 (function () {
   'use strict';
+  console.log('[KOI] shatokb-koi-chat.js v4.2 cargado — PATCH fix activo ✅');
 
   /* ── Configuración ──────────────────────────────────────── */
   const KOI_CONFIG = {
@@ -1351,11 +1353,11 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
      Se llama silenciosamente al capturar el email en el
      interceptor del carrito.
      ══════════════════════════════════════════════════════════ */
-  async function enviarSkinReport (email) {
+  async function enviarSkinReport (email, options = {}) {
     const ctx    = KOI_STATE.contexto;
     if (!ctx || !email) return;
 
-    // ── Mapa de fallback ID → nombre bonito (por si ctx.perfil.nombre llega vacío) ──
+    // ── Mapa canónico ID → nombre bonito (SIEMPRE tiene prioridad sobre ctx.perfil.nombre) ──
     const PERFIL_NOMBRES = {
       grasa_acne:       'Oil Balance & Clarity',
       grasa_poros:      'Pore Refinement',
@@ -1376,53 +1378,30 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     // ══════════════════════════════════════════════════════════════
     // PRODUCTOS EN VIVO — fuente de verdad: window.shatokbState.selectedProducts
     // ══════════════════════════════════════════════════════════════
-    // ctx.productos es una snapshot del momento en que terminó el quiz
-    // (antes de que el usuario cambie su selección en los cards).
-    // shatokbState.selectedProducts se actualiza cada vez que el usuario
-    // hace clic en "Add to my routine" — es exactamente lo mismo que
-    // va al carrito. Lo usamos como fuente autoritativa.
-    //
-    // Estrategia 1 (preferida): reconstruir desde shatokbState.selectedProducts
-    //   → cada stepIdx tiene el prodId elegido → buscar en SHATOKB_CATALOGO
-    //   → obtener nombre, precio, imagen CDN, handle, momento, paso
-    //
-    // Estrategia 2 (fallback): usar ctx.productos (snapshot del quiz)
-    //   → solo si no hay catálogo global disponible
-    // ══════════════════════════════════════════════════════════════
-
     let productosSeleccionados = [];
-
-    const liveState  = window.shatokbState;
+    const liveState   = window.shatokbState;
     const liveCatalog = window.SHATOKB_CATALOGO;
-    const liveResult  = window.SHATOKB_RESULTADO; // tiene pasosProd con paso.nombre y paso.momento
 
     if (liveState?.selectedProducts && liveCatalog?.length > 0) {
-      // ── Estrategia 1: reconstruir desde el estado vivo ────────────
-      // Necesitamos el orden y los metadatos del paso (nombre del paso,
-      // momento AM/PM, razon) → vienen de ctx.productos o de SHATOKB_RESULTADO
-      const ctxProds  = (liveResult?.productos || ctx.productos || []);
-      const pasosMeta = {}; // stepIdx → { paso, momento, razon }
+      // Fuente 1: selectedProducts + catálogo (mejor fuente cuando el catálogo está disponible)
+      const ctxProds  = (window.SHATOKB_RESULTADO?.productos || ctx.productos || []);
+      const pasosMeta = {};
       ctxProds.forEach((p, i) => {
         pasosMeta[i] = { paso: p.paso || '', momento: p.momento || 'ambos', razon: p.razon || '' };
       });
 
       productosSeleccionados = Object.entries(liveState.selectedProducts)
-        .sort(([a], [b]) => Number(a) - Number(b)) // mantener orden de pasos
+        .sort(([a], [b]) => Number(a) - Number(b))
         .map(([stepIdx, prodId]) => {
           const prod = liveCatalog.find(c => c.id === prodId);
           if (!prod) return null;
-
-          // Momento: del catálogo → normalizar 'both' → 'ambos'
           const meta       = pasosMeta[stepIdx] || {};
           const momentoRaw = prod.momento || meta.momento || 'both';
           const momento    = momentoRaw === 'both' ? 'ambos'
                            : momentoRaw === 'am'   ? 'am'
                            : momentoRaw === 'pm'   ? 'pm'
                            : 'ambos';
-
-          // Imagen: la que viene del catálogo (Shopify product API → images[0].src)
           const imagen = (prod.imagen && prod.imagen.startsWith('http')) ? prod.imagen : '';
-
           return {
             nombre:  prod.nombre  || '',
             precio:  prod.precio  || '',
@@ -1436,39 +1415,39 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
           };
         })
         .filter(Boolean);
-
-      console.log('[KOI] enviarSkinReport — productos EN VIVO desde shatokbState:', productosSeleccionados.length);
+      console.log('[KOI] enviarSkinReport — usando selectedProducts+catálogo:', productosSeleccionados.length, 'productos');
     } else {
-      // ── Estrategia 2 (fallback): usar snapshot de ctx.productos ───
-      console.log('[KOI] enviarSkinReport — fallback a ctx.productos (catálogo no disponible)');
+      // Fuente 2: ctx.productos (siempre disponible — productos que el quiz mostró)
       productosSeleccionados = (ctx.productos || []).map(p => {
-        // Intentar enriquecer la imagen desde el catálogo si está disponible
         let imagen = (p.imagen && p.imagen.startsWith('http')) ? p.imagen : '';
         if (!imagen && liveCatalog?.length > 0) {
           const cat = liveCatalog.find(c => c.id === p.id || c.handle === p.handle);
           if (cat?.imagen && cat.imagen.startsWith('http')) imagen = cat.imagen;
         }
+        const momento = (p.momento === 'both' || !p.momento) ? 'ambos'
+                      : (p.momento === 'am') ? 'am'
+                      : (p.momento === 'pm') ? 'pm'
+                      : (p.momento || 'ambos');
         return {
           nombre:  p.nombre  || '',
           precio:  p.precio  || '',
           paso:    p.paso    || '',
           id:      p.id      || '',
           handle:  p.handle  || '',
-          momento: p.momento || 'ambos',
+          momento,
           razon:   p.razon   || '',
           imagen,
           url:     p.handle ? `https://shatokb.com/products/${p.handle}` : '',
         };
-      });
+      }).filter(p => p.nombre);
+      console.log('[KOI] enviarSkinReport — usando ctx.productos:', productosSeleccionados.length, 'productos');
     }
 
-    // Total en vivo: sumar precios de los productos elegidos realmente
     const totalCarritoVivo = productosSeleccionados.reduce((sum, p) => {
       const num = parseFloat(String(p.precio).replace(/[^0-9.]/g, '')) || 0;
       return sum + num;
     }, 0);
 
-    // Rutinas AM/PM: nombres de los productos elegidos, filtrados por momento
     const isAM = p => p.momento === 'am' || p.momento === 'ambos' || !p.momento;
     const isPM = p => p.momento === 'pm' || p.momento === 'ambos';
     const rutinaAMvivo = productosSeleccionados.filter(isAM).map(p => p.nombre).filter(Boolean);
@@ -1510,37 +1489,36 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     //         Shopify → GET Worker /report/:token → KV ✅
     // ══════════════════════════════════════════════════════════════
 
-    // POST al Worker — guarda en KV + envía Klaviyo (silencioso)
-    // El Worker construye el array productos[] para Klaviyo directo desde reportData
+    // POST al Worker — guarda en KV (sin Klaviyo por defecto).
+    // El PATCH en confirmarEmailCarrito() enviará Klaviyo con productos reales.
+    // Si se pasa sendKlaviyoDirect:true, el Worker envía Klaviyo aquí directamente (fallback).
+    const sendKlaviyoDirect = options?.sendKlaviyoDirect === true;
     fetch(KOI_CONFIG.reportUrl, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
         email,
         reportData,
-        siteUrl: KOI_CONFIG.siteUrl || 'https://shatokb.com',
+        siteUrl:       KOI_CONFIG.siteUrl || 'https://shatokb.com',
         perfil_id:     perfilId,
         perfil_nombre: perfilNombre,
         perfil_desc:   reportData.perfil?.descripcion || '',
         total_carrito: reportData.totalCarrito        || 0,
         idioma:        reportData.idioma              || 'en',
+        send_klaviyo:  sendKlaviyoDirect,  // true = Worker envía Klaviyo en el POST (fallback)
       }),
     })
     .then(r => r.json())
     .then(data => {
       if (data.ok) {
         KOI_STATE.reportUrl = data.reportUrl;
-        console.log('[KOI] Reporte guardado en KV ✅ Token:', data.token);
-        console.log('[KOI] Report URL:', data.reportUrl);
-        console.log('[KOI] KV saved:', data.kv_saved, '| Klaviyo:', data.klaviyo?.ok);
         // ── Guardar token en localStorage y window global ──────────────────
-        // shatokb-quiz.js (shatokbEjecutarAddToCart) lo leerá al hacer el
-        // PATCH /report/:token con los productos reales del carrito.
         if (data.token) {
           try { localStorage.setItem('shatokb_report_token', data.token); } catch (_) {}
           window.KOI_STATE_REPORT_TOKEN = data.token;
-          console.log('[KOI] Token guardado para PATCH post-carrito:', data.token);
         }
+        console.log('[KOI] Reporte guardado en KV ✅ Token:', data.token);
+        console.log('[KOI] KV saved:', data.kv_saved, '| Klaviyo:', data.klaviyo?.ok, data.klaviyo?.deferred ? '(deferred→PATCH)' : '');
       } else {
         console.warn('[KOI] Worker /report error:', data);
       }
@@ -2479,17 +2457,22 @@ function _animarCardEntrada(cardEl) {
 
 /* ══════════════════════════════════════════════════════════
    ESCUCHAR EVENTO GLOBAL de KOI Vision (alternativo al callback)
-   Usa { once: true } para que el listener se auto-elimine tras
-   la primera ejecución — evita acumulación de handlers si el
-   usuario abre la cámara más de una vez.
+   ANTI-DUPLICADO: _visionResultHandled bloquea la segunda ejecución
+   sin importar qué ruta llega primero (callback o evento global).
+   NO se resetea automáticamente — se resetea solo cuando
+   manejarResultadoVision termina completamente (al final del async).
    ══════════════════════════════════════════════════════════ */
 let _visionResultHandled = false;
 function _handleVisionResult(e) {
   if (_visionResultHandled) return;
   _visionResultHandled = true;
-  if (e.detail) manejarResultadoVision(e.detail);
-  // Resetear el flag después de 2s para permitir nuevos análisis
-  setTimeout(function() { _visionResultHandled = false; }, 2000);
+  if (e.detail) {
+    manejarResultadoVision(e.detail).finally(function() {
+      // Resetear SOLO cuando el flujo async terminó completamente
+      // (no antes — evita race condition con el callback de koiVision)
+      setTimeout(function() { _visionResultHandled = false; }, 500);
+    });
+  }
 }
 window.addEventListener('koi-vision-result', _handleVisionResult);
 
@@ -2580,13 +2563,15 @@ async function enviarDesdeChip (texto) {
       window.KOI_VISION_WORKER_URL = KOI_CONFIG.workerUrl.replace('/chat', '/vision');
 
       // Registrar el callback ANTES de abrir (el modal lo llama al cerrar).
-      // Pasar flag _visionResultHandled para evitar doble ejecución si
-      // el evento global también dispara (ambos apuntan a la misma función).
+      // Si _visionResultHandled ya es true, el evento global llegó primero — ignorar.
+      // Si es false, marcarlo true y ejecutar. El reset lo hace manejarResultadoVision.
       window.koiVision.onResultado(function(data) {
         if (_visionResultHandled) return;
         _visionResultHandled = true;
-        manejarResultadoVision(data);
-        setTimeout(function() { _visionResultHandled = false; }, 2000);
+        manejarResultadoVision(data).finally(function() {
+          // Resetear solo cuando el flujo async terminó completamente
+          setTimeout(function() { _visionResultHandled = false; }, 500);
+        });
       });
 
       // Fallback alternativo (si el usuario cancela la cámara)
@@ -3132,9 +3117,8 @@ async function enviarDesdeChip (texto) {
       KOI_STATE.emailCaptured = email;
       try { localStorage.setItem('shatokb_email', email); } catch (_) {}
       shatokbEnviarEmailShopify(email);
-      enviarSkinReport(email);
 
-      // Cerrar focus mode
+      // ── Cerrar focus mode ──────────────────────────────────────
       _cerrarFocusMode(true);
 
       // Añadir email como mensaje del usuario en el chat
@@ -3152,6 +3136,129 @@ async function enviarDesdeChip (texto) {
       const confirmMsg = confirmaciones[idioma] || confirmaciones['en'];
       const textEl = agregarMensaje('koi', '');
       if (textEl) await escribirConEfecto(textEl, confirmMsg, 18);
+
+      // ── PATCH: enviar Klaviyo con productos reales ─────────────
+      // Flujo: POST /report guarda el token (sin Klaviyo).
+      //        Aquí, mientras el usuario ve el mensaje de confirmación,
+      //        enviamos el PATCH con los productos actuales del quiz
+      //        (window.shatokbState.selectedProducts + SHATOKB_CATALOGO).
+      //        El PATCH actualiza KV y envía Klaviyo con datos correctos.
+      // TIMING: el efecto de escritura dura ~600ms, luego esperamos 800ms
+      //         antes de ir al carrito → hay >1.4s para completar el PATCH.
+      try {
+        // 1. Obtener token — del POST /report (guardado en window o localStorage)
+        const token = window.KOI_STATE_REPORT_TOKEN
+          || (() => { try { return localStorage.getItem('shatokb_report_token'); } catch(_) { return null; } })();
+
+        if (!token) {
+          // Si no hay token todavía, hacer el POST completo con Klaviyo directamente
+          console.warn('[KOI] Sin token para PATCH — enviando report completo con Klaviyo directo');
+          enviarSkinReport(email, { sendKlaviyoDirect: true });
+        } else {
+          // 2. Construir array de productos para el PATCH
+          // PRIORIDAD:
+          //   1. ctx.productos (KOI_STATE.contexto.productos) — SIEMPRE disponible,
+          //      contiene los productos que el quiz mostró al usuario (con nombre, precio,
+          //      paso, momento, razon). Esta es la fuente más fiable en este contexto.
+          //   2. window.shatokbState.selectedProducts + SHATOKB_CATALOGO — solo si el
+          //      catálogo está disponible (a veces no lo está si el quiz cargó tarde).
+          let productosParaPatch = [];
+
+          // — Fuente 1: ctx.productos (contexto de KOI — siempre presente) —
+          const ctxPs     = KOI_STATE.contexto?.productos || [];
+          const liveState = window.shatokbState;
+          const liveCatalog = window.SHATOKB_CATALOGO;
+
+          if (ctxPs.length > 0) {
+            // ctx.productos ya tiene nombre, precio, paso, momento, razon
+            // Solo necesitamos enriquecer con imagen desde el catálogo si está disponible
+            productosParaPatch = ctxPs.map(p => {
+              let imagen = (p.imagen && p.imagen.startsWith('http')) ? p.imagen : '';
+              // Intentar enriquecer imagen desde catálogo vivo si no la tiene
+              if (!imagen && liveCatalog?.length > 0) {
+                const cat = liveCatalog.find(c => c.id === p.id || c.handle === p.handle);
+                if (cat?.imagen && cat.imagen.startsWith('http')) imagen = cat.imagen;
+              }
+              const momento = (p.momento === 'both' || !p.momento) ? 'ambos'
+                            : (p.momento === 'am')  ? 'am'
+                            : (p.momento === 'pm')  ? 'pm'
+                            : (p.momento || 'ambos');
+              return {
+                nombre:  p.nombre  || '',
+                precio:  p.precio  || '',
+                paso:    p.paso    || '',
+                handle:  p.handle  || p.id || '',
+                momento,
+                razon:   p.razon   || '',
+                imagen,
+                url:     p.handle ? `https://shatokb.com/products/${p.handle}` : '',
+              };
+            }).filter(p => p.nombre);
+            console.log('[KOI] PATCH: usando ctx.productos —', productosParaPatch.length, 'productos');
+          }
+
+          // — Fuente 2: selectedProducts + catálogo (si el anterior dio 0) —
+          if (productosParaPatch.length === 0 && liveState?.selectedProducts && liveCatalog?.length > 0) {
+            const ctxProds  = (window.SHATOKB_RESULTADO?.productos || ctxPs);
+            const pasosMeta = {};
+            ctxProds.forEach((p, i) => {
+              pasosMeta[i] = { paso: p.paso || '', momento: p.momento || 'ambos', razon: p.razon || '' };
+            });
+            productosParaPatch = Object.entries(liveState.selectedProducts)
+              .sort(([a], [b]) => Number(a) - Number(b))
+              .map(([stepIdx, prodId]) => {
+                const prod = liveCatalog.find(c => c.id === prodId);
+                if (!prod) return null;
+                const meta    = pasosMeta[stepIdx] || {};
+                const momento = (prod.momento || meta.momento || 'both') === 'both' ? 'ambos'
+                              : (prod.momento || meta.momento || 'both') === 'am'   ? 'am'
+                              : (prod.momento || meta.momento || 'both') === 'pm'   ? 'pm' : 'ambos';
+                const imagen  = (prod.imagen && prod.imagen.startsWith('http')) ? prod.imagen : '';
+                return {
+                  nombre:  prod.nombre  || '',
+                  precio:  prod.precio  || '',
+                  paso:    meta.paso    || prod.categoria || '',
+                  handle:  prod.handle  || prod.id || '',
+                  momento,
+                  razon:   meta.razon   || prod.desc || '',
+                  imagen,
+                  url:     prod.handle ? `https://shatokb.com/products/${prod.handle}` : '',
+                };
+              })
+              .filter(Boolean);
+            console.log('[KOI] PATCH: usando selectedProducts+catálogo —', productosParaPatch.length, 'productos');
+          }
+
+          const totalPatch = productosParaPatch.reduce((s, p) => {
+            return s + (parseFloat(String(p.precio || '0').replace(/[^0-9.]/g, '')) || 0);
+          }, 0);
+
+          console.log('[KOI] Enviando PATCH /report/:token con', productosParaPatch.length, 'productos. Token:', token);
+
+          // 3. PATCH al Worker — síncrono con await, termina ANTES del setTimeout
+          const workerBase = 'https://koi-proxy.luisfonse2010.workers.dev';
+          const patchRes = await fetch(`${workerBase}/report/${token}`, {
+            method:  'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({
+              email,
+              productos:    productosParaPatch,
+              totalCarrito: parseFloat(totalPatch.toFixed(2)),
+            }),
+          });
+          const patchData = await patchRes.json();
+          if (patchData.ok) {
+            console.log('[KOI] PATCH /report exitoso ✅ | Klaviyo:', patchData.klaviyo?.ok, '| productos:', patchData.productos_count);
+          } else {
+            console.warn('[KOI] PATCH /report error:', patchData);
+            // Fallback: POST directo con Klaviyo
+            enviarSkinReport(email);
+          }
+        }
+      } catch (patchErr) {
+        console.warn('[KOI] PATCH /report falló — fallback a POST con Klaviyo directo:', patchErr.message);
+        enviarSkinReport(email, { sendKlaviyoDirect: true });
+      }
 
       setTimeout(callbackProcederAlCarrito, 800);
     }
