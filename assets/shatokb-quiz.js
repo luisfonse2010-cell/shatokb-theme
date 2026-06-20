@@ -3345,28 +3345,41 @@ async function shatokbMostrarResultado() {
       tags:        perfil.resumen      || [],
     },
     rutinaAM: pasosProd
-      .filter(p => p.momento === 'am' || p.momento === 'ambos')
+      .filter(p => p.momento === 'am' || p.momento === 'ambos' || p.momento === 'both' || !p.momento)
       .map(p => p.nombre),
     rutinaPM: pasosProd
-      .filter(p => p.momento === 'pm' || p.momento === 'ambos')
+      .filter(p => p.momento === 'pm' || p.momento === 'ambos' || p.momento === 'both' || !p.momento)
       .map(p => p.nombre),
-    // Todos los productos de cada paso (no solo el primero) con razón de selección
-    productos: pasosProd.flatMap(paso =>
-      paso.opciones.map((prod, idx) => ({
-        nombre:   prod.nombre,
-        precio:   prod.precio,
-        paso:     paso.nombre || paso.paso || '',
-        id:       prod.id,
-        handle:   prod.handle || prod.id,
-        momento:  paso.momento || 'ambos',
-        // Razón del paso (por qué este paso es importante para este perfil)
-        razon:    paso.por_que || prod.desc || '',
-        // Descripción del producto
+    // Solo el producto elegido por el usuario en cada paso
+    // (shatokbState.selectedProducts = { stepIdx: prodId })
+    productos: pasosProd.map((paso, stepIdx) => {
+      // Buscar el producto que el usuario seleccionó en este paso
+      const elegidoId = shatokbState.selectedProducts[stepIdx];
+      const prod = (elegidoId && paso.opciones.find(o => o.id === elegidoId))
+        || paso.opciones[0]; // fallback al primero si no hay selección
+      if (!prod) return null;
+
+      // Normalizar momento: el catálogo usa 'both', el skin-report espera 'ambos'
+      const momentoRaw = paso.momento || prod.momento || 'both';
+      const momento = momentoRaw === 'both' ? 'ambos'
+                    : momentoRaw === 'am'   ? 'am'
+                    : momentoRaw === 'pm'   ? 'pm'
+                    : 'ambos';
+
+      return {
+        nombre:      prod.nombre,
+        precio:      prod.precio,
+        paso:        paso.nombre || paso.paso || '',
+        id:          prod.id,
+        handle:      prod.handle || prod.id,
+        momento,
+        razon:       paso.por_que || prod.desc || '',
         descripcion: prod.desc || '',
-        // Indica si este es el producto principal (más recomendado) de este paso
-        principal: idx === 0,
-      }))
-    ),
+        // Imagen real del producto desde Shopify CDN (usada en email de Klaviyo)
+        imagen:      prod.imagen || null,
+        url:         prod.handle ? `https://shatokb.com/products/${prod.handle}` : '',
+      };
+    }).filter(Boolean),
     // Respuestas completas del quiz — KOI las usa para entender
     // el análisis de piel y tener contexto del diagnóstico
     respuestas: {

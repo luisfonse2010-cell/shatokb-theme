@@ -1422,14 +1422,8 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     //         Shopify → GET Worker /report/:token → KV ✅
     // ══════════════════════════════════════════════════════════════
 
-    // ── Campos planos para Klaviyo event.* ──────────────────────
-    const rutinasAM      = (reportData.rutinaAM || []).join('\n');
-    const rutinasPM      = (reportData.rutinaPM || []).join('\n');
-    const productosLista = (reportData.productosSeleccionados || [])
-      .map((p, i) => `${i + 1}. ${p.nombre}${p.precio ? ' — ' + p.precio : ''}${p.momento && p.momento !== 'ambos' ? ' (' + p.momento.toUpperCase() + ')' : ''}`)
-      .join('\n');
-
     // POST al Worker — guarda en KV + envía Klaviyo (silencioso)
+    // El Worker construye el array productos[] para Klaviyo directo desde reportData
     fetch(KOI_CONFIG.reportUrl, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1437,15 +1431,11 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
         email,
         reportData,
         siteUrl: KOI_CONFIG.siteUrl || 'https://shatokb.com',
-        // ── Campos planos para Klaviyo event.* ──
-        perfil_id:       perfilId,
-        perfil_nombre:   perfilNombre,
-        perfil_desc:     reportData.perfil?.descripcion || '',
-        rutina_am:       rutinasAM,
-        rutina_pm:       rutinasPM,
-        productos_lista: productosLista,
-        total_carrito:   reportData.totalCarrito        || 0,
-        idioma:          reportData.idioma              || 'en',
+        perfil_id:     perfilId,
+        perfil_nombre: perfilNombre,
+        perfil_desc:   reportData.perfil?.descripcion || '',
+        total_carrito: reportData.totalCarrito        || 0,
+        idioma:        reportData.idioma              || 'en',
       }),
     })
     .then(r => r.json())
