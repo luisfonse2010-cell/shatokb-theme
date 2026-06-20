@@ -423,30 +423,41 @@ function renderRoutine(data) {
 }
 
 async function loadProductImages(products) {
-  await Promise.all(products.map(async prod => {
-    // ── Determinar si ya tenemos una imagen CDN real ──────────────
-    // Una imagen real de Shopify CDN siempre incluye 'cdn.shopify.com'
-    // o termina con una extensión de imagen conocida.
+  console.log('[KSR] loadProductImages — total productos:', products.length);
+  await Promise.all(products.map(async (prod, i) => {
     const imgUrl = prod.imagen || '';
+    console.log(`[KSR] prod[${i}] nombre="${prod.nombre}" handle="${prod.handle}" imagen="${imgUrl}"`);
+
+    // ── Determinar si ya tenemos una imagen CDN real ──────────────
     const isRealCdnImage = imgUrl.includes('cdn.shopify.com') ||
       /\.(jpg|jpeg|png|gif|webp|avif)(\?|$)/i.test(imgUrl);
-    if (isRealCdnImage) return; // ya tiene imagen real, nada que hacer
+    if (isRealCdnImage) {
+      console.log(`[KSR] prod[${i}] → ya tiene CDN image, skip`);
+      return;
+    }
 
     // ── Determinar el handle ──────────────────────────────────────
-    // Si prod.handle está vacío pero prod.imagen es una URL de producto
-    // tipo https://shatokb.com/products/cosrx-snail-mucin,
-    // extrae el handle de esa URL.
     let handle = prod.handle || '';
     if (!handle && imgUrl.includes('/products/')) {
       const match = imgUrl.match(/\/products\/([^/?#]+)/);
-      if (match) handle = match[1];
+      if (match) { handle = match[1]; console.log(`[KSR] prod[${i}] → handle extraído de URL: "${handle}"`); }
     }
 
-    if (handle) {
-      const img = await fetchProductImage(handle);
-      if (img) prod.imagen = img;
+    if (!handle) {
+      console.warn(`[KSR] prod[${i}] "${prod.nombre}" → SIN handle y SIN URL de producto. No se puede fetchear imagen.`);
+      return;
+    }
+
+    console.log(`[KSR] prod[${i}] → fetchando /products/${handle}.js ...`);
+    const img = await fetchProductImage(handle);
+    if (img) {
+      console.log(`[KSR] prod[${i}] → imagen resuelta: ${img.substring(0,80)}`);
+      prod.imagen = img;
+    } else {
+      console.warn(`[KSR] prod[${i}] → fetchProductImage("${handle}") devolvió null`);
     }
   }));
+  console.log('[KSR] loadProductImages — COMPLETO');
 }
 
 function renderPanel(panelId, products, period) {
