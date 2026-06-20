@@ -48,6 +48,10 @@
   overflow-x: hidden;
 }
 
+/* ── CRITICAL FIX: [hidden] attribute must override any display: flex/block ── */
+/* Without this, CSS display:flex on #ksr-error overrides the HTML hidden attr  */
+[hidden] { display: none !important; }
+
 /* ── LOADING ────────────────────────────────────────────────────── */
 #ksr-loading {
   position: fixed;

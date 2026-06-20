@@ -180,7 +180,10 @@ async function fetchProductImage(handle) {
     const res = await fetch(`https://shatokb.com/products/${handle}.js`);
     if (!res.ok) return null;
     const data = await res.json();
-    return data.featured_image || (data.images && data.images[0]) || null;
+    // featured_image es una URL string; images[0] puede ser objeto {src} o string
+    const img = data.featured_image || (data.images && data.images[0]) || null;
+    if (!img) return null;
+    return typeof img === 'object' ? (img.src || null) : img;
   } catch(_) { return null; }
 }
 
@@ -237,12 +240,18 @@ function hideLoading() {
 
 function showError() {
   hideLoading();
+  // Hide content, show error
+  const contentEl = el('ksr-content');
+  if (contentEl) contentEl.setAttribute('hidden', '');
   const errEl = el('ksr-error');
   if (errEl) errEl.removeAttribute('hidden');
 }
 
 function showContent() {
   hideLoading();
+  // Hide error, show content
+  const errEl = el('ksr-error');
+  if (errEl) errEl.setAttribute('hidden', '');
   const contentEl = el('ksr-content');
   if (contentEl) contentEl.removeAttribute('hidden');
   initScrollAnimations();
@@ -415,9 +424,26 @@ function renderRoutine(data) {
 
 async function loadProductImages(products) {
   await Promise.all(products.map(async prod => {
-    if (prod.imagen && prod.imagen.startsWith('http') && !prod.imagen.includes('/products/') || prod.imagen?.includes('cdn.shopify')) return;
-    if (prod.handle) {
-      const img = await fetchProductImage(prod.handle);
+    // ── Determinar si ya tenemos una imagen CDN real ──────────────
+    // Una imagen real de Shopify CDN siempre incluye 'cdn.shopify.com'
+    // o termina con una extensión de imagen conocida.
+    const imgUrl = prod.imagen || '';
+    const isRealCdnImage = imgUrl.includes('cdn.shopify.com') ||
+      /\.(jpg|jpeg|png|gif|webp|avif)(\?|$)/i.test(imgUrl);
+    if (isRealCdnImage) return; // ya tiene imagen real, nada que hacer
+
+    // ── Determinar el handle ──────────────────────────────────────
+    // Si prod.handle está vacío pero prod.imagen es una URL de producto
+    // tipo https://shatokb.com/products/cosrx-snail-mucin,
+    // extrae el handle de esa URL.
+    let handle = prod.handle || '';
+    if (!handle && imgUrl.includes('/products/')) {
+      const match = imgUrl.match(/\/products\/([^/?#]+)/);
+      if (match) handle = match[1];
+    }
+
+    if (handle) {
+      const img = await fetchProductImage(handle);
       if (img) prod.imagen = img;
     }
   }));
@@ -702,6 +728,13 @@ async function renderReport(reportData) {
 
 /* ── INIT ───────────────────────────────────────────────────────── */
 async function ksrInit() {
+  // ── CRÍTICO: forzar error oculto INMEDIATAMENTE al arrancar ──────
+  // El CSS display:flex puede sobrescribir [hidden] si el stylesheet
+  // viejo de Shopify aún no tiene el fix [hidden]{display:none!important}.
+  // Este inline style es el escudo definitivo — tiene máxima especificidad.
+  const errElInit = document.getElementById('ksr-error');
+  if (errElInit) errElInit.style.display = 'none';
+
   const token = getParam('token');
 
   if (!token) {
