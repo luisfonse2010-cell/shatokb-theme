@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'cloudflare-worker.js'
+      - 'wrangler.toml'
   workflow_dispatch:
 
 jobs:
@@ -16,16 +17,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Install Wrangler
         run: npm install -g wrangler
-      - name: Crear wrangler.toml
-        run: |
-          printf 'name = "koi-proxy"\n' > wrangler.toml
-          printf 'main = "cloudflare-worker.js"\n' >> wrangler.toml
-          printf 'compatibility_date = "2024-01-01"\n' >> wrangler.toml
-          printf 'account_id = "%s"\n' "${{ secrets.CF_ACCOUNT_ID }}" >> wrangler.toml
-          echo "--- wrangler.toml ---"
-          cat wrangler.toml
       - name: Deploy a Cloudflare
-        run: wrangler deploy --config wrangler.toml
+        run: wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
