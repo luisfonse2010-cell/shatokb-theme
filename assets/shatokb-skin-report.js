@@ -710,42 +710,29 @@ async function ksrInit() {
   }
 
   try {
-    // Garantizar que apiBase siempre termina en '/'
-    let apiBase = window.KSR_TABLE_API || '/';
-    if (!apiBase.endsWith('/')) apiBase += '/';
+    // ══════════════════════════════════════════════════════════════
+    // ARQUITECTURA FINAL (Jun 2026):
+    // Lee el reporte desde Cloudflare KV via el Worker endpoint
+    // GET /report/:token → https://koi-proxy.luisfonse2010.workers.dev/report/:token
+    //
+    // El Worker guarda en KV cuando el usuario completa el quiz.
+    // Esta página lee desde KV para renderizar el reporte.
+    // ══════════════════════════════════════════════════════════════
 
+    const workerBase = window.KSR_WORKER_URL || 'https://koi-proxy.luisfonse2010.workers.dev';
     let record = null;
 
-    // ── Intento 1: GET directo por ID (el Worker usa el UUID del registro como token) ──
+    // ── Intento 1: GET desde Cloudflare KV via Worker ──
     try {
-      const resById = await fetch(`${apiBase}tables/skin_reports/${encodeURIComponent(token)}`);
-      if (resById.ok) {
-        const byId = await resById.json();
-        // Endpoint de registro único devuelve el objeto directamente (no envuelto en data[])
-        if (byId && (byId.id || byId.report_data)) record = byId;
+      const resKV = await fetch(`${workerBase}/report/${encodeURIComponent(token)}`);
+      if (resKV.ok) {
+        const kvData = await resKV.json();
+        if (kvData && kvData.report_data) record = kvData;
+      } else {
+        console.warn('[KSR] Worker KV response:', resKV.status);
       }
-    } catch (_) { /* silencioso — pasa al intento 2 */ }
-
-    // ── Intento 2: búsqueda por campo token exacto ──
-    if (!record) {
-      const resByToken = await fetch(`${apiBase}tables/skin_reports?search=${encodeURIComponent(token)}&limit=1`);
-      if (resByToken.ok) {
-        const jsonToken = await resByToken.json();
-        const found = jsonToken.data && jsonToken.data.find(r =>
-          r.token === token || r.id === token
-        );
-        if (found) record = found;
-      }
-    }
-
-    // ── Intento 3: búsqueda amplia (fallback final) ──
-    if (!record) {
-      const resSearch = await fetch(`${apiBase}tables/skin_reports?limit=100`);
-      if (resSearch.ok) {
-        const jsonSearch = await resSearch.json();
-        const all = jsonSearch.data || [];
-        record = all.find(r => r.token === token || r.id === token) || null;
-      }
+    } catch (e) {
+      console.warn('[KSR] Worker KV fetch error:', e.message);
     }
 
     if (!record) {
