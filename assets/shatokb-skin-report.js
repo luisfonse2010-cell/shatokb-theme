@@ -324,11 +324,87 @@ function renderDiagnosis(data) {
   }
   if (secEl) secEl.removeAttribute('hidden');
 
-  // KOI message
-  const msgEl = el('ksr-mensaje-koi');
-  if (msgEl && vision.mensaje_koi) msgEl.textContent = vision.mensaje_koi;
+  // ── Reemplazar contenido completo con sección premium ──────────
+  // Buscar el contenedor de diagnosis y vaciarlo para rediseñar
+  const diagContainer = secEl ? secEl.querySelector('.ksr-section__body') || secEl : secEl;
 
-  // Scores
+  // Calcular grado global
+  const sg = typeof vision.score_global === 'number' ? vision.score_global : null;
+  function _ksrGrade(s) {
+    if (s === null) return '—';
+    if (s >= 9) return 'A+'; if (s >= 8) return 'A';
+    if (s >= 7) return 'B+'; if (s >= 6) return 'B';
+    if (s >= 5) return 'C+'; if (s >= 4) return 'C';
+    return 'D';
+  }
+  function _ksrScoreColor(s) {
+    if (s === null) return '#a89ea6';
+    if (s >= 8) return '#4caf7d';
+    if (s >= 6) return '#84cc16';
+    if (s >= 4) return '#f59e0b';
+    return '#ef4444';
+  }
+  function _ksrScoreLabel(s) {
+    if (s === null) return '';
+    if (s >= 8) return 'Excellent condition';
+    if (s >= 6) return 'Good condition';
+    if (s >= 4) return 'Areas to improve';
+    return 'Needs urgent attention';
+  }
+
+  // ── 1. MENSAJE KOI — Sección estrella ──────────────────────────
+  const msgEl = el('ksr-mensaje-koi');
+  if (msgEl && vision.mensaje_koi) {
+    // Reemplazar el elemento con diseño nuevo
+    const msgParent = msgEl.parentElement;
+    msgEl.style.display = 'none';
+
+    // Insertar nueva card premium de mensaje KOI
+    const koiMsgCard = document.createElement('div');
+    koiMsgCard.className = 'ksr-koi-msg-card ksr-animate-in';
+    koiMsgCard.innerHTML = `
+      <div class="ksr-koi-msg-card__header">
+        <div class="ksr-koi-msg-card__avatar">
+          <span>🌸</span>
+        </div>
+        <div class="ksr-koi-msg-card__meta">
+          <div class="ksr-koi-msg-card__name">KOI · Personal Analysis</div>
+          <div class="ksr-koi-msg-card__badge">
+            <span class="ksr-koi-msg-card__dot"></span>
+            AI · K-Beauty Specialist
+          </div>
+        </div>
+        ${sg !== null ? `
+        <div class="ksr-koi-msg-card__score-pill" style="--score-color:${_ksrScoreColor(sg)}">
+          <span class="ksr-koi-msg-card__score-num">${sg.toFixed(1)}</span>
+          <span class="ksr-koi-msg-card__score-grade">${_ksrGrade(sg)}</span>
+        </div>` : ''}
+      </div>
+      <blockquote class="ksr-koi-msg-card__quote">
+        ${escHtml(vision.mensaje_koi)}
+      </blockquote>
+      ${sg !== null ? `
+      <div class="ksr-koi-msg-card__score-bar-row">
+        <span class="ksr-koi-msg-card__score-label">${_ksrScoreLabel(sg)}</span>
+        <div class="ksr-koi-msg-card__score-track">
+          <div class="ksr-koi-msg-card__score-fill" data-pct="${(sg/10)*100}" style="background:${_ksrScoreColor(sg)}"></div>
+        </div>
+        <span class="ksr-koi-msg-card__score-val">${sg.toFixed(1)}/10</span>
+      </div>` : ''}
+    `;
+    if (msgParent) {
+      msgParent.insertBefore(koiMsgCard, msgEl);
+    } else if (diagContainer) {
+      diagContainer.insertBefore(koiMsgCard, diagContainer.firstChild);
+    }
+    // Animar barra del score
+    setTimeout(() => {
+      const fill = koiMsgCard.querySelector('.ksr-koi-msg-card__score-fill');
+      if (fill) fill.style.width = fill.dataset.pct + '%';
+    }, 500);
+  }
+
+  // ── 2. SCORES GRID ──────────────────────────────────────────────
   const gridEl = el('ksr-scores-grid');
   if (gridEl && vision.dimensiones) {
     gridEl.innerHTML = '';
@@ -337,19 +413,21 @@ function renderDiagnosis(data) {
       const meta = KSR_SCORE_META[key] || { icon: '📊', name: key };
       const scoreVal = typeof dim.score === 'number' ? dim.score : 0;
       const pct = (scoreVal / 10) * 100;
+      const col = _ksrScoreColor(scoreVal);
       gridEl.innerHTML += `
         <div class="ksr-score-card ksr-animate-in">
-          <div class="ksr-score-card__icon">${meta.icon}</div>
+          <div class="ksr-score-card__top">
+            <div class="ksr-score-card__icon">${meta.icon}</div>
+            <div class="ksr-score-card__val-badge" style="color:${col}">${scoreVal}/10</div>
+          </div>
           <div class="ksr-score-card__name">${meta.name}</div>
           <div class="ksr-score-card__label">${escHtml(dim.label || '')}</div>
           <div class="ksr-score-card__bar-wrap">
-            <div class="ksr-score-card__bar" data-pct="${pct}"></div>
+            <div class="ksr-score-card__bar" data-pct="${pct}" style="background:linear-gradient(90deg,${col}99,${col})"></div>
           </div>
-          <div class="ksr-score-card__val">${scoreVal}/10</div>
           <div class="ksr-score-card__detail">${escHtml(dim.detalle || '')}</div>
         </div>`;
     });
-    // Animate bars after paint
     setTimeout(() => {
       document.querySelectorAll('.ksr-score-card__bar').forEach(bar => {
         bar.style.width = bar.dataset.pct + '%';
@@ -357,7 +435,7 @@ function renderDiagnosis(data) {
     }, 400);
   }
 
-  // Zones
+  // ── 3. ZONES ────────────────────────────────────────────────────
   const zonesEl = el('ksr-zones');
   if (zonesEl && vision.zonas) {
     zonesEl.innerHTML = '';
@@ -375,7 +453,7 @@ function renderDiagnosis(data) {
     });
   }
 
-  // Critical points
+  // ── 4. CRITICAL POINTS ──────────────────────────────────────────
   const critEl = el('ksr-critical');
   if (critEl && vision.puntos_criticos && vision.puntos_criticos.length) {
     critEl.innerHTML = `<div class="ksr-critical__title">🔍 Critical Observations</div>`;
@@ -390,12 +468,49 @@ function renderDiagnosis(data) {
     critEl.style.display = 'none';
   }
 
-  // Urgent protocol
+  // ── 5. URGENT PROTOCOL ──────────────────────────────────────────
   if (vision.protocolo_urgente) {
     const urgEl = el('ksr-urgent');
     if (urgEl) urgEl.removeAttribute('hidden');
     const urgTextEl = el('ksr-urgent-text');
     if (urgTextEl) urgTextEl.textContent = vision.protocolo_urgente;
+  }
+
+  // ── 6. METADATA: Edad biológica + Ajuste de perfil ──────────────
+  // Crear el contenedor si no existe en el HTML
+  let metaContainer = el('ksr-vision-meta');
+  if (!metaContainer && secEl) {
+    metaContainer = document.createElement('div');
+    metaContainer.id = 'ksr-vision-meta';
+    metaContainer.className = 'ksr-vmeta-grid ksr-animate-in';
+    secEl.appendChild(metaContainer);
+  }
+  if (metaContainer) {
+    metaContainer.innerHTML = '';
+    if (vision.edad_biologica_estimada) {
+      metaContainer.innerHTML += `
+        <div class="ksr-vmeta-item">
+          <span class="ksr-vmeta-item__icon">🔬</span>
+          <div>
+            <div class="ksr-vmeta-item__label">Estimated Biological Age</div>
+            <div class="ksr-vmeta-item__val">${escHtml(vision.edad_biologica_estimada)}</div>
+          </div>
+        </div>`;
+    }
+    const perfilOk = vision.confirmacion_perfil;
+    const ajuste   = vision.ajuste_perfil;
+    const ajusteId = typeof ajuste === 'object' ? (ajuste?.nuevo_perfil_id || '') : (ajuste || '');
+    if (ajusteId && ajusteId !== 'null') {
+      metaContainer.innerHTML += `
+        <div class="ksr-vmeta-item">
+          <span class="ksr-vmeta-item__icon">${perfilOk ? '✅' : '⚠️'}</span>
+          <div>
+            <div class="ksr-vmeta-item__label">${perfilOk ? 'Profile Confirmed' : 'Profile Adjustment Detected'}</div>
+            <div class="ksr-vmeta-item__val">${escHtml(ajusteId)}</div>
+          </div>
+        </div>`;
+    }
+    if (!metaContainer.innerHTML) metaContainer.style.display = 'none';
   }
 }
 
