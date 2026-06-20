@@ -217,7 +217,7 @@ function getWaitTime(product) {
 }
 
 function getMomentoLabel(momento) {
-  if (!momento || momento === 'ambos') return 'AM + PM';
+  if (!momento || momento === 'ambos' || momento === 'both') return 'AM + PM';
   if (momento === 'am') return 'Morning';
   if (momento === 'pm') return 'Evening';
   return momento.toUpperCase();
@@ -518,8 +518,8 @@ function renderDiagnosis(data) {
 function renderRoutine(data) {
   const prods = data.productosSeleccionados || [];
 
-  const amProducts = prods.filter(p => p.momento === 'am' || p.momento === 'ambos' || !p.momento);
-  const pmProducts = prods.filter(p => p.momento === 'pm' || p.momento === 'ambos');
+  const amProducts = prods.filter(p => p.momento === 'am' || p.momento === 'ambos' || p.momento === 'both' || !p.momento);
+  const pmProducts = prods.filter(p => p.momento === 'pm' || p.momento === 'ambos' || p.momento === 'both' || !p.momento);
 
   renderPanel('ksr-panel-am', amProducts, 'am');
   renderPanel('ksr-panel-pm', pmProducts, 'pm');
