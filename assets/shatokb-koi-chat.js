@@ -1369,22 +1369,35 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     };
 
     const perfilId     = ctx.perfil?.id     || '';
-    const perfilNombre = ctx.perfil?.nombre || PERFIL_NOMBRES[perfilId] || perfilId || '';
+    // SIEMPRE usar el mapa de nombres bonitos primero — ctx.perfil.nombre puede
+    // contener el título largo ('The Deep Hydration Protocol') o incluso el ID raw.
+    const perfilNombre = PERFIL_NOMBRES[perfilId] || ctx.perfil?.nombre || perfilId || '';
 
     // Construir los productos seleccionados actualmente
     // (los que el usuario eligió en los cards de la rutina)
-    const productosSeleccionados = (ctx.productos || []).map(p => ({
-      nombre:  p.nombre,
-      precio:  p.precio,
-      paso:    p.paso,
-      id:      p.id,
-      handle:  p.handle  || '',
-      momento: p.momento || 'ambos',
-      razon:   p.razon   || '',
-      // Imagen: construida desde el handle de Shopify
-      imagen:  p.imagen  || (p.handle ? `https://shatokb.com/products/${p.handle}` : ''),
-      url:     p.handle  ? `https://shatokb.com/products/${p.handle}` : '',
-    }));
+    const productosSeleccionados = (ctx.productos || []).map(p => {
+      // Imagen: preferir URL real del CDN de Shopify (p.imagen viene de p.images[0].src
+      // cuando el catálogo se carga desde la API). Si es nula, intentar desde el catálogo
+      // global. NUNCA usar la URL de la página del producto como imagen.
+      let imagenFinal = p.imagen || null;
+      if (!imagenFinal || !imagenFinal.startsWith('http')) {
+        // Buscar en catálogo global si está disponible
+        const catProd = window.SHATOKB_CATALOGO?.find(c => c.id === p.id || c.handle === p.handle);
+        imagenFinal = catProd?.imagen || null;
+      }
+
+      return {
+        nombre:  p.nombre  || '',
+        precio:  p.precio  || '',
+        paso:    p.paso    || '',
+        id:      p.id      || '',
+        handle:  p.handle  || '',
+        momento: p.momento || 'ambos',
+        razon:   p.razon   || '',
+        imagen:  imagenFinal || '',   // URL CDN real o vacío (jamás URL de página)
+        url:     p.handle ? `https://shatokb.com/products/${p.handle}` : '',
+      };
+    });
 
     const reportData = {
       email,
@@ -1394,8 +1407,30 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
         descripcion: ctx.perfil?.descripcion || '',
         tags:        ctx.perfil?.tags        || [],
       },
-      rutinaAM:              ctx.rutinaAM  || [],
-      rutinaPM:              ctx.rutinaPM  || [],
+      // rutinaAM/PM: preferir nombres de PRODUCTOS seleccionados (más descriptivos
+      // para el email Klaviyo). ctx.rutinaAM son los nombres del paso del perfil
+      // (ej. 'Cleanser', 'Hydrating Toner') — útiles como fallback.
+      // Los nombres de producto vienen de productosSeleccionados ya construido arriba.
+      rutinaAM: productosSeleccionados
+        .filter(p => p.momento === 'am' || p.momento === 'ambos' || p.momento === 'both' || !p.momento)
+        .map(p => p.nombre)
+        .filter(Boolean)
+        .length > 0
+          ? productosSeleccionados
+              .filter(p => p.momento === 'am' || p.momento === 'ambos' || p.momento === 'both' || !p.momento)
+              .map(p => p.nombre)
+              .filter(Boolean)
+          : (ctx.rutinaAM || []),
+      rutinaPM: productosSeleccionados
+        .filter(p => p.momento === 'pm' || p.momento === 'ambos' || p.momento === 'both')
+        .map(p => p.nombre)
+        .filter(Boolean)
+        .length > 0
+          ? productosSeleccionados
+              .filter(p => p.momento === 'pm' || p.momento === 'ambos' || p.momento === 'both')
+              .map(p => p.nombre)
+              .filter(Boolean)
+          : (ctx.rutinaPM || []),
       productosSeleccionados,
       totalCarrito:          ctx.totalCarrito || 0,
       presupuesto:           ctx.presupuesto  || '',
