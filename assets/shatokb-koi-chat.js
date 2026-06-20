@@ -1373,31 +1373,106 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     // contener el título largo ('The Deep Hydration Protocol') o incluso el ID raw.
     const perfilNombre = PERFIL_NOMBRES[perfilId] || ctx.perfil?.nombre || perfilId || '';
 
-    // Construir los productos seleccionados actualmente
-    // (los que el usuario eligió en los cards de la rutina)
-    const productosSeleccionados = (ctx.productos || []).map(p => {
-      // Imagen: preferir URL real del CDN de Shopify (p.imagen viene de p.images[0].src
-      // cuando el catálogo se carga desde la API). Si es nula, intentar desde el catálogo
-      // global. NUNCA usar la URL de la página del producto como imagen.
-      let imagenFinal = p.imagen || null;
-      if (!imagenFinal || !imagenFinal.startsWith('http')) {
-        // Buscar en catálogo global si está disponible
-        const catProd = window.SHATOKB_CATALOGO?.find(c => c.id === p.id || c.handle === p.handle);
-        imagenFinal = catProd?.imagen || null;
-      }
+    // ══════════════════════════════════════════════════════════════
+    // PRODUCTOS EN VIVO — fuente de verdad: window.shatokbState.selectedProducts
+    // ══════════════════════════════════════════════════════════════
+    // ctx.productos es una snapshot del momento en que terminó el quiz
+    // (antes de que el usuario cambie su selección en los cards).
+    // shatokbState.selectedProducts se actualiza cada vez que el usuario
+    // hace clic en "Add to my routine" — es exactamente lo mismo que
+    // va al carrito. Lo usamos como fuente autoritativa.
+    //
+    // Estrategia 1 (preferida): reconstruir desde shatokbState.selectedProducts
+    //   → cada stepIdx tiene el prodId elegido → buscar en SHATOKB_CATALOGO
+    //   → obtener nombre, precio, imagen CDN, handle, momento, paso
+    //
+    // Estrategia 2 (fallback): usar ctx.productos (snapshot del quiz)
+    //   → solo si no hay catálogo global disponible
+    // ══════════════════════════════════════════════════════════════
 
-      return {
-        nombre:  p.nombre  || '',
-        precio:  p.precio  || '',
-        paso:    p.paso    || '',
-        id:      p.id      || '',
-        handle:  p.handle  || '',
-        momento: p.momento || 'ambos',
-        razon:   p.razon   || '',
-        imagen:  imagenFinal || '',   // URL CDN real o vacío (jamás URL de página)
-        url:     p.handle ? `https://shatokb.com/products/${p.handle}` : '',
-      };
-    });
+    let productosSeleccionados = [];
+
+    const liveState  = window.shatokbState;
+    const liveCatalog = window.SHATOKB_CATALOGO;
+    const liveResult  = window.SHATOKB_RESULTADO; // tiene pasosProd con paso.nombre y paso.momento
+
+    if (liveState?.selectedProducts && liveCatalog?.length > 0) {
+      // ── Estrategia 1: reconstruir desde el estado vivo ────────────
+      // Necesitamos el orden y los metadatos del paso (nombre del paso,
+      // momento AM/PM, razon) → vienen de ctx.productos o de SHATOKB_RESULTADO
+      const ctxProds  = (liveResult?.productos || ctx.productos || []);
+      const pasosMeta = {}; // stepIdx → { paso, momento, razon }
+      ctxProds.forEach((p, i) => {
+        pasosMeta[i] = { paso: p.paso || '', momento: p.momento || 'ambos', razon: p.razon || '' };
+      });
+
+      productosSeleccionados = Object.entries(liveState.selectedProducts)
+        .sort(([a], [b]) => Number(a) - Number(b)) // mantener orden de pasos
+        .map(([stepIdx, prodId]) => {
+          const prod = liveCatalog.find(c => c.id === prodId);
+          if (!prod) return null;
+
+          // Momento: del catálogo → normalizar 'both' → 'ambos'
+          const meta       = pasosMeta[stepIdx] || {};
+          const momentoRaw = prod.momento || meta.momento || 'both';
+          const momento    = momentoRaw === 'both' ? 'ambos'
+                           : momentoRaw === 'am'   ? 'am'
+                           : momentoRaw === 'pm'   ? 'pm'
+                           : 'ambos';
+
+          // Imagen: la que viene del catálogo (Shopify product API → images[0].src)
+          const imagen = (prod.imagen && prod.imagen.startsWith('http')) ? prod.imagen : '';
+
+          return {
+            nombre:  prod.nombre  || '',
+            precio:  prod.precio  || '',
+            paso:    meta.paso    || prod.categoria || '',
+            id:      prod.id      || '',
+            handle:  prod.handle  || prod.id || '',
+            momento,
+            razon:   meta.razon   || prod.desc || '',
+            imagen,
+            url:     prod.handle ? `https://shatokb.com/products/${prod.handle}` : '',
+          };
+        })
+        .filter(Boolean);
+
+      console.log('[KOI] enviarSkinReport — productos EN VIVO desde shatokbState:', productosSeleccionados.length);
+    } else {
+      // ── Estrategia 2 (fallback): usar snapshot de ctx.productos ───
+      console.log('[KOI] enviarSkinReport — fallback a ctx.productos (catálogo no disponible)');
+      productosSeleccionados = (ctx.productos || []).map(p => {
+        // Intentar enriquecer la imagen desde el catálogo si está disponible
+        let imagen = (p.imagen && p.imagen.startsWith('http')) ? p.imagen : '';
+        if (!imagen && liveCatalog?.length > 0) {
+          const cat = liveCatalog.find(c => c.id === p.id || c.handle === p.handle);
+          if (cat?.imagen && cat.imagen.startsWith('http')) imagen = cat.imagen;
+        }
+        return {
+          nombre:  p.nombre  || '',
+          precio:  p.precio  || '',
+          paso:    p.paso    || '',
+          id:      p.id      || '',
+          handle:  p.handle  || '',
+          momento: p.momento || 'ambos',
+          razon:   p.razon   || '',
+          imagen,
+          url:     p.handle ? `https://shatokb.com/products/${p.handle}` : '',
+        };
+      });
+    }
+
+    // Total en vivo: sumar precios de los productos elegidos realmente
+    const totalCarritoVivo = productosSeleccionados.reduce((sum, p) => {
+      const num = parseFloat(String(p.precio).replace(/[^0-9.]/g, '')) || 0;
+      return sum + num;
+    }, 0);
+
+    // Rutinas AM/PM: nombres de los productos elegidos, filtrados por momento
+    const isAM = p => p.momento === 'am' || p.momento === 'ambos' || !p.momento;
+    const isPM = p => p.momento === 'pm' || p.momento === 'ambos';
+    const rutinaAMvivo = productosSeleccionados.filter(isAM).map(p => p.nombre).filter(Boolean);
+    const rutinaPMvivo = productosSeleccionados.filter(isPM).map(p => p.nombre).filter(Boolean);
 
     const reportData = {
       email,
@@ -1407,32 +1482,10 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
         descripcion: ctx.perfil?.descripcion || '',
         tags:        ctx.perfil?.tags        || [],
       },
-      // rutinaAM/PM: preferir nombres de PRODUCTOS seleccionados (más descriptivos
-      // para el email Klaviyo). ctx.rutinaAM son los nombres del paso del perfil
-      // (ej. 'Cleanser', 'Hydrating Toner') — útiles como fallback.
-      // Los nombres de producto vienen de productosSeleccionados ya construido arriba.
-      rutinaAM: productosSeleccionados
-        .filter(p => p.momento === 'am' || p.momento === 'ambos' || p.momento === 'both' || !p.momento)
-        .map(p => p.nombre)
-        .filter(Boolean)
-        .length > 0
-          ? productosSeleccionados
-              .filter(p => p.momento === 'am' || p.momento === 'ambos' || p.momento === 'both' || !p.momento)
-              .map(p => p.nombre)
-              .filter(Boolean)
-          : (ctx.rutinaAM || []),
-      rutinaPM: productosSeleccionados
-        .filter(p => p.momento === 'pm' || p.momento === 'ambos' || p.momento === 'both')
-        .map(p => p.nombre)
-        .filter(Boolean)
-        .length > 0
-          ? productosSeleccionados
-              .filter(p => p.momento === 'pm' || p.momento === 'ambos' || p.momento === 'both')
-              .map(p => p.nombre)
-              .filter(Boolean)
-          : (ctx.rutinaPM || []),
+      rutinaAM: rutinaAMvivo.length > 0 ? rutinaAMvivo : (ctx.rutinaAM || []),
+      rutinaPM: rutinaPMvivo.length > 0 ? rutinaPMvivo : (ctx.rutinaPM || []),
       productosSeleccionados,
-      totalCarrito:          ctx.totalCarrito || 0,
+      totalCarrito: totalCarritoVivo || ctx.totalCarrito || 0,
       presupuesto:           ctx.presupuesto  || '',
       experiencia:           ctx.experiencia  || '',
       idioma:                detectarIdioma(),
