@@ -1087,7 +1087,8 @@ async function ksrInit() {
           });
           const handlesReporte = productosReporte.map(p => p.handle).sort().join(',');
           const handlesCarrito = productosCarrito.map(p => p.handle).sort().join(',');
-          if (handlesCarrito !== handlesReporte || !reportData.productos_actualizados) {
+          console.log('[KSR] Carrito real:', handlesCarrito, '| Reporte tenía:', handlesReporte);
+          if (true) { // siempre usar carrito como fuente de verdad
             reportData.productosSeleccionados = productosCarrito;
             const isAM = p => p.momento === 'am' || p.momento === 'ambos' || !p.momento;
             const isPM = p => p.momento === 'pm' || p.momento === 'ambos';
