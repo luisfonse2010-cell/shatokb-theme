@@ -653,11 +653,29 @@ function renderDiagnosis(data) {
 }
 
 /* ── RENDER ROUTINE ─────────────────────────────────────────────── */
+/* Orden correcto de aplicación por categoría de producto */
+function getStepOrder(product) {
+  const txt = ((product.nombre || '') + ' ' + (product.paso || '')).toLowerCase();
+  if (/clean|wash|foam|cleanse|limpiador/.test(txt))                              return 1;
+  if (/toner|tónico|tonic/.test(txt))                                             return 2;
+  if (/essence|esencia|first.?care/.test(txt))                                    return 3;
+  if (/serum|sérum|ampul|ampoule|booster|vitamin.?c|niacinamide|retinol/.test(txt)) return 4;
+  if (/eye.?cream|contorno|ojo/.test(txt))                                        return 5;
+  if (/moisturizer|cream|crema|gel.?cream|lotion|hydrat/.test(txt))               return 6;
+  if (/\boil\b|aceite|face.?oil/.test(txt))                                       return 7;
+  if (/spf|sunscreen|sun.?care|solar|protector/.test(txt))                        return 99; // siempre último en AM
+  return 8; // cualquier otro producto va antes del SPF
+}
+
 function renderRoutine(data) {
   const prods = data.productosSeleccionados || [];
 
-  const amProducts = prods.filter(p => p.momento === 'am' || p.momento === 'ambos' || p.momento === 'both' || !p.momento);
-  const pmProducts = prods.filter(p => p.momento === 'pm' || p.momento === 'ambos' || p.momento === 'both' || !p.momento);
+  const amProducts = prods
+    .filter(p => p.momento === 'am' || p.momento === 'ambos' || p.momento === 'both' || !p.momento)
+    .sort((a, b) => getStepOrder(a) - getStepOrder(b));
+  const pmProducts = prods
+    .filter(p => p.momento === 'pm' || p.momento === 'ambos' || p.momento === 'both' || !p.momento)
+    .sort((a, b) => getStepOrder(a) - getStepOrder(b));
 
   renderPanel('ksr-panel-am', amProducts, 'am');
   renderPanel('ksr-panel-pm', pmProducts, 'pm');
