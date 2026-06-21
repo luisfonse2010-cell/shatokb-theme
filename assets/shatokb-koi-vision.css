@@ -1,24 +1,38 @@
 /**
  * ============================================================
- * SHATOKB · KOI Vision — BioScan UI  v4.0
+ * SHATOKB · KOI Vision — BioScan UI  v5.0
  * assets/shatokb-koi-vision.css
  *
- * v4.0 — KOI BioScan: Korean clinical scanner aesthetic
- *        Grid holográfico · Scan line · Targeting corners
- *        Countdown automático · Confirm screen · Sin óvalo
+ * v5.0 — "Clinical AI Scanner" — Experiencia sin precedente
+ *   • Facial mesh 68 puntos conectados (posicionado en %)
+ *   • Termografía falsa por zona (frente/pómulos/nariz/barbilla)
+ *   • Brackets de zona con label ANALYZING... animado
+ *   • Línea de scan horizontal por zona (sincronizada con countdown)
+ *   • HUD cockpit: prefijos SYS:// BIO:// SCAN://
+ *   • ECG lateral "SKIN FREQ." animado
+ *   • DNA helix en esquina inferior
+ *   • Glitch RGB en captura (3 layers: R/G/B)
+ *   • Confirm screen rediseñada: wireframe + terminal médica
+ *   • Barra de progreso de zona 1/5 → 5/5
  * ============================================================
  */
 
+/* ── Fuente monospace para HUD ─────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
 :root {
-  --kv-bg:        #020008;
-  --kv-pink:      #ff6eb4;
-  --kv-pink-dim:  rgba(255,110,180,0.55);
-  --kv-cyan:      #00ffe7;
-  --kv-cyan-dim:  rgba(0,255,231,0.40);
-  --kv-blue:      #4488ff;
-  --kv-green:     #00ff88;
-  --kv-yellow:    #ffe44d;
-  --kv-white:     #ffffff;
+  --kv-bg:          #020008;
+  --kv-pink:        #ff6eb4;
+  --kv-pink-dim:    rgba(255,110,180,0.55);
+  --kv-cyan:        #00ffe7;
+  --kv-cyan-dim:    rgba(0,255,231,0.40);
+  --kv-blue:        #4488ff;
+  --kv-green:       #00ff88;
+  --kv-yellow:      #ffe44d;
+  --kv-orange:      #ff9944;
+  --kv-red:         #ff4466;
+  --kv-white:       #ffffff;
+  --kv-mono:        'Share Tech Mono', 'Courier New', monospace;
   --kv-ease-spring: cubic-bezier(0.34,1.56,0.64,1);
   --kv-ease-out:    cubic-bezier(0.25,0.46,0.45,0.94);
 }
@@ -40,7 +54,6 @@
   padding: 0;
   box-sizing: border-box;
 }
-
 #koi-vision-modal.kv--active {
   opacity: 1;
   pointer-events: all;
@@ -71,15 +84,13 @@
   align-items: center;
   justify-content: space-between;
   padding: 48px 18px 14px;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, transparent 100%);
+  background: linear-gradient(to bottom, rgba(0,0,0,0.80) 0%, transparent 100%);
 }
-
 .kv-header__koi {
   display: flex;
   align-items: center;
   gap: 9px;
 }
-
 .kv-header__avatar {
   width: 30px;
   height: 30px;
@@ -117,6 +128,7 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   margin-top: 1px;
+  font-family: var(--kv-mono);
 }
 .kv-header__badge {
   font-size: 9px;
@@ -128,13 +140,13 @@
   border-radius: 50px;
   letter-spacing: 0.10em;
   text-transform: uppercase;
+  font-family: var(--kv-mono);
   animation: kvBadgePulse 2s ease-in-out infinite;
 }
 @keyframes kvBadgePulse {
   0%,100% { opacity: 0.75; }
   50%     { opacity: 1; box-shadow: 0 0 10px rgba(0,255,231,0.30); }
 }
-
 .kv-close-btn {
   width: 32px;
   height: 32px;
@@ -173,7 +185,6 @@
   background: #000;
 }
 .kv-loading-state.kv--active { display: flex; }
-
 .kv-spinner {
   width: 56px;
   height: 56px;
@@ -201,12 +212,12 @@
 }
 @keyframes kvSpinA { to { transform: rotate(360deg); } }
 @keyframes kvSpinB { to { transform: rotate(360deg); } }
-
 .kv-loading-state__text {
   font-size: 12px;
   color: rgba(255,255,255,0.50);
   font-weight: 600;
   letter-spacing: 0.06em;
+  font-family: var(--kv-mono);
   animation: kvTextBlink 1.5s ease-in-out infinite;
 }
 @keyframes kvTextBlink {
@@ -233,7 +244,6 @@
   transform: scaleX(-1);
   display: block;
 }
-
 #koi-vision-canvas { display: none; }
 
 /* Viñeta oscura en bordes */
@@ -247,7 +257,7 @@
 }
 
 /* ══════════════════════════════════════════════════════════
-   GRID HOLOGRÁFICO — CSS puro, GPU-accelerated
+   GRID HOLOGRÁFICO
    ══════════════════════════════════════════════════════════ */
 .kv-bioscan-grid {
   position: absolute;
@@ -255,18 +265,18 @@
   z-index: 3;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(0,255,231,0.055) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,255,231,0.055) 1px, transparent 1px);
+    linear-gradient(rgba(0,255,231,0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,231,0.045) 1px, transparent 1px);
   background-size: 40px 40px;
   animation: kvGridPulse 4s ease-in-out infinite;
 }
 @keyframes kvGridPulse {
-  0%,100% { opacity: 0.6; }
+  0%,100% { opacity: 0.5; }
   50%     { opacity: 1; }
 }
 
 /* ══════════════════════════════════════════════════════════
-   LÍNEA DE SCAN PRINCIPAL — el efecto más icónico
+   LÍNEA DE SCAN PRINCIPAL
    ══════════════════════════════════════════════════════════ */
 .kv-bioscan-line {
   position: absolute;
@@ -291,13 +301,11 @@
   top: 0;
 }
 @keyframes kvBioScanLine {
-  0%   { top: 5%;   opacity: 0; }
+  0%   { top: 5%;  opacity: 0; }
   5%   { opacity: 1; }
   95%  { opacity: 1; }
-  100% { top: 95%;  opacity: 0; }
+  100% { top: 95%; opacity: 0; }
 }
-
-/* Segunda línea de scan con delay */
 .kv-bioscan-line-2 {
   position: absolute;
   left: 0; right: 0;
@@ -318,7 +326,7 @@
 }
 
 /* ══════════════════════════════════════════════════════════
-   CORNERS DE TARGETING — reemplazan el óvalo
+   TARGETING CORNERS
    ══════════════════════════════════════════════════════════ */
 .kv-corners {
   position: absolute;
@@ -326,7 +334,6 @@
   z-index: 11;
   pointer-events: none;
 }
-
 .kv-corner {
   position: absolute;
   width: 32px;
@@ -335,43 +342,18 @@
   border-style: solid;
   transition: all 0.5s var(--kv-ease-spring);
 }
+.kv-corner--tl { top: 18%; left: 12%;  border-width: 2px 0 0 2px; border-radius: 4px 0 0 0; box-shadow: -2px -2px 8px rgba(0,255,231,0.5); }
+.kv-corner--tr { top: 18%; right: 12%; border-width: 2px 2px 0 0; border-radius: 0 4px 0 0; box-shadow: 2px -2px 8px rgba(0,255,231,0.5); }
+.kv-corner--bl { bottom: 28%; left: 12%;  border-width: 0 0 2px 2px; border-radius: 0 0 0 4px; box-shadow: -2px 2px 8px rgba(0,255,231,0.5); }
+.kv-corner--br { bottom: 28%; right: 12%; border-width: 0 2px 2px 0; border-radius: 0 0 4px 0; box-shadow: 2px 2px 8px rgba(0,255,231,0.5); }
 
-.kv-corner--tl {
-  top: 18%; left: 12%;
-  border-width: 2px 0 0 2px;
-  border-radius: 4px 0 0 0;
-  box-shadow: -2px -2px 8px rgba(0,255,231,0.5);
-}
-.kv-corner--tr {
-  top: 18%; right: 12%;
-  border-width: 2px 2px 0 0;
-  border-radius: 0 4px 0 0;
-  box-shadow: 2px -2px 8px rgba(0,255,231,0.5);
-}
-.kv-corner--bl {
-  bottom: 28%; left: 12%;
-  border-width: 0 0 2px 2px;
-  border-radius: 0 0 0 4px;
-  box-shadow: -2px 2px 8px rgba(0,255,231,0.5);
-}
-.kv-corner--br {
-  bottom: 28%; right: 12%;
-  border-width: 0 2px 2px 0;
-  border-radius: 0 0 4px 0;
-  box-shadow: 2px 2px 8px rgba(0,255,231,0.5);
-}
+/* LOCK — se contraen, viran a verde */
+.kv-corners.kv--lock .kv-corner              { border-color: var(--kv-green); box-shadow: 0 0 12px rgba(0,255,136,0.7); }
+.kv-corners.kv--lock .kv-corner--tl          { top: 22%;    left: 18%; }
+.kv-corners.kv--lock .kv-corner--tr          { top: 22%;    right: 18%; }
+.kv-corners.kv--lock .kv-corner--bl          { bottom: 32%; left: 18%; }
+.kv-corners.kv--lock .kv-corner--br          { bottom: 32%; right: 18%; }
 
-/* Estado LOCK — corners se contraen, cambian a verde */
-.kv-corners.kv--lock .kv-corner {
-  border-color: var(--kv-green);
-  box-shadow: 0 0 12px rgba(0,255,136,0.7);
-}
-.kv-corners.kv--lock .kv-corner--tl { top: 22%;    left: 18%;  }
-.kv-corners.kv--lock .kv-corner--tr { top: 22%;    right: 18%; }
-.kv-corners.kv--lock .kv-corner--bl { bottom: 32%; left: 18%;  }
-.kv-corners.kv--lock .kv-corner--br { bottom: 32%; right: 18%; }
-
-/* Animación pulso en las esquinas */
 .kv-corner::after {
   content: '';
   position: absolute;
@@ -386,19 +368,278 @@
 .kv-corner--br::after { animation-delay: 1.5s; }
 @keyframes kvCornerPing {
   0%   { transform: scale(1);   opacity: 0.6; }
-  100% { transform: scale(1.8); opacity: 0; }
+  100% { transform: scale(1.8); opacity: 0;   }
 }
 
 /* ══════════════════════════════════════════════════════════
-   PUNTOS BIOMÉTRICOS FLOTANTES
+   FACIAL MESH — 68 puntos conectados
    ══════════════════════════════════════════════════════════ */
-.kv-bio-live {
+.kv-mesh-layer {
   position: absolute;
   inset: 0;
   z-index: 12;
   pointer-events: none;
 }
 
+/* SVG de líneas de malla — desvanece al no estar en lock */
+.kv-mesh-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+.kv-corners.kv--lock ~ .kv-mesh-layer .kv-mesh-svg { opacity: 1; }
+
+/* Puntos de la malla */
+.kv-mesh-dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--kv-cyan);
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: transform 0.4s var(--kv-ease-spring), opacity 0.4s ease;
+  pointer-events: none;
+  box-shadow: 0 0 6px rgba(0,255,231,0.8);
+}
+.kv-mesh-dot.kv--active {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 0.75;
+  animation: kvMeshDotBreath 3s ease-in-out infinite;
+}
+.kv-mesh-dot.kv--zone-active {
+  background: var(--kv-yellow);
+  box-shadow: 0 0 10px rgba(255,228,77,0.9);
+  transform: translate(-50%, -50%) scale(1.6);
+  opacity: 1;
+}
+@keyframes kvMeshDotBreath {
+  0%,100% { opacity: 0.55; }
+  50%     { opacity: 0.90; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   ZONE BRACKETS — rectángulos de zona con label
+   ══════════════════════════════════════════════════════════ */
+.kv-zone-brackets {
+  position: absolute;
+  inset: 0;
+  z-index: 14;
+  pointer-events: none;
+}
+
+.kv-zone-bracket {
+  position: absolute;
+  border: 1.5px solid transparent;
+  border-radius: 6px;
+  opacity: 0;
+  transition: opacity 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  pointer-events: none;
+}
+.kv-zone-bracket.kv--visible {
+  opacity: 1;
+  border-color: rgba(0,255,231,0.55);
+  box-shadow: 0 0 12px rgba(0,255,231,0.20), inset 0 0 20px rgba(0,255,231,0.04);
+}
+.kv-zone-bracket.kv--analyzing {
+  border-color: rgba(255,228,77,0.80);
+  box-shadow: 0 0 20px rgba(255,228,77,0.30), inset 0 0 30px rgba(255,228,77,0.06);
+  animation: kvBracketPulse 0.8s ease-in-out infinite;
+}
+@keyframes kvBracketPulse {
+  0%,100% { box-shadow: 0 0 14px rgba(255,228,77,0.30), inset 0 0 20px rgba(255,228,77,0.05); }
+  50%     { box-shadow: 0 0 28px rgba(255,228,77,0.55), inset 0 0 40px rgba(255,228,77,0.10); }
+}
+
+/* Posiciones de los brackets de zona (% sobre el video) */
+.kv-zone-bracket--forehead { top: 18%; left: 22%; right: 22%; height: 14%; }
+.kv-zone-bracket--left     { top: 35%; left: 10%; width: 26%; height: 20%; }
+.kv-zone-bracket--right    { top: 35%; right: 10%; width: 26%; height: 20%; }
+.kv-zone-bracket--nose     { top: 40%; left: 36%; right: 36%; height: 18%; }
+.kv-zone-bracket--chin     { bottom: 30%; left: 28%; right: 28%; height: 10%; }
+
+/* Label de la zona */
+.kv-zone-label {
+  position: absolute;
+  top: -18px;
+  left: 0;
+  font-size: 8px;
+  font-family: var(--kv-mono);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--kv-yellow);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.kv-zone-bracket.kv--analyzing .kv-zone-label { opacity: 1; }
+.kv-zone-bracket--right .kv-zone-label { left: auto; right: 0; }
+
+/* Dots de elipsis animados en el label */
+.kv-zone-label::after {
+  content: '';
+  animation: kvZoneDots 1.2s steps(4, end) infinite;
+}
+@keyframes kvZoneDots {
+  0%   { content: ''; }
+  25%  { content: '.'; }
+  50%  { content: '..'; }
+  75%  { content: '...'; }
+  100% { content: ''; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   TERMOGRAFÍA — overlay de color por zona
+   ══════════════════════════════════════════════════════════ */
+.kv-thermo-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 13;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.kv-thermo-zone {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+  filter: blur(18px);
+}
+.kv-thermo-zone.kv--flash {
+  animation: kvThermoFlash 0.8s ease-out forwards;
+}
+
+/* Colores por zona */
+.kv-thermo-zone--forehead { background: radial-gradient(ellipse, rgba(68,136,255,0.55) 0%, transparent 70%); top: 12%; left: 20%; width: 60%; height: 18%; }
+.kv-thermo-zone--left     { background: radial-gradient(ellipse, rgba(255,100,50,0.50) 0%, transparent 70%);  top: 32%; left: 5%;  width: 30%; height: 24%; }
+.kv-thermo-zone--right    { background: radial-gradient(ellipse, rgba(255,100,50,0.50) 0%, transparent 70%);  top: 32%; right: 5%; width: 30%; height: 24%; }
+.kv-thermo-zone--nose     { background: radial-gradient(ellipse, rgba(255,228,77,0.45) 0%, transparent 70%);  top: 38%; left: 30%; width: 40%; height: 22%; }
+.kv-thermo-zone--chin     { background: radial-gradient(ellipse, rgba(180,80,255,0.45) 0%, transparent 70%);  bottom: 26%; left: 25%; width: 50%; height: 14%; }
+
+@keyframes kvThermoFlash {
+  0%   { opacity: 0;    }
+  20%  { opacity: 1;    }
+  70%  { opacity: 0.80; }
+  100% { opacity: 0;    }
+}
+
+/* ══════════════════════════════════════════════════════════
+   ZONA SCAN LINE — línea horizontal sincronizada con countdown
+   ══════════════════════════════════════════════════════════ */
+.kv-zone-scanline {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  height: 2px;
+  z-index: 15;
+  pointer-events: none;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,228,77,0.6) 20%,
+    rgba(255,228,77,1.0) 50%,
+    rgba(255,228,77,0.6) 80%,
+    transparent 100%
+  );
+  box-shadow: 0 0 10px rgba(255,228,77,0.8), 0 0 30px rgba(255,228,77,0.3);
+  opacity: 0;
+  transition: top 0.3s ease;
+}
+.kv-zone-scanline.kv--scanning {
+  opacity: 1;
+  animation: kvZoneScanMove var(--kv-zone-scan-dur, 1s) ease-in-out forwards;
+}
+@keyframes kvZoneScanMove {
+  0%   { transform: translateY(0);     opacity: 1;   }
+  80%  { transform: translateY(var(--kv-zone-scan-travel, 60px)); opacity: 0.8; }
+  100% { transform: translateY(var(--kv-zone-scan-travel, 60px)); opacity: 0;   }
+}
+
+/* ══════════════════════════════════════════════════════════
+   BARRA DE PROGRESO DE ZONA
+   ══════════════════════════════════════════════════════════ */
+.kv-zone-progress {
+  position: absolute;
+  bottom: 32%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+.kv-zone-progress.kv--visible { opacity: 1; }
+
+.kv-zone-progress__label {
+  font-family: var(--kv-mono);
+  font-size: 9px;
+  color: var(--kv-yellow);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.kv-zone-progress__track {
+  width: 120px;
+  height: 3px;
+  background: rgba(255,255,255,0.10);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.kv-zone-progress__fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--kv-yellow), var(--kv-orange));
+  border-radius: 2px;
+  box-shadow: 0 0 6px rgba(255,228,77,0.7);
+  transition: width 0.9s ease;
+  width: 0%;
+}
+.kv-zone-progress__blocks {
+  display: flex;
+  gap: 4px;
+}
+.kv-zone-progress__block {
+  width: 18px;
+  height: 5px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.15);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+.kv-zone-progress__block.kv--done {
+  background: var(--kv-green);
+  border-color: var(--kv-green);
+  box-shadow: 0 0 6px rgba(0,255,136,0.7);
+}
+.kv-zone-progress__block.kv--active {
+  background: var(--kv-yellow);
+  border-color: var(--kv-yellow);
+  box-shadow: 0 0 8px rgba(255,228,77,0.8);
+  animation: kvBlockPulse 0.5s ease-in-out infinite;
+}
+@keyframes kvBlockPulse {
+  0%,100% { opacity: 1; }
+  50%     { opacity: 0.5; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   PUNTOS BIOMÉTRICOS FLOTANTES (v4 conservados)
+   ══════════════════════════════════════════════════════════ */
+.kv-bio-live {
+  position: absolute;
+  inset: 0;
+  z-index: 16;
+  pointer-events: none;
+}
 .kv-bio-dot {
   position: absolute;
   width: 5px;
@@ -415,14 +656,12 @@
 .kv-bio-dot:nth-child(5) { animation-delay: 2.4s; }
 .kv-bio-dot:nth-child(6) { background: var(--kv-cyan); box-shadow: 0 0 0 2px rgba(0,255,231,0.20), 0 0 10px rgba(0,255,231,0.80); animation-delay: 3.0s; }
 .kv-bio-dot:nth-child(7) { animation-delay: 3.6s; }
-
 @keyframes kvBioDot {
-  0%,25%  { transform: translate(-50%,-50%) scale(0); opacity: 0; }
-  35%     { transform: translate(-50%,-50%) scale(1.4); opacity: 1; }
-  55%,75% { transform: translate(-50%,-50%) scale(1);   opacity: 0.9; }
-  90%,100%{ transform: translate(-50%,-50%) scale(0);   opacity: 0; }
+  0%,25%   { transform: translate(-50%,-50%) scale(0);   opacity: 0;   }
+  35%      { transform: translate(-50%,-50%) scale(1.4); opacity: 1;   }
+  55%,75%  { transform: translate(-50%,-50%) scale(1);   opacity: 0.9; }
+  90%,100% { transform: translate(-50%,-50%) scale(0);   opacity: 0;   }
 }
-
 .kv-bio-dot::after {
   content: '';
   position: absolute;
@@ -437,41 +676,54 @@
 }
 
 /* ══════════════════════════════════════════════════════════
-   MÉTRICAS FLOTANTES — datos clínicos en tiempo real
+   MÉTRICAS FLOTANTES — HUD cockpit style
    ══════════════════════════════════════════════════════════ */
 .kv-metrics {
   position: absolute;
   inset: 0;
-  z-index: 13;
+  z-index: 17;
   pointer-events: none;
 }
-
 .kv-metric {
   position: absolute;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
-
 .kv-metric__label {
-  font-size: 8px;
+  font-size: 7px;
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: rgba(0,255,231,0.65);
   line-height: 1;
+  font-family: var(--kv-mono);
+}
+.kv-metric__prefix {
+  font-size: 7px;
+  color: rgba(0,255,231,0.35);
+  font-family: var(--kv-mono);
+  letter-spacing: 0.04em;
 }
 .kv-metric__value {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--kv-cyan);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.04em;
   text-shadow: 0 0 10px rgba(0,255,231,0.70);
   line-height: 1;
+  font-family: var(--kv-mono);
+}
+.kv-metric__value.kv--scramble {
+  animation: kvScramble 0.15s steps(1) infinite;
+}
+@keyframes kvScramble {
+  0%  { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 .kv-metric__bar {
-  width: 48px;
+  width: 52px;
   height: 2px;
   background: rgba(0,255,231,0.15);
   border-radius: 1px;
@@ -486,37 +738,110 @@
   animation: kvMetricBar 3s ease-in-out infinite;
 }
 @keyframes kvMetricBar {
-  0%,100% { width: 0%; }
+  0%,100% { width: 0%;  }
   50%     { width: 85%; }
 }
-
-/* Posiciones de las métricas */
-.kv-metric--tl { top: 22%;  left: 5%;  }
-.kv-metric--tr { top: 22%;  right: 5%; align-items: flex-end; }
-.kv-metric--bl { bottom: 32%; left: 5%; }
+.kv-metric--tl { top: 22%;    left: 5%;  }
+.kv-metric--tr { top: 22%;    right: 5%; align-items: flex-end; }
+.kv-metric--bl { bottom: 32%; left: 5%;  }
 .kv-metric--br { bottom: 32%; right: 5%; align-items: flex-end; }
 
 .kv-metric--tr .kv-metric__label,
 .kv-metric--br .kv-metric__label { color: rgba(255,110,180,0.65); }
 .kv-metric--tr .kv-metric__value,
 .kv-metric--br .kv-metric__value { color: var(--kv-pink); text-shadow: 0 0 10px rgba(255,110,180,0.70); }
+.kv-metric--tr .kv-metric__prefix,
+.kv-metric--br .kv-metric__prefix { color: rgba(255,110,180,0.35); }
 .kv-metric--tr .kv-metric__bar,
 .kv-metric--br .kv-metric__bar   { background: rgba(255,110,180,0.15); }
 .kv-metric--tr .kv-metric__bar-fill,
 .kv-metric--br .kv-metric__bar-fill { background: var(--kv-pink); box-shadow: 0 0 4px var(--kv-pink); animation-delay: -1.5s; }
 
 /* ══════════════════════════════════════════════════════════
-   HUD — status bar
+   ECG LATERAL — "SKIN FREQ." tipo electrocardiograma
+   ══════════════════════════════════════════════════════════ */
+.kv-ecg {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 18;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.kv-corners.kv--lock ~ .kv-ecg,
+.kv-ecg.kv--active { opacity: 1; }
+
+.kv-ecg__label {
+  font-size: 7px;
+  font-family: var(--kv-mono);
+  color: rgba(0,255,136,0.65);
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+.kv-ecg__canvas {
+  width: 20px;
+  height: 90px;
+  display: block;
+}
+
+/* ══════════════════════════════════════════════════════════
+   DNA HELIX — esquina inferior izquierda
+   ══════════════════════════════════════════════════════════ */
+.kv-dna {
+  position: absolute;
+  bottom: 30%;
+  right: 5px;
+  z-index: 18;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.kv-dna.kv--active { opacity: 1; }
+
+.kv-dna__label {
+  font-size: 6px;
+  font-family: var(--kv-mono);
+  color: rgba(255,110,180,0.55);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+.kv-dna__helix {
+  width: 16px;
+  height: 60px;
+  position: relative;
+  overflow: visible;
+}
+.kv-dna__strand {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ══════════════════════════════════════════════════════════
+   HUD STATUS BAR
    ══════════════════════════════════════════════════════════ */
 .kv-hud {
   position: absolute;
   top: 0; left: 0; right: 0;
   z-index: 20;
   pointer-events: none;
-  /* El padding-top se maneja en el header */
 }
-
-/* Status chip — esquina superior izquierda del viewfinder */
 .kv-hud__status {
   position: absolute;
   top: 100px;
@@ -524,7 +849,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(0,0,0,0.55);
+  background: rgba(0,0,0,0.60);
   backdrop-filter: blur(6px);
   padding: 4px 10px 4px 7px;
   border-radius: 50px;
@@ -533,23 +858,27 @@
   color: rgba(255,255,255,0.80);
   font-weight: 700;
   letter-spacing: 0.06em;
+  font-family: var(--kv-mono);
 }
-
+.kv-hud__prefix {
+  font-size: 8px;
+  color: rgba(0,255,136,0.55);
+  font-family: var(--kv-mono);
+  letter-spacing: 0.04em;
+}
 .kv-hud__dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
 }
-.kv-hud__dot.kv--live    { background: var(--kv-green);  animation: kvDotPulse 1.2s ease-in-out infinite; }
-.kv-hud__dot.kv--lock    { background: var(--kv-green);  animation: kvDotPulse 0.6s ease-in-out infinite; }
-.kv-hud__dot.kv--capture { background: var(--kv-cyan);   animation: kvDotPulse 0.3s linear infinite; }
+.kv-hud__dot.kv--live    { background: var(--kv-green); animation: kvDotPulse 1.2s ease-in-out infinite; }
+.kv-hud__dot.kv--lock    { background: var(--kv-green); animation: kvDotPulse 0.6s ease-in-out infinite; }
+.kv-hud__dot.kv--capture { background: var(--kv-cyan);  animation: kvDotPulse 0.3s linear infinite; }
 @keyframes kvDotPulse {
-  0%,100% { opacity: 1; transform: scale(1); }
+  0%,100% { opacity: 1;   transform: scale(1);   }
   50%     { opacity: 0.4; transform: scale(0.7); }
 }
-
-/* Scan pct — esquina superior derecha */
 .kv-hud__scan {
   position: absolute;
   top: 100px;
@@ -557,17 +886,18 @@
   font-size: 10px;
   font-weight: 700;
   color: var(--kv-pink);
-  background: rgba(0,0,0,0.55);
+  background: rgba(0,0,0,0.60);
   backdrop-filter: blur(6px);
   padding: 4px 10px;
   border-radius: 50px;
   border: 1px solid rgba(255,110,180,0.18);
   letter-spacing: 0.08em;
+  font-family: var(--kv-mono);
   pointer-events: none;
 }
 
 /* ══════════════════════════════════════════════════════════
-   STATUS MESSAGE — centro superior del viewfinder
+   STATUS MESSAGE
    ══════════════════════════════════════════════════════════ */
 .kv-status-msg {
   position: absolute;
@@ -584,6 +914,7 @@
   white-space: nowrap;
   pointer-events: none;
   transition: all 0.4s ease;
+  font-family: var(--kv-mono);
 }
 .kv-status-msg.kv--lock {
   color: var(--kv-green);
@@ -591,7 +922,7 @@
 }
 
 /* ══════════════════════════════════════════════════════════
-   COUNTDOWN — el centro de la experiencia
+   COUNTDOWN — centro de la experiencia
    ══════════════════════════════════════════════════════════ */
 .kv-countdown {
   position: absolute;
@@ -605,7 +936,6 @@
   transition: opacity 0.3s ease;
 }
 .kv-countdown.kv--active { opacity: 1; }
-
 .kv-countdown__number {
   font-size: clamp(120px, 35vw, 200px);
   font-weight: 900;
@@ -622,7 +952,6 @@
   transition: none;
   user-select: none;
 }
-
 .kv-countdown__number.kv--pop {
   animation: kvCountPop 0.85s var(--kv-ease-spring) forwards;
 }
@@ -632,26 +961,23 @@
   70%  { transform: scale(1.0); opacity: 1; }
   100% { transform: scale(0.7); opacity: 0; }
 }
-
-/* Pulso de borde de pantalla en cada número */
 .kv-countdown__ring {
   position: absolute;
   inset: 0;
   border: 3px solid rgba(0,255,231,0.0);
   pointer-events: none;
-  border-radius: 0;
 }
 .kv-countdown__ring.kv--pulse {
   animation: kvRingPulse 0.85s ease-out forwards;
 }
 @keyframes kvRingPulse {
-  0%   { border-color: rgba(0,255,231,0.0); box-shadow: inset 0 0 0px rgba(0,255,231,0); }
-  15%  { border-color: rgba(0,255,231,0.7); box-shadow: inset 0 0 30px rgba(0,255,231,0.15); }
-  100% { border-color: rgba(0,255,231,0.0); box-shadow: inset 0 0 0px rgba(0,255,231,0); }
+  0%   { border-color: rgba(0,255,231,0.0);  box-shadow: inset 0 0 0px rgba(0,255,231,0);    }
+  15%  { border-color: rgba(0,255,231,0.7);  box-shadow: inset 0 0 30px rgba(0,255,231,0.15); }
+  100% { border-color: rgba(0,255,231,0.0);  box-shadow: inset 0 0 0px rgba(0,255,231,0);    }
 }
 
 /* ══════════════════════════════════════════════════════════
-   FLASH DE CAPTURA
+   GLITCH RGB CAPTURE — 3 capas R/G/B
    ══════════════════════════════════════════════════════════ */
 .kv-capture-flash {
   position: absolute;
@@ -659,19 +985,80 @@
   z-index: 40;
   pointer-events: none;
   opacity: 0;
-  background: #fff;
 }
 .kv-capture-flash.kv--flash {
-  animation: kvFlashIn 0.45s ease-out forwards;
+  animation: kvGlitchMaster 0.55s ease-out forwards;
 }
-@keyframes kvFlashIn {
+@keyframes kvGlitchMaster {
+  0%   { opacity: 0;    background: #fff; }
+  8%   { opacity: 0.95; background: #fff; }
+  15%  { opacity: 0.7;  background: rgba(255,0,60,0.85); transform: translateX(-4px); }
+  22%  { opacity: 0.7;  background: rgba(0,255,180,0.85); transform: translateX(4px); }
+  30%  { opacity: 0.6;  background: rgba(80,80,255,0.80); transform: translateX(-2px); }
+  40%  { opacity: 0.4;  background: #fff; transform: translateX(0); }
+  55%  { opacity: 0.2;  }
+  100% { opacity: 0;    }
+}
+
+/* Scanlines de TV durante glitch */
+.kv-glitch-lines {
+  position: absolute;
+  inset: 0;
+  z-index: 41;
+  pointer-events: none;
+  opacity: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.18) 2px,
+    rgba(0,0,0,0.18) 4px
+  );
+}
+.kv-glitch-lines.kv--active {
+  animation: kvScanlines 0.55s ease-out forwards;
+}
+@keyframes kvScanlines {
   0%   { opacity: 0; }
-  10%  { opacity: 0.95; }
+  10%  { opacity: 1; }
+  80%  { opacity: 0.6; }
   100% { opacity: 0; }
 }
 
+/* Texto CAPTURE COMPLETE */
+.kv-capture-text {
+  position: absolute;
+  inset: 0;
+  z-index: 42;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+}
+.kv-capture-text.kv--active {
+  animation: kvCaptureText 0.55s ease-out forwards;
+}
+.kv-capture-text__inner {
+  font-family: var(--kv-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--kv-green);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-shadow: 0 0 20px rgba(0,255,136,0.90);
+  text-align: center;
+  line-height: 1.6;
+}
+@keyframes kvCaptureText {
+  0%   { opacity: 0; transform: scale(0.9); }
+  20%  { opacity: 1; transform: scale(1.02); }
+  70%  { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.08); }
+}
+
 /* ══════════════════════════════════════════════════════════
-   CONFIRM SCREEN — overlay sobre la foto capturada
+   CONFIRM SCREEN — rediseñada: terminal médica
    ══════════════════════════════════════════════════════════ */
 .kv-confirm {
   display: none;
@@ -679,13 +1066,12 @@
   inset: 0;
   z-index: 50;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  padding-bottom: env(safe-area-inset-bottom, 32px);
+  align-items: stretch;
+  justify-content: stretch;
 }
 .kv-confirm.kv--active { display: flex; }
 
-/* Foto capturada de fondo */
+/* Foto de fondo */
 .kv-confirm__photo {
   position: absolute;
   inset: 0;
@@ -693,106 +1079,153 @@
   height: 100%;
   object-fit: cover;
   transform: scaleX(-1);
-  filter: brightness(0.55);
+  filter: brightness(0.40) saturate(0.6);
 }
 
-/* Overlay degradado desde abajo */
+/* Overlay degradado */
 .kv-confirm__overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(to top,
-    rgba(0,0,0,0.90) 0%,
-    rgba(0,0,0,0.40) 50%,
-    transparent 100%
+    rgba(0,0,12,0.96) 0%,
+    rgba(0,0,12,0.60) 45%,
+    rgba(0,0,8,0.30) 100%
   );
 }
 
-/* Contenido en el centro-bottom */
-.kv-confirm__content {
-  position: relative;
+/* Wireframe mesh encima de foto */
+.kv-confirm__mesh {
+  position: absolute;
+  inset: 0;
   z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  padding: 32px 24px 40px;
-  width: 100%;
-  max-width: 420px;
+  pointer-events: none;
+  opacity: 0;
+  animation: kvConfirmMeshIn 0.8s ease-out 0.3s forwards;
+}
+@keyframes kvConfirmMeshIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
+/* Contenido principal */
+.kv-confirm__content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 100%;
+  padding: 0 20px calc(env(safe-area-inset-bottom, 20px) + 28px);
+}
+
+/* Header del confirm — datos biométricos en 2 columnas */
+.kv-confirm__biodata {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+  padding: 16px 0 20px;
+  border-bottom: 1px solid rgba(0,255,231,0.12);
+  margin-bottom: 20px;
+  animation: kvConfirmDataIn 0.6s ease-out 0.4s both;
+}
+@keyframes kvConfirmDataIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.kv-confirm__biorow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.kv-confirm__biokey {
+  font-size: 7px;
+  font-family: var(--kv-mono);
+  color: rgba(0,255,231,0.50);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.kv-confirm__bioval {
+  font-size: 13px;
+  font-family: var(--kv-mono);
+  color: var(--kv-cyan);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 8px rgba(0,255,231,0.50);
+}
+.kv-confirm__bioval.kv--pink { color: var(--kv-pink); text-shadow: 0 0 8px rgba(255,110,180,0.50); }
+.kv-confirm__bioval.kv--green { color: var(--kv-green); text-shadow: 0 0 8px rgba(0,255,136,0.50); }
+
+/* Título */
 .kv-confirm__title {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 800;
   color: #fff;
   text-align: center;
   letter-spacing: 0.02em;
   line-height: 1.2;
+  margin-bottom: 4px;
+  animation: kvConfirmDataIn 0.6s ease-out 0.5s both;
 }
-.kv-confirm__title span {
-  color: var(--kv-cyan);
-  text-shadow: 0 0 14px rgba(0,255,231,0.60);
-}
-
+.kv-confirm__title span { color: var(--kv-cyan); text-shadow: 0 0 14px rgba(0,255,231,0.60); }
 .kv-confirm__subtitle {
-  font-size: 12px;
-  color: rgba(255,255,255,0.50);
-  letter-spacing: 0.06em;
+  font-size: 10px;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.10em;
   text-transform: uppercase;
   text-align: center;
+  margin-bottom: 20px;
+  font-family: var(--kv-mono);
+  animation: kvConfirmDataIn 0.6s ease-out 0.55s both;
 }
 
-/* Botones de confirmación */
+/* Botones */
 .kv-confirm__btns {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  width: 100%;
+  animation: kvConfirmDataIn 0.6s ease-out 0.65s both;
 }
-
 .kv-confirm__btn-yes {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   padding: 18px 24px;
-  border-radius: 16px;
+  border-radius: 14px;
   background: linear-gradient(135deg, #00ff88, #00d4a8);
   color: #000;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
   cursor: pointer;
   border: none;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
+  font-family: var(--kv-mono);
+  text-transform: uppercase;
   box-shadow: 0 4px 32px rgba(0,255,136,0.40);
   transition: all 0.2s var(--kv-ease-spring);
 }
-.kv-confirm__btn-yes:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 40px rgba(0,255,136,0.55);
-}
+.kv-confirm__btn-yes:hover  { transform: translateY(-2px); box-shadow: 0 8px 40px rgba(0,255,136,0.55); }
 .kv-confirm__btn-yes:active { transform: scale(0.97); }
-
 .kv-confirm__btn-retry {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 16px 24px;
-  border-radius: 16px;
-  background: rgba(255,255,255,0.08);
-  border: 1.5px solid rgba(255,255,255,0.22);
-  color: rgba(255,255,255,0.85);
-  font-size: 15px;
+  padding: 15px 24px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.75);
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.05em;
+  font-family: var(--kv-mono);
+  text-transform: uppercase;
   backdrop-filter: blur(8px);
   transition: all 0.2s ease;
 }
-.kv-confirm__btn-retry:hover {
-  background: rgba(255,255,255,0.14);
-  border-color: rgba(255,255,255,0.40);
-}
+.kv-confirm__btn-retry:hover  { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.35); }
 .kv-confirm__btn-retry:active { transform: scale(0.97); }
 
 /* ══════════════════════════════════════════════════════════
@@ -806,13 +1239,11 @@
   background: #000;
 }
 .kv-analyzing.kv--active { display: flex; }
-
 .kv-analyzing-inner {
   display: flex;
   flex-direction: column;
   height: 100%;
 }
-
 .kv-captured-wrap {
   position: relative;
   width: 100%;
@@ -821,7 +1252,6 @@
   overflow: hidden;
   min-height: 0;
 }
-
 .kv-captured-img {
   width: 100%;
   height: 100%;
@@ -833,8 +1263,6 @@
   transition: opacity 0.4s ease, filter 1s ease;
 }
 .kv-captured-img.kv--visible { opacity: 1; }
-
-/* Beam de scan sobre la foto */
 .kv-scan-beam {
   position: absolute;
   left: 0; right: 0;
@@ -853,10 +1281,7 @@
   top: 0;
   box-shadow: 0 0 12px rgba(0,255,231,0.60), 0 0 4px rgba(255,110,180,0.60);
 }
-.kv-scan-beam.kv--active {
-  opacity: 1;
-  animation: kvBeamScan 2.2s ease-in-out infinite;
-}
+.kv-scan-beam.kv--active  { opacity: 1; animation: kvBeamScan 2.2s ease-in-out infinite; }
 .kv-scan-beam.kv--complete {
   background: linear-gradient(90deg,
     transparent 0%,
@@ -868,19 +1293,16 @@
   );
 }
 @keyframes kvBeamScan {
-  0%   { top: 0%;   opacity: 1; }
+  0%   { top: 0%;   opacity: 1;   }
   45%  { top: 100%; opacity: 0.8; }
-  50%  { top: 100%; opacity: 0; }
-  51%  { top: 0%;   opacity: 0; }
+  50%  { top: 100%; opacity: 0;   }
+  51%  { top: 0%;   opacity: 0;   }
   55%  { top: 0%;   opacity: 0.8; }
-  100% { top: 100%; opacity: 1; }
+  100% { top: 100%; opacity: 1;   }
 }
-
-/* Puntos biométricos en foto */
 .kv-bio-pt {
   position: absolute;
-  width: 8px;
-  height: 8px;
+  width: 8px; height: 8px;
   border-radius: 50%;
   background: var(--kv-pink);
   box-shadow: 0 0 0 2px rgba(255,110,180,0.25), 0 0 8px rgba(255,110,180,0.60);
@@ -889,10 +1311,7 @@
   z-index: 6;
   opacity: 0;
 }
-.kv-bio-pt.kv--visible {
-  transform: translate(-50%, -50%) scale(1);
-  opacity: 1;
-}
+.kv-bio-pt.kv--visible { transform: translate(-50%, -50%) scale(1); opacity: 1; }
 .kv-bio-pt::after {
   content: '';
   position: absolute;
@@ -902,17 +1321,10 @@
   animation: kvBioPtRing 2s ease-out infinite;
 }
 @keyframes kvBioPtRing {
-  0%   { transform: scale(1); opacity: 0.6; }
+  0%   { transform: scale(1);   opacity: 0.6; }
   100% { transform: scale(2.2); opacity: 0; }
 }
-
-/* Chips de datos sobre foto */
-.kv-scan-data {
-  position: absolute;
-  inset: 0;
-  z-index: 7;
-  pointer-events: none;
-}
+.kv-scan-data { position: absolute; inset: 0; z-index: 7; pointer-events: none; }
 .kv-scan-data__chip {
   position: absolute;
   font-size: 9px;
@@ -923,11 +1335,10 @@
   padding: 3px 7px;
   border-radius: 4px;
   border: 1px solid rgba(0,255,231,0.25);
+  font-family: var(--kv-mono);
 }
 .kv-scan-data__chip--tl { top: 10px; left: 10px; }
 .kv-scan-data__chip--br { bottom: 10px; right: 10px; font-size: 11px; letter-spacing: 0; }
-
-/* Esquinas foto */
 .kv-photo-corner {
   position: absolute;
   width: 18px; height: 18px;
@@ -936,36 +1347,32 @@
   opacity: 0.70;
   z-index: 8;
 }
-.kv-photo-corner--tl { top: 8px; left: 8px;    border-width: 1.5px 0 0 1.5px; border-radius: 3px 0 0 0; }
-.kv-photo-corner--tr { top: 8px; right: 8px;   border-width: 1.5px 1.5px 0 0; border-radius: 0 3px 0 0; }
-.kv-photo-corner--bl { bottom: 8px; left: 8px;  border-width: 0 0 1.5px 1.5px; border-radius: 0 0 0 3px; }
-.kv-photo-corner--br { bottom: 8px; right: 8px; border-width: 0 1.5px 1.5px 0; border-radius: 0 0 3px 0; }
+.kv-photo-corner--tl { top: 8px;    left: 8px;   border-width: 1.5px 0 0 1.5px; border-radius: 3px 0 0 0; }
+.kv-photo-corner--tr { top: 8px;    right: 8px;  border-width: 1.5px 1.5px 0 0; border-radius: 0 3px 0 0; }
+.kv-photo-corner--bl { bottom: 8px; left: 8px;   border-width: 0 0 1.5px 1.5px; border-radius: 0 0 0 3px; }
+.kv-photo-corner--br { bottom: 8px; right: 8px;  border-width: 0 1.5px 1.5px 0; border-radius: 0 0 3px 0; }
 
-/* Panel de progreso en parte inferior */
 .kv-analyzing-info {
   padding: 16px 20px 24px;
   background: #050010;
   border-top: 1px solid rgba(0,255,231,0.10);
   flex-shrink: 0;
 }
-
 .kv-analysis-progress { display: flex; flex-direction: column; gap: 6px; }
-.kv-analysis-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
+.kv-analysis-header   { display: flex; align-items: center; justify-content: space-between; }
 .kv-analysis-progress__label {
   font-size: 12px;
   font-weight: 700;
   color: rgba(255,255,255,0.90);
   letter-spacing: 0.04em;
+  font-family: var(--kv-mono);
 }
 .kv-analysis-pct {
   font-size: 12px;
   font-weight: 700;
   color: var(--kv-cyan);
   font-variant-numeric: tabular-nums;
+  font-family: var(--kv-mono);
 }
 .kv-progress-track {
   width: 100%;
@@ -986,8 +1393,8 @@
   font-size: 10px;
   color: rgba(255,255,255,0.35);
   letter-spacing: 0.03em;
+  font-family: var(--kv-mono);
 }
-
 .kv-analysis-items {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -998,31 +1405,46 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 9px;
+  padding: 5px 8px;
   border-radius: 8px;
   background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.04);
-  font-size: 10px;
-  color: rgba(255,255,255,0.35);
-  font-weight: 500;
+  border: 1px solid rgba(255,255,255,0.05);
   transition: all 0.3s ease;
+  opacity: 0.35;
 }
-.kv-analysis-item__icon  { font-size: 13px; flex-shrink: 0; opacity: 0.5; }
-.kv-analysis-item__text  { flex: 1; }
-.kv-analysis-item__check { margin-left: auto; opacity: 0; color: var(--kv-green); font-weight: 700; font-size: 10px; }
 .kv-analysis-item.kv--active {
-  color: rgba(255,255,255,0.90);
+  opacity: 1;
   background: rgba(0,255,231,0.06);
   border-color: rgba(0,255,231,0.18);
+  animation: kvItemPulse 0.7s ease-in-out infinite;
 }
-.kv-analysis-item.kv--active .kv-analysis-item__icon { opacity: 1; }
 .kv-analysis-item.kv--done {
-  color: rgba(255,255,255,0.50);
+  opacity: 0.90;
   background: rgba(0,255,136,0.05);
-  border-color: rgba(0,255,136,0.12);
+  border-color: rgba(0,255,136,0.15);
+}
+@keyframes kvItemPulse {
+  0%,100% { box-shadow: 0 0 0 rgba(0,255,231,0); }
+  50%     { box-shadow: 0 0 8px rgba(0,255,231,0.20); }
+}
+.kv-analysis-item__icon { font-size: 14px; flex-shrink: 0; }
+.kv-analysis-item__text {
+  font-size: 10px;
+  color: rgba(255,255,255,0.70);
+  font-weight: 600;
+  flex: 1;
+  line-height: 1.2;
+  font-family: var(--kv-mono);
+}
+.kv-analysis-item.kv--active .kv-analysis-item__text { color: rgba(255,255,255,0.95); }
+.kv-analysis-item.kv--done  .kv-analysis-item__text  { color: rgba(0,255,136,0.85); }
+.kv-analysis-item__check {
+  font-size: 11px;
+  color: var(--kv-green);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 .kv-analysis-item.kv--done .kv-analysis-item__check { opacity: 1; }
-.kv-analysis-item.kv--done .kv-analysis-item__icon  { opacity: 0.7; }
 
 /* ══════════════════════════════════════════════════════════
    RESULTADO PREVIEW
@@ -1034,82 +1456,75 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  padding: 24px 20px;
-  text-align: center;
-  background: radial-gradient(ellipse at 50% 40%, rgba(0,20,40,0.95) 0%, rgba(0,0,8,0.99) 70%);
+  gap: 20px;
+  padding: 32px 20px;
+  background: radial-gradient(ellipse at center, #0a0018 0%, #000 100%);
+  overflow-y: auto;
 }
 .kv-result-preview.kv--active { display: flex; }
-
 .kv-result-preview__title {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 800;
   color: #fff;
+  text-align: center;
   letter-spacing: 0.04em;
+  font-family: var(--kv-mono);
 }
-
-.kv-zones {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  width: 100%;
-  max-width: 400px;
-}
+.kv-zones { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 340px; }
 .kv-zone-card {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 12px 8px;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(0,255,231,0.10);
+  gap: 12px;
+  padding: 14px 18px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
   opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.4s ease, transform 0.4s var(--kv-ease-spring);
+  transform: translateY(12px);
+  transition: all 0.4s var(--kv-ease-out);
 }
 .kv-zone-card.kv--visible { opacity: 1; transform: translateY(0); }
-.kv-zone-card__emoji { font-size: 20px; }
+.kv-zone-card__emoji { font-size: 20px; flex-shrink: 0; }
 .kv-zone-card__label {
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
-  color: rgba(255,255,255,0.40);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  color: rgba(255,255,255,0.65);
+  letter-spacing: 0.06em;
+  flex: 1;
+  font-family: var(--kv-mono);
 }
 .kv-zone-card__value {
-  font-size: 10px;
-  color: rgba(255,255,255,0.80);
-  font-weight: 500;
-  text-align: center;
-  line-height: 1.3;
+  font-size: 12px;
+  color: var(--kv-cyan);
+  font-weight: 600;
+  text-align: right;
+  font-family: var(--kv-mono);
 }
-
 .kv-result-cta {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px 32px;
-  border-radius: 50px;
-  background: linear-gradient(135deg, var(--kv-pink), var(--kv-cyan));
-  color: #000;
-  font-size: 14px;
+  gap: 8px;
+  padding: 18px 32px;
+  background: linear-gradient(135deg, var(--kv-pink), #c445e0);
+  border-radius: 16px;
+  font-size: 15px;
   font-weight: 800;
+  color: #fff;
   cursor: pointer;
-  transition: transform 0.2s var(--kv-ease-spring), box-shadow 0.2s ease;
-  box-shadow: 0 4px 28px rgba(0,255,231,0.30);
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
+  box-shadow: 0 4px 32px rgba(255,110,180,0.40);
+  transition: all 0.2s var(--kv-ease-spring);
   width: 100%;
-  max-width: 400px;
+  max-width: 340px;
+  text-align: center;
 }
-.kv-result-cta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 40px rgba(0,255,231,0.45);
-}
-
+.kv-result-cta:hover  { transform: translateY(-2px); box-shadow: 0 8px 40px rgba(255,110,180,0.55); }
+.kv-result-cta:active { transform: scale(0.97); }
 .kv-privacy-note {
-  font-size: 10px;
-  color: rgba(255,255,255,0.25);
+  font-size: 11px;
+  color: rgba(255,255,255,0.30);
+  text-align: center;
   letter-spacing: 0.02em;
 }
 
@@ -1123,74 +1538,50 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 16px;
   padding: 40px 24px;
-  text-align: center;
   background: #000;
+  text-align: center;
 }
 .kv-error-state.kv--active { display: flex; }
-.kv-error-state__icon  { font-size: 40px; }
-.kv-error-state__title { font-size: 15px; font-weight: 700; color: #fff; }
-.kv-error-state__desc  { font-size: 12px; color: rgba(255,255,255,0.50); line-height: 1.6; margin: 0; max-width: 320px; }
-
+.kv-error-state__icon  { font-size: 48px; }
+.kv-error-state__title { font-size: 20px; font-weight: 800; color: #fff; letter-spacing: 0.02em; }
+.kv-error-state__desc  { font-size: 14px; color: rgba(255,255,255,0.55); line-height: 1.6; max-width: 300px; }
 .kv-error-steps {
+  text-align: left;
   list-style: none;
-  counter-reset: kv-steps;
-  padding: 0; margin: 4px 0 0;
-  text-align: left; max-width: 320px; width: 100%;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 300px;
+  width: 100%;
 }
-.kv-error-steps li {
-  counter-increment: kv-steps;
-  position: relative;
-  padding: 8px 12px 8px 38px;
-  margin-bottom: 6px;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08);
-  font-size: 12px;
-  color: rgba(255,255,255,0.75);
-  line-height: 1.5;
-}
-.kv-error-steps li::before {
-  content: counter(kv-steps);
-  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
-  width: 18px; height: 18px; border-radius: 50%;
-  background: rgba(255,110,180,0.25); border: 1px solid rgba(255,110,180,0.50);
-  color: var(--kv-pink); font-size: 10px; font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-  line-height: 18px; text-align: center;
-}
-.kv-error-steps li b { color: #fff; font-weight: 700; }
-
-.kv-error-chrome-tip {
-  font-size: 10px; color: rgba(255,255,255,0.35); margin: 0;
-  max-width: 320px; line-height: 1.5; text-align: center;
-}
-.kv-error-chrome-tip code {
-  background: rgba(255,255,255,0.08); border-radius: 4px;
-  padding: 1px 5px; font-family: monospace;
-  font-size: 10px; color: rgba(255,255,255,0.55);
-}
-
-.kv-error-alt-btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  padding: 12px 24px; border-radius: 50px;
-  background: rgba(255,110,180,0.12); border: 1px solid rgba(255,110,180,0.35);
-  color: var(--kv-pink); font-size: 13px; font-weight: 600;
-  cursor: pointer; transition: all 0.2s ease; letter-spacing: 0.02em;
-}
-.kv-error-alt-btn:hover { background: rgba(255,110,180,0.22); border-color: rgba(255,110,180,0.60); }
-
+.kv-error-steps li { font-size: 13px; color: rgba(255,255,255,0.70); line-height: 1.5; }
+.kv-error-steps li b { color: #fff; }
+.kv-error-chrome-tip { font-size: 11px; color: rgba(255,255,255,0.40); }
+.kv-error-chrome-tip code { color: var(--kv-cyan); background: rgba(0,255,231,0.08); padding: 2px 5px; border-radius: 3px; font-size: 10px; }
 .kv-error-retry-btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  padding: 11px 28px; border-radius: 50px;
-  background: linear-gradient(135deg, rgba(255,110,180,0.20) 0%, rgba(155,93,229,0.20) 100%);
-  border: 1px solid rgba(255,110,180,0.50);
-  color: #fff; font-size: 13px; font-weight: 700;
-  cursor: pointer; transition: all 0.2s ease; letter-spacing: 0.02em; margin-top: 4px;
+  padding: 14px 28px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: all 0.2s ease;
 }
-.kv-error-retry-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, rgba(255,110,180,0.35) 0%, rgba(155,93,229,0.35) 100%);
-  border-color: rgba(255,110,180,0.80); transform: translateY(-1px);
-}
+.kv-error-retry-btn:hover  { background: rgba(255,255,255,0.14); }
 .kv-error-retry-btn:disabled { opacity: 0.5; cursor: default; }
+.kv-error-alt-btn {
+  font-size: 14px;
+  color: var(--kv-pink);
+  cursor: pointer;
+  text-decoration: underline;
+  letter-spacing: 0.02em;
+  transition: opacity 0.2s ease;
+}
+.kv-error-alt-btn:hover { opacity: 0.75; }

@@ -1,20 +1,22 @@
 /**
  * ============================================================
- * SHATOKB · KOI Vision — BioScan Module  v4.0
+ * SHATOKB · KOI Vision — BioScan Module  v5.0
  * assets/shatokb-koi-vision.js
  *
- * v4.0 — KOI BioScan: Korean clinical scanner experience
- *   • Grid holográfico + scan line animada CSS
- *   • 4 targeting corners (sin óvalo)
- *   • Métricas biométricas flotantes en tiempo real
- *   • FaceDetector API + fallback luminosidad central
- *   • Countdown automático 5→1 cuando detecta rostro
- *   • Si el rostro se pierde → cuenta se pausa
- *   • Pantalla de confirmación: "Perfect / Retake"
- *   • Sin botón manual de captura
- *   • Sin mensajes de iluminación
+ * v5.0 — "Clinical AI Scanner" — Experiencia sin precedente
+ *   • Facial mesh 68 puntos conectados (posicionado en %)
+ *   • Termografía falsa por zona (flash de color por área)
+ *   • Brackets de zona con label "ANALYZING..." animado
+ *   • Línea de scan horizontal sincronizada con countdown
+ *   • HUD cockpit con prefijos SYS:// BIO:// SCAN://
+ *   • ECG lateral "SKIN FREQ." animado en canvas
+ *   • DNA helix en canvas lateral
+ *   • Glitch RGB en captura + scanlines TV + texto "CAPTURE COMPLETE"
+ *   • Confirm screen rediseñada con datos biométricos + wireframe mesh
+ *   • Barra de progreso de zona 1/5 → 5/5
+ *   • Valores HUD que "scramblean" antes de estabilizarse
  *
- * Funciones críticas intactas (no modificadas):
+ * Funciones críticas INTACTAS (no modificadas):
  *   llamarWorkerVision() · iniciarAnalisis() · enviarAlChat()
  *   mostrarError()       · pararCamara()
  *
@@ -42,13 +44,13 @@
     captureHeight:     480,
     imageQuality:      0.85,
 
-    // Detección de presencia — umbral brillo zona central (0-255)
-    presenceThreshold: 18,    // por encima → hay cara probable
-    presenceCheckMs:   400,   // cada cuánto verificar
+    // Detección de presencia
+    presenceThreshold: 18,
+    presenceCheckMs:   400,
 
     // Countdown
-    countdownFrom:     5,     // 5 → 1
-    countdownStepMs:   1000,  // 1 segundo por número
+    countdownFrom:    5,
+    countdownStepMs:  1000,
   };
 
   /* ══════════════════════════════════════════════════════════
@@ -59,11 +61,10 @@
     isOpen:          false,
     capturedImage:   null,
     analysisResult:  null,
-    phase:           'idle', // idle|loading|camera|confirm|analyzing|result|error
+    phase:           'idle',
     onResultadoCb:   null,
     contexto:        null,
 
-    // Detección y countdown
     faceDetector:    null,
     facePresent:     false,
     presenceTimer:   null,
@@ -71,25 +72,30 @@
     countdownVal:    0,
     scanPctTimer:    null,
     metricTimers:    [],
+
+    // v5.0 — nuevos timers
+    ecgTimer:        null,
+    dnaTimer:        null,
+    meshActive:      false,
   };
 
   /* ══════════════════════════════════════════════════════════
      TEXTOS
      ══════════════════════════════════════════════════════════ */
   const T = {
-    scanning:   'KOI BIOSCAN · SEARCHING',
-    lock:       'FACE LOCKED · HOLD STILL',
-    analysis_title: 'KOI is analyzing your skin',
-    analysis_sub:   'Clinical analysis in progress',
-    confirm_title:  'Use this photo?',
-    confirm_yes:    '✓ Perfect — Analyze my skin',
-    confirm_retry:  '↺ Retake photo',
-    result_title:   'Analysis Complete ✓',
-    result_cta:     '✨ See full analysis in chat →',
-    privacy:        '🔒 Image processed instantly. Not stored.',
-    error_title:    'Camera not available',
-    error_desc:     "We need camera permission to analyze your skin. You can still explore your routine — tap below.",
-    error_alt:      '✨ Continue without camera',
+    scanning:        'SYS:// SEARCHING BIOMETRIC SIGNAL',
+    lock:            'BIO:// FACE LOCKED · HOLD STILL',
+    analysis_title:  'KOI is analyzing your skin',
+    analysis_sub:    'Clinical analysis in progress',
+    confirm_title:   'Scan <span>complete</span>',
+    confirm_yes:     '⬡ INITIALIZE ANALYSIS',
+    confirm_retry:   '↺ RETAKE SCAN',
+    result_title:    'Analysis Complete ✓',
+    result_cta:      '✨ See full analysis in chat →',
+    privacy:         '🔒 Image processed instantly. Not stored.',
+    error_title:     'Camera not available',
+    error_desc:      "We need camera permission to analyze your skin. You can still explore your routine — tap below.",
+    error_alt:       '✨ Continue without camera',
     error_blocked_title: 'Camera blocked by browser',
     error_blocked_desc:  'Your browser blocked camera access. Follow these steps:',
     error_blocked_steps: [
@@ -100,8 +106,8 @@
     error_blocked_chrome: 'Or in Chrome: <code>chrome://settings/content/camera</code>',
     error_notfound_title: 'No camera found',
     error_notfound_desc:  'No camera detected on your device. You can still explore your routine.',
-    error_retry:          '🔄 Try again',
-    loading:        'Requesting camera access…',
+    error_retry:     '🔄 Try again',
+    loading:         'SYS:// REQUESTING CAMERA ACCESS…',
     items: [
       { icon: '💧', text: 'Hydration levels',        dim: 'hidratacion'  },
       { icon: '🛡️', text: 'Skin barrier integrity',  dim: 'barrera'      },
@@ -120,6 +126,59 @@
   };
 
   /* ══════════════════════════════════════════════════════════
+     DATOS FACIAL MESH — 68 puntos en % (x, y)
+     Distribuidos sobre cara estándar en encuadre portrait
+     ══════════════════════════════════════════════════════════ */
+  const MESH_POINTS = [
+    // Contorno jawline (17 puntos)
+    [18,82],[21,76],[23,68],[26,61],[30,56],[35,53],[41,52],
+    [50,51],[59,52],[65,53],[70,56],[74,61],[77,68],[79,76],[82,82],[84,88],[50,90],
+    // Ceja izquierda (5 puntos)
+    [27,35],[31,31],[37,29],[43,30],[47,34],
+    // Ceja derecha (5 puntos)
+    [53,34],[57,29],[63,31],[69,31],[73,35],
+    // Nariz bridge (4 puntos)
+    [50,37],[49,42],[49,47],[50,52],
+    // Nariz base (5 puntos)
+    [42,55],[45,57],[50,59],[55,57],[58,55],
+    // Ojo izquierdo (6 puntos)
+    [28,39],[33,37],[38,37],[42,39],[38,42],[33,42],
+    // Ojo derecho (6 puntos)
+    [58,39],[62,37],[67,37],[72,39],[67,42],[62,42],
+    // Boca exterior (12 puntos)
+    [38,68],[42,65],[47,64],[50,65],[53,64],[58,65],[62,68],
+    [58,73],[53,75],[50,76],[47,75],[42,73],
+    // Boca interior (8 puntos)
+    [41,68],[47,66],[50,67],[53,66],[59,68],[54,72],[50,73],[46,72],
+  ];
+
+  /* Conexiones para el wireframe SVG — pares de índice */
+  const MESH_EDGES = [
+    // Jawline
+    [0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,9],[9,10],[10,11],[11,12],[12,13],[13,14],[14,15],[15,16],
+    // Cejas
+    [17,18],[18,19],[19,20],[20,21],
+    [22,23],[23,24],[24,25],[25,26],
+    // Nariz
+    [27,28],[28,29],[29,30],[30,34],[34,33],[33,32],[32,31],[31,30],
+    // Ojo izq
+    [35,36],[36,37],[37,38],[38,40],[40,39],[39,35],
+    // Ojo der
+    [41,42],[42,43],[43,44],[44,46],[46,45],[45,41],
+    // Boca exterior
+    [47,48],[48,49],[49,50],[50,51],[51,52],[52,53],[53,54],[54,55],[55,56],[56,57],[57,58],[58,47],
+  ];
+
+  /* Mapa: countdown step (5→1) → nombre zona */
+  const ZONE_SEQUENCE = {
+    5: 'forehead',
+    4: 'left',
+    3: 'right',
+    2: 'nose',
+    1: 'chin',
+  };
+
+  /* ══════════════════════════════════════════════════════════
      CONSTRUCCIÓN DEL DOM
      ══════════════════════════════════════════════════════════ */
   function buildModal() {
@@ -134,7 +193,7 @@
     modal.innerHTML = `
       <div class="kv-panel">
 
-        <!-- ─── HEADER flotante sobre la cámara ─── -->
+        <!-- ─── HEADER ─── -->
         <div class="kv-header">
           <div class="kv-header__koi">
             <div class="kv-header__avatar"><span>🌸</span></div>
@@ -158,17 +217,17 @@
         <!-- ─── VIEWFINDER ─── -->
         <div class="kv-viewfinder" id="kv-viewfinder" style="display:none;">
 
-          <!-- Video -->
+          <!-- Video + canvas -->
           <video id="koi-vision-video" autoplay playsinline muted></video>
           <canvas id="koi-vision-canvas" style="display:none;"></canvas>
 
           <!-- Viñeta -->
           <div class="kv-vignette"></div>
 
-          <!-- Grid holográfico CSS -->
+          <!-- Grid holográfico -->
           <div class="kv-bioscan-grid" aria-hidden="true"></div>
 
-          <!-- Líneas de scan -->
+          <!-- Scan lines globales -->
           <div class="kv-bioscan-line"   aria-hidden="true"></div>
           <div class="kv-bioscan-line-2" aria-hidden="true"></div>
 
@@ -180,7 +239,58 @@
             <div class="kv-corner kv-corner--br"></div>
           </div>
 
-          <!-- Puntos biométricos flotantes -->
+          <!-- ─── FACIAL MESH ─── -->
+          <div class="kv-mesh-layer" id="kv-mesh-layer" aria-hidden="true">
+            <svg class="kv-mesh-svg" id="kv-mesh-svg" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+            ${MESH_POINTS.map((p, i) =>
+              `<div class="kv-mesh-dot" id="kv-mdot-${i}" style="left:${p[0]}%;top:${p[1]}%"></div>`
+            ).join('')}
+          </div>
+
+          <!-- ─── ZONE BRACKETS ─── -->
+          <div class="kv-zone-brackets" id="kv-zone-brackets" aria-hidden="true">
+            <div class="kv-zone-bracket kv-zone-bracket--forehead" id="kv-bracket-forehead">
+              <span class="kv-zone-label">FOREHEAD ANALYZING</span>
+            </div>
+            <div class="kv-zone-bracket kv-zone-bracket--left" id="kv-bracket-left">
+              <span class="kv-zone-label">CHEEK L ANALYZING</span>
+            </div>
+            <div class="kv-zone-bracket kv-zone-bracket--right" id="kv-bracket-right">
+              <span class="kv-zone-label">CHEEK R ANALYZING</span>
+            </div>
+            <div class="kv-zone-bracket kv-zone-bracket--nose" id="kv-bracket-nose">
+              <span class="kv-zone-label">NOSE ANALYZING</span>
+            </div>
+            <div class="kv-zone-bracket kv-zone-bracket--chin" id="kv-bracket-chin">
+              <span class="kv-zone-label">CHIN ANALYZING</span>
+            </div>
+          </div>
+
+          <!-- ─── TERMOGRAFÍA ─── -->
+          <div class="kv-thermo-layer" id="kv-thermo-layer" aria-hidden="true">
+            <div class="kv-thermo-zone kv-thermo-zone--forehead" id="kv-thermo-forehead"></div>
+            <div class="kv-thermo-zone kv-thermo-zone--left"     id="kv-thermo-left"></div>
+            <div class="kv-thermo-zone kv-thermo-zone--right"    id="kv-thermo-right"></div>
+            <div class="kv-thermo-zone kv-thermo-zone--nose"     id="kv-thermo-nose"></div>
+            <div class="kv-thermo-zone kv-thermo-zone--chin"     id="kv-thermo-chin"></div>
+          </div>
+
+          <!-- ─── ZONE SCANLINE ─── -->
+          <div class="kv-zone-scanline" id="kv-zone-scanline" aria-hidden="true"></div>
+
+          <!-- ─── BARRA PROGRESO ZONA ─── -->
+          <div class="kv-zone-progress" id="kv-zone-progress" aria-hidden="true">
+            <div class="kv-zone-progress__label" id="kv-zone-progress-label">ANALYZING ZONE 1/5</div>
+            <div class="kv-zone-progress__blocks">
+              <div class="kv-zone-progress__block" id="kv-zpb-0"></div>
+              <div class="kv-zone-progress__block" id="kv-zpb-1"></div>
+              <div class="kv-zone-progress__block" id="kv-zpb-2"></div>
+              <div class="kv-zone-progress__block" id="kv-zpb-3"></div>
+              <div class="kv-zone-progress__block" id="kv-zpb-4"></div>
+            </div>
+          </div>
+
+          <!-- ─── PUNTOS BIO FLOTANTES ─── -->
           <div class="kv-bio-live" aria-hidden="true">
             <div class="kv-bio-dot" style="top:30%;left:50%"></div>
             <div class="kv-bio-dot" style="top:42%;left:34%"></div>
@@ -191,34 +301,45 @@
             <div class="kv-bio-dot" style="top:50%;left:50%"></div>
           </div>
 
-          <!-- Métricas biométricas -->
+          <!-- ─── MÉTRICAS ─── -->
           <div class="kv-metrics" aria-hidden="true">
             <div class="kv-metric kv-metric--tl">
+              <div class="kv-metric__prefix">BIO://</div>
               <div class="kv-metric__label">HYDRATION</div>
               <div class="kv-metric__value" id="kv-m-hydration">--</div>
               <div class="kv-metric__bar"><div class="kv-metric__bar-fill"></div></div>
             </div>
             <div class="kv-metric kv-metric--tr">
+              <div class="kv-metric__prefix">BIO://</div>
               <div class="kv-metric__label">MELANIN</div>
               <div class="kv-metric__value" id="kv-m-melanin">--</div>
               <div class="kv-metric__bar"><div class="kv-metric__bar-fill"></div></div>
             </div>
             <div class="kv-metric kv-metric--bl">
+              <div class="kv-metric__prefix">SYS://</div>
               <div class="kv-metric__label">BARRIER</div>
               <div class="kv-metric__value" id="kv-m-barrier">--</div>
               <div class="kv-metric__bar"><div class="kv-metric__bar-fill"></div></div>
             </div>
             <div class="kv-metric kv-metric--br">
+              <div class="kv-metric__prefix">UV://</div>
               <div class="kv-metric__label">UV INDEX</div>
               <div class="kv-metric__value" id="kv-m-uv">--</div>
               <div class="kv-metric__bar"><div class="kv-metric__bar-fill"></div></div>
             </div>
           </div>
 
-          <!-- HUD status -->
+          <!-- ─── ECG LATERAL ─── -->
+          <div class="kv-ecg" id="kv-ecg" aria-hidden="true">
+            <div class="kv-ecg__label">SKIN FREQ.</div>
+            <canvas class="kv-ecg__canvas" id="kv-ecg-canvas" width="20" height="90"></canvas>
+          </div>
+
+          <!-- ─── HUD STATUS ─── -->
           <div class="kv-hud" aria-hidden="true">
             <div class="kv-hud__status">
               <div class="kv-hud__dot kv--live" id="kv-hud-dot"></div>
+              <span class="kv-hud__prefix" id="kv-hud-prefix">SYS://</span>
               <span id="kv-hud-text">LIVE</span>
             </div>
             <div class="kv-hud__scan" id="kv-scan-pct">SCAN 0%</div>
@@ -233,8 +354,12 @@
             <div class="kv-countdown__number" id="kv-countdown-num">5</div>
           </div>
 
-          <!-- Flash -->
+          <!-- Glitch layers -->
           <div class="kv-capture-flash" id="kv-capture-flash"></div>
+          <div class="kv-glitch-lines"  id="kv-glitch-lines"></div>
+          <div class="kv-capture-text"  id="kv-capture-text">
+            <div class="kv-capture-text__inner">CAPTURE COMPLETE<br>PROCESSING…</div>
+          </div>
 
         </div>
 
@@ -242,16 +367,41 @@
         <div class="kv-confirm" id="kv-confirm">
           <img class="kv-confirm__photo" id="kv-confirm-photo" alt="" />
           <div class="kv-confirm__overlay"></div>
+          <!-- Wireframe mesh encima de foto -->
+          <svg class="kv-confirm__mesh" id="kv-confirm-mesh" viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></svg>
           <div class="kv-confirm__content">
-            <div class="kv-confirm__title">Use this <span>photo?</span></div>
-            <div class="kv-confirm__subtitle">KOI BioScan · Capture Review</div>
+            <!-- Datos biométricos escaneados -->
+            <div class="kv-confirm__biodata" id="kv-confirm-biodata">
+              <div class="kv-confirm__biorow">
+                <div class="kv-confirm__biokey">HYDRATION</div>
+                <div class="kv-confirm__bioval" id="kv-cval-hydration">--</div>
+              </div>
+              <div class="kv-confirm__biorow">
+                <div class="kv-confirm__biokey">MELANIN INDEX</div>
+                <div class="kv-confirm__bioval kv--pink" id="kv-cval-melanin">--</div>
+              </div>
+              <div class="kv-confirm__biorow">
+                <div class="kv-confirm__biokey">BARRIER</div>
+                <div class="kv-confirm__bioval kv--green" id="kv-cval-barrier">--</div>
+              </div>
+              <div class="kv-confirm__biorow">
+                <div class="kv-confirm__biokey">UV EXPOSURE</div>
+                <div class="kv-confirm__bioval" id="kv-cval-uv">--</div>
+              </div>
+              <div class="kv-confirm__biorow">
+                <div class="kv-confirm__biokey">SCAN QUALITY</div>
+                <div class="kv-confirm__bioval kv--green" id="kv-cval-quality">OPTIMAL</div>
+              </div>
+              <div class="kv-confirm__biorow">
+                <div class="kv-confirm__biokey">ZONES MAPPED</div>
+                <div class="kv-confirm__bioval" id="kv-cval-zones">5/5</div>
+              </div>
+            </div>
+            <div class="kv-confirm__title">${T.confirm_title}</div>
+            <div class="kv-confirm__subtitle">KOI BioScan v5.0 · Biometric Capture</div>
             <div class="kv-confirm__btns">
-              <button class="kv-confirm__btn-yes" id="kv-confirm-yes" type="button">
-                ${T.confirm_yes}
-              </button>
-              <button class="kv-confirm__btn-retry" id="kv-confirm-retry" type="button">
-                ${T.confirm_retry}
-              </button>
+              <button class="kv-confirm__btn-yes"   id="kv-confirm-yes"   type="button">${T.confirm_yes}</button>
+              <button class="kv-confirm__btn-retry" id="kv-confirm-retry" type="button">${T.confirm_retry}</button>
             </div>
           </div>
         </div>
@@ -272,7 +422,7 @@
                 <div class="kv-bio-pt" style="top:50%;left:50%"></div>
               </div>
               <div class="kv-scan-data">
-                <div class="kv-scan-data__chip kv-scan-data__chip--tl">BIOSCAN</div>
+                <div class="kv-scan-data__chip kv-scan-data__chip--tl">BIOSCAN v5.0</div>
                 <div class="kv-scan-data__chip kv-scan-data__chip--br" id="kv-scan-pct-analysis">0%</div>
               </div>
               <div class="kv-photo-corner kv-photo-corner--tl"></div>
@@ -316,9 +466,7 @@
               </div>
             `).join('')}
           </div>
-          <div class="kv-result-cta" id="kv-result-cta" role="button" tabindex="0">
-            ${T.result_cta}
-          </div>
+          <div class="kv-result-cta" id="kv-result-cta" role="button" tabindex="0">${T.result_cta}</div>
           <div class="kv-privacy-note">${T.privacy}</div>
         </div>
 
@@ -329,9 +477,7 @@
           <p class="kv-error-state__desc" id="kv-error-desc">${T.error_desc}</p>
           <ol class="kv-error-steps" id="kv-error-steps" style="display:none;"></ol>
           <p class="kv-error-chrome-tip" id="kv-error-chrome" style="display:none;"></p>
-          <button class="kv-error-retry-btn" id="kv-error-retry" type="button" style="display:none;">
-            ${T.error_retry}
-          </button>
+          <button class="kv-error-retry-btn" id="kv-error-retry" type="button" style="display:none;">${T.error_retry}</button>
           <div class="kv-error-alt-btn" id="kv-error-alt" role="button" tabindex="0">${T.error_alt}</div>
         </div>
 
@@ -339,28 +485,56 @@
     `;
 
     document.body.appendChild(modal);
+    _buildMeshSVG();
     bindEvents();
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     CONSTRUIR SVG MESH — líneas de conexión
+     ══════════════════════════════════════════════════════════ */
+  function _buildMeshSVG() {
+    const svg = document.getElementById('kv-mesh-svg');
+    if (!svg) return;
+
+    const lines = MESH_EDGES.map(([a, b]) => {
+      const pa = MESH_POINTS[a];
+      const pb = MESH_POINTS[b];
+      if (!pa || !pb) return '';
+      return `<line x1="${pa[0]}" y1="${pa[1]}" x2="${pb[0]}" y2="${pb[1]}" stroke="rgba(0,255,231,0.18)" stroke-width="0.3"/>`;
+    }).join('');
+
+    svg.innerHTML = lines;
+
+    // También construir el SVG del confirm mesh
+    const confirmSvg = document.getElementById('kv-confirm-mesh');
+    if (confirmSvg) {
+      const confirmLines = MESH_EDGES.map(([a, b]) => {
+        const pa = MESH_POINTS[a];
+        const pb = MESH_POINTS[b];
+        if (!pa || !pb) return '';
+        return `<line x1="${pa[0]}" y1="${pa[1]}" x2="${pb[0]}" y2="${pb[1]}" stroke="rgba(0,255,231,0.22)" stroke-width="0.35"/>`;
+      }).join('');
+      const confirmDots = MESH_POINTS.map(p =>
+        `<circle cx="${p[0]}" cy="${p[1]}" r="0.5" fill="rgba(0,255,231,0.45)"/>`
+      ).join('');
+      confirmSvg.innerHTML = confirmLines + confirmDots;
+    }
   }
 
   /* ══════════════════════════════════════════════════════════
      EVENTOS
      ══════════════════════════════════════════════════════════ */
   function bindEvents() {
-    // Cerrar con X
     const closeBtn = document.getElementById('kv-close-btn');
     if (closeBtn) {
       closeBtn.addEventListener('click', cerrar, true);
-      closeBtn.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') cerrar();
-      });
+      closeBtn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') cerrar(); });
     }
 
-    // Escape
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && KV_STATE.isOpen) cerrar();
     });
 
-    // Confirm: sí, analizar
     const confirmYes = document.getElementById('kv-confirm-yes');
     if (confirmYes) {
       confirmYes.addEventListener('click', () => {
@@ -369,24 +543,19 @@
       }, true);
     }
 
-    // Confirm: repetir foto
     const confirmRetry = document.getElementById('kv-confirm-retry');
     if (confirmRetry) {
       confirmRetry.addEventListener('click', retake, true);
     }
 
-    // Botón alternativo sin cámara
     const altBtn = document.getElementById('kv-error-alt');
     if (altBtn) {
       altBtn.addEventListener('click', () => {
         cerrar();
-        if (typeof window.koiVisionAlternativo === 'function') {
-          window.koiVisionAlternativo();
-        }
+        if (typeof window.koiVisionAlternativo === 'function') window.koiVisionAlternativo();
       }, true);
     }
 
-    // Reintentar cámara
     const retryBtn = document.getElementById('kv-error-retry');
     if (retryBtn) {
       retryBtn.addEventListener('click', async () => {
@@ -397,7 +566,6 @@
       }, true);
     }
 
-    // CTA resultado
     const ctaBtn = document.getElementById('kv-result-cta');
     if (ctaBtn) {
       ctaBtn.addEventListener('click', enviarAlChat, true);
@@ -412,12 +580,8 @@
     KV_STATE.phase = phase;
 
     const sections = [
-      'kv-loading-state',
-      'kv-viewfinder',
-      'kv-confirm',
-      'kv-analyzing',
-      'kv-result-preview',
-      'kv-error-state',
+      'kv-loading-state', 'kv-viewfinder', 'kv-confirm',
+      'kv-analyzing', 'kv-result-preview', 'kv-error-state',
     ];
 
     sections.forEach(id => {
@@ -452,12 +616,13 @@
   async function abrir(contexto) {
     if (KV_STATE.isOpen) return;
 
-    KV_STATE.contexto      = contexto || null;
-    KV_STATE.isOpen        = true;
-    KV_STATE.capturedImage = null;
+    KV_STATE.contexto       = contexto || null;
+    KV_STATE.isOpen         = true;
+    KV_STATE.capturedImage  = null;
     KV_STATE.analysisResult = null;
-    KV_STATE.facePresent   = false;
-    KV_STATE.countdownVal  = 0;
+    KV_STATE.facePresent    = false;
+    KV_STATE.countdownVal   = 0;
+    KV_STATE.meshActive     = false;
 
     buildModal();
 
@@ -484,9 +649,7 @@
     const modal = document.getElementById('koi-vision-modal');
     if (modal) {
       modal.classList.remove('kv--active');
-      setTimeout(() => {
-        if (modal.parentNode) modal.parentNode.removeChild(modal);
-      }, 400);
+      setTimeout(() => { if (modal.parentNode) modal.parentNode.removeChild(modal); }, 400);
     }
 
     document.body.style.overflow = '';
@@ -512,16 +675,11 @@
       } catch (err) {
         lastErr = err;
         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError' ||
-            err.name === 'NotFoundError'   || err.name === 'DevicesNotFoundError') {
-          break;
-        }
+            err.name === 'NotFoundError'   || err.name === 'DevicesNotFoundError') break;
       }
     }
 
-    if (!stream) {
-      mostrarError(lastErr || new Error('Camera unavailable'));
-      return;
-    }
+    if (!stream) { mostrarError(lastErr || new Error('Camera unavailable')); return; }
 
     KV_STATE.stream = stream;
     const video = document.getElementById('koi-vision-video');
@@ -529,11 +687,11 @@
     video.srcObject = stream;
     await video.play().catch(() => {});
 
-    // Inicializar FaceDetector si está disponible
     _initFaceDetector();
 
     setPhase('camera');
     _startScanEffects();
+    _startECG();
     _startPresenceDetection();
   }
 
@@ -552,17 +710,12 @@
   function _initFaceDetector() {
     if ('FaceDetector' in window) {
       try {
-        KV_STATE.faceDetector = new window.FaceDetector({
-          fastMode: true,
-          maxDetectedFaces: 1,
-        });
-        console.log('[KOI BioScan] FaceDetector API disponible ✓');
-      } catch (_) {
-        KV_STATE.faceDetector = null;
-      }
+        KV_STATE.faceDetector = new window.FaceDetector({ fastMode: true, maxDetectedFaces: 1 });
+        console.log('[KOI BioScan v5.0] FaceDetector API disponible ✓');
+      } catch (_) { KV_STATE.faceDetector = null; }
     } else {
       KV_STATE.faceDetector = null;
-      console.log('[KOI BioScan] FaceDetector no disponible — usando luminosidad central');
+      console.log('[KOI BioScan v5.0] Usando luminosidad central como fallback');
     }
   }
 
@@ -570,45 +723,33 @@
     const video = document.getElementById('koi-vision-video');
     if (!video || !KV_STATE.stream) return false;
 
-    // Método 1: FaceDetector API
     if (KV_STATE.faceDetector) {
       try {
         const faces = await KV_STATE.faceDetector.detect(video);
         return faces.length > 0;
-      } catch (_) {
-        // fallback
-      }
+      } catch (_) { /* fallback */ }
     }
 
-    // Método 2: luminosidad zona central (proxy de cara)
     const canvas = document.getElementById('koi-vision-canvas');
     if (!canvas) return false;
 
-    // Analizar solo la zona central (donde estaría la cara)
     const cw = 60; const ch = 60;
     canvas.width  = cw;
     canvas.height = ch;
     const ctx = canvas.getContext('2d');
 
     try {
-      // Capturar solo el centro del video
       const vw = video.videoWidth  || 320;
       const vh = video.videoHeight || 240;
-      const sx = vw * 0.25; const sy = vh * 0.15;
-      const sw = vw * 0.50; const sh = vh * 0.70;
-      ctx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch);
+      ctx.drawImage(video, vw*0.25, vh*0.15, vw*0.50, vh*0.70, 0, 0, cw, ch);
       const data = ctx.getImageData(0, 0, cw, ch).data;
-
       let sum = 0; let count = 0;
       for (let i = 0; i < data.length; i += 4) {
-        sum += (data[i] * 0.299 + data[i+1] * 0.587 + data[i+2] * 0.114);
+        sum += (data[i]*0.299 + data[i+1]*0.587 + data[i+2]*0.114);
         count++;
       }
-      const avg = count > 0 ? sum / count : 0;
-      return avg >= KV_CONFIG.presenceThreshold;
-    } catch (_) {
-      return false;
-    }
+      return (count > 0 ? sum / count : 0) >= KV_CONFIG.presenceThreshold;
+    } catch (_) { return false; }
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -618,62 +759,205 @@
     _stopPresenceTimer();
 
     KV_STATE.presenceTimer = setInterval(async () => {
-      if (KV_STATE.phase !== 'camera') {
-        _stopPresenceTimer();
-        return;
-      }
+      if (KV_STATE.phase !== 'camera') { _stopPresenceTimer(); return; }
 
       const present = await _detectFacePresence();
 
       if (present && !KV_STATE.facePresent) {
-        // ROSTRO DETECTADO — iniciar countdown
         KV_STATE.facePresent = true;
         _onFaceLocked();
       } else if (!present && KV_STATE.facePresent) {
-        // ROSTRO PERDIDO — pausar countdown
         KV_STATE.facePresent = false;
         _onFaceLost();
       }
-
     }, KV_CONFIG.presenceCheckMs);
   }
 
   function _onFaceLocked() {
-    // Actualizar UI a estado LOCK
     const corners   = document.getElementById('kv-corners');
     const statusMsg = document.getElementById('kv-status-msg');
     const hudDot    = document.getElementById('kv-hud-dot');
     const hudText   = document.getElementById('kv-hud-text');
+    const hudPrefix = document.getElementById('kv-hud-prefix');
 
     if (corners)   corners.classList.add('kv--lock');
     if (statusMsg) { statusMsg.textContent = T.lock; statusMsg.classList.add('kv--lock'); }
     if (hudDot)    { hudDot.className = 'kv-hud__dot kv--lock'; }
     if (hudText)   hudText.textContent = 'LOCKED';
+    if (hudPrefix) hudPrefix.textContent = 'BIO://';
 
-    // Activar métricas
+    // Activar mesh facial
+    _activateMesh();
+
+    // Mostrar zona progress
+    const zp = document.getElementById('kv-zone-progress');
+    if (zp) zp.classList.add('kv--visible');
+
+    // Activar métricas y ECG
     _startMetricAnimations();
+
+    // Mostrar ECG y DNA
+    const ecg = document.getElementById('kv-ecg');
+    if (ecg) ecg.classList.add('kv--active');
+    const dna = document.getElementById('kv-dna');
+    if (dna) dna.classList.add('kv--active');
 
     // Iniciar countdown
     _startCountdown();
   }
 
   function _onFaceLost() {
-    // Resetear countdown
     _stopCountdown();
+    _deactivateMesh();
+    _hideAllBrackets();
 
     const corners   = document.getElementById('kv-corners');
     const statusMsg = document.getElementById('kv-status-msg');
     const hudDot    = document.getElementById('kv-hud-dot');
     const hudText   = document.getElementById('kv-hud-text');
+    const hudPrefix = document.getElementById('kv-hud-prefix');
     const countdown = document.getElementById('kv-countdown');
+    const zp        = document.getElementById('kv-zone-progress');
 
     if (corners)   corners.classList.remove('kv--lock');
     if (statusMsg) { statusMsg.textContent = T.scanning; statusMsg.classList.remove('kv--lock'); }
     if (hudDot)    hudDot.className = 'kv-hud__dot kv--live';
     if (hudText)   hudText.textContent = 'LIVE';
+    if (hudPrefix) hudPrefix.textContent = 'SYS://';
     if (countdown) countdown.classList.remove('kv--active');
+    if (zp)        zp.classList.remove('kv--visible');
   }
 
+  /* ══════════════════════════════════════════════════════════
+     FACIAL MESH — activar / desactivar puntos
+     ══════════════════════════════════════════════════════════ */
+  function _activateMesh() {
+    KV_STATE.meshActive = true;
+    MESH_POINTS.forEach((_, i) => {
+      const dot = document.getElementById(`kv-mdot-${i}`);
+      if (dot) {
+        setTimeout(() => {
+          if (KV_STATE.meshActive) dot.classList.add('kv--active');
+        }, i * 12);
+      }
+    });
+  }
+
+  function _deactivateMesh() {
+    KV_STATE.meshActive = false;
+    MESH_POINTS.forEach((_, i) => {
+      const dot = document.getElementById(`kv-mdot-${i}`);
+      if (dot) dot.classList.remove('kv--active', 'kv--zone-active');
+    });
+  }
+
+  function _highlightZoneMeshDots(zoneName) {
+    // Índices de puntos por zona
+    const zoneMap = {
+      forehead: [0,1,2,3,4,5,14,15,16,17,18,19,20,21,22,23,24,25,26],
+      left:     [0,1,2,3,4,5,35,36,37,38,39,40],
+      right:    [8,9,10,11,12,13,41,42,43,44,45,46],
+      nose:     [27,28,29,30,31,32,33,34],
+      chin:     [6,7,8,15,16],
+    };
+
+    // Reset todos
+    MESH_POINTS.forEach((_, i) => {
+      const dot = document.getElementById(`kv-mdot-${i}`);
+      if (dot) dot.classList.remove('kv--zone-active');
+    });
+
+    const indices = zoneMap[zoneName] || [];
+    indices.forEach(i => {
+      const dot = document.getElementById(`kv-mdot-${i}`);
+      if (dot) dot.classList.add('kv--zone-active');
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     ZONE BRACKETS — mostrar / ocultar
+     ══════════════════════════════════════════════════════════ */
+  function _hideAllBrackets() {
+    ['forehead','left','right','nose','chin'].forEach(z => {
+      const b = document.getElementById(`kv-bracket-${z}`);
+      if (b) { b.classList.remove('kv--visible', 'kv--analyzing'); }
+    });
+  }
+
+  function _activateZoneBracket(zoneName) {
+    _hideAllBrackets();
+
+    // Mostrar todos como visible
+    ['forehead','left','right','nose','chin'].forEach(z => {
+      const b = document.getElementById(`kv-bracket-${z}`);
+      if (b) b.classList.add('kv--visible');
+    });
+
+    // El actual en modo analyzing
+    const active = document.getElementById(`kv-bracket-${zoneName}`);
+    if (active) active.classList.add('kv--analyzing');
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     TERMOGRAFÍA — flash de color por zona
+     ══════════════════════════════════════════════════════════ */
+  function _flashThermoZone(zoneName) {
+    const el = document.getElementById(`kv-thermo-${zoneName}`);
+    if (!el) return;
+    el.classList.remove('kv--flash');
+    void el.offsetWidth; // reflow
+    el.classList.add('kv--flash');
+    setTimeout(() => el.classList.remove('kv--flash'), 900);
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     ZONA SCANLINE — sincronizada con countdown
+     ══════════════════════════════════════════════════════════ */
+  function _fireZoneScanline(zoneName) {
+    const sl = document.getElementById('kv-zone-scanline');
+    if (!sl) return;
+
+    // Posición y tamaño de la zona
+    const zonePos = {
+      forehead: { top: '18%', travel: '14%' },
+      left:     { top: '35%', travel: '20%' },
+      right:    { top: '35%', travel: '20%' },
+      nose:     { top: '40%', travel: '18%' },
+      chin:     { top: '78%', travel: '8%'  },
+    };
+    const pos = zonePos[zoneName] || { top: '20%', travel: '15%' };
+
+    sl.classList.remove('kv--scanning');
+    sl.style.top = pos.top;
+    sl.style.setProperty('--kv-zone-scan-dur', '0.9s');
+    sl.style.setProperty('--kv-zone-scan-travel', pos.travel);
+    void sl.offsetWidth;
+    sl.classList.add('kv--scanning');
+    setTimeout(() => sl.classList.remove('kv--scanning'), 950);
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     BARRA PROGRESO DE ZONA
+     ══════════════════════════════════════════════════════════ */
+  function _updateZoneProgress(step) {
+    // step: 5=zona1, 4=zona2, ..., 1=zona5
+    const idx = 5 - step; // 0..4
+
+    const label = document.getElementById('kv-zone-progress-label');
+    if (label) label.textContent = `ANALYZING ZONE ${idx + 1}/5`;
+
+    for (let i = 0; i < 5; i++) {
+      const block = document.getElementById(`kv-zpb-${i}`);
+      if (!block) continue;
+      block.classList.remove('kv--done', 'kv--active');
+      if (i < idx)  block.classList.add('kv--done');
+      if (i === idx) block.classList.add('kv--active');
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     COUNTDOWN
+     ══════════════════════════════════════════════════════════ */
   function _startCountdown() {
     _stopCountdown();
     KV_STATE.countdownVal = KV_CONFIG.countdownFrom;
@@ -686,59 +970,98 @@
 
   function _tickCountdown() {
     if (KV_STATE.phase !== 'camera' || !KV_STATE.facePresent) return;
-    if (KV_STATE.countdownVal <= 0) {
-      _dispararCaptura();
-      return;
-    }
+    if (KV_STATE.countdownVal <= 0) { _dispararCaptura(); return; }
 
     const numEl  = document.getElementById('kv-countdown-num');
     const ringEl = document.getElementById('kv-countdown-ring');
+    const step   = KV_STATE.countdownVal;
 
     if (numEl) {
-      numEl.textContent = KV_STATE.countdownVal;
-      // Resetear y re-aplicar animación
+      numEl.textContent = step;
       numEl.classList.remove('kv--pop');
-      void numEl.offsetWidth; // reflow
+      void numEl.offsetWidth;
       numEl.classList.add('kv--pop');
     }
-
     if (ringEl) {
       ringEl.classList.remove('kv--pulse');
       void ringEl.offsetWidth;
       ringEl.classList.add('kv--pulse');
     }
 
-    KV_STATE.countdownVal--;
+    // Acciones visuales por zona
+    const zoneName = ZONE_SEQUENCE[step];
+    if (zoneName) {
+      _activateZoneBracket(zoneName);
+      _flashThermoZone(zoneName);
+      _fireZoneScanline(zoneName);
+      _highlightZoneMeshDots(zoneName);
+      _updateZoneProgress(step);
+    }
 
+    KV_STATE.countdownVal--;
     KV_STATE.countdownTimer = setTimeout(_tickCountdown, KV_CONFIG.countdownStepMs);
   }
 
   function _stopCountdown() {
-    if (KV_STATE.countdownTimer) {
-      clearTimeout(KV_STATE.countdownTimer);
-      KV_STATE.countdownTimer = null;
-    }
+    if (KV_STATE.countdownTimer) { clearTimeout(KV_STATE.countdownTimer); KV_STATE.countdownTimer = null; }
     KV_STATE.countdownVal = 0;
   }
 
   function _stopPresenceTimer() {
-    if (KV_STATE.presenceTimer) {
-      clearInterval(KV_STATE.presenceTimer);
-      KV_STATE.presenceTimer = null;
-    }
+    if (KV_STATE.presenceTimer) { clearInterval(KV_STATE.presenceTimer); KV_STATE.presenceTimer = null; }
   }
 
   /* ══════════════════════════════════════════════════════════
-     EFECTOS WOW — scan pct + métricas
+     ECG CANVAS — "SKIN FREQ."
+     ══════════════════════════════════════════════════════════ */
+  function _startECG() {
+    const canvas = document.getElementById('kv-ecg-canvas');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width;
+    const H = canvas.height;
+    let t = 0;
+
+    function drawECG() {
+      if (!KV_STATE.isOpen || KV_STATE.phase !== 'camera') return;
+
+      ctx.clearRect(0, 0, W, H);
+
+      // Scroll vertical del ECG
+      ctx.strokeStyle = 'rgba(0,255,136,0.70)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+
+      for (let y = 0; y < H; y++) {
+        const norm = y / H;
+        const phase = norm * 4 * Math.PI + t;
+        // Forma tipo ECG: onda sinusoidal con spike
+        let val = Math.sin(phase) * 0.3;
+        // Spike periódico
+        const mod = (phase % (2 * Math.PI)) / (2 * Math.PI);
+        if (mod > 0.45 && mod < 0.50) val += (mod - 0.45) / 0.05 * 1.2;
+        if (mod > 0.50 && mod < 0.55) val -= (mod - 0.50) / 0.05 * 1.0;
+        const x = W / 2 + val * (W * 0.6);
+        if (y === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      t += 0.12;
+      KV_STATE.ecgTimer = requestAnimationFrame(drawECG);
+    }
+
+    drawECG();
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     EFECTOS SCAN — pct + métricas con scramble
      ══════════════════════════════════════════════════════════ */
   function _startScanEffects() {
-    // Animar SCAN X%
     let pct = 0;
     KV_STATE.scanPctTimer = setInterval(() => {
-      if (!KV_STATE.isOpen || KV_STATE.phase !== 'camera') {
-        clearInterval(KV_STATE.scanPctTimer);
-        return;
-      }
+      if (!KV_STATE.isOpen || KV_STATE.phase !== 'camera') { clearInterval(KV_STATE.scanPctTimer); return; }
       pct = (pct + Math.floor(Math.random() * 5 + 1)) % 101;
       const el = document.getElementById('kv-scan-pct');
       if (el) el.textContent = 'SCAN ' + pct + '%';
@@ -746,12 +1069,11 @@
   }
 
   function _startMetricAnimations() {
-    // Datos simulados que "calculan" en tiempo real
     const metrics = [
-      { id: 'kv-m-hydration', min: 42, max: 89, suffix: '%' },
-      { id: 'kv-m-melanin',   min: 12, max: 68, suffix: '' },
-      { id: 'kv-m-barrier',   min: 55, max: 96, suffix: '%' },
-      { id: 'kv-m-uv',        min: 1,  max: 4,  suffix: '' },
+      { id: 'kv-m-hydration', min: 42, max: 89, suffix: '%',  confirmId: 'kv-cval-hydration', confirmSuffix: '%'  },
+      { id: 'kv-m-melanin',   min: 12, max: 68, suffix: '',   confirmId: 'kv-cval-melanin',   confirmSuffix: ' IU' },
+      { id: 'kv-m-barrier',   min: 55, max: 96, suffix: '%',  confirmId: 'kv-cval-barrier',   confirmSuffix: '%'  },
+      { id: 'kv-m-uv',        min: 1,  max: 4,  suffix: '',   confirmId: 'kv-cval-uv',        confirmSuffix: ' UV' },
     ];
 
     metrics.forEach(m => {
@@ -761,23 +1083,35 @@
       let current = m.min;
       const target = m.min + Math.floor(Math.random() * (m.max - m.min));
 
-      const timer = setInterval(() => {
-        if (!KV_STATE.isOpen || KV_STATE.phase !== 'camera') {
-          clearInterval(timer);
-          return;
-        }
-        if (current < target) {
-          current += Math.ceil((target - current) / 4);
-          el.textContent = current + m.suffix;
-        } else {
-          // Fluctuar levemente
-          const delta = Math.floor(Math.random() * 5) - 2;
-          current = Math.max(m.min, Math.min(m.max, current + delta));
-          el.textContent = current + m.suffix;
-        }
-      }, 200);
+      // Fase scramble inicial
+      let scrambleCount = 0;
+      el.classList.add('kv--scramble');
 
-      KV_STATE.metricTimers.push(timer);
+      const scramble = setInterval(() => {
+        if (scrambleCount++ > 8) {
+          clearInterval(scramble);
+          el.classList.remove('kv--scramble');
+        }
+        el.textContent = Math.floor(Math.random() * (m.max - m.min) + m.min) + m.suffix;
+      }, 80);
+
+      setTimeout(() => {
+        const timer = setInterval(() => {
+          if (!KV_STATE.isOpen || KV_STATE.phase !== 'camera') { clearInterval(timer); return; }
+          if (current < target) {
+            current += Math.ceil((target - current) / 4);
+            el.textContent = current + m.suffix;
+          } else {
+            const delta = Math.floor(Math.random() * 5) - 2;
+            current = Math.max(m.min, Math.min(m.max, current + delta));
+            el.textContent = current + m.suffix;
+          }
+        }, 200);
+        KV_STATE.metricTimers.push(timer);
+
+        // Guardar valor para confirm screen
+        KV_STATE[m.id + '_val'] = target;
+      }, 700);
     });
   }
 
@@ -785,47 +1119,64 @@
     _stopPresenceTimer();
     _stopCountdown();
     if (KV_STATE.scanPctTimer) { clearInterval(KV_STATE.scanPctTimer); KV_STATE.scanPctTimer = null; }
+    if (KV_STATE.ecgTimer)     { cancelAnimationFrame(KV_STATE.ecgTimer); KV_STATE.ecgTimer = null; }
     KV_STATE.metricTimers.forEach(t => clearInterval(t));
     KV_STATE.metricTimers = [];
   }
 
   /* ══════════════════════════════════════════════════════════
-     CAPTURA
+     CAPTURA — con glitch RGB
      ══════════════════════════════════════════════════════════ */
   function _dispararCaptura() {
     if (KV_STATE.phase !== 'camera') return;
 
     _stopAllTimers();
+    _hideAllBrackets();
+    _deactivateMesh();
 
-    // Actualizar HUD
     const hudDot  = document.getElementById('kv-hud-dot');
     const hudText = document.getElementById('kv-hud-text');
-    if (hudDot)  hudDot.className = 'kv-hud__dot kv--capture';
-    if (hudText) hudText.textContent = 'CAPTURE';
+    const hudPrefix = document.getElementById('kv-hud-prefix');
+    if (hudDot)    hudDot.className = 'kv-hud__dot kv--capture';
+    if (hudText)   hudText.textContent = 'CAPTURE';
+    if (hudPrefix) hudPrefix.textContent = 'SCAN://';
 
-    // Ocultar countdown
     const countdown = document.getElementById('kv-countdown');
     if (countdown) countdown.classList.remove('kv--active');
 
-    // Flash
-    const flashEl = document.getElementById('kv-capture-flash');
-    if (flashEl) {
-      flashEl.classList.add('kv--flash');
-      setTimeout(() => flashEl.classList.remove('kv--flash'), 450);
+    // Marcar última zona como completada
+    for (let i = 0; i < 5; i++) {
+      const block = document.getElementById(`kv-zpb-${i}`);
+      if (block) { block.classList.remove('kv--active'); block.classList.add('kv--done'); }
     }
 
-    // Pequeña pausa post-flash
-    setTimeout(() => _tomarFoto(), 150);
+    // GLITCH RGB
+    const flashEl   = document.getElementById('kv-capture-flash');
+    const linesEl   = document.getElementById('kv-glitch-lines');
+    const textEl    = document.getElementById('kv-capture-text');
+
+    if (flashEl) {
+      flashEl.classList.add('kv--flash');
+      setTimeout(() => flashEl.classList.remove('kv--flash'), 600);
+    }
+    if (linesEl) {
+      linesEl.classList.add('kv--active');
+      setTimeout(() => linesEl.classList.remove('kv--active'), 600);
+    }
+    if (textEl) {
+      textEl.classList.add('kv--active');
+      setTimeout(() => textEl.classList.remove('kv--active'), 600);
+    }
+
+    // Foto post-glitch
+    setTimeout(() => _tomarFoto(), 200);
   }
 
   function _tomarFoto() {
     const video  = document.getElementById('koi-vision-video');
     const canvas = document.getElementById('koi-vision-canvas');
 
-    if (!video || !canvas) {
-      _mostrarConfirm(null);
-      return;
-    }
+    if (!video || !canvas) { _mostrarConfirm(null); return; }
 
     canvas.width  = KV_CONFIG.captureWidth;
     canvas.height = KV_CONFIG.captureHeight;
@@ -841,51 +1192,82 @@
     const base64 = canvas.toDataURL('image/jpeg', KV_CONFIG.imageQuality);
     KV_STATE.capturedImage = base64;
 
-    // NO parar la cámara aquí — la necesitamos si el usuario elige "Retake"
+    // NO parar la cámara — necesaria para retake
     _mostrarConfirm(base64);
   }
 
   /* ══════════════════════════════════════════════════════════
-     CONFIRM SCREEN
+     CONFIRM SCREEN — con datos biométricos
      ══════════════════════════════════════════════════════════ */
   function _mostrarConfirm(base64) {
     const photoEl = document.getElementById('kv-confirm-photo');
     if (photoEl && base64) photoEl.src = base64;
 
+    // Transferir métricas a la confirm screen
+    const metricMap = [
+      { src: 'kv-m-hydration', dst: 'kv-cval-hydration', suffix: '' },
+      { src: 'kv-m-melanin',   dst: 'kv-cval-melanin',   suffix: '' },
+      { src: 'kv-m-barrier',   dst: 'kv-cval-barrier',   suffix: '' },
+      { src: 'kv-m-uv',        dst: 'kv-cval-uv',        suffix: ' UV' },
+    ];
+    metricMap.forEach(m => {
+      const srcEl = document.getElementById(m.src);
+      const dstEl = document.getElementById(m.dst);
+      if (srcEl && dstEl) dstEl.textContent = srcEl.textContent + m.suffix;
+    });
+
     setPhase('confirm');
   }
 
   function retake() {
-    // Volver a la cámara sin recargar el stream
     KV_STATE.capturedImage = null;
     KV_STATE.facePresent   = false;
     KV_STATE.countdownVal  = 0;
+    KV_STATE.meshActive    = false;
 
-    // Resetear estado visual
     const corners   = document.getElementById('kv-corners');
     const statusMsg = document.getElementById('kv-status-msg');
     const hudDot    = document.getElementById('kv-hud-dot');
     const hudText   = document.getElementById('kv-hud-text');
+    const hudPrefix = document.getElementById('kv-hud-prefix');
     const countdown = document.getElementById('kv-countdown');
+    const zp        = document.getElementById('kv-zone-progress');
+    const ecg       = document.getElementById('kv-ecg');
 
     if (corners)   corners.classList.remove('kv--lock');
     if (statusMsg) { statusMsg.textContent = T.scanning; statusMsg.classList.remove('kv--lock'); }
     if (hudDot)    hudDot.className = 'kv-hud__dot kv--live';
     if (hudText)   hudText.textContent = 'LIVE';
+    if (hudPrefix) hudPrefix.textContent = 'SYS://';
     if (countdown) countdown.classList.remove('kv--active');
+    if (zp)        zp.classList.remove('kv--visible');
+    if (ecg)       ecg.classList.remove('kv--active');
+
+    _hideAllBrackets();
+
+    // Reset zona progress blocks
+    for (let i = 0; i < 5; i++) {
+      const b = document.getElementById(`kv-zpb-${i}`);
+      if (b) b.classList.remove('kv--done', 'kv--active');
+    }
+
+    // Reset métricas
+    ['kv-m-hydration','kv-m-melanin','kv-m-barrier','kv-m-uv'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '--';
+    });
 
     setPhase('camera');
     _startScanEffects();
+    _startECG();
     _startPresenceDetection();
   }
 
   /* ══════════════════════════════════════════════════════════
-     ANÁLISIS PROGRESIVO — idéntico al original
+     ANÁLISIS PROGRESIVO — INTACTO
      ══════════════════════════════════════════════════════════ */
   async function iniciarAnalisis(imageBase64) {
-    // Parar cámara ahora que ya confirmamos
     pararCamara();
-
     setPhase('analyzing');
 
     const imgEl = document.getElementById('kv-captured-img');
@@ -910,19 +1292,19 @@
       setTimeout(() => pt.classList.add('kv--visible'), 700 + i * 200);
     });
 
-    const fillEl    = document.getElementById('kv-progress-fill');
-    const pctLabel  = document.getElementById('kv-analysis-pct-label');
-    const scanPct   = document.getElementById('kv-scan-pct-analysis');
-    const items     = T.items;
-    const total     = items.length;
+    const fillEl   = document.getElementById('kv-progress-fill');
+    const pctLabel = document.getElementById('kv-analysis-pct-label');
+    const scanPct  = document.getElementById('kv-scan-pct-analysis');
+    const items    = T.items;
+    const total    = items.length;
 
     function setProgress(pct) {
-      if (fillEl)   fillEl.style.width     = pct + '%';
-      if (pctLabel) pctLabel.textContent   = Math.round(pct) + '%';
-      if (scanPct)  scanPct.textContent    = Math.round(pct) + '%';
+      if (fillEl)   fillEl.style.width   = pct + '%';
+      if (pctLabel) pctLabel.textContent = Math.round(pct) + '%';
+      if (scanPct)  scanPct.textContent  = Math.round(pct) + '%';
     }
 
-    // Llamar al Worker EN PARALELO con la animación
+    // Llamar Worker EN PARALELO con la animación
     const analysisPromise = imageBase64
       ? llamarWorkerVision(imageBase64)
       : Promise.resolve(null);
@@ -1086,12 +1468,10 @@
       }
       if (chromeEl) { chromeEl.innerHTML = T.error_blocked_chrome; chromeEl.style.display = 'block'; }
       if (retryBtn) { retryBtn.textContent = T.error_retry; retryBtn.style.display = 'block'; retryBtn.disabled = false; }
-
     } else if (errName === 'NotFoundError' || errName === 'DevicesNotFoundError') {
       if (iconEl)  iconEl.textContent  = '📵';
       if (titleEl) titleEl.textContent = T.error_notfound_title;
       if (descEl)  descEl.textContent  = T.error_notfound_desc;
-
     } else {
       if (iconEl)  iconEl.textContent  = '📷';
       if (titleEl) titleEl.textContent = T.error_title;
