@@ -4227,8 +4227,6 @@ window.shatokbRevelarProductos = function () {
 function shatokbScrollAKOI() {
 
   // ── Paso 1: ocultar teaser + header de la sección ───────────
-  // El teaser (#stk-blur-overlay) y el header (.stk-reveal-header)
-  // forman una unidad visual — ambos desaparecen al hacer click.
   var teaser = document.getElementById('stk-blur-overlay');
   if (teaser) {
     teaser.style.transition = 'opacity 0.25s ease';
@@ -4237,7 +4235,6 @@ function shatokbScrollAKOI() {
     setTimeout(function() { teaser.style.display = 'none'; }, 260);
   }
 
-  // Ocultar el header "YOUR PERSONALIZED ROUTINE" (dentro de stk-reveal-section)
   var revealHeader = document.querySelector('#stk-reveal-section .stk-reveal-header');
   if (revealHeader) {
     revealHeader.style.transition = 'opacity 0.25s ease';
@@ -4246,7 +4243,6 @@ function shatokbScrollAKOI() {
     setTimeout(function() { revealHeader.style.display = 'none'; }, 260);
   }
 
-  // Ocultar el header principal del resultado: "YOUR SKIN PROFILE / THE SPOT ERASER"
   var resultHeader = document.querySelector('.shatokb-resultado__header');
   if (resultHeader) {
     resultHeader.style.transition = 'opacity 0.25s ease';
@@ -4255,7 +4251,6 @@ function shatokbScrollAKOI() {
     setTimeout(function() { resultHeader.style.display = 'none'; }, 260);
   }
 
-  // Ocultar también el budget note si existe
   var budgetNote = document.querySelector('.stk-budget-note');
   if (budgetNote) {
     budgetNote.style.transition = 'opacity 0.25s ease';
@@ -4265,9 +4260,7 @@ function shatokbScrollAKOI() {
 
   // ── Paso 2: mostrar los productos sombreados inmediatamente ──
   var blurred = document.getElementById('stk-routine-blurred');
-  if (blurred) {
-    blurred.style.display = 'block';
-  }
+  if (blurred) blurred.style.display = 'block';
 
   // ── Paso 3: iniciar KOI con el contexto del quiz ─────────────
   var ctx = window.SHATOKB_RESULTADO
@@ -4280,9 +4273,7 @@ function shatokbScrollAKOI() {
     window.shatokbIniciarKOI(ctx || {});
   }
 
-  // ── Paso 4: esperar al wrapper KOI y hacer scroll rápido hasta él ─
-  // KOI se inserta DESPUÉS de #stk-routine-blurred (al final de los productos).
-  // Scroll automático y rápido hasta KOI en cuanto aparece.
+  // ── Paso 4: esperar al wrapper KOI y abrirlo como MODAL FULLSCREEN ─
   var intentos = 0;
   var MAX = 40;
 
@@ -4291,12 +4282,8 @@ function shatokbScrollAKOI() {
     var wrapper = document.getElementById('shatokb-koi-wrapper');
 
     if (wrapper) {
-      // Scroll rápido hasta KOI (behavior:'smooth' pero instant en mobile)
-      setTimeout(function() {
-        wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 150);
-      console.log('[KOI] Scroll a KOI al final de productos ✅');
-
+      shatokbAbrirKOIModal(wrapper);
+      console.log('[KOI] Abierto en modal fullscreen ✅');
     } else if (intentos < MAX) {
       setTimeout(tick, 150);
     } else {
@@ -4305,6 +4292,75 @@ function shatokbScrollAKOI() {
   }
 
   tick();
+}
+
+/* ── Abrir KOI como modal fullscreen centrado ───────────────── */
+function shatokbAbrirKOIModal(wrapper) {
+  if (!wrapper) return;
+
+  // Evitar duplicar el backdrop
+  if (document.getElementById('koi-modal-backdrop')) return;
+
+  // 1. Crear backdrop oscuro
+  var backdrop = document.createElement('div');
+  backdrop.id = 'koi-modal-backdrop';
+  document.body.appendChild(backdrop);
+
+  // 2. Crear botón X de cierre
+  var closeBtn = document.createElement('button');
+  closeBtn.id = 'koi-modal-close';
+  closeBtn.setAttribute('aria-label', 'Close');
+  closeBtn.innerHTML = '✕';
+  document.body.appendChild(closeBtn);
+
+  // 3. Activar estilos modal en el wrapper
+  wrapper.classList.add('koi--modal');
+  document.body.classList.add('koi--modal-open');
+
+  // 4. Mover wrapper al body para que salga del flujo de la página
+  document.body.appendChild(wrapper);
+
+  // 5. Mostrar backdrop y botón X con transición
+  requestAnimationFrame(function() {
+    backdrop.classList.add('koi--visible');
+    closeBtn.classList.add('koi--visible');
+  });
+
+  // 6. Función de cierre
+  function cerrarModal() {
+    backdrop.classList.remove('koi--visible');
+    closeBtn.classList.remove('koi--visible');
+    wrapper.classList.remove('koi--modal');
+    document.body.classList.remove('koi--modal-open');
+
+    setTimeout(function() {
+      if (backdrop.parentNode)  backdrop.parentNode.removeChild(backdrop);
+      if (closeBtn.parentNode)  closeBtn.parentNode.removeChild(closeBtn);
+      // Reinsertar el wrapper en su posición original en la página
+      var blurred = document.getElementById('stk-routine-blurred');
+      if (blurred && blurred.parentNode) {
+        blurred.parentNode.appendChild(wrapper);
+      }
+    }, 350);
+  }
+
+  // 7. Cerrar con botón X
+  closeBtn.addEventListener('click', cerrarModal);
+
+  // 8. Cerrar con Escape
+  function onKey(e) {
+    if (e.key === 'Escape') {
+      cerrarModal();
+      document.removeEventListener('keydown', onKey);
+    }
+  }
+  document.addEventListener('keydown', onKey);
+
+  // 9. Cerrar haciendo clic en el backdrop
+  backdrop.addEventListener('click', cerrarModal);
+
+  // Exponer función de cierre para uso externo
+  window.shatokbCerrarKOIModal = cerrarModal;
 }
 
 
