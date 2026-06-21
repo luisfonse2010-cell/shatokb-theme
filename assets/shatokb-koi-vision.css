@@ -1585,3 +1585,59 @@
   transition: opacity 0.2s ease;
 }
 .kv-error-alt-btn:hover { opacity: 0.75; }
+
+/* ══════════════════════════════════════════════════════════
+   DESKTOP — KOI BioScan como modal centrado (no fullscreen)
+   En móvil (< 768px) se mantiene fullscreen tal como está.
+   ══════════════════════════════════════════════════════════ */
+@media (min-width: 768px) {
+  /* El overlay pasa de negro sólido a un fondo oscuro semitransparente */
+  #koi-vision-modal {
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.82);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 20px;
+  }
+
+  /* El panel de la cámara queda contenido, centrado y con bordes redondeados */
+  .kv-panel {
+    width: 460px;
+    max-width: 460px;
+    height: auto;
+    max-height: 88dvh;
+    min-height: unset;
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow:
+      0 40px 100px rgba(0, 0, 0, 0.75),
+      0 0 0 1px rgba(255, 110, 180, 0.18);
+  }
+
+  /* El video llena el panel contenido (no el viewport completo) */
+  #kv-video,
+  .kv-video-wrap {
+    border-radius: 0;
+  }
+
+  /* Header: quitar el padding extra del notch de iOS (48px → 16px) */
+  .kv-header {
+    padding: 16px 18px 14px;
+  }
+
+  /* Pantalla de confirmación: quitar safe-area bottom de móvil */
+  .kv-confirm__content {
+    padding: 0 20px 28px;
+  }
+
+  /* Pantalla de análisis: igual, reducir padding inferior */
+  .kv-analysis__content {
+    padding-bottom: 28px;
+  }
+
+  /* Pantalla de error: reducir padding inferior */
+  .kv-error__content {
+    padding-bottom: 28px;
+  }
+}
