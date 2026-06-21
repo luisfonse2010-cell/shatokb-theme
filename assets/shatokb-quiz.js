@@ -3862,13 +3862,16 @@ async function shatokbEjecutarAddToCart(handles, btn) {
         .then(res => { if (!res.ok) throw new Error(`Not found: ${handle}`); return res.json(); })
         .then(data => {
           // Imagen: featured_image puede ser string URL o null en /products/handle.js
-          // images[] es array de strings (URLs CDN directas)
-          const imgRaw = typeof data.featured_image === 'string'
+          // images[] puede ser array de strings O array de objetos {src, width, ...}
+          // FIX v8.2: extraer .src si el elemento es objeto (Shopify API >= 2022 devuelve objetos)
+          const imgRaw0 = typeof data.featured_image === 'string'
             ? data.featured_image
-            : (data.images && data.images[0]) ? data.images[0] : '';
+            : (data.images && data.images[0])
+              ? (typeof data.images[0] === 'object' ? (data.images[0].src || '') : data.images[0])
+              : '';
           // Asegurar protocolo completo
-          const imagen = imgRaw.startsWith('//') ? 'https:' + imgRaw
-                       : imgRaw.startsWith('http') ? imgRaw
+          const imagen = imgRaw0.startsWith('//') ? 'https:' + imgRaw0
+                       : imgRaw0.startsWith('http') ? imgRaw0
                        : '';
           return {
             handle,
