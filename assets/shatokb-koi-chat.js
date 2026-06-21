@@ -2869,10 +2869,12 @@ async function enviarDesdeChip (texto) {
     };
     const pregunta = preguntas[idioma] || preguntas['en'];
 
-    // ── 3. Hacer scroll al panel KOI ──────────────────────────
+    // ── 3. Hacer scroll al panel KOI (centrado en desktop) ───────────────
     const panel = document.getElementById('shatokb-koi-wrapper');
     if (panel) {
-      panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      var r = panel.getBoundingClientRect();
+      var targetY = r.top + window.pageYOffset + r.height / 2 - window.innerHeight / 2;
+      window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
     }
 
     // ── 4. Inyectar y enviar la pregunta ──────────────────────
@@ -2902,9 +2904,13 @@ async function enviarDesdeChip (texto) {
 
     const idioma = detectarIdioma();
 
-    // Scroll al chat para que el usuario vea la interacción
+    // Scroll al chat para que el usuario vea la interacción (centrado en desktop)
     const panel = document.getElementById('shatokb-koi-wrapper');
-    if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (panel) {
+      var r2 = panel.getBoundingClientRect();
+      var targetY2 = r2.top + window.pageYOffset + r2.height / 2 - window.innerHeight / 2;
+      window.scrollTo({ top: Math.max(0, targetY2), behavior: 'smooth' });
+    }
 
     // Pequeño delay para que el scroll ocurra antes del mensaje
     setTimeout(async function () {

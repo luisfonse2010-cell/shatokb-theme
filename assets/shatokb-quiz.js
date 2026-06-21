@@ -4273,13 +4273,16 @@ function shatokbScrollAKOI() {
     window.shatokbIniciarKOI(ctx || {});
   }
 
-  // ── Paso 4: scroll suave hasta el panel KOI ──────────────────
-  // El usuario hace click → productos aparecen → scroll automático hasta KOI abajo.
+  // ── Paso 4: scroll suave hasta el panel KOI (centrado en viewport en desktop) ──
   setTimeout(function() {
     var koiEl = document.getElementById('shatokb-koi-wrapper');
-    if (koiEl) {
-      koiEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    if (!koiEl) return;
+
+    // Centrar el elemento en el viewport en todos los dispositivos
+    var rect     = koiEl.getBoundingClientRect();
+    var elCenter = rect.top + window.pageYOffset + rect.height / 2;
+    var targetY  = elCenter - window.innerHeight / 2;
+    window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
   }, 150);
 }
 
