@@ -49,6 +49,44 @@
   box-sizing: border-box;
 }
 
+/* ── MÓVIL: cámara ocupa toda la pantalla ── */
+@media (max-width: 600px) {
+  #koi-vision-modal {
+    padding: 0;
+    align-items: stretch;
+    justify-content: stretch;
+  }
+  .kv-panel {
+    max-width: 100%;
+    width: 100%;
+    height: 100%;
+    min-height: 100dvh;
+    min-height: 100vh;
+    border-radius: 0;
+    border: none;
+    display: flex;
+    flex-direction: column;
+  }
+  .kv-viewfinder {
+    flex: 1;
+    aspect-ratio: unset;
+    height: auto;
+  }
+  #koi-vision-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .kv-capture-btn-wrap {
+    bottom: 32px;
+  }
+  .kv-guide-text {
+    bottom: 110px;
+  }
+}
+
 #koi-vision-modal.kv--active {
   opacity: 1;
   pointer-events: all;
