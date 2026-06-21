@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * SHATOKB · KOI — Cloudflare Worker  (v2.1 — Multilingual Intelligence) · SHA-sync fix Jun 2026
+ * SHATOKB · KOI — Cloudflare Worker  (v2.2 — Fix email cards: inferirMomento SPF→AM, limpiarPaso, buildProductCard)
  * Archivo: cloudflare-worker.js
  *
  * ⚠️  DEPLOY INSTRUCTIONS:
@@ -18,7 +18,7 @@
  *
  * ============================================================
  */
-/* ── Last deploy: 2026-06-20T23:25:53.971Z */
+/* ── Last deploy: 2026-06-21T00:24:39.479Z */
 
 
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
@@ -526,6 +526,50 @@ async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
     || perfilId
     || '';
 
+  // ── Helpers para generar productos_html_am / productos_html_pm ────────────
+
+  // FIX: inferir momento real desde nombre/handle del producto.
+  // El catálogo frecuentemente envía momento='ambos' para todos los productos
+  // porque no tiene el campo explícito. Reglas semánticas:
+  //   · SPF / sunscreen / solar → siempre AM
+  //   · retinol / retinoid → siempre PM
+  //   · todo lo demás → mantener el valor original o 'ambos'
+  const inferirMomento = p => {
+    const campo = (p.momento || '').toLowerCase().trim();
+    if (campo === 'am') return 'am';
+    if (campo === 'pm') return 'pm';
+    const txt = ((p.nombre || '') + ' ' + (p.handle || '') + ' ' + (p.paso || '')).toLowerCase();
+    if (/\bspf\b|sunscreen|sun.?screen|sun.?care|solar\b|protector solar/.test(txt)) return 'am';
+    if (/\bretinol\b|\bretinoid\b|retina\b|tretinoin/.test(txt)) return 'pm';
+    return 'ambos';
+  };
+
+  // FIX: limpiar el campo paso para que no muestre "Step 1 · Step 1".
+  // Si el valor ya empieza con "Step N" lo eliminamos — el Worker pone su
+  // propio "Step N" delante. Solo queremos la categoría: Cleanser, Toner…
+  const limpiarPaso = paso => {
+    if (!paso) return '';
+    return paso.replace(/^step\s*\d+\s*[·\-·]?\s*/i, '').trim();
+  };
+
+  // Genera el HTML de una tarjeta de producto individual
+  const buildProductCard = (p, stepNum) => {
+    const imgRaw = p.imagen || '';
+    const isCDN    = imgRaw.includes('cdn.shopify.com');
+    const isImgExt = /\.(jpg|jpeg|png|webp|gif|avif)(\?|$)/i.test(imgRaw);
+    const img      = imgRaw.startsWith('http') && (isCDN || isImgExt) ? imgRaw : '';
+    const url      = p.url || (p.handle ? `https://shatokb.com/products/${p.handle}` : '');
+    const pasoLabel  = limpiarPaso(p.paso);
+    const stepLabel  = pasoLabel ? `Step ${stepNum} · ${pasoLabel}` : `Step ${stepNum}`;
+    const imgHtml    = img
+      ? `<td style="width:72px;vertical-align:top;padding-right:14px;padding-top:12px;"><img src="${img}" width="64" height="64" alt="${p.nombre || ''}" style="width:64px;height:64px;object-fit:cover;border-radius:10px;display:block;border:1px solid #ede3e9;" /></td>`
+      : '';
+    const precioHtml = p.precio ? `<span style="font-size:12px;font-weight:700;color:#3d3540;margin-right:12px;">$${p.precio}</span>` : '';
+    const urlHtml    = url ? `<a href="${url}" style="font-size:11px;font-weight:600;color:#eaa0b4;text-decoration:none;">View product →</a>` : '';
+    const razonHtml  = p.razon ? `<div style="font-size:12px;color:#7a6e77;line-height:1.5;margin-bottom:5px;">${p.razon}</div>` : '';
+    return `<table width="100%" cellpadding="0" cellspacing="0" style="border-bottom:1px solid #f0e8ed;margin-bottom:0;"><tr>${imgHtml}<td style="vertical-align:top;padding:12px 0;"><div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#eaa0b4;margin-bottom:3px;">${stepLabel}</div><div style="font-size:13px;font-weight:700;color:#1c181a;line-height:1.4;margin-bottom:4px;">${p.nombre || ''}</div>${razonHtml}<div>${precioHtml}${urlHtml}</div></td></tr></table>`;
+  };
+
   // Payload para Klaviyo Track API v2
   const payload = {
     data: {
@@ -582,50 +626,24 @@ async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
               url:     p.url || (p.handle ? `https://shatokb.com/products/${p.handle}` : ''),
             };
           }),
-          // HTML pregenerado — Klaviyo no ejecuta {% for %} en HTML editor,
-          // así que generamos el bloque completo en el Worker y lo insertamos
-          // como {{ event.productos_html_am }} / {{ event.productos_html_pm }}
+          // HTML pregenerado — Klaviyo no ejecuta {% for %} en HTML editor.
+          // inferirMomento / limpiarPaso / buildProductCard definidos más arriba
+          // en el scope de enviarEventoKlaviyo().
           productos_html_am: (() => {
             const prods = productos.filter(p => {
-              const m = p.momento || 'ambos';
-              return m === 'am' || m === 'ambos' || m === 'both' || m === '';
+              const m = inferirMomento(p);
+              return m === 'am' || m === 'ambos';
             });
             if (prods.length === 0) return rutinaAM.join(' → ');
-            return prods.map((p, i) => {
-              const imgRaw = p.imagen || '';
-              const isCDN    = imgRaw.includes('cdn.shopify.com');
-              const isImgExt = /\.(jpg|jpeg|png|webp|gif|avif)(\?|$)/i.test(imgRaw);
-              const img      = imgRaw.startsWith('http') && (isCDN || isImgExt) ? imgRaw : '';
-              const url      = p.url || (p.handle ? `https://shatokb.com/products/${p.handle}` : '');
-              const paso     = p.paso ? ` · ${p.paso}` : '';
-              const imgHtml  = img
-                ? `<td style="width:68px;vertical-align:top;padding-right:14px;"><img src="${img}" width="64" height="64" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:10px;display:block;border:0;" /></td>`
-                : '';
-              const precioHtml = p.precio ? `<span style="font-size:12px;font-weight:700;color:#3d3540;margin-right:12px;">$${p.precio}</span>` : '';
-              const urlHtml    = url ? `<a href="${url}" style="font-size:11px;font-weight:600;color:#eaa0b4;text-decoration:none;">View product →</a>` : '';
-              return `<table width="100%" cellpadding="0" cellspacing="0" style="border-bottom:1px solid #f5edf2;margin-bottom:0;"><tr>${imgHtml}<td style="vertical-align:top;padding:12px 0;"><div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#eaa0b4;margin-bottom:3px;">Step ${i+1}${paso}</div><div style="font-size:13px;font-weight:700;color:#1c181a;line-height:1.4;margin-bottom:4px;">${p.nombre || ''}</div>${p.razon ? `<div style="font-size:12px;color:#7a6e77;line-height:1.5;margin-bottom:5px;">${p.razon}</div>` : ''}<div>${precioHtml}${urlHtml}</div></td></tr></table>`;
-            }).join('');
+            return prods.map((p, i) => buildProductCard(p, i + 1)).join('');
           })(),
           productos_html_pm: (() => {
             const prods = productos.filter(p => {
-              const m = p.momento || 'ambos';
-              return m === 'pm' || m === 'ambos' || m === 'both' || m === '';
+              const m = inferirMomento(p);
+              return m === 'pm' || m === 'ambos';
             });
             if (prods.length === 0) return rutinaPM.join(' → ');
-            return prods.map((p, i) => {
-              const imgRaw = p.imagen || '';
-              const isCDN    = imgRaw.includes('cdn.shopify.com');
-              const isImgExt = /\.(jpg|jpeg|png|webp|gif|avif)(\?|$)/i.test(imgRaw);
-              const img      = imgRaw.startsWith('http') && (isCDN || isImgExt) ? imgRaw : '';
-              const url      = p.url || (p.handle ? `https://shatokb.com/products/${p.handle}` : '');
-              const paso     = p.paso ? ` · ${p.paso}` : '';
-              const imgHtml  = img
-                ? `<td style="width:68px;vertical-align:top;padding-right:14px;"><img src="${img}" width="64" height="64" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:10px;display:block;border:0;" /></td>`
-                : '';
-              const precioHtml = p.precio ? `<span style="font-size:12px;font-weight:700;color:#3d3540;margin-right:12px;">$${p.precio}</span>` : '';
-              const urlHtml    = url ? `<a href="${url}" style="font-size:11px;font-weight:600;color:#eaa0b4;text-decoration:none;">View product →</a>` : '';
-              return `<table width="100%" cellpadding="0" cellspacing="0" style="border-bottom:1px solid #f5edf2;margin-bottom:0;"><tr>${imgHtml}<td style="vertical-align:top;padding:12px 0;"><div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#eaa0b4;margin-bottom:3px;">Step ${i+1}${paso}</div><div style="font-size:13px;font-weight:700;color:#1c181a;line-height:1.4;margin-bottom:4px;">${p.nombre || ''}</div>${p.razon ? `<div style="font-size:12px;color:#7a6e77;line-height:1.5;margin-bottom:5px;">${p.razon}</div>` : ''}<div>${precioHtml}${urlHtml}</div></td></tr></table>`;
-            }).join('');
+            return prods.map((p, i) => buildProductCard(p, i + 1)).join('');
           })(),
           idioma:              reportData.idioma  || 'es',
         },
@@ -741,11 +759,19 @@ export default {
       const email     = patchEmail || kvRecord.email || reportData.email || '';
       const reportUrl = reportData.reportUrl || `https://shatokb.com/pages/skin-report?token=${token}`;
 
-      // Reconstruir rutinaAM y rutinaPM desde los nuevos productos
-      const isAM = p => p.momento === 'am' || p.momento === 'ambos' || !p.momento;
-      const isPM = p => p.momento === 'pm' || p.momento === 'ambos';
-      const rutinaAMnueva = productos.filter(isAM).map(p => p.nombre).filter(Boolean);
-      const rutinaPMnueva = productos.filter(isPM).map(p => p.nombre).filter(Boolean);
+      // Reconstruir rutinaAM y rutinaPM usando inferirMomento para
+      // garantizar que SPF/sunscreen quede solo en AM.
+      const inferirMomentoPatch = p => {
+        const campo = (p.momento || '').toLowerCase().trim();
+        if (campo === 'am') return 'am';
+        if (campo === 'pm') return 'pm';
+        const txt = ((p.nombre || '') + ' ' + (p.handle || '') + ' ' + (p.paso || '')).toLowerCase();
+        if (/\bspf\b|sunscreen|sun.?screen|sun.?care|solar\b|protector solar/.test(txt)) return 'am';
+        if (/\bretinol\b|\bretinoid\b|retina\b|tretinoin/.test(txt)) return 'pm';
+        return 'ambos';
+      };
+      const rutinaAMnueva = productos.filter(p => { const m = inferirMomentoPatch(p); return m === 'am' || m === 'ambos'; }).map(p => p.nombre).filter(Boolean);
+      const rutinaPMnueva = productos.filter(p => { const m = inferirMomentoPatch(p); return m === 'pm' || m === 'ambos'; }).map(p => p.nombre).filter(Boolean);
 
       const totalNuevo = patchTotal || productos.reduce((s, p) => {
         const n = parseFloat(String(p.precio || '0').replace(/[^0-9.]/g, '')) || 0;
@@ -812,11 +838,18 @@ export default {
       try { reportData = JSON.parse(kvRecord.report_data || '{}'); } catch { reportData = {}; }
       const email     = bEmail || kvRecord.email || reportData.email || '';
       const reportUrl = reportData.reportUrl || `https://shatokb.com/pages/skin-report?token=${token}`;
-      const isAM = p => p.momento === 'am' || p.momento === 'ambos' || !p.momento;
-      const isPM = p => p.momento === 'pm' || p.momento === 'ambos';
+      const inferirMomentoBeacon = p => {
+        const campo = (p.momento || '').toLowerCase().trim();
+        if (campo === 'am') return 'am';
+        if (campo === 'pm') return 'pm';
+        const txt = ((p.nombre || '') + ' ' + (p.handle || '') + ' ' + (p.paso || '')).toLowerCase();
+        if (/\bspf\b|sunscreen|sun.?screen|sun.?care|solar\b|protector solar/.test(txt)) return 'am';
+        if (/\bretinol\b|\bretinoid\b|retina\b|tretinoin/.test(txt)) return 'pm';
+        return 'ambos';
+      };
       reportData.productosSeleccionados = productos;
-      reportData.rutinaAM = productos.filter(isAM).map(p => p.nombre).filter(Boolean);
-      reportData.rutinaPM = productos.filter(isPM).map(p => p.nombre).filter(Boolean);
+      reportData.rutinaAM = productos.filter(p => { const m = inferirMomentoBeacon(p); return m === 'am' || m === 'ambos'; }).map(p => p.nombre).filter(Boolean);
+      reportData.rutinaPM = productos.filter(p => { const m = inferirMomentoBeacon(p); return m === 'pm' || m === 'ambos'; }).map(p => p.nombre).filter(Boolean);
       reportData.totalCarrito = parseFloat(Number(bTotal || 0).toFixed(2));
       reportData.updatedAt = Date.now();
       reportData.productos_actualizados = true;
