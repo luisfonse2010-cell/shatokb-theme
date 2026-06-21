@@ -630,6 +630,7 @@
     if (!modal) return;
 
     document.body.style.overflow = 'hidden';
+    document.body.classList.add('kv--vision-open');
     requestAnimationFrame(() => modal.classList.add('kv--active'));
 
     setPhase('loading');
@@ -653,6 +654,7 @@
     }
 
     document.body.style.overflow = '';
+    document.body.classList.remove('kv--vision-open');
   }
 
   /* ══════════════════════════════════════════════════════════

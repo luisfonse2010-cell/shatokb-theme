@@ -1591,14 +1591,20 @@
    En móvil (< 768px) se mantiene fullscreen tal como está.
    ══════════════════════════════════════════════════════════ */
 @media (min-width: 768px) {
-  /* Overlay: fondo semi-oscuro + blur suave para aislar el panel del chat */
+  /* Overlay: fondo blanco limpio — oculta el chat y el resto de la página */
   #koi-vision-modal {
     align-items: center !important;
     justify-content: center !important;
-    background: rgba(0, 0, 0, 0.55) !important;
-    backdrop-filter: blur(6px) !important;
-    -webkit-backdrop-filter: blur(6px) !important;
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     padding: 24px;
+  }
+
+  /* Ocultar el chat KOI mientras la cámara está abierta en desktop */
+  body.kv--vision-open #shatokb-koi-wrapper {
+    visibility: hidden !important;
+    pointer-events: none !important;
   }
 
   /* Panel: tamaño fijo centrado, sin ocupar todo el viewport */
