@@ -4278,11 +4278,10 @@ function shatokbScrollAKOI() {
     var koiEl = document.getElementById('shatokb-koi-wrapper');
     if (!koiEl) return;
 
-    // Centrar el elemento en el viewport en todos los dispositivos
-    var rect     = koiEl.getBoundingClientRect();
-    var elCenter = rect.top + window.pageYOffset + rect.height / 2;
-    var targetY  = elCenter - window.innerHeight / 2;
-    window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
+    // Scroll al top del chat con un margen fijo de 80px (debajo del header de la tienda)
+    var rect   = koiEl.getBoundingClientRect();
+    var absTop = rect.top + window.pageYOffset;
+    window.scrollTo({ top: Math.max(0, absTop - 80), behavior: 'smooth' });
   }, 150);
 }
 

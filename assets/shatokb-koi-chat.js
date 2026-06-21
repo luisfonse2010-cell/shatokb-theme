@@ -2872,12 +2872,9 @@ async function enviarDesdeChip (texto) {
     // ── 3. Hacer scroll al panel KOI (centrado en desktop) ───────────────
     const panel = document.getElementById('shatokb-koi-wrapper');
     if (panel) {
-      var r        = panel.getBoundingClientRect();
-      var absTop   = r.top + window.pageYOffset;
-      var tY       = r.height <= window.innerHeight
-                     ? absTop - (window.innerHeight - r.height) / 2
-                     : absTop - 16;
-      window.scrollTo({ top: Math.max(0, tY), behavior: 'smooth' });
+      var r      = panel.getBoundingClientRect();
+      var absTop = r.top + window.pageYOffset;
+      window.scrollTo({ top: Math.max(0, absTop - 80), behavior: 'smooth' });
     }
 
     // ── 4. Inyectar y enviar la pregunta ──────────────────────
@@ -2910,12 +2907,9 @@ async function enviarDesdeChip (texto) {
     // Scroll al chat para que el usuario vea la interacción (centrado en desktop)
     const panel = document.getElementById('shatokb-koi-wrapper');
     if (panel) {
-      var r2       = panel.getBoundingClientRect();
-      var absTop2  = r2.top + window.pageYOffset;
-      var tY2      = r2.height <= window.innerHeight
-                     ? absTop2 - (window.innerHeight - r2.height) / 2
-                     : absTop2 - 16;
-      window.scrollTo({ top: Math.max(0, tY2), behavior: 'smooth' });
+      var r2      = panel.getBoundingClientRect();
+      var absTop2 = r2.top + window.pageYOffset;
+      window.scrollTo({ top: Math.max(0, absTop2 - 80), behavior: 'smooth' });
     }
 
     // Pequeño delay para que el scroll ocurra antes del mensaje
