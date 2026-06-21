@@ -18,7 +18,7 @@
  *
  * ============================================================
  */
-/* ── Last deploy: 2026-06-21T02:29:13.490Z */
+/* ── Last deploy: 2026-06-21T02:45:47.234Z */
 
 
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
@@ -528,6 +528,20 @@ async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
 
   // ── Helpers para generar productos_html_am / productos_html_pm ────────────
 
+  // Orden correcto de aplicación por categoría — SPF siempre al final en AM
+  const getStepOrder = p => {
+    const txt = ((p.nombre || '') + ' ' + (p.paso || '')).toLowerCase();
+    if (/clean|wash|foam|cleanse|limpiador/.test(txt))                               return 1;
+    if (/toner|tónico|tonic/.test(txt))                                              return 2;
+    if (/essence|esencia|first.?care/.test(txt))                                     return 3;
+    if (/serum|sérum|ampul|ampoule|booster|vitamin.?c|niacinamide|retinol/.test(txt)) return 4;
+    if (/eye.?cream|contorno|ojo/.test(txt))                                         return 5;
+    if (/moisturizer|cream|crema|gel.?cream|lotion|hydrat/.test(txt))                return 6;
+    if (/\boil\b|aceite|face.?oil/.test(txt))                                        return 7;
+    if (/spf|sunscreen|sun.?care|solar|protector/.test(txt))                         return 99;
+    return 8;
+  };
+
   // FIX: inferir momento real desde nombre/handle del producto.
   // El catálogo frecuentemente envía momento='ambos' para todos los productos
   // porque no tiene el campo explícito. Reglas semánticas:
@@ -604,8 +618,8 @@ async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
           report_url:          reportUrl,
           perfil_nombre:       perfilNombreCanon,
           perfil_id:           perfilId,
-          rutina_am:           rutinaAM.join('<br>'),
-          rutina_pm:           rutinaPM.join('<br>'),
+          rutina_am:           rutinaAM.join(' → '),
+          rutina_pm:           rutinaPM.join(' → '),
           total_carrito:       total,
           productos_count:     productos.length,
           // Array estructurado — usado en template Klaviyo con {% for product in event.productos %}
@@ -630,19 +644,33 @@ async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
           // inferirMomento / limpiarPaso / buildProductCard definidos más arriba
           // en el scope de enviarEventoKlaviyo().
           productos_html_am: (() => {
-            const prods = productos.filter(p => {
-              const m = inferirMomento(p);
-              return m === 'am' || m === 'ambos';
-            });
-            if (prods.length === 0) return rutinaAM.join('<br>');
+            const prods = productos
+              .filter(p => { const m = inferirMomento(p); return m === 'am' || m === 'ambos'; })
+              .sort((a, b) => getStepOrder(a) - getStepOrder(b));
+            if (prods.length === 0) {
+              if (rutinaAM.length === 0) return '';
+              return rutinaAM.map((nombre, i) =>
+                `<table width="100%" cellpadding="0" cellspacing="0" style="border-bottom:1px solid #f0e8ed;"><tr>`+
+                `<td style="width:32px;vertical-align:top;padding:12px 8px 12px 0;"><span style="display:inline-block;width:24px;height:24px;background:#eaa0b4;color:#fff;border-radius:50%;font-size:11px;font-weight:700;text-align:center;line-height:24px;">${i+1}</span></td>`+
+                `<td style="vertical-align:top;padding:12px 0;"><div style="font-size:13px;font-weight:700;color:#1c181a;line-height:1.4;">${nombre}</div></td>`+
+                `</tr></table>`
+              ).join('');
+            }
             return prods.map((p, i) => buildProductCard(p, i + 1)).join('');
           })(),
           productos_html_pm: (() => {
-            const prods = productos.filter(p => {
-              const m = inferirMomento(p);
-              return m === 'pm' || m === 'ambos';
-            });
-            if (prods.length === 0) return rutinaPM.join('<br>');
+            const prods = productos
+              .filter(p => { const m = inferirMomento(p); return m === 'pm' || m === 'ambos'; })
+              .sort((a, b) => getStepOrder(a) - getStepOrder(b));
+            if (prods.length === 0) {
+              if (rutinaPM.length === 0) return '';
+              return rutinaPM.map((nombre, i) =>
+                `<table width="100%" cellpadding="0" cellspacing="0" style="border-bottom:1px solid #f0e8ed;"><tr>`+
+                `<td style="width:32px;vertical-align:top;padding:12px 8px 12px 0;"><span style="display:inline-block;width:24px;height:24px;background:#eaa0b4;color:#fff;border-radius:50%;font-size:11px;font-weight:700;text-align:center;line-height:24px;">${i+1}</span></td>`+
+                `<td style="vertical-align:top;padding:12px 0;"><div style="font-size:13px;font-weight:700;color:#1c181a;line-height:1.4;">${nombre}</div></td>`+
+                `</tr></table>`
+              ).join('');
+            }
             return prods.map((p, i) => buildProductCard(p, i + 1)).join('');
           })(),
           idioma:              reportData.idioma  || 'es',
