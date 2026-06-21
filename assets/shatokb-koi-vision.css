@@ -1591,13 +1591,13 @@
    En móvil (< 768px) se mantiene fullscreen tal como está.
    ══════════════════════════════════════════════════════════ */
 @media (min-width: 768px) {
-  /* Overlay: sin fondo negro — la tienda queda visible detrás del panel */
+  /* Overlay: fondo semi-oscuro + blur suave para aislar el panel del chat */
   #koi-vision-modal {
     align-items: center !important;
     justify-content: center !important;
-    background: transparent !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+    background: rgba(0, 0, 0, 0.55) !important;
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
     padding: 24px;
   }
 
