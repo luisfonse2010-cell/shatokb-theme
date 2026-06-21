@@ -2869,19 +2869,14 @@ async function enviarDesdeChip (texto) {
     };
     const pregunta = preguntas[idioma] || preguntas['en'];
 
-    // ── 3. Abrir modal KOI (o reactivarlo si ya existe) ───────
+    // ── 3. Hacer scroll al panel KOI ──────────────────────────
     const panel = document.getElementById('shatokb-koi-wrapper');
     if (panel) {
-      // Si el modal no está abierto, abrirlo
-      if (!panel.classList.contains('koi--modal')) {
-        if (typeof window.shatokbAbrirKOIModal === 'function') {
-          window.shatokbAbrirKOIModal(panel);
-        }
-      }
+      panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     // ── 4. Inyectar y enviar la pregunta ──────────────────────
-    // Pequeño delay para que el modal abra antes de que KOI responda
+    // Pequeño delay para que el scroll termine antes de que KOI responda
     setTimeout(function () {
       const input = document.getElementById('koi-input');
       if (input && !KOI_STATE.isTyping) {

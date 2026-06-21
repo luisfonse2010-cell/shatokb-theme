@@ -4273,94 +4273,14 @@ function shatokbScrollAKOI() {
     window.shatokbIniciarKOI(ctx || {});
   }
 
-  // ── Paso 4: esperar al wrapper KOI y abrirlo como MODAL FULLSCREEN ─
-  var intentos = 0;
-  var MAX = 40;
-
-  function tick() {
-    intentos++;
-    var wrapper = document.getElementById('shatokb-koi-wrapper');
-
-    if (wrapper) {
-      shatokbAbrirKOIModal(wrapper);
-      console.log('[KOI] Abierto en modal fullscreen ✅');
-    } else if (intentos < MAX) {
-      setTimeout(tick, 150);
-    } else {
-      console.warn('[KOI] shatokbScrollAKOI: wrapper no apareció tras 6s');
+  // ── Paso 4: scroll suave hasta el panel KOI ──────────────────
+  // El usuario hace click → productos aparecen → scroll automático hasta KOI abajo.
+  setTimeout(function() {
+    var koiEl = document.getElementById('shatokb-koi-wrapper');
+    if (koiEl) {
+      koiEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }
-
-  tick();
-}
-
-/* ── Abrir KOI como modal fullscreen centrado ───────────────── */
-function shatokbAbrirKOIModal(wrapper) {
-  if (!wrapper) return;
-
-  // Evitar duplicar el backdrop
-  if (document.getElementById('koi-modal-backdrop')) return;
-
-  // 1. Crear backdrop oscuro
-  var backdrop = document.createElement('div');
-  backdrop.id = 'koi-modal-backdrop';
-  document.body.appendChild(backdrop);
-
-  // 2. Crear botón X de cierre
-  var closeBtn = document.createElement('button');
-  closeBtn.id = 'koi-modal-close';
-  closeBtn.setAttribute('aria-label', 'Close');
-  closeBtn.innerHTML = '✕';
-  document.body.appendChild(closeBtn);
-
-  // 3. Activar estilos modal en el wrapper
-  wrapper.classList.add('koi--modal');
-  document.body.classList.add('koi--modal-open');
-
-  // 4. Mover wrapper al body para que salga del flujo de la página
-  document.body.appendChild(wrapper);
-
-  // 5. Mostrar backdrop y botón X con transición
-  requestAnimationFrame(function() {
-    backdrop.classList.add('koi--visible');
-    closeBtn.classList.add('koi--visible');
-  });
-
-  // 6. Función de cierre
-  function cerrarModal() {
-    backdrop.classList.remove('koi--visible');
-    closeBtn.classList.remove('koi--visible');
-    wrapper.classList.remove('koi--modal');
-    document.body.classList.remove('koi--modal-open');
-
-    setTimeout(function() {
-      if (backdrop.parentNode)  backdrop.parentNode.removeChild(backdrop);
-      if (closeBtn.parentNode)  closeBtn.parentNode.removeChild(closeBtn);
-      // Reinsertar el wrapper en su posición original en la página
-      var blurred = document.getElementById('stk-routine-blurred');
-      if (blurred && blurred.parentNode) {
-        blurred.parentNode.appendChild(wrapper);
-      }
-    }, 350);
-  }
-
-  // 7. Cerrar con botón X
-  closeBtn.addEventListener('click', cerrarModal);
-
-  // 8. Cerrar con Escape
-  function onKey(e) {
-    if (e.key === 'Escape') {
-      cerrarModal();
-      document.removeEventListener('keydown', onKey);
-    }
-  }
-  document.addEventListener('keydown', onKey);
-
-  // 9. Cerrar haciendo clic en el backdrop
-  backdrop.addEventListener('click', cerrarModal);
-
-  // Exponer función de cierre para uso externo
-  window.shatokbCerrarKOIModal = cerrarModal;
+  }, 150);
 }
 
 
