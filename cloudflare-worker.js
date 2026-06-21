@@ -18,7 +18,7 @@
  *
  * ============================================================
  */
-/* ── Last deploy: 2026-06-21T01:16:23.301Z */
+/* ── Last deploy: 2026-06-21T02:29:13.490Z */
 
 
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
@@ -604,8 +604,8 @@ async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
           report_url:          reportUrl,
           perfil_nombre:       perfilNombreCanon,
           perfil_id:           perfilId,
-          rutina_am:           rutinaAM.join(' → '),
-          rutina_pm:           rutinaPM.join(' → '),
+          rutina_am:           rutinaAM.join('<br>'),
+          rutina_pm:           rutinaPM.join('<br>'),
           total_carrito:       total,
           productos_count:     productos.length,
           // Array estructurado — usado en template Klaviyo con {% for product in event.productos %}
@@ -634,7 +634,7 @@ async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
               const m = inferirMomento(p);
               return m === 'am' || m === 'ambos';
             });
-            if (prods.length === 0) return rutinaAM.join(' → ');
+            if (prods.length === 0) return rutinaAM.join('<br>');
             return prods.map((p, i) => buildProductCard(p, i + 1)).join('');
           })(),
           productos_html_pm: (() => {
@@ -642,7 +642,7 @@ async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
               const m = inferirMomento(p);
               return m === 'pm' || m === 'ambos';
             });
-            if (prods.length === 0) return rutinaPM.join(' → ');
+            if (prods.length === 0) return rutinaPM.join('<br>');
             return prods.map((p, i) => buildProductCard(p, i + 1)).join('');
           })(),
           idioma:              reportData.idioma  || 'es',
