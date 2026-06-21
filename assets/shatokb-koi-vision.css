@@ -1591,53 +1591,49 @@
    En móvil (< 768px) se mantiene fullscreen tal como está.
    ══════════════════════════════════════════════════════════ */
 @media (min-width: 768px) {
-  /* El overlay pasa de negro sólido a un fondo oscuro semitransparente */
+  /* Overlay: de negro sólido + stretch → fondo semitransparente + centrado */
   #koi-vision-modal {
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.82);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    padding: 20px;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(0, 0, 0, 0.85) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 24px;
   }
 
-  /* El panel de la cámara queda contenido, centrado y con bordes redondeados */
+  /* Panel: tamaño fijo centrado, sin ocupar todo el viewport */
   .kv-panel {
-    width: 460px;
-    max-width: 460px;
-    height: auto;
-    max-height: 88dvh;
-    min-height: unset;
-    border-radius: 22px;
-    overflow: hidden;
+    position: relative !important;
+    width: 460px !important;
+    max-width: calc(100vw - 48px) !important;
+    height: 820px !important;
+    max-height: calc(100dvh - 48px) !important;
+    min-height: unset !important;
+    flex-shrink: 0 !important;
+    border-radius: 22px !important;
+    overflow: hidden !important;
     box-shadow:
-      0 40px 100px rgba(0, 0, 0, 0.75),
-      0 0 0 1px rgba(255, 110, 180, 0.18);
-  }
-
-  /* El video llena el panel contenido (no el viewport completo) */
-  #kv-video,
-  .kv-video-wrap {
-    border-radius: 0;
+      0 40px 100px rgba(0, 0, 0, 0.80),
+      0 0 0 1px rgba(255, 110, 180, 0.20) !important;
   }
 
   /* Header: quitar el padding extra del notch de iOS (48px → 16px) */
   .kv-header {
-    padding: 16px 18px 14px;
+    padding: 16px 18px 14px !important;
   }
 
   /* Pantalla de confirmación: quitar safe-area bottom de móvil */
   .kv-confirm__content {
-    padding: 0 20px 28px;
+    padding: 0 20px 28px !important;
   }
 
-  /* Pantalla de análisis: igual, reducir padding inferior */
+  /* Pantalla de análisis: reducir padding inferior */
   .kv-analysis__content {
-    padding-bottom: 28px;
+    padding-bottom: 28px !important;
   }
 
   /* Pantalla de error: reducir padding inferior */
   .kv-error__content {
-    padding-bottom: 28px;
+    padding-bottom: 28px !important;
   }
 }
