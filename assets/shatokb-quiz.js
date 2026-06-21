@@ -4273,7 +4273,10 @@ function shatokbScrollAKOI() {
     window.shatokbIniciarKOI(ctx || {});
   }
 
-  // ── Paso 4: scroll suave hasta el panel KOI (centrado en viewport en desktop) ──
+  // ── Paso 4: ocultar footer + scroll hasta el panel KOI ──────
+  // Añadir clase al body para ocultar el footer del tema via CSS
+  document.body.classList.add('koi--chat-activo');
+
   setTimeout(function() {
     var koiEl = document.getElementById('shatokb-koi-wrapper');
     if (!koiEl) return;

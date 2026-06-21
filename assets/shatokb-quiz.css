@@ -2427,6 +2427,24 @@
   border: 1px solid #c4b5fd;
 }
 
+/* ══════════════════════════════════════════════════════════
+   OCULTAR FOOTER mientras el chat KOI está activo
+   Se activa añadiendo body.koi--chat-activo desde JS.
+   Cubre todos los selectores posibles del tema Halo.
+   ══════════════════════════════════════════════════════════ */
+body.koi--chat-activo footer,
+body.koi--chat-activo .footer,
+body.koi--chat-activo #footer,
+body.koi--chat-activo [id*="footer"],
+body.koi--chat-activo [class*="footer"],
+body.koi--chat-activo .shopify-section-footer,
+body.koi--chat-activo #shopify-section-footer,
+body.koi--chat-activo [id^="shopify-section-"][id$="-footer"],
+body.koi--chat-activo .site-footer,
+body.koi--chat-activo #site-footer {
+  display: none !important;
+}
+
 .stk-momento--both {
   background: #f0f9ff;
   color: #0369a1;
