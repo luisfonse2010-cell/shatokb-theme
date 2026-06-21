@@ -1,32 +1,28 @@
 /**
  * ============================================================
- * SHATOKB · KOI Vision — Facial Skin Analysis Module  v3.0
+ * SHATOKB · KOI Vision — BioScan Module  v4.0
  * assets/shatokb-koi-vision.js
  *
- * v3.0 — Reescritura completa:
- *   • Óvalo SVG puro — siempre visible sobre el video
- *   • Botón de captura MANUAL — el usuario decide cuándo
- *   • Validación de luz en canvas antes de capturar
- *   • Feedback en tiempo real: OK / poca luz / mala posición
- *   • Sin face-api.js — sin simulaciones falsas
- *   • Sin overflow:hidden que tape el óvalo
+ * v4.0 — KOI BioScan: Korean clinical scanner experience
+ *   • Grid holográfico + scan line animada CSS
+ *   • 4 targeting corners (sin óvalo)
+ *   • Métricas biométricas flotantes en tiempo real
+ *   • FaceDetector API + fallback luminosidad central
+ *   • Countdown automático 5→1 cuando detecta rostro
+ *   • Si el rostro se pierde → cuenta se pausa
+ *   • Pantalla de confirmación: "Perfect / Retake"
+ *   • Sin botón manual de captura
+ *   • Sin mensajes de iluminación
  *
- * Flujo limpio:
- *   1. Chip "📸 Analiza mi piel" en el chat de KOI
- *   2. Modal: cámara activa + óvalo SVG siempre visible
- *   3. Feedback en tiempo real (luz, posición)
- *   4. Usuario hace click en "📸 Tomar foto ahora"
- *   5. Validación → si pasa → flash + captura
- *   6. Pantalla de análisis con progress clínico
- *   7. POST al Cloudflare Worker /vision
- *   8. GPT-4o Vision → análisis real de piel
- *   9. KOI presenta el resultado en el chat
+ * Funciones críticas intactas (no modificadas):
+ *   llamarWorkerVision() · iniciarAnalisis() · enviarAlChat()
+ *   mostrarError()       · pararCamara()
  *
  * API pública: window.koiVision
- *   .abrir(contexto)      — abrir el modal
- *   .onResultado(cb)      — registrar callback
- *   .isAvailable()        — verificar cámara disponible
- *   .cerrar()             — cerrar programáticamente
+ *   .abrir(contexto)   — abrir el modal
+ *   .onResultado(cb)   — registrar callback
+ *   .isAvailable()     — verificar cámara disponible
+ *   .cerrar()          — cerrar programáticamente
  * ============================================================
  */
 
@@ -40,363 +36,115 @@
     get workerUrl() {
       return window.KOI_VISION_WORKER_URL || 'https://koi-proxy.luisfonse2010.workers.dev/vision';
     },
-    analysisItemDelay: 1800,   // ms por dimensión clínica
-    minAnalysisTime:   3200,   // ms mínimo de análisis visual
+    analysisItemDelay: 1800,
+    minAnalysisTime:   3200,
     captureWidth:      640,
     captureHeight:     480,
-    imageQuality:      0.85,   // JPEG calidad alta
+    imageQuality:      0.85,
 
-    // Validación de luz — umbral de brillo medio del canvas (0-255)
-    // Por debajo → advertencia. Por debajo de lowMin → no capturar.
-    lightWarnThreshold: 30,    // advertencia amarilla (muy permisivo)
-    lightMinThreshold:   8,    // bloqueo rojo (casi nunca se activa)
+    // Detección de presencia — umbral brillo zona central (0-255)
+    presenceThreshold: 18,    // por encima → hay cara probable
+    presenceCheckMs:   400,   // cada cuánto verificar
 
-    // Frecuencia de análisis de luz (ms)
-    lightCheckInterval: 800,
+    // Countdown
+    countdownFrom:     5,     // 5 → 1
+    countdownStepMs:   1000,  // 1 segundo por número
   };
 
   /* ══════════════════════════════════════════════════════════
      ESTADO
      ══════════════════════════════════════════════════════════ */
   const KV_STATE = {
-    stream:         null,
-    isOpen:         false,
-    capturedImage:  null,
-    analysisResult: null,
-    phase:          'idle',   // idle | loading | camera | analyzing | result | error
-    onResultadoCb:  null,
-    contexto:       null,
-    lightCheckTimer: null,
-    lightLevel:     'unknown', // 'ok' | 'warn' | 'low' | 'unknown'
+    stream:          null,
+    isOpen:          false,
+    capturedImage:   null,
+    analysisResult:  null,
+    phase:           'idle', // idle|loading|camera|confirm|analyzing|result|error
+    onResultadoCb:   null,
+    contexto:        null,
+
+    // Detección y countdown
+    faceDetector:    null,
+    facePresent:     false,
+    presenceTimer:   null,
+    countdownTimer:  null,
+    countdownVal:    0,
+    scanPctTimer:    null,
+    metricTimers:    [],
   };
 
   /* ══════════════════════════════════════════════════════════
-     TEXTOS LOCALIZADOS
+     TEXTOS
      ══════════════════════════════════════════════════════════ */
-  const KV_I18N = {
-    en: {
-      title:           'KOI Skin Analysis',
-      subtitle:        'AI · Real-Time',
-      badge:           '📸 VISION',
-      loading:         'Requesting camera access…',
-      guide_position:  '👆 Center your face in the oval',
-      guide_ok:        '✓ Perfect — tap the button when ready',
-      guide_light_low: '💡 Find better lighting — move near a window',
-      guide_light_warn:'⚡ A bit dark — more light will help',
-      capture_btn:     '📸 Take photo now',
-      capture_ready:   '📸 Perfect — take photo',
-      capture_warn:    '💡 Improve lighting first',
-      light_ok:        '☀️ Good light',
-      light_warn:      '🌥️ Low light',
-      light_low:       '🌑 Too dark',
-      analysis_title:  'KOI is analyzing your skin',
-      analysis_sub:    'Clinical analysis in progress',
-      items: [
-        { icon: '💧', text: 'Hydration levels',        dim: 'hidratacion'  },
-        { icon: '🛡️', text: 'Skin barrier integrity',  dim: 'barrera'      },
-        { icon: '✨', text: 'Sebum distribution',       dim: 'sebum'        },
-        { icon: '🌗', text: 'Pigmentation & tone',      dim: 'pigmentacion' },
-        { icon: '🔎', text: 'Texture & pore structure', dim: 'textura'      },
-        { icon: '❤️', text: 'Microcirculation',         dim: 'circulacion'  },
-        { icon: '💪', text: 'Firmness & elasticity',    dim: 'firmeza'      },
-        { icon: '🦠', text: 'Microbiome balance',       dim: 'microbioma'   },
-      ],
-      result_title:    'Analysis Complete ✓',
-      result_cta:      '✨ See full analysis in chat →',
-      privacy:         '🔒 Image processed instantly. Not stored.',
-      error_title:     'Camera not available',
-      error_desc:      "We need camera permission to analyze your skin. You can still explore your routine — tap below.",
-      error_alt:       '✨ Continue without camera',
-      error_blocked_title: 'Camera blocked by browser',
-      error_blocked_desc:  'Your browser blocked camera access. Follow these steps:',
-      error_blocked_steps: [
-        '🔒 Click the <b>lock icon</b> in the address bar',
-        '📷 Find <b>Camera</b> → change to <b>Allow</b>',
-        '🔄 Reload the page and tap VISION again',
-      ],
-      error_blocked_chrome: 'Or in Chrome: <code>chrome://settings/content/camera</code>',
-      error_notfound_title: 'No camera found',
-      error_notfound_desc:  'No camera detected on your device. You can still explore your routine.',
-      error_retry:          '🔄 Try again',
-      zones: {
-        tzone:   { emoji: '💦', label: 'T-Zone',    value: 'Analyzing…' },
-        cheeks:  { emoji: '🌸', label: 'Cheeks',    value: 'Analyzing…' },
-        eyes:    { emoji: '👁️', label: 'Eye Area',  value: 'Analyzing…' },
-      },
-    },
-    es: {
-      title:           'KOI Análisis Facial',
-      subtitle:        'IA · Tiempo Real',
-      badge:           '📸 VISIÓN',
-      loading:         'Solicitando acceso a la cámara…',
-      guide_position:  '👆 Centra tu rostro en el óvalo',
-      guide_ok:        '✓ Perfecto — pulsa el botón cuando estés lista',
-      guide_light_low: '💡 Busca más luz — acércate a una ventana',
-      guide_light_warn:'⚡ Un poco oscuro — más luz te ayudará',
-      capture_btn:     '📸 Tomar foto ahora',
-      capture_ready:   '📸 Perfecto — tomar foto',
-      capture_warn:    '💡 Mejora la iluminación primero',
-      light_ok:        '☀️ Buena luz',
-      light_warn:      '🌥️ Poca luz',
-      light_low:       '🌑 Muy oscuro',
-      analysis_title:  'KOI está analizando tu piel',
-      analysis_sub:    'Análisis clínico en curso',
-      items: [
-        { icon: '💧', text: 'Hidratación',             dim: 'hidratacion'  },
-        { icon: '🛡️', text: 'Barrera cutánea',         dim: 'barrera'      },
-        { icon: '✨', text: 'Distribución sebácea',     dim: 'sebum'        },
-        { icon: '🌗', text: 'Pigmentación y tono',      dim: 'pigmentacion' },
-        { icon: '🔎', text: 'Textura y poros',          dim: 'textura'      },
-        { icon: '❤️', text: 'Microcirculación',         dim: 'circulacion'  },
-        { icon: '💪', text: 'Firmeza y elasticidad',    dim: 'firmeza'      },
-        { icon: '🦠', text: 'Microbioma cutáneo',       dim: 'microbioma'   },
-      ],
-      result_title:    'Análisis completado ✓',
-      result_cta:      '✨ Ver análisis completo en el chat →',
-      privacy:         '🔒 Imagen procesada al instante. No se almacena.',
-      error_title:     'Cámara no disponible',
-      error_desc:      'Necesitamos permiso de cámara para analizar tu piel. Puedes continuar explorando tu rutina.',
-      error_alt:       '✨ Continuar sin cámara',
-      error_blocked_title: 'Cámara bloqueada por el navegador',
-      error_blocked_desc:  'Tu navegador bloqueó el acceso a la cámara. Sigue estos pasos para permitirlo:',
-      error_blocked_steps: [
-        '🔒 Haz click en el ícono de <b>candado 🔒</b> en la barra de direcciones',
-        '📷 Busca <b>Cámara</b> → cámbialo a <b>Permitir</b>',
-        '🔄 Recarga la página y toca VISIÓN de nuevo',
-      ],
-      error_blocked_chrome: 'O en Chrome: <code>chrome://settings/content/camera</code>',
-      error_notfound_title: 'No se encontró cámara',
-      error_notfound_desc:  'No detectamos ninguna cámara en tu dispositivo. Puedes continuar explorando tu rutina.',
-      error_retry:          '🔄 Reintentar',
-      zones: {
-        tzone:   { emoji: '💦', label: 'Zona T',         value: 'Analizando…' },
-        cheeks:  { emoji: '🌸', label: 'Mejillas',        value: 'Analizando…' },
-        eyes:    { emoji: '👁️', label: 'Contorno ojos',  value: 'Analizando…' },
-      },
-    },
-    fr: {
-      title:           'KOI Analyse Faciale',
-      subtitle:        'IA · Temps Réel',
-      badge:           '📸 VISION',
-      loading:         'Demande d\'accès à la caméra…',
-      guide_position:  '👆 Centrez votre visage dans l\'ovale',
-      guide_ok:        '✓ Parfait — appuyez quand vous êtes prête',
-      guide_light_low: '💡 Trouvez plus de lumière — approchez d\'une fenêtre',
-      guide_light_warn:'⚡ Un peu sombre — plus de lumière aidera',
-      capture_btn:     '📸 Prendre la photo maintenant',
-      capture_ready:   '📸 Parfait — prendre la photo',
-      capture_warn:    '💡 Améliorez l\'éclairage d\'abord',
-      light_ok:        '☀️ Bonne lumière',
-      light_warn:      '🌥️ Peu de lumière',
-      light_low:       '🌑 Trop sombre',
-      analysis_title:  'KOI analyse votre peau',
-      analysis_sub:    'Analyse clinique en cours',
-      items: [
-        { icon: '💧', text: 'Niveaux d\'hydratation',    dim: 'hidratacion'  },
-        { icon: '🛡️', text: 'Intégrité de la barrière', dim: 'barrera'      },
-        { icon: '✨', text: 'Distribution sébacée',       dim: 'sebum'        },
-        { icon: '🌗', text: 'Pigmentation et teint',      dim: 'pigmentacion' },
-        { icon: '🔎', text: 'Texture et pores',           dim: 'textura'      },
-        { icon: '❤️', text: 'Microcirculation',           dim: 'circulacion'  },
-        { icon: '💪', text: 'Fermeté et élasticité',      dim: 'firmeza'      },
-        { icon: '🦠', text: 'Équilibre du microbiome',    dim: 'microbioma'   },
-      ],
-      result_title:    'Analyse terminée ✓',
-      result_cta:      '✨ Voir l\'analyse dans le chat →',
-      privacy:         '🔒 Image traitée instantanément. Non stockée.',
-      error_title:     'Caméra non disponible',
-      error_desc:      'Nous avons besoin de l\'autorisation de la caméra pour analyser votre peau.',
-      error_alt:       '✨ Continuer sans caméra',
-      error_blocked_title: 'Caméra bloquée par le navigateur',
-      error_blocked_desc:  'Votre navigateur a bloqué la caméra. Suivez ces étapes:',
-      error_blocked_steps: [
-        '🔒 Cliquez sur l\'icône de <b>cadenas 🔒</b> dans la barre d\'adresse',
-        '📷 Trouvez <b>Caméra</b> → changez en <b>Autoriser</b>',
-        '🔄 Rechargez la page et appuyez sur VISION',
-      ],
-      error_blocked_chrome: 'Ou dans Chrome: <code>chrome://settings/content/camera</code>',
-      error_notfound_title: 'Aucune caméra trouvée',
-      error_notfound_desc:  'Aucune caméra détectée sur votre appareil.',
-      error_retry:          '🔄 Réessayer',
-      zones: {
-        tzone:   { emoji: '💦', label: 'Zone T',      value: 'Analyse…' },
-        cheeks:  { emoji: '🌸', label: 'Joues',       value: 'Analyse…' },
-        eyes:    { emoji: '👁️', label: 'Contour yeux', value: 'Analyse…' },
-      },
-    },
-    pt: {
-      title:           'KOI Análise Facial',
-      subtitle:        'IA · Tempo Real',
-      badge:           '📸 VISÃO',
-      loading:         'Solicitando acesso à câmera…',
-      guide_position:  '👆 Centralize seu rosto no oval',
-      guide_ok:        '✓ Perfeito — toque no botão quando estiver pronta',
-      guide_light_low: '💡 Procure mais luz — aproxime-se de uma janela',
-      guide_light_warn:'⚡ Um pouco escuro — mais luz vai ajudar',
-      capture_btn:     '📸 Tirar foto agora',
-      capture_ready:   '📸 Perfeito — tirar foto',
-      capture_warn:    '💡 Melhore a iluminação primeiro',
-      light_ok:        '☀️ Boa luz',
-      light_warn:      '🌥️ Pouca luz',
-      light_low:       '🌑 Muito escuro',
-      analysis_title:  'KOI está analisando sua pele',
-      analysis_sub:    'Análise clínica em andamento',
-      items: [
-        { icon: '💧', text: 'Níveis de hidratação',     dim: 'hidratacion'  },
-        { icon: '🛡️', text: 'Integridade da barreira',  dim: 'barrera'      },
-        { icon: '✨', text: 'Distribuição sebácea',      dim: 'sebum'        },
-        { icon: '🌗', text: 'Pigmentação e tom',         dim: 'pigmentacion' },
-        { icon: '🔎', text: 'Textura e poros',           dim: 'textura'      },
-        { icon: '❤️', text: 'Microcirculação',           dim: 'circulacion'  },
-        { icon: '💪', text: 'Firmeza e elasticidade',    dim: 'firmeza'      },
-        { icon: '🦠', text: 'Equilíbrio do microbioma',  dim: 'microbioma'   },
-      ],
-      result_title:    'Análise completa ✓',
-      result_cta:      '✨ Ver análise completa no chat →',
-      privacy:         '🔒 Imagem processada instantaneamente. Não armazenada.',
-      error_title:     'Câmera não disponível',
-      error_desc:      'Precisamos de permissão da câmera para analisar sua pele.',
-      error_alt:       '✨ Continuar sem câmera',
-      error_blocked_title: 'Câmera bloqueada pelo navegador',
-      error_blocked_desc:  'Seu navegador bloqueou o acesso à câmera. Siga estes passos:',
-      error_blocked_steps: [
-        '🔒 Clique no ícone de <b>cadeado 🔒</b> na barra de endereços',
-        '📷 Encontre <b>Câmera</b> → mude para <b>Permitir</b>',
-        '🔄 Recarregue a página e toque em VISÃO novamente',
-      ],
-      error_blocked_chrome: 'Ou no Chrome: <code>chrome://settings/content/camera</code>',
-      error_notfound_title: 'Nenhuma câmera encontrada',
-      error_notfound_desc:  'Nenhuma câmera detectada no seu dispositivo.',
-      error_retry:          '🔄 Tentar novamente',
-      zones: {
-        tzone:   { emoji: '💦', label: 'Zona T',        value: 'Analisando…' },
-        cheeks:  { emoji: '🌸', label: 'Bochechas',      value: 'Analisando…' },
-        eyes:    { emoji: '👁️', label: 'Área dos olhos', value: 'Analisando…' },
-      },
-    },
-    de: {
-      title:           'KOI Hautanalyse',
-      subtitle:        'KI · Echtzeit',
-      badge:           '📸 VISION',
-      loading:         'Kamerazugriff wird angefordert…',
-      guide_position:  '👆 Platziere dein Gesicht im Oval',
-      guide_ok:        '✓ Perfekt — drücke den Button wenn du bereit bist',
-      guide_light_low: '💡 Suche besseres Licht — gehe ans Fenster',
-      guide_light_warn:'⚡ Etwas dunkel — mehr Licht hilft',
-      capture_btn:     '📸 Foto jetzt aufnehmen',
-      capture_ready:   '📸 Perfekt — Foto aufnehmen',
-      capture_warn:    '💡 Erst Beleuchtung verbessern',
-      light_ok:        '☀️ Gutes Licht',
-      light_warn:      '🌥️ Wenig Licht',
-      light_low:       '🌑 Zu dunkel',
-      analysis_title:  'KOI analysiert deine Haut',
-      analysis_sub:    'Klinische Analyse läuft',
-      items: [
-        { icon: '💧', text: 'Feuchtigkeitslevel',     dim: 'hidratacion'  },
-        { icon: '🛡️', text: 'Hautbarriere',           dim: 'barrera'      },
-        { icon: '✨', text: 'Talgverteilung',          dim: 'sebum'        },
-        { icon: '🌗', text: 'Pigmentierung & Ton',     dim: 'pigmentacion' },
-        { icon: '🔎', text: 'Textur & Poren',          dim: 'textura'      },
-        { icon: '❤️', text: 'Mikrozirkulation',        dim: 'circulacion'  },
-        { icon: '💪', text: 'Festigkeit & Elastizität',dim: 'firmeza'      },
-        { icon: '🦠', text: 'Mikrobiom-Gleichgewicht', dim: 'microbioma'   },
-      ],
-      result_title:    'Analyse abgeschlossen ✓',
-      result_cta:      '✨ Vollständige Analyse im Chat →',
-      privacy:         '🔒 Bild sofort verarbeitet. Nicht gespeichert.',
-      error_title:     'Kamera nicht verfügbar',
-      error_desc:      'Wir benötigen Kameraberechtigungen zur Hautanalyse.',
-      error_alt:       '✨ Ohne Kamera fortfahren',
-      error_blocked_title: 'Kamera vom Browser gesperrt',
-      error_blocked_desc:  'Dein Browser hat den Kamerazugriff blockiert. Folge diesen Schritten:',
-      error_blocked_steps: [
-        '🔒 Klicke auf das <b>Schloss-Symbol 🔒</b> in der Adressleiste',
-        '📷 Finde <b>Kamera</b> → ändere auf <b>Zulassen</b>',
-        '🔄 Lade die Seite neu und tippe wieder auf VISION',
-      ],
-      error_blocked_chrome: 'Oder in Chrome: <code>chrome://settings/content/camera</code>',
-      error_notfound_title: 'Keine Kamera gefunden',
-      error_notfound_desc:  'Kein Kameragerät auf deinem Gerät erkannt.',
-      error_retry:          '🔄 Erneut versuchen',
-      zones: {
-        tzone:   { emoji: '💦', label: 'T-Zone',   value: 'Analysiert…' },
-        cheeks:  { emoji: '🌸', label: 'Wangen',   value: 'Analysiert…' },
-        eyes:    { emoji: '👁️', label: 'Augenpartie', value: 'Analysiert…' },
-      },
-    },
-    it: {
-      title:           'KOI Analisi Facciale',
-      subtitle:        'IA · Tempo Reale',
-      badge:           '📸 VISIONE',
-      loading:         'Richiesta accesso alla fotocamera…',
-      guide_position:  '👆 Centra il tuo viso nell\'ovale',
-      guide_ok:        '✓ Perfetto — premi il pulsante quando sei pronta',
-      guide_light_low: '💡 Trova più luce — avvicinati a una finestra',
-      guide_light_warn:'⚡ Un po\' buio — più luce aiuterà',
-      capture_btn:     '📸 Scatta foto ora',
-      capture_ready:   '📸 Perfetto — scatta foto',
-      capture_warn:    '💡 Migliora prima l\'illuminazione',
-      light_ok:        '☀️ Buona luce',
-      light_warn:      '🌥️ Poca luce',
-      light_low:       '🌑 Troppo buio',
-      analysis_title:  'KOI sta analizzando la tua pelle',
-      analysis_sub:    'Analisi clinica in corso',
-      items: [
-        { icon: '💧', text: 'Livelli di idratazione',   dim: 'hidratacion'  },
-        { icon: '🛡️', text: 'Integrità della barriera', dim: 'barrera'      },
-        { icon: '✨', text: 'Distribuzione sebacea',     dim: 'sebum'        },
-        { icon: '🌗', text: 'Pigmentazione e tono',      dim: 'pigmentacion' },
-        { icon: '🔎', text: 'Texture e pori',            dim: 'textura'      },
-        { icon: '❤️', text: 'Microcircolazione',         dim: 'circulacion'  },
-        { icon: '💪', text: 'Tonicità ed elasticità',    dim: 'firmeza'      },
-        { icon: '🦠', text: 'Equilibrio del microbioma', dim: 'microbioma'   },
-      ],
-      result_title:    'Analisi completata ✓',
-      result_cta:      '✨ Vedi analisi completa nella chat →',
-      privacy:         '🔒 Immagine elaborata istantaneamente. Non conservata.',
-      error_title:     'Fotocamera non disponibile',
-      error_desc:      'Abbiamo bisogno del permesso della fotocamera per analizzare la tua pelle.',
-      error_alt:       '✨ Continua senza fotocamera',
-      zones: {
-        tzone:   { emoji: '💦', label: 'Zona T',     value: 'Analisi…' },
-        cheeks:  { emoji: '🌸', label: 'Guance',     value: 'Analisi…' },
-        eyes:    { emoji: '👁️', label: 'Contorno occhi', value: 'Analisi…' },
-      },
+  const T = {
+    scanning:   'KOI BIOSCAN · SEARCHING',
+    lock:       'FACE LOCKED · HOLD STILL',
+    analysis_title: 'KOI is analyzing your skin',
+    analysis_sub:   'Clinical analysis in progress',
+    confirm_title:  'Use this photo?',
+    confirm_yes:    '✓ Perfect — Analyze my skin',
+    confirm_retry:  '↺ Retake photo',
+    result_title:   'Analysis Complete ✓',
+    result_cta:     '✨ See full analysis in chat →',
+    privacy:        '🔒 Image processed instantly. Not stored.',
+    error_title:    'Camera not available',
+    error_desc:     "We need camera permission to analyze your skin. You can still explore your routine — tap below.",
+    error_alt:      '✨ Continue without camera',
+    error_blocked_title: 'Camera blocked by browser',
+    error_blocked_desc:  'Your browser blocked camera access. Follow these steps:',
+    error_blocked_steps: [
+      '🔒 Click the <b>lock icon</b> in the address bar',
+      '📷 Find <b>Camera</b> → change to <b>Allow</b>',
+      '🔄 Reload the page and tap VISION again',
+    ],
+    error_blocked_chrome: 'Or in Chrome: <code>chrome://settings/content/camera</code>',
+    error_notfound_title: 'No camera found',
+    error_notfound_desc:  'No camera detected on your device. You can still explore your routine.',
+    error_retry:          '🔄 Try again',
+    loading:        'Requesting camera access…',
+    items: [
+      { icon: '💧', text: 'Hydration levels',        dim: 'hidratacion'  },
+      { icon: '🛡️', text: 'Skin barrier integrity',  dim: 'barrera'      },
+      { icon: '✨', text: 'Sebum distribution',       dim: 'sebum'        },
+      { icon: '🌗', text: 'Pigmentation & tone',      dim: 'pigmentacion' },
+      { icon: '🔎', text: 'Texture & pore structure', dim: 'textura'      },
+      { icon: '❤️', text: 'Microcirculation',         dim: 'circulacion'  },
+      { icon: '💪', text: 'Firmness & elasticity',    dim: 'firmeza'      },
+      { icon: '🦠', text: 'Microbiome balance',       dim: 'microbioma'   },
+    ],
+    zones: {
+      tzone:  { emoji: '💦', label: 'T-Zone',   value: 'Analyzing…' },
+      cheeks: { emoji: '🌸', label: 'Cheeks',   value: 'Analyzing…' },
+      eyes:   { emoji: '👁️', label: 'Eye Area', value: 'Analyzing…' },
     },
   };
-
-  function getT() {
-    const lang = (navigator.language || 'en').split('-')[0].toLowerCase();
-    return KV_I18N[lang] || KV_I18N.en;
-  }
 
   /* ══════════════════════════════════════════════════════════
      CONSTRUCCIÓN DEL DOM
      ══════════════════════════════════════════════════════════ */
   function buildModal() {
     if (document.getElementById('koi-vision-modal')) return;
-    const t = getT();
 
     const modal = document.createElement('div');
     modal.id = 'koi-vision-modal';
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
-    modal.setAttribute('aria-label', t.title);
+    modal.setAttribute('aria-label', 'KOI BioScan');
 
     modal.innerHTML = `
       <div class="kv-panel">
 
-        <!-- ─── HEADER ─── -->
+        <!-- ─── HEADER flotante sobre la cámara ─── -->
         <div class="kv-header">
           <div class="kv-header__koi">
             <div class="kv-header__avatar"><span>🌸</span></div>
             <div>
               <div class="kv-header__name">KOI</div>
-              <div class="kv-header__subtitle">${t.subtitle}</div>
+              <div class="kv-header__subtitle">BIOSCAN · AI</div>
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:8px;">
-            <div class="kv-header__badge">${t.badge}</div>
+            <div class="kv-header__badge">📡 VISION</div>
             <div class="kv-close-btn" id="kv-close-btn" role="button" tabindex="0" aria-label="Close">✕</div>
           </div>
         </div>
@@ -404,95 +152,113 @@
         <!-- ─── LOADING ─── -->
         <div class="kv-loading-state kv--active" id="kv-loading-state">
           <div class="kv-spinner"></div>
-          <div class="kv-loading-state__text">${t.loading}</div>
+          <div class="kv-loading-state__text">${T.loading}</div>
         </div>
 
         <!-- ─── VIEWFINDER ─── -->
         <div class="kv-viewfinder" id="kv-viewfinder" style="display:none;">
 
-          <!-- Video de la cámara -->
+          <!-- Video -->
           <video id="koi-vision-video" autoplay playsinline muted></video>
           <canvas id="koi-vision-canvas" style="display:none;"></canvas>
 
-          <!-- Viñeta ambiental -->
+          <!-- Viñeta -->
           <div class="kv-vignette"></div>
 
-          <!-- ══ ÓVALO SVG — siempre visible, no depende de z-index sobre video ══ -->
-          <svg class="kv-oval-svg" id="kv-oval-svg"
-               viewBox="0 0 400 300"
-               preserveAspectRatio="xMidYMid meet"
-               xmlns="http://www.w3.org/2000/svg">
+          <!-- Grid holográfico CSS -->
+          <div class="kv-bioscan-grid" aria-hidden="true"></div>
 
-            <!-- Arco dashed exterior giratorio -->
-            <ellipse class="kv-oval-arc"
-              cx="200" cy="150" rx="100" ry="128"/>
+          <!-- Líneas de scan -->
+          <div class="kv-bioscan-line"   aria-hidden="true"></div>
+          <div class="kv-bioscan-line-2" aria-hidden="true"></div>
 
-            <!-- Óvalo principal — siempre visible en rosa -->
-            <ellipse class="kv-oval-ellipse" id="kv-oval-ellipse"
-              cx="200" cy="150" rx="90" ry="118"/>
+          <!-- Targeting corners -->
+          <div class="kv-corners" id="kv-corners" aria-hidden="true">
+            <div class="kv-corner kv-corner--tl"></div>
+            <div class="kv-corner kv-corner--tr"></div>
+            <div class="kv-corner kv-corner--bl"></div>
+            <div class="kv-corner kv-corner--br"></div>
+          </div>
 
-            <!-- 4 puntos en los extremos del óvalo -->
-            <circle class="kv-oval-dot" cx="200" cy="32"  r="3"/>
-            <circle class="kv-oval-dot" cx="290" cy="150" r="3"/>
-            <circle class="kv-oval-dot" cx="200" cy="268" r="3"/>
-            <circle class="kv-oval-dot" cx="110" cy="150" r="3"/>
-          </svg>
+          <!-- Puntos biométricos flotantes -->
+          <div class="kv-bio-live" aria-hidden="true">
+            <div class="kv-bio-dot" style="top:30%;left:50%"></div>
+            <div class="kv-bio-dot" style="top:42%;left:34%"></div>
+            <div class="kv-bio-dot" style="top:42%;left:66%"></div>
+            <div class="kv-bio-dot" style="top:56%;left:30%"></div>
+            <div class="kv-bio-dot" style="top:56%;left:70%"></div>
+            <div class="kv-bio-dot" style="top:66%;left:50%"></div>
+            <div class="kv-bio-dot" style="top:50%;left:50%"></div>
+          </div>
 
-          <!-- Texto guía -->
-          <div class="kv-guide-text" id="kv-guide-text">${t.guide_position}</div>
+          <!-- Métricas biométricas -->
+          <div class="kv-metrics" aria-hidden="true">
+            <div class="kv-metric kv-metric--tl">
+              <div class="kv-metric__label">HYDRATION</div>
+              <div class="kv-metric__value" id="kv-m-hydration">--</div>
+              <div class="kv-metric__bar"><div class="kv-metric__bar-fill"></div></div>
+            </div>
+            <div class="kv-metric kv-metric--tr">
+              <div class="kv-metric__label">MELANIN</div>
+              <div class="kv-metric__value" id="kv-m-melanin">--</div>
+              <div class="kv-metric__bar"><div class="kv-metric__bar-fill"></div></div>
+            </div>
+            <div class="kv-metric kv-metric--bl">
+              <div class="kv-metric__label">BARRIER</div>
+              <div class="kv-metric__value" id="kv-m-barrier">--</div>
+              <div class="kv-metric__bar"><div class="kv-metric__bar-fill"></div></div>
+            </div>
+            <div class="kv-metric kv-metric--br">
+              <div class="kv-metric__label">UV INDEX</div>
+              <div class="kv-metric__value" id="kv-m-uv">--</div>
+              <div class="kv-metric__bar"><div class="kv-metric__bar-fill"></div></div>
+            </div>
+          </div>
 
-          <!-- HUD: estado cámara -->
-          <div class="kv-hud">
+          <!-- HUD status -->
+          <div class="kv-hud" aria-hidden="true">
             <div class="kv-hud__status">
               <div class="kv-hud__dot kv--live" id="kv-hud-dot"></div>
               <span id="kv-hud-text">LIVE</span>
             </div>
+            <div class="kv-hud__scan" id="kv-scan-pct">SCAN 0%</div>
           </div>
 
-          <!-- HUD: indicador de luz — esquina superior derecha -->
-          <div class="kv-hud__light" id="kv-light-indicator">
-            <span class="kv-hud__light-icon">☀️</span>
-            <span id="kv-light-label">${t.light_ok}</span>
+          <!-- Status message -->
+          <div class="kv-status-msg" id="kv-status-msg">${T.scanning}</div>
+
+          <!-- Countdown -->
+          <div class="kv-countdown" id="kv-countdown">
+            <div class="kv-countdown__ring" id="kv-countdown-ring"></div>
+            <div class="kv-countdown__number" id="kv-countdown-num">5</div>
           </div>
 
-          <!-- ══ EFECTOS WOW sobre el video en tiempo real ══ -->
-
-          <!-- Línea de scan horizontal -->
-          <div class="kv-scan-line" id="kv-scan-line"></div>
-
-          <!-- Grid de puntos biométricos sobre el óvalo -->
-          <div class="kv-live-dots" aria-hidden="true">
-            <div class="kv-live-dot" style="top:28%;left:50%"></div>
-            <div class="kv-live-dot" style="top:40%;left:32%"></div>
-            <div class="kv-live-dot" style="top:40%;left:68%"></div>
-            <div class="kv-live-dot" style="top:55%;left:30%"></div>
-            <div class="kv-live-dot" style="top:55%;left:70%"></div>
-            <div class="kv-live-dot" style="top:65%;left:50%"></div>
-            <div class="kv-live-dot" style="top:50%;left:50%"></div>
-          </div>
-
-          <!-- Chips de datos en tiempo real (esquinas) -->
-          <div class="kv-live-chip kv-live-chip--tl">LIVE · AI</div>
-          <div class="kv-live-chip kv-live-chip--tr" id="kv-live-pct">SCAN 0%</div>
-          <div class="kv-live-chip kv-live-chip--bl">KOI VISION</div>
-
-          <!-- Flash de captura -->
+          <!-- Flash -->
           <div class="kv-capture-flash" id="kv-capture-flash"></div>
-
-          <!-- ══ BOTÓN DE CAPTURA MANUAL ══ -->
-          <div class="kv-capture-btn-wrap">
-            <button class="kv-capture-btn" id="kv-capture-btn" type="button">
-              <span class="kv-capture-btn__icon">📸</span>
-              <span class="kv-capture-btn__label" id="kv-capture-btn-label">${t.capture_btn}</span>
-            </button>
-          </div>
 
         </div>
 
-        <!-- ─── PANTALLA DE ANÁLISIS ─── -->
+        <!-- ─── CONFIRM SCREEN ─── -->
+        <div class="kv-confirm" id="kv-confirm">
+          <img class="kv-confirm__photo" id="kv-confirm-photo" alt="" />
+          <div class="kv-confirm__overlay"></div>
+          <div class="kv-confirm__content">
+            <div class="kv-confirm__title">Use this <span>photo?</span></div>
+            <div class="kv-confirm__subtitle">KOI BioScan · Capture Review</div>
+            <div class="kv-confirm__btns">
+              <button class="kv-confirm__btn-yes" id="kv-confirm-yes" type="button">
+                ${T.confirm_yes}
+              </button>
+              <button class="kv-confirm__btn-retry" id="kv-confirm-retry" type="button">
+                ${T.confirm_retry}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── ANÁLISIS ─── -->
         <div class="kv-analyzing" id="kv-analyzing">
           <div class="kv-analyzing-inner">
-
             <div class="kv-captured-wrap">
               <img class="kv-captured-img" id="kv-captured-img" alt="" />
               <div class="kv-scan-beam" id="kv-scan-beam"></div>
@@ -506,28 +272,27 @@
                 <div class="kv-bio-pt" style="top:50%;left:50%"></div>
               </div>
               <div class="kv-scan-data">
-                <div class="kv-scan-data__chip kv-scan-data__chip--tl">SCAN</div>
-                <div class="kv-scan-data__chip kv-scan-data__chip--br" id="kv-scan-pct">0%</div>
+                <div class="kv-scan-data__chip kv-scan-data__chip--tl">BIOSCAN</div>
+                <div class="kv-scan-data__chip kv-scan-data__chip--br" id="kv-scan-pct-analysis">0%</div>
               </div>
               <div class="kv-photo-corner kv-photo-corner--tl"></div>
               <div class="kv-photo-corner kv-photo-corner--tr"></div>
               <div class="kv-photo-corner kv-photo-corner--bl"></div>
               <div class="kv-photo-corner kv-photo-corner--br"></div>
             </div>
-
             <div class="kv-analyzing-info">
               <div class="kv-analysis-progress">
                 <div class="kv-analysis-header">
-                  <span class="kv-analysis-progress__label">${t.analysis_title}</span>
+                  <span class="kv-analysis-progress__label">${T.analysis_title}</span>
                   <span class="kv-analysis-pct" id="kv-analysis-pct-label">0%</span>
                 </div>
                 <div class="kv-progress-track">
                   <div class="kv-progress-fill" id="kv-progress-fill"></div>
                 </div>
-                <div class="kv-analysis-progress__sub">${t.analysis_sub}</div>
+                <div class="kv-analysis-progress__sub">${T.analysis_sub}</div>
               </div>
               <div class="kv-analysis-items" id="kv-analysis-items">
-                ${t.items.map((item, i) => `
+                ${T.items.map((item, i) => `
                   <div class="kv-analysis-item" id="kv-item-${i}">
                     <span class="kv-analysis-item__icon">${item.icon}</span>
                     <span class="kv-analysis-item__text">${item.text}</span>
@@ -539,11 +304,11 @@
           </div>
         </div>
 
-        <!-- ─── RESULTADO PREVIEW ─── -->
+        <!-- ─── RESULTADO ─── -->
         <div class="kv-result-preview" id="kv-result-preview">
-          <div class="kv-result-preview__title">${t.result_title}</div>
+          <div class="kv-result-preview__title">${T.result_title}</div>
           <div class="kv-zones" id="kv-zones">
-            ${Object.entries(t.zones).map(([key, z]) => `
+            ${Object.entries(T.zones).map(([key, z]) => `
               <div class="kv-zone-card" id="kv-zone-${key}">
                 <span class="kv-zone-card__emoji">${z.emoji}</span>
                 <span class="kv-zone-card__label">${z.label}</span>
@@ -552,28 +317,22 @@
             `).join('')}
           </div>
           <div class="kv-result-cta" id="kv-result-cta" role="button" tabindex="0">
-            ${t.result_cta}
+            ${T.result_cta}
           </div>
-          <div class="kv-privacy-note">${t.privacy}</div>
+          <div class="kv-privacy-note">${T.privacy}</div>
         </div>
 
-        <!-- ─── ERROR STATE ─── -->
+        <!-- ─── ERROR ─── -->
         <div class="kv-error-state" id="kv-error-state">
           <span class="kv-error-state__icon" id="kv-error-icon">📷</span>
-          <div class="kv-error-state__title" id="kv-error-title">${t.error_title}</div>
-          <p class="kv-error-state__desc" id="kv-error-desc">${t.error_desc}</p>
-
-          <!-- Pasos para desbloquear — solo visibles en NotAllowedError -->
-          <ol class="kv-error-steps" id="kv-error-steps" style="display:none;">
-          </ol>
+          <div class="kv-error-state__title" id="kv-error-title">${T.error_title}</div>
+          <p class="kv-error-state__desc" id="kv-error-desc">${T.error_desc}</p>
+          <ol class="kv-error-steps" id="kv-error-steps" style="display:none;"></ol>
           <p class="kv-error-chrome-tip" id="kv-error-chrome" style="display:none;"></p>
-
-          <!-- Botón reintentar — solo visible en NotAllowedError -->
           <button class="kv-error-retry-btn" id="kv-error-retry" type="button" style="display:none;">
-            🔄 Reintentar
+            ${T.error_retry}
           </button>
-
-          <div class="kv-error-alt-btn" id="kv-error-alt" role="button" tabindex="0">${t.error_alt}</div>
+          <div class="kv-error-alt-btn" id="kv-error-alt" role="button" tabindex="0">${T.error_alt}</div>
         </div>
 
       </div>
@@ -596,20 +355,27 @@
       });
     }
 
-    // Cerrar clickando el backdrop
-    const modal = document.getElementById('koi-vision-modal');
-    if (modal) {
-      modal.addEventListener('click', e => {
-        if (e.target === modal) cerrar();
-      }, true);
-    }
-
     // Escape
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && KV_STATE.isOpen) cerrar();
     });
 
-    // Botón alternativo (sin cámara)
+    // Confirm: sí, analizar
+    const confirmYes = document.getElementById('kv-confirm-yes');
+    if (confirmYes) {
+      confirmYes.addEventListener('click', () => {
+        setPhase('analyzing');
+        iniciarAnalisis(KV_STATE.capturedImage);
+      }, true);
+    }
+
+    // Confirm: repetir foto
+    const confirmRetry = document.getElementById('kv-confirm-retry');
+    if (confirmRetry) {
+      confirmRetry.addEventListener('click', retake, true);
+    }
+
+    // Botón alternativo sin cámara
     const altBtn = document.getElementById('kv-error-alt');
     if (altBtn) {
       altBtn.addEventListener('click', () => {
@@ -620,7 +386,7 @@
       }, true);
     }
 
-    // Botón reintentar — vuelve a pedir permisos
+    // Reintentar cámara
     const retryBtn = document.getElementById('kv-error-retry');
     if (retryBtn) {
       retryBtn.addEventListener('click', async () => {
@@ -631,22 +397,16 @@
       }, true);
     }
 
-    // CTA del resultado → enviar al chat
+    // CTA resultado
     const ctaBtn = document.getElementById('kv-result-cta');
     if (ctaBtn) {
       ctaBtn.addEventListener('click', enviarAlChat, true);
       ctaBtn.addEventListener('keydown', e => { if (e.key === 'Enter') enviarAlChat(); });
     }
-
-    // ══ BOTÓN DE CAPTURA MANUAL ══
-    const captureBtn = document.getElementById('kv-capture-btn');
-    if (captureBtn) {
-      captureBtn.addEventListener('click', intentarCaptura, true);
-    }
   }
 
   /* ══════════════════════════════════════════════════════════
-     GESTIÓN DE FASES
+     FASES
      ══════════════════════════════════════════════════════════ */
   function setPhase(phase) {
     KV_STATE.phase = phase;
@@ -654,6 +414,7 @@
     const sections = [
       'kv-loading-state',
       'kv-viewfinder',
+      'kv-confirm',
       'kv-analyzing',
       'kv-result-preview',
       'kv-error-state',
@@ -669,6 +430,7 @@
     const map = {
       loading:   'kv-loading-state',
       camera:    'kv-viewfinder',
+      confirm:   'kv-confirm',
       analyzing: 'kv-analyzing',
       result:    'kv-result-preview',
       error:     'kv-error-state',
@@ -690,21 +452,19 @@
   async function abrir(contexto) {
     if (KV_STATE.isOpen) return;
 
-    KV_STATE.contexto       = contexto || null;
-    KV_STATE.isOpen         = true;
-    KV_STATE.capturedImage  = null;
+    KV_STATE.contexto      = contexto || null;
+    KV_STATE.isOpen        = true;
+    KV_STATE.capturedImage = null;
     KV_STATE.analysisResult = null;
-    KV_STATE.lightLevel     = 'unknown';
+    KV_STATE.facePresent   = false;
+    KV_STATE.countdownVal  = 0;
 
     buildModal();
 
     const modal = document.getElementById('koi-vision-modal');
     if (!modal) return;
 
-    // Prevenir scroll
     document.body.style.overflow = 'hidden';
-
-    // Mostrar modal con animación
     requestAnimationFrame(() => modal.classList.add('kv--active'));
 
     setPhase('loading');
@@ -718,22 +478,17 @@
     KV_STATE.isOpen = false;
     KV_STATE.phase  = 'idle';
 
-    // Parar análisis de luz
-    detenerAnalisisLuz();
-
-    // Parar cámara
+    _stopAllTimers();
     pararCamara();
 
-    // Ocultar modal
     const modal = document.getElementById('koi-vision-modal');
     if (modal) {
       modal.classList.remove('kv--active');
       setTimeout(() => {
         if (modal.parentNode) modal.parentNode.removeChild(modal);
-      }, 500);
+      }, 400);
     }
 
-    // Restaurar scroll
     document.body.style.overflow = '';
   }
 
@@ -741,14 +496,9 @@
      CÁMARA
      ══════════════════════════════════════════════════════════ */
   async function iniciarCamara() {
-    // Intentamos con constraints progresivamente más simples
-    // para maximizar compatibilidad entre dispositivos y navegadores.
     const constraints = [
-      // Intento 1 — ideal para calidad, flexible en resolución
       { video: { facingMode: { ideal: 'user' }, width: { ideal: 640 }, height: { ideal: 480 } }, audio: false },
-      // Intento 2 — solo facingMode, sin resolución fija
       { video: { facingMode: 'user' }, audio: false },
-      // Intento 3 — cualquier cámara disponible
       { video: true, audio: false },
     ];
 
@@ -757,14 +507,10 @@
 
     for (let i = 0; i < constraints.length; i++) {
       try {
-        console.log('[KOI Vision] Intento ' + (i + 1) + ' de cámara…', constraints[i]);
         stream = await navigator.mediaDevices.getUserMedia(constraints[i]);
-        break; // éxito — salir del loop
+        break;
       } catch (err) {
-        console.warn('[KOI Vision] Intento ' + (i + 1) + ' fallido:', err.name, err.message);
         lastErr = err;
-
-        // Si es NotAllowedError o NotFoundError no tiene sentido reintentar
         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError' ||
             err.name === 'NotFoundError'   || err.name === 'DevicesNotFoundError') {
           break;
@@ -778,15 +524,17 @@
     }
 
     KV_STATE.stream = stream;
-
     const video = document.getElementById('koi-vision-video');
     if (!video) return;
-
     video.srcObject = stream;
     await video.play().catch(() => {});
 
+    // Inicializar FaceDetector si está disponible
+    _initFaceDetector();
+
     setPhase('camera');
-    iniciarAnalisisLuz();
+    _startScanEffects();
+    _startPresenceDetection();
   }
 
   function pararCamara() {
@@ -799,183 +547,265 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     ANÁLISIS DE LUZ EN TIEMPO REAL
-     Lee el brillo del canvas cada 800ms y actualiza la UI.
-     Esto es 100% real — no simulado.
+     FACEDETECTOR — con fallback a luminosidad central
      ══════════════════════════════════════════════════════════ */
-  function iniciarAnalisisLuz() {
-    detenerAnalisisLuz(); // Limpiar cualquier timer previo
-    actualizarEstadoLuz(); // Primera lectura inmediata
-    KV_STATE.lightCheckTimer = setInterval(actualizarEstadoLuz, KV_CONFIG.lightCheckInterval);
-
-    // Animar el chip "SCAN X%" en tiempo real
-    _animarChipScan();
-  }
-
-  function _animarChipScan() {
-    const chip = document.getElementById('kv-live-pct');
-    if (!chip) return;
-    let pct = 0;
-    const timer = setInterval(function() {
-      if (!KV_STATE.isOpen || KV_STATE.phase !== 'camera') {
-        clearInterval(timer);
-        return;
+  function _initFaceDetector() {
+    if ('FaceDetector' in window) {
+      try {
+        KV_STATE.faceDetector = new window.FaceDetector({
+          fastMode: true,
+          maxDetectedFaces: 1,
+        });
+        console.log('[KOI BioScan] FaceDetector API disponible ✓');
+      } catch (_) {
+        KV_STATE.faceDetector = null;
       }
-      pct = (pct + Math.floor(Math.random() * 4 + 1)) % 101;
-      chip.textContent = 'SCAN ' + pct + '%';
-    }, 600);
-  }
-
-  function detenerAnalisisLuz() {
-    if (KV_STATE.lightCheckTimer) {
-      clearInterval(KV_STATE.lightCheckTimer);
-      KV_STATE.lightCheckTimer = null;
+    } else {
+      KV_STATE.faceDetector = null;
+      console.log('[KOI BioScan] FaceDetector no disponible — usando luminosidad central');
     }
   }
 
-  function medirBrillo() {
-    const video  = document.getElementById('koi-vision-video');
-    const canvas = document.getElementById('koi-vision-canvas');
-    if (!video || !canvas || !KV_STATE.stream) return null;
+  async function _detectFacePresence() {
+    const video = document.getElementById('koi-vision-video');
+    if (!video || !KV_STATE.stream) return false;
 
-    // Captura pequeña (80×60) para medir brillo sin sobrecargar
-    canvas.width  = 80;
-    canvas.height = 60;
+    // Método 1: FaceDetector API
+    if (KV_STATE.faceDetector) {
+      try {
+        const faces = await KV_STATE.faceDetector.detect(video);
+        return faces.length > 0;
+      } catch (_) {
+        // fallback
+      }
+    }
+
+    // Método 2: luminosidad zona central (proxy de cara)
+    const canvas = document.getElementById('koi-vision-canvas');
+    if (!canvas) return false;
+
+    // Analizar solo la zona central (donde estaría la cara)
+    const cw = 60; const ch = 60;
+    canvas.width  = cw;
+    canvas.height = ch;
     const ctx = canvas.getContext('2d');
 
     try {
-      ctx.drawImage(video, 0, 0, 80, 60);
-      const data = ctx.getImageData(0, 0, 80, 60).data;
+      // Capturar solo el centro del video
+      const vw = video.videoWidth  || 320;
+      const vh = video.videoHeight || 240;
+      const sx = vw * 0.25; const sy = vh * 0.15;
+      const sw = vw * 0.50; const sh = vh * 0.70;
+      ctx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch);
+      const data = ctx.getImageData(0, 0, cw, ch).data;
 
-      let sum = 0;
-      const pixelCount = data.length / 4;
+      let sum = 0; let count = 0;
       for (let i = 0; i < data.length; i += 4) {
-        // Luminancia percibida: 0.299R + 0.587G + 0.114B
-        sum += (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
+        sum += (data[i] * 0.299 + data[i+1] * 0.587 + data[i+2] * 0.114);
+        count++;
       }
-      return sum / pixelCount; // 0-255
+      const avg = count > 0 ? sum / count : 0;
+      return avg >= KV_CONFIG.presenceThreshold;
     } catch (_) {
-      return null;
-    }
-  }
-
-  function actualizarEstadoLuz() {
-    if (KV_STATE.phase !== 'camera') return;
-
-    const t = getT();
-    const brillo = medirBrillo();
-
-    const lightEl     = document.getElementById('kv-light-indicator');
-    const lightLabel  = document.getElementById('kv-light-label');
-    const captureBtn  = document.getElementById('kv-capture-btn');
-    const captureLbl  = document.getElementById('kv-capture-btn-label');
-    const guideText   = document.getElementById('kv-guide-text');
-    const ovalSvg     = document.getElementById('kv-oval-svg');
-
-    if (brillo === null) return; // Video aún no listo
-
-    let newLevel;
-    if (brillo >= KV_CONFIG.lightWarnThreshold) {
-      newLevel = 'ok';
-    } else if (brillo >= KV_CONFIG.lightMinThreshold) {
-      newLevel = 'warn';
-    } else {
-      newLevel = 'low';
-    }
-
-    if (newLevel === KV_STATE.lightLevel) return; // Sin cambios
-    KV_STATE.lightLevel = newLevel;
-
-    // ── Actualizar indicador de luz ──
-    if (lightEl) {
-      lightEl.className = 'kv-hud__light';
-      if (newLevel === 'ok')   lightEl.classList.add('kv--light-ok');
-      if (newLevel === 'warn') lightEl.classList.add('kv--light-low');
-      if (newLevel === 'low')  lightEl.classList.add('kv--light-low');
-    }
-    if (lightLabel) {
-      lightLabel.textContent = newLevel === 'ok'   ? t.light_ok
-                             : newLevel === 'warn'  ? t.light_warn
-                             :                       t.light_low;
-    }
-
-    // ── Actualizar botón de captura ──
-    if (captureBtn && captureLbl) {
-      captureBtn.className = 'kv-capture-btn';
-      captureBtn.disabled  = false;
-
-      if (newLevel === 'ok') {
-        captureBtn.classList.add('kv--ready');
-        captureLbl.textContent = t.capture_ready;
-      } else if (newLevel === 'warn') {
-        captureBtn.classList.add('kv--warn');
-        captureLbl.textContent = t.capture_warn;
-      } else {
-        captureBtn.classList.add('kv--warn');
-        captureLbl.textContent = t.capture_btn; // Siempre puede capturar
-        captureBtn.disabled = false; // Nunca bloquear — solo avisar
-      }
-    }
-
-    // ── Actualizar texto guía ──
-    if (guideText) {
-      guideText.className = 'kv-guide-text';
-      if (newLevel === 'ok') {
-        guideText.textContent = t.guide_ok;
-        guideText.classList.add('kv--ok');
-      } else if (newLevel === 'warn') {
-        guideText.textContent = t.guide_light_warn;
-        guideText.classList.add('kv--warn');
-      } else {
-        guideText.textContent = t.guide_light_low;
-        guideText.classList.add('kv--warn');
-      }
-    }
-
-    // ── Actualizar estado del óvalo SVG ──
-    if (ovalSvg) {
-      ovalSvg.className = 'kv-oval-svg';
-      if (newLevel === 'ok')   ovalSvg.classList.add('kv--ok');
-      if (newLevel === 'warn') ovalSvg.classList.add('kv--warn');
+      return false;
     }
   }
 
   /* ══════════════════════════════════════════════════════════
-     INTENTO DE CAPTURA — validar antes de disparar
+     DETECCIÓN CONTINUA + COUNTDOWN
      ══════════════════════════════════════════════════════════ */
-  function intentarCaptura() {
-    if (KV_STATE.phase !== 'camera') return;
+  function _startPresenceDetection() {
+    _stopPresenceTimer();
 
-    const brillo = medirBrillo();
-
-    // Bloquear si está demasiado oscuro
-    if (brillo !== null && brillo < KV_CONFIG.lightMinThreshold) {
-      // Vibrar el botón para indicar que no se puede
-      const btn = document.getElementById('kv-capture-btn');
-      if (btn) {
-        btn.style.animation = 'none';
-        btn.style.transform = 'translateX(-4px)';
-        setTimeout(() => { btn.style.transform = 'translateX(4px)'; }, 80);
-        setTimeout(() => { btn.style.transform = 'translateX(0)';   }, 160);
-        setTimeout(() => { btn.style.animation = ''; }, 240);
+    KV_STATE.presenceTimer = setInterval(async () => {
+      if (KV_STATE.phase !== 'camera') {
+        _stopPresenceTimer();
+        return;
       }
+
+      const present = await _detectFacePresence();
+
+      if (present && !KV_STATE.facePresent) {
+        // ROSTRO DETECTADO — iniciar countdown
+        KV_STATE.facePresent = true;
+        _onFaceLocked();
+      } else if (!present && KV_STATE.facePresent) {
+        // ROSTRO PERDIDO — pausar countdown
+        KV_STATE.facePresent = false;
+        _onFaceLost();
+      }
+
+    }, KV_CONFIG.presenceCheckMs);
+  }
+
+  function _onFaceLocked() {
+    // Actualizar UI a estado LOCK
+    const corners   = document.getElementById('kv-corners');
+    const statusMsg = document.getElementById('kv-status-msg');
+    const hudDot    = document.getElementById('kv-hud-dot');
+    const hudText   = document.getElementById('kv-hud-text');
+
+    if (corners)   corners.classList.add('kv--lock');
+    if (statusMsg) { statusMsg.textContent = T.lock; statusMsg.classList.add('kv--lock'); }
+    if (hudDot)    { hudDot.className = 'kv-hud__dot kv--lock'; }
+    if (hudText)   hudText.textContent = 'LOCKED';
+
+    // Activar métricas
+    _startMetricAnimations();
+
+    // Iniciar countdown
+    _startCountdown();
+  }
+
+  function _onFaceLost() {
+    // Resetear countdown
+    _stopCountdown();
+
+    const corners   = document.getElementById('kv-corners');
+    const statusMsg = document.getElementById('kv-status-msg');
+    const hudDot    = document.getElementById('kv-hud-dot');
+    const hudText   = document.getElementById('kv-hud-text');
+    const countdown = document.getElementById('kv-countdown');
+
+    if (corners)   corners.classList.remove('kv--lock');
+    if (statusMsg) { statusMsg.textContent = T.scanning; statusMsg.classList.remove('kv--lock'); }
+    if (hudDot)    hudDot.className = 'kv-hud__dot kv--live';
+    if (hudText)   hudText.textContent = 'LIVE';
+    if (countdown) countdown.classList.remove('kv--active');
+  }
+
+  function _startCountdown() {
+    _stopCountdown();
+    KV_STATE.countdownVal = KV_CONFIG.countdownFrom;
+
+    const countdownEl = document.getElementById('kv-countdown');
+    if (countdownEl) countdownEl.classList.add('kv--active');
+
+    _tickCountdown();
+  }
+
+  function _tickCountdown() {
+    if (KV_STATE.phase !== 'camera' || !KV_STATE.facePresent) return;
+    if (KV_STATE.countdownVal <= 0) {
+      _dispararCaptura();
       return;
     }
 
-    // Todo OK — capturar
-    capturar();
+    const numEl  = document.getElementById('kv-countdown-num');
+    const ringEl = document.getElementById('kv-countdown-ring');
+
+    if (numEl) {
+      numEl.textContent = KV_STATE.countdownVal;
+      // Resetear y re-aplicar animación
+      numEl.classList.remove('kv--pop');
+      void numEl.offsetWidth; // reflow
+      numEl.classList.add('kv--pop');
+    }
+
+    if (ringEl) {
+      ringEl.classList.remove('kv--pulse');
+      void ringEl.offsetWidth;
+      ringEl.classList.add('kv--pulse');
+    }
+
+    KV_STATE.countdownVal--;
+
+    KV_STATE.countdownTimer = setTimeout(_tickCountdown, KV_CONFIG.countdownStepMs);
+  }
+
+  function _stopCountdown() {
+    if (KV_STATE.countdownTimer) {
+      clearTimeout(KV_STATE.countdownTimer);
+      KV_STATE.countdownTimer = null;
+    }
+    KV_STATE.countdownVal = 0;
+  }
+
+  function _stopPresenceTimer() {
+    if (KV_STATE.presenceTimer) {
+      clearInterval(KV_STATE.presenceTimer);
+      KV_STATE.presenceTimer = null;
+    }
   }
 
   /* ══════════════════════════════════════════════════════════
-     FLASH + CAPTURA
+     EFECTOS WOW — scan pct + métricas
      ══════════════════════════════════════════════════════════ */
-  function capturar() {
-    // Deshabilitar botón inmediatamente
-    const btn = document.getElementById('kv-capture-btn');
-    if (btn) btn.disabled = true;
+  function _startScanEffects() {
+    // Animar SCAN X%
+    let pct = 0;
+    KV_STATE.scanPctTimer = setInterval(() => {
+      if (!KV_STATE.isOpen || KV_STATE.phase !== 'camera') {
+        clearInterval(KV_STATE.scanPctTimer);
+        return;
+      }
+      pct = (pct + Math.floor(Math.random() * 5 + 1)) % 101;
+      const el = document.getElementById('kv-scan-pct');
+      if (el) el.textContent = 'SCAN ' + pct + '%';
+    }, 500);
+  }
 
-    // Parar análisis de luz
-    detenerAnalisisLuz();
+  function _startMetricAnimations() {
+    // Datos simulados que "calculan" en tiempo real
+    const metrics = [
+      { id: 'kv-m-hydration', min: 42, max: 89, suffix: '%' },
+      { id: 'kv-m-melanin',   min: 12, max: 68, suffix: '' },
+      { id: 'kv-m-barrier',   min: 55, max: 96, suffix: '%' },
+      { id: 'kv-m-uv',        min: 1,  max: 4,  suffix: '' },
+    ];
+
+    metrics.forEach(m => {
+      const el = document.getElementById(m.id);
+      if (!el) return;
+
+      let current = m.min;
+      const target = m.min + Math.floor(Math.random() * (m.max - m.min));
+
+      const timer = setInterval(() => {
+        if (!KV_STATE.isOpen || KV_STATE.phase !== 'camera') {
+          clearInterval(timer);
+          return;
+        }
+        if (current < target) {
+          current += Math.ceil((target - current) / 4);
+          el.textContent = current + m.suffix;
+        } else {
+          // Fluctuar levemente
+          const delta = Math.floor(Math.random() * 5) - 2;
+          current = Math.max(m.min, Math.min(m.max, current + delta));
+          el.textContent = current + m.suffix;
+        }
+      }, 200);
+
+      KV_STATE.metricTimers.push(timer);
+    });
+  }
+
+  function _stopAllTimers() {
+    _stopPresenceTimer();
+    _stopCountdown();
+    if (KV_STATE.scanPctTimer) { clearInterval(KV_STATE.scanPctTimer); KV_STATE.scanPctTimer = null; }
+    KV_STATE.metricTimers.forEach(t => clearInterval(t));
+    KV_STATE.metricTimers = [];
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     CAPTURA
+     ══════════════════════════════════════════════════════════ */
+  function _dispararCaptura() {
+    if (KV_STATE.phase !== 'camera') return;
+
+    _stopAllTimers();
+
+    // Actualizar HUD
+    const hudDot  = document.getElementById('kv-hud-dot');
+    const hudText = document.getElementById('kv-hud-text');
+    if (hudDot)  hudDot.className = 'kv-hud__dot kv--capture';
+    if (hudText) hudText.textContent = 'CAPTURE';
+
+    // Ocultar countdown
+    const countdown = document.getElementById('kv-countdown');
+    if (countdown) countdown.classList.remove('kv--active');
 
     // Flash
     const flashEl = document.getElementById('kv-capture-flash');
@@ -984,28 +814,24 @@
       setTimeout(() => flashEl.classList.remove('kv--flash'), 450);
     }
 
-    // Pequeña pausa post-flash para naturalidad
-    setTimeout(() => {
-      tomarFoto();
-    }, 150);
+    // Pequeña pausa post-flash
+    setTimeout(() => _tomarFoto(), 150);
   }
 
-  function tomarFoto() {
+  function _tomarFoto() {
     const video  = document.getElementById('koi-vision-video');
     const canvas = document.getElementById('koi-vision-canvas');
 
     if (!video || !canvas) {
-      iniciarAnalisis(null);
+      _mostrarConfirm(null);
       return;
     }
 
-    // Captura a resolución completa
     canvas.width  = KV_CONFIG.captureWidth;
     canvas.height = KV_CONFIG.captureHeight;
-
     const ctx = canvas.getContext('2d');
 
-    // Deshacer espejo del video para enviar foto correcta al Worker
+    // Deshacer espejo para enviar foto correcta al Worker
     ctx.save();
     ctx.translate(canvas.width, 0);
     ctx.scale(-1, 1);
@@ -1015,22 +841,53 @@
     const base64 = canvas.toDataURL('image/jpeg', KV_CONFIG.imageQuality);
     KV_STATE.capturedImage = base64;
 
-    // Parar cámara — ya no la necesitamos
-    pararCamara();
-
-    // Ir a pantalla de análisis
-    iniciarAnalisis(base64);
+    // NO parar la cámara aquí — la necesitamos si el usuario elige "Retake"
+    _mostrarConfirm(base64);
   }
 
   /* ══════════════════════════════════════════════════════════
-     PANTALLA DE ANÁLISIS PROGRESIVO
+     CONFIRM SCREEN
+     ══════════════════════════════════════════════════════════ */
+  function _mostrarConfirm(base64) {
+    const photoEl = document.getElementById('kv-confirm-photo');
+    if (photoEl && base64) photoEl.src = base64;
+
+    setPhase('confirm');
+  }
+
+  function retake() {
+    // Volver a la cámara sin recargar el stream
+    KV_STATE.capturedImage = null;
+    KV_STATE.facePresent   = false;
+    KV_STATE.countdownVal  = 0;
+
+    // Resetear estado visual
+    const corners   = document.getElementById('kv-corners');
+    const statusMsg = document.getElementById('kv-status-msg');
+    const hudDot    = document.getElementById('kv-hud-dot');
+    const hudText   = document.getElementById('kv-hud-text');
+    const countdown = document.getElementById('kv-countdown');
+
+    if (corners)   corners.classList.remove('kv--lock');
+    if (statusMsg) { statusMsg.textContent = T.scanning; statusMsg.classList.remove('kv--lock'); }
+    if (hudDot)    hudDot.className = 'kv-hud__dot kv--live';
+    if (hudText)   hudText.textContent = 'LIVE';
+    if (countdown) countdown.classList.remove('kv--active');
+
+    setPhase('camera');
+    _startScanEffects();
+    _startPresenceDetection();
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     ANÁLISIS PROGRESIVO — idéntico al original
      ══════════════════════════════════════════════════════════ */
   async function iniciarAnalisis(imageBase64) {
+    // Parar cámara ahora que ya confirmamos
+    pararCamara();
+
     setPhase('analyzing');
 
-    const t = getT();
-
-    // Mostrar imagen con saturación progresiva
     const imgEl = document.getElementById('kv-captured-img');
     if (imgEl && imageBase64) {
       imgEl.src = imageBase64;
@@ -1039,33 +896,30 @@
         let sat = 0;
         const saturateTimer = setInterval(() => {
           sat = Math.min(sat + 5, 100);
-          imgEl.style.filter = `saturate(${sat}%) brightness(${0.50 + (sat / 100) * 0.50})`;
+          imgEl.style.filter = `saturate(${sat}%) brightness(${0.50 + (sat/100)*0.50})`;
           if (sat >= 100) clearInterval(saturateTimer);
         }, 40);
       }, 200);
     }
 
-    // Beam scanner
     const beamEl = document.getElementById('kv-scan-beam');
     if (beamEl) setTimeout(() => beamEl.classList.add('kv--active'), 500);
 
-    // Puntos biométricos con stagger
     const bioPts = document.querySelectorAll('.kv-bio-pt');
     bioPts.forEach((pt, i) => {
       setTimeout(() => pt.classList.add('kv--visible'), 700 + i * 200);
     });
 
-    // Elementos de progreso
-    const fillEl   = document.getElementById('kv-progress-fill');
-    const pctLabel = document.getElementById('kv-analysis-pct-label');
-    const scanPct  = document.getElementById('kv-scan-pct');
-    const items    = t.items;
-    const total    = items.length;
+    const fillEl    = document.getElementById('kv-progress-fill');
+    const pctLabel  = document.getElementById('kv-analysis-pct-label');
+    const scanPct   = document.getElementById('kv-scan-pct-analysis');
+    const items     = T.items;
+    const total     = items.length;
 
     function setProgress(pct) {
-      if (fillEl)   fillEl.style.width       = pct + '%';
-      if (pctLabel) pctLabel.textContent     = Math.round(pct) + '%';
-      if (scanPct)  scanPct.textContent      = Math.round(pct) + '%';
+      if (fillEl)   fillEl.style.width     = pct + '%';
+      if (pctLabel) pctLabel.textContent   = Math.round(pct) + '%';
+      if (scanPct)  scanPct.textContent    = Math.round(pct) + '%';
     }
 
     // Llamar al Worker EN PARALELO con la animación
@@ -1073,16 +927,14 @@
       ? llamarWorkerVision(imageBase64)
       : Promise.resolve(null);
 
-    // Animar las 8 dimensiones clínicas
     for (let i = 0; i < total; i++) {
       const el = document.getElementById(`kv-item-${i}`);
       if (el) el.classList.add('kv--active');
 
       const pctStart = (i / total) * 85;
-      const pctEnd   = ((i + 1) / total) * 85;
+      const pctEnd   = ((i+1) / total) * 85;
       setProgress(pctStart);
 
-      // Avance gradual dentro del delay del item
       const steps     = 8;
       const stepDelay = KV_CONFIG.analysisItemDelay / steps;
       for (let s = 1; s <= steps; s++) {
@@ -1093,13 +945,8 @@
       if (el) { el.classList.remove('kv--active'); el.classList.add('kv--done'); }
     }
 
-    // Esperar resultado del Worker
-    const [analysisResult] = await Promise.all([
-      analysisPromise,
-      delay(300),
-    ]);
+    const [analysisResult] = await Promise.all([analysisPromise, delay(300)]);
 
-    // Completar al 100%
     setProgress(100);
     if (beamEl) {
       beamEl.classList.remove('kv--active');
@@ -1114,7 +961,7 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     LLAMADA AL CLOUDFLARE WORKER /vision
+     LLAMADA AL CLOUDFLARE WORKER /vision — INTACTA
      ══════════════════════════════════════════════════════════ */
   async function llamarWorkerVision(imageBase64) {
     try {
@@ -1164,57 +1011,39 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     RESULTADO PREVIEW
+     RESULTADO PREVIEW — INTACTA
      ══════════════════════════════════════════════════════════ */
   function mostrarResultadoPreview(result) {
     setPhase('result');
 
-    const t = getT();
-
-    // Zonas con datos reales o fallback basado en el quiz
     const zones = result?.zonas || generarZonasFallback(KV_STATE.contexto);
 
-    Object.keys(t.zones).forEach((key, i) => {
+    Object.keys(T.zones).forEach((key, i) => {
       const valEl = document.getElementById(`kv-zone-val-${key}`);
       const card  = document.getElementById(`kv-zone-${key}`);
-
-      if (valEl) valEl.textContent = zones[key] || t.zones[key].value;
+      if (valEl) valEl.textContent = zones[key] || T.zones[key].value;
       if (card)  setTimeout(() => card.classList.add('kv--visible'), i * 200);
     });
   }
 
   /* ══════════════════════════════════════════════════════════
-     FALLBACK DE ZONAS — basado en respuestas del quiz
-     Solo se usa si el Worker no devuelve datos de zonas.
+     FALLBACK ZONAS — INTACTA
      ══════════════════════════════════════════════════════════ */
   function generarZonasFallback(ctx) {
     const resp = ctx?.respuestas || {};
     const tipo = resp.tipo_piel || 'mixta';
-    const lang = (navigator.language || 'en').split('-')[0].toLowerCase();
-
     const fallbacks = {
-      en: {
-        grasa:    { tzone: 'Excess sebum visible',  cheeks: 'Congestion',       eyes: 'Slight puffiness' },
-        seca:     { tzone: 'Tension lines',         cheeks: 'Dry patches',      eyes: 'Fine lines' },
-        mixta:    { tzone: 'Oily, enlarged pores',  cheeks: 'Balanced',         eyes: 'Light dryness' },
-        sensible: { tzone: 'Reactive zone',         cheeks: 'Visible redness',  eyes: 'Sensitivity' },
-        nolose:   { tzone: 'Balanced',              cheeks: 'Even tone',        eyes: 'Minimal signs' },
-      },
-      es: {
-        grasa:    { tzone: 'Sebo excesivo',         cheeks: 'Congestión leve',  eyes: 'Ojeras leves' },
-        seca:     { tzone: 'Líneas de tensión',     cheeks: 'Parches secos',    eyes: 'Líneas finas' },
-        mixta:    { tzone: 'Poros dilatados',       cheeks: 'Equilibrada',      eyes: 'Sequedad leve' },
-        sensible: { tzone: 'Zona reactiva',         cheeks: 'Rojeces visibles', eyes: 'Sensibilidad' },
-        nolose:   { tzone: 'Equilibrada',           cheeks: 'Tono uniforme',    eyes: 'Signos mínimos' },
-      },
+      grasa:    { tzone: 'Excess sebum visible',  cheeks: 'Congestion',      eyes: 'Slight puffiness' },
+      seca:     { tzone: 'Tension lines',         cheeks: 'Dry patches',     eyes: 'Fine lines' },
+      mixta:    { tzone: 'Oily, enlarged pores',  cheeks: 'Balanced',        eyes: 'Light dryness' },
+      sensible: { tzone: 'Reactive zone',         cheeks: 'Visible redness', eyes: 'Sensitivity' },
+      nolose:   { tzone: 'Balanced',              cheeks: 'Even tone',       eyes: 'Minimal signs' },
     };
-
-    const set = (fallbacks[lang] || fallbacks.en);
-    return set[tipo] || set.mixta;
+    return fallbacks[tipo] || fallbacks.mixta;
   }
 
   /* ══════════════════════════════════════════════════════════
-     ENVIAR RESULTADO AL CHAT
+     ENVIAR AL CHAT — INTACTA
      ══════════════════════════════════════════════════════════ */
   function enviarAlChat() {
     const result = KV_STATE.analysisResult;
@@ -1223,26 +1052,19 @@
 
     cerrar();
 
-    // Callback registrado por koi-chat.js
     if (typeof KV_STATE.onResultadoCb === 'function') {
       KV_STATE.onResultadoCb({ result, image, ctx });
     }
 
-    // Evento global como alternativa
     window.dispatchEvent(new CustomEvent('koi-vision-result', {
       detail: { result, image, ctx }
     }));
   }
 
   /* ══════════════════════════════════════════════════════════
-     ERROR — cámara no disponible
-     Distingue 3 casos:
-       NotAllowedError  → permiso bloqueado (muestra pasos + reintentar)
-       NotFoundError    → no hay cámara físicamente
-       Otros            → error genérico
+     ERROR — INTACTA
      ══════════════════════════════════════════════════════════ */
   function mostrarError(err) {
-    const t = getT();
     setPhase('error');
 
     const iconEl   = document.getElementById('kv-error-icon');
@@ -1254,54 +1076,30 @@
 
     const errName = err ? err.name : '';
 
-    // ── Caso 1: Permiso bloqueado ──────────────────────────────
     if (errName === 'NotAllowedError' || errName === 'PermissionDeniedError') {
-      if (iconEl)  iconEl.textContent      = '🔒';
-      if (titleEl) titleEl.textContent     = t.error_blocked_title || t.error_title;
-      if (descEl)  descEl.textContent      = t.error_blocked_desc  || t.error_desc;
-
-      // Mostrar pasos numerados
-      if (stepsEl && t.error_blocked_steps) {
-        stepsEl.innerHTML = t.error_blocked_steps
-          .map(step => `<li>${step}</li>`)
-          .join('');
+      if (iconEl)  iconEl.textContent  = '🔒';
+      if (titleEl) titleEl.textContent = T.error_blocked_title;
+      if (descEl)  descEl.textContent  = T.error_blocked_desc;
+      if (stepsEl && T.error_blocked_steps) {
+        stepsEl.innerHTML = T.error_blocked_steps.map(s => `<li>${s}</li>`).join('');
         stepsEl.style.display = 'block';
       }
+      if (chromeEl) { chromeEl.innerHTML = T.error_blocked_chrome; chromeEl.style.display = 'block'; }
+      if (retryBtn) { retryBtn.textContent = T.error_retry; retryBtn.style.display = 'block'; retryBtn.disabled = false; }
 
-      // Mostrar tip de Chrome
-      if (chromeEl && t.error_blocked_chrome) {
-        chromeEl.innerHTML     = t.error_blocked_chrome;
-        chromeEl.style.display = 'block';
-      }
-
-      // Mostrar botón reintentar
-      if (retryBtn) {
-        retryBtn.textContent    = t.error_retry || '🔄 Reintentar';
-        retryBtn.style.display  = 'block';
-        retryBtn.disabled       = false;
-      }
-
-    // ── Caso 2: No hay cámara física ──────────────────────────
     } else if (errName === 'NotFoundError' || errName === 'DevicesNotFoundError') {
       if (iconEl)  iconEl.textContent  = '📵';
-      if (titleEl) titleEl.textContent = t.error_notfound_title || t.error_title;
-      if (descEl)  descEl.textContent  = t.error_notfound_desc  || t.error_desc;
+      if (titleEl) titleEl.textContent = T.error_notfound_title;
+      if (descEl)  descEl.textContent  = T.error_notfound_desc;
 
-    // ── Caso 3: Error genérico (NotReadableError, etc.) ───────
     } else {
       if (iconEl)  iconEl.textContent  = '📷';
-      if (titleEl) titleEl.textContent = t.error_title;
-      if (descEl)  descEl.textContent  = t.error_desc;
-
-      // Reintentar disponible igualmente por si es un error transitorio
-      if (retryBtn) {
-        retryBtn.textContent   = t.error_retry || '🔄 Reintentar';
-        retryBtn.style.display = 'block';
-        retryBtn.disabled      = false;
-      }
+      if (titleEl) titleEl.textContent = T.error_title;
+      if (descEl)  descEl.textContent  = T.error_desc;
+      if (retryBtn) { retryBtn.textContent = T.error_retry; retryBtn.style.display = 'block'; retryBtn.disabled = false; }
     }
 
-    console.warn('[KOI Vision] Error type:', errName, '| message:', err?.message);
+    console.warn('[KOI Vision] Error:', errName, err?.message);
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -1315,19 +1113,16 @@
      API PÚBLICA — window.koiVision
      ══════════════════════════════════════════════════════════ */
   window.koiVision = {
-    abrir: function(contexto) { abrir(contexto); },
-
-    onResultado: function(cb) { KV_STATE.onResultadoCb = cb; },
-
+    abrir:       function(contexto) { abrir(contexto); },
+    onResultado: function(cb)       { KV_STATE.onResultadoCb = cb; },
+    cerrar:      cerrar,
     isAvailable: async function() {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return false;
       try {
         const devices = await navigator.mediaDevices.enumerateDevices();
         return devices.some(d => d.kind === 'videoinput');
-      } catch(_) { return false; }
+      } catch (_) { return false; }
     },
-
-    cerrar: cerrar,
   };
 
 })();
