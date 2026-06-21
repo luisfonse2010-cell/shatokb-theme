@@ -1041,6 +1041,7 @@ async function shatokbFetchCatalogo() {
     const raw      = await shatokbFetchAllPages(LIVE_STORE);
     const mapeados = raw.map(shatokbMapProduct).filter(Boolean);
     SHATOKB_CATALOGO = mapeados;
+    window.SHATOKB_CATALOGO = SHATOKB_CATALOGO; // exponer para koi-chat.js
     shatokbCatalogoCargado = true;
     const autoCount = mapeados.filter(p => p.excel_auto).length;
     console.log(`[SHATOKB] ✅ Live catalogue: ${mapeados.length} products active` +
@@ -1061,6 +1062,7 @@ async function shatokbFetchCatalogo() {
     const raw      = await shatokbFetchAllPages('');
     const mapeados = raw.map(shatokbMapProduct).filter(Boolean);
     SHATOKB_CATALOGO = mapeados.length > 0 ? mapeados : SHATOKB_FALLBACK;
+    window.SHATOKB_CATALOGO = SHATOKB_CATALOGO; // exponer para koi-chat.js
     shatokbCatalogoCargado = true;
     if (mapeados.length > 0) {
       const autoCount = mapeados.filter(p => p.excel_auto).length;
@@ -1076,6 +1078,7 @@ async function shatokbFetchCatalogo() {
 
   // ── Attempt 3: static fallback ────────────────────────────────
   SHATOKB_CATALOGO = SHATOKB_FALLBACK;
+  window.SHATOKB_CATALOGO = SHATOKB_CATALOGO; // exponer para koi-chat.js
   shatokbCatalogoCargado = true;
   console.warn(`[SHATOKB] ⚠️ Using static fallback catalogue (${SHATOKB_FALLBACK.length} products). Results are representative but not exhaustive.`);
 }
@@ -3968,13 +3971,25 @@ async function shatokbEjecutarAddToCart(handles, btn) {
               imagen = 'https:' + imagen;
             }
 
+            // Normalizar momento: el catálogo usa 'am'|'pm'|'both', el Worker espera 'am'|'pm'|'ambos'.
+            // Si el catálogo no tiene momento, inferirlo desde la categoría del producto.
+            // La categoría 'spf' siempre es AM-only — regla universal K-Beauty.
+            const momentoRaw = (catalogoItem?.momento || '').toLowerCase().trim();
+            const categoria  = (catalogoItem?.categoria || '').toLowerCase();
+            let momentoFinal;
+            if      (momentoRaw === 'am')                 momentoFinal = 'am';
+            else if (momentoRaw === 'pm')                 momentoFinal = 'pm';
+            else if (categoria  === 'spf')                momentoFinal = 'am';   // SPF siempre AM
+            else if (/\bspf\b|sunscreen|solar/.test((r.nombre || '').toLowerCase())) momentoFinal = 'am';
+            else                                          momentoFinal = 'ambos';
+
             return {
               nombre:  r.nombre  || catalogoItem?.nombre || r.handle,
               precio:  r.precio  || catalogoItem?.precio || '',
               paso:    catalogoItem?.categoria || catalogoItem?.paso || '',
               id:      catalogoItem?.id || r.handle,
               handle:  r.handle,
-              momento: catalogoItem?.momento || 'ambos',
+              momento: momentoFinal,
               razon:   catalogoItem?.desc    || '',
               imagen,
               url:     r.url,
