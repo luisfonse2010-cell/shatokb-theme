@@ -1127,6 +1127,17 @@ function renderCta(data) {
     const midCtaEl = el('ksr-mid-cta');
     if (midCtaEl) midCtaEl.style.display = 'none';
   }
+
+  // ── Flag de scroll-to-top: setear al hacer click en cualquier botón de carrito
+  // El script shatokb-koi-cart.js (que SÍ carga en /cart) lo leerá y forzará scroll(0,0)
+  ['ksr-cart-btn', 'ksr-hero-cart-btn', 'ksr-mid-cart-btn', 'ksr-sticky-btn'].forEach(id => {
+    const btn = el(id);
+    if (btn) {
+      btn.addEventListener('click', function () {
+        try { sessionStorage.setItem('shatokb_scroll_top', '1'); } catch (_) {}
+      });
+    }
+  });
 }
 
 /* ── RENDER GUIDE ───────────────────────────────────────────────── */
