@@ -2657,9 +2657,8 @@ function shatokbRenderPregunta(idx) {
   // ── Tip contextual de KOI ────────────────────────────────────
   const koiTipHTML = q.koiTip ? `
     <div class="shatokb-koi-tip" role="note" aria-label="KOI tip">
-      <span class="shatokb-koi-tip__avatar" aria-hidden="true">🌸</span>
       <div class="shatokb-koi-tip__content">
-        <div class="shatokb-koi-tip__name">KOI</div>
+        <div class="shatokb-koi-tip__name"><span aria-hidden="true">🌸</span> KOI</div>
         <p class="shatokb-koi-tip__text">${q.koiTip}</p>
       </div>
     </div>` : '';

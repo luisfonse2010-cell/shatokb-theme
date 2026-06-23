@@ -466,7 +466,7 @@
    SECCIÓN QUIZ
    ══════════════════════════════════════════════════════════ */
 .shatokb-quiz-section {
-  padding: 72px 24px;
+  padding: 24px 24px 72px;
   background: #fff;
 }
 
@@ -500,7 +500,7 @@
 
 /* ── Barra de progreso ────────────────────────────────── */
 .shatokb-progreso {
-  margin-bottom: 36px;
+  margin-bottom: 20px;
 }
 
 .shatokb-progreso__meta {
