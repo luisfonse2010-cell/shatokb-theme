@@ -325,6 +325,91 @@ const KSR_PERFILES = {
   },
 };
 
+/* ── PROBLEM COPY MAP — copy de ventas por perfil ───────────────── */
+const KSR_PROBLEM_COPY = {
+  grasa_acne: {
+    title: 'Why acne keeps coming back — no matter what you try.',
+    blocks: [
+      { icon: '🔄', title: 'You\'re treating symptoms, not causes.', text: 'Most cleansers and spot treatments attack breakouts on the surface — but acne originates inside the follicle. Without an ingredient that penetrates the pore wall (like BHA), you\'re cleaning what\'s already out while more oil builds up underneath.' },
+      { icon: '⚖️', title: 'Stripping your skin makes it produce MORE oil.', text: 'Harsh cleansers and alcohol-based toners remove oil — then your sebaceous glands panic and overproduce to compensate. This cycle never ends unless you use ingredients that regulate oil production at the gland level.' },
+      { icon: '🚫', title: 'Generic routines weren\'t built for your specific sebum pattern.', text: 'Oily skin isn\'t one thing. Your congestion pattern, breakout location, and oil production timing are unique. A generic routine treats a generic skin — not yours.' },
+    ],
+    solution: 'The protocol KOI built for you targets all three roots — simultaneously. Not a temporary fix. A systematic recalibration.'
+  },
+  grasa_poros: {
+    title: 'Enlarged pores can\'t be "closed" — but they can be visibly minimized.',
+    blocks: [
+      { icon: '🔬', title: 'Cold water doesn\'t close pores. That\'s a myth.', text: 'Pores don\'t have muscles — they can\'t open or close. What makes them appear larger is congestion inside them, stretching them out. The only way to reduce their appearance is to clear what\'s inside and strengthen the surrounding skin.' },
+      { icon: '⏳', title: 'Pore minimization takes 8+ weeks of consistent actives.', text: 'BHA clears the congestion. Niacinamide tightens the pore opening. Retinol builds collagen around the pore walls. None of these work in a week — but all of them work with consistency.' },
+      { icon: '💊', title: 'You\'re probably missing the one ingredient that actually works.', text: 'Niacinamide is the most studied ingredient for pore minimization — yet most products underdose it at 2% or less. Effective concentration starts at 5–10%. Your KOI routine includes the right dose.' },
+    ],
+    solution: 'Your KOI protocol works at the root of visible pores: clearing congestion, regulating oil, and rebuilding the skin matrix around each pore. Results visible at week 8.'
+  },
+  mixta_general: {
+    title: 'Combination skin gets the worst advice in skincare.',
+    blocks: [
+      { icon: '☯️', title: 'What works on your T-zone destroys your cheeks.', text: 'Products strong enough to control T-zone oil strip the moisture your cheeks need. Products gentle enough for dry cheeks don\'t touch T-zone congestion. Generic routines can\'t win this — layering can.' },
+      { icon: '💧', title: 'Your "oily skin" might actually be dehydrated.', text: 'Combination skin often overproduces oil because it\'s compensating for dehydration. Adding the right lightweight hydration often reduces T-zone oiliness — the opposite of what most people expect.' },
+      { icon: '🎯', title: 'You need different products for different zones — or one product that does both.', text: 'K-Beauty has a solution: Niacinamide controls oil without drying, Hyaluronic Acid hydrates without adding grease. These are the two pillars of every balanced combination skin routine.' },
+    ],
+    solution: 'KOI built your routine around the K-Beauty layering principle: treat each zone for what it actually needs, in one coherent sequence. No more choosing between oily and dry.'
+  },
+  mixta_manchas: {
+    title: 'Fighting dark spots and oily skin at the same time is a two-front war. Most routines only address one.',
+    blocks: [
+      { icon: '🟤', title: 'Dark spots don\'t fade on their own. They need targeted actives.', text: 'Melanin deposits in the skin don\'t respond to "natural fading." You need ingredients that interrupt melanin synthesis (Vitamin C), block its transfer to surface cells (Niacinamide), and accelerate the removal of pigmented cells (AHA). All three, working together.' },
+      { icon: '☯️', title: 'You can\'t just add brightening products to a normal routine.', text: 'Most brightening serums are formulated for dry skin — rich textures that clog pores and increase breakouts in oily-combination skin. KOI selected ingredients that brighten without feeding congestion.' },
+      { icon: '⚡', title: 'The order you apply products determines whether they work.', text: 'Vitamin C applied after a hydrating toner penetrates deeper and is more effective. Niacinamide applied at the wrong pH stops working. The sequence in your KOI routine isn\'t arbitrary — it\'s calculated.' },
+    ],
+    solution: 'Your KOI routine addresses both battles in one protocol — sebum control AND targeted brightening. Both, in the right sequence, at the right concentrations.'
+  },
+  seca_hidratacion: {
+    title: 'One moisturizer is not enough for your skin. Here\'s the science.',
+    blocks: [
+      { icon: '💧', title: 'Your skin is losing water faster than one product can replenish it.', text: 'Dry skin has elevated TEWL — transepidermal water loss. Moisture evaporates through a compromised barrier. One moisturizer applied on top doesn\'t rebuild the barrier — it temporarily covers it. You need ceramides.' },
+      { icon: '🔬', title: 'Three molecular weights of Hyaluronic Acid. Not one.', text: 'Standard moisturizers use large-molecule HA that sits on the surface. Your skin needs small-molecule HA that penetrates to the mid-layer, and micro-molecule HA that reaches the deepest layer. Real hydration is multi-layered.' },
+      { icon: '🧱', title: 'Without ceramides, any hydration you add evaporates within hours.', text: 'Ceramides are the lipid "bricks" of your skin barrier. A barrier without ceramides is like a wall without mortar — it holds nothing. Hyaluronic Acid without ceramides means you hydrate and immediately lose it.' },
+    ],
+    solution: 'KOI built your routine around three-layer hydration — draw moisture in, lock it at every level, seal it with a barrier-rebuilding occlude. Skin that stays plump all day.'
+  },
+  seca_antiaging: {
+    title: 'Dry skin ages faster than any other type. The reason is scientific.',
+    blocks: [
+      { icon: '⏳', title: 'A compromised barrier accelerates collagen breakdown.', text: 'When your barrier is weakened, environmental aggressors (UV, pollution, free radicals) penetrate deeper and break down collagen more aggressively. Before any anti-aging active can work, your barrier must be rebuilt.' },
+      { icon: '🔬', title: 'Retinol doesn\'t work on dry, dehydrated skin.', text: 'The most effective anti-aging ingredient in existence — retinol — requires a hydrated, functioning barrier to work without irritation. Applying retinol to dry, compromised skin causes sensitivity without delivering results. Sequence matters.' },
+      { icon: '✨', title: 'Vitamin C degrades in 4 hours if not formulated correctly.', text: 'Most Vitamin C serums use L-Ascorbic Acid, which oxidizes rapidly. KOI selects stabilized forms (ascorbyl glucoside, ascorbyl tetraisopalmitate) that remain active throughout the day. Ineffective Vitamin C is just expensive water.' },
+    ],
+    solution: 'Your KOI protocol rebuilds first, then treats. Barrier repair in weeks 1–4, then progressive introduction of actives that work on well-prepared skin. Anti-aging that actually reaches its target.'
+  },
+  sensible_rojeces: {
+    title: 'Sensitive skin doesn\'t need more products. It needs fewer, better ones.',
+    blocks: [
+      { icon: '🔴', title: 'Every product you\'ve added is likely contributing to the problem.', text: 'Reactive skin gets worse with overcomplicated routines. Fragrance, alcohol, synthetic dyes, essential oils — all common in mainstream skincare — are direct triggers for redness and reactivity. Simplification is step one.' },
+      { icon: '🛡️', title: 'Your barrier is the source and the solution.', text: 'Redness-prone skin almost universally has a compromised barrier — it can\'t distinguish between irritants and normal contact. Rebuilding the barrier with ceramides, panthenol, and centella reduces reactivity at its root. Not a band-aid — a structural repair.' },
+      { icon: '🌿', title: 'You\'ve probably been using acids and retinol too soon.', text: 'Exfoliants and actives on compromised, reactive skin cause inflammation that compounds over time. The K-Beauty sensitive skin approach is radical patience: repair first, for minimum 4 weeks, before introducing any active ingredient.' },
+    ],
+    solution: 'KOI\'s protocol for your skin is the opposite of what you\'ve probably been told. Less, gentler, and sequenced for repair. Your skin will calm. It just needs the right conditions.'
+  },
+  barrera_daniada: {
+    title: 'A damaged skin barrier is the root of almost every skin problem.',
+    blocks: [
+      { icon: '🚨', title: 'Your skin is in a reactive cycle it cannot exit alone.', text: 'A damaged barrier lets irritants in, causing inflammation. Inflammation causes more barrier damage. More damage causes more reactivity. This cycle doesn\'t break without a deliberate repair protocol — it only gets worse with time and more products.' },
+      { icon: '⛔', title: 'Every active ingredient you\'re using is making it worse.', text: 'BHA, retinol, AHA, Vitamin C — all valuable for healthy skin, all damaging on a compromised barrier. These ingredients require an intact barrier to work safely. Using them now is like rebuilding a house in a flood.' },
+      { icon: '🧱', title: 'Ceramides must come first. Everything else is secondary.', text: 'Ceramides 1, 3, and 6-II are the structural lipids that form your barrier. Without them, nothing else works. Your entire KOI routine is built around rebuilding this foundation before any other treatment is introduced.' },
+    ],
+    solution: 'KOI\'s recovery protocol is deliberately minimal: cleanse gently, apply ceramides, seal with squalane. No actives. No exfoliation. Pure barrier repair — for 4 weeks. Then your skin will be ready.'
+  },
+  general_glow: {
+    title: 'Glass skin isn\'t genetics. It\'s a protocol.',
+    blocks: [
+      { icon: '💎', title: '"Glowy skin" is the result of hydration depth, not surface shine.', text: 'The glass skin effect — that translucent, light-reflecting quality — comes from skin so well-hydrated it becomes literally semi-transparent. This requires multi-layer hydration from toner to essence to serum. Surface moisturizers alone won\'t get you there.' },
+      { icon: '✨', title: 'Texture is the enemy of glass skin. Cell turnover is the solution.', text: 'Uneven texture scatters light and creates a matte, dull appearance. Regular, gentle AHA exfoliation accelerates cell turnover, removing the dead skin layer that blocks the glow underneath. The skin you have right now isn\'t your permanent skin.' },
+      { icon: '🌿', title: 'Antioxidants protect your glow from environmental attack.', text: 'UV rays, pollution, and blue light generate free radicals that break down collagen and cause oxidative stress — the primary cause of dullness and uneven tone. Vitamin C and Green Tea Extract neutralize this damage before it accumulates.' },
+    ],
+    solution: 'Your KOI glass skin protocol layers the right actives in the right sequence — hydration, turnover, antioxidant protection. The result is skin that reflects light from within, not from product residue.'
+  },
+};
+
 /* ── RENDER HERO ────────────────────────────────────────────────── */
 function renderHero(data) {
   const perfil    = data.perfil || {};
@@ -366,73 +451,96 @@ function renderHero(data) {
     return 'Needs attention';
   }
 
-  heroInner.innerHTML = `
-    <!-- Badge superior -->
-    <div class="ksr-hero__badge">
-      <span class="ksr-badge-dot"></span>
-      KOI Skin Analysis &nbsp;·&nbsp; <span id="ksr-date">${formatDate(data.createdAt)}</span>
-    </div>
+  // ── Poblar los elementos del nuevo liquid v2 directamente ─────────
+  // (Los IDs ya existen en el HTML — solo rellenamos su contenido)
 
-    <!-- Email personalizado -->
-    ${data.email ? `<div class="ksr-hero__email-line">Prepared exclusively for <strong>${escHtml(data.email)}</strong></div>` : ''}
+  const dateEl = el('ksr-date');
+  if (dateEl) dateEl.textContent = formatDate(data.createdAt);
 
-    <!-- Nombre del perfil (título grande) -->
-    <h1 class="ksr-hero__title" id="ksr-profile-name">${escHtml(nombre)}</h1>
+  const emailLineEl = el('ksr-email-line');
+  if (emailLineEl && data.email) {
+    emailLineEl.innerHTML = `Prepared exclusively for <strong>${escHtml(data.email)}</strong>`;
+    emailLineEl.style.display = '';
+  } else if (emailLineEl) {
+    emailLineEl.style.display = 'none';
+  }
 
-    <!-- Headline — el diagnóstico en una frase poderosa -->
-    <p class="ksr-hero__headline">${escHtml(headline)}</p>
+  const profileNameEl = el('ksr-profile-name');
+  if (profileNameEl) profileNameEl.textContent = nombre;
 
-    <!-- Tags del tipo de piel -->
-    ${tags.length > 0 ? `
-    <div class="ksr-hero__tags" id="ksr-profile-tags">
-      ${tags.map(t => `<span class="ksr-tag">${escHtml(t)}</span>`).join('')}
-    </div>` : ''}
+  const headlineEl = el('ksr-hero-headline');
+  if (headlineEl) headlineEl.textContent = headline;
 
-    <!-- Score ring (solo si hay análisis visual) -->
-    ${scoreGlobal !== null ? `
-    <div class="ksr-hero__score-wrap ksr-animate-in" id="ksr-score-ring-wrap">
-      <div class="ksr-hero__score-ring-outer">
-        <svg class="ksr-ring" viewBox="0 0 120 120" aria-hidden="true">
-          <circle class="ksr-ring__track" cx="60" cy="60" r="52"/>
-          <circle class="ksr-ring__fill" id="ksr-ring-fill" cx="60" cy="60" r="52"
-                  stroke-dasharray="326.7" stroke-dashoffset="326.7"
-                  style="stroke:${scoreColor(scoreGlobal)}"/>
-        </svg>
-        <div class="ksr-ring__label">
-          <span class="ksr-ring__score" id="ksr-ring-score">${scoreGlobal.toFixed(1)}</span>
-          <span class="ksr-ring__sub">/ 10</span>
+  const tagsEl = el('ksr-profile-tags');
+  if (tagsEl && tags.length > 0) {
+    tagsEl.innerHTML = tags.map(t => `<span class="ksr-tag">${escHtml(t)}</span>`).join('');
+    tagsEl.style.display = '';
+  } else if (tagsEl) {
+    tagsEl.style.display = 'none';
+  }
+
+  // Score ring — solo si hay análisis visual
+  const scoreWrapEl = el('ksr-score-ring-wrap');
+  if (scoreWrapEl && scoreGlobal !== null) {
+    scoreWrapEl.removeAttribute('hidden');
+    scoreWrapEl.innerHTML = `
+      <div class="ksr-hero__score-wrap ksr-animate-in">
+        <div class="ksr-hero__score-ring-outer">
+          <svg class="ksr-ring" viewBox="0 0 120 120" aria-hidden="true">
+            <circle class="ksr-ring__track" cx="60" cy="60" r="52"/>
+            <circle class="ksr-ring__fill" id="ksr-ring-fill" cx="60" cy="60" r="52"
+                    stroke-dasharray="326.7" stroke-dashoffset="326.7"
+                    style="stroke:${scoreColor(scoreGlobal)}"/>
+          </svg>
+          <div class="ksr-ring__label">
+            <span class="ksr-ring__score">${scoreGlobal.toFixed(1)}</span>
+            <span class="ksr-ring__sub">/ 10</span>
+          </div>
         </div>
-      </div>
-      <div class="ksr-hero__score-meta">
-        <div class="ksr-hero__score-label" style="color:${scoreColor(scoreGlobal)}">${scoreLabel(scoreGlobal)}</div>
-        <div class="ksr-hero__score-desc">Overall skin health score<br>based on your photo analysis</div>
-      </div>
-    </div>` : ''}
+        <div class="ksr-hero__score-meta">
+          <div class="ksr-hero__score-label" style="color:${scoreColor(scoreGlobal)}">${scoreLabel(scoreGlobal)}</div>
+          <div class="ksr-hero__score-desc">Overall skin health score<br>based on your photo analysis</div>
+        </div>
+      </div>`;
+  }
 
-    <!-- Stats row — datos específicos del perfil -->
-    ${stats.length > 0 ? `
-    <div class="ksr-hero__stats">
-      ${stats.map(s => `
-        <div class="ksr-hero__stat">
-          <div class="ksr-hero__stat-label">${escHtml(s.label)}</div>
-          <div class="ksr-hero__stat-value">${escHtml(s.value)}</div>
-        </div>`).join('')}
-    </div>` : ''}
+  // Stats
+  const statsEl = el('ksr-hero-stats');
+  if (statsEl && stats.length > 0) {
+    statsEl.innerHTML = stats.map(s => `
+      <div class="ksr-hero__stat">
+        <div class="ksr-hero__stat-label">${escHtml(s.label)}</div>
+        <div class="ksr-hero__stat-value">${escHtml(s.value)}</div>
+      </div>`).join('');
+    statsEl.style.display = '';
+  } else if (statsEl) {
+    statsEl.style.display = 'none';
+  }
 
-    <!-- Descripción completa del perfil -->
-    ${descripcion ? `
-    <div class="ksr-hero__desc-block">
-      <p class="ksr-hero__subtitle" id="ksr-profile-desc">${escHtml(descripcion)}</p>
-    </div>` : ''}
+  // Descripción del perfil
+  const descEl = el('ksr-hero-desc');
+  if (descEl && descripcion) {
+    descEl.innerHTML = `<p class="ksr-hero__subtitle">${escHtml(descripcion)}</p>`;
+    descEl.style.display = '';
+  } else if (descEl) {
+    descEl.style.display = 'none';
+  }
 
-    <!-- Divider con CTA scroll -->
-    <div class="ksr-hero__scroll-hint">
-      <span>Your full analysis below</span>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 5v14M5 12l7 7 7-7"/>
-      </svg>
-    </div>
-  `;
+  // Heroinner fallback — si el liquid v1 está activo, usa innerHTML
+  const heroInner = el('ksr-hero__inner') || document.querySelector('.ksr-hero__inner');
+  // Solo usar innerHTML fallback si los IDs nuevos no existen (compatibilidad)
+  if (heroInner && !el('ksr-hero-headline')) {
+    heroInner.innerHTML = `
+      <div class="ksr-hero__badge"><span class="ksr-badge-dot"></span>KOI Skin Analysis &nbsp;·&nbsp; ${formatDate(data.createdAt)}</div>
+      ${data.email ? `<div class="ksr-hero__email-line">Prepared exclusively for <strong>${escHtml(data.email)}</strong></div>` : ''}
+      <h1 class="ksr-hero__title">${escHtml(nombre)}</h1>
+      <p class="ksr-hero__headline">${escHtml(headline)}</p>
+      ${tags.length > 0 ? `<div class="ksr-hero__tags">${tags.map(t => `<span class="ksr-tag">${escHtml(t)}</span>`).join('')}</div>` : ''}
+      ${stats.length > 0 ? `<div class="ksr-hero__stats">${stats.map(s => `<div class="ksr-hero__stat"><div class="ksr-hero__stat-label">${escHtml(s.label)}</div><div class="ksr-hero__stat-value">${escHtml(s.value)}</div></div>`).join('')}</div>` : ''}
+      ${descripcion ? `<div class="ksr-hero__desc-block"><p class="ksr-hero__subtitle">${escHtml(descripcion)}</p></div>` : ''}
+      <div class="ksr-hero__scroll-hint"><span>Your full analysis below</span></div>
+    `;
+  }
 
   // Animar el ring después de renderizar
   if (scoreGlobal !== null) {
@@ -652,19 +760,56 @@ function renderDiagnosis(data) {
   }
 }
 
+/* ── RENDER PROBLEM — Sección agitación del problema ────────────── */
+function renderProblem(data) {
+  const perfilId = data.perfil?.id || 'default';
+  const copy = KSR_PROBLEM_COPY[perfilId] || KSR_PROBLEM_COPY['general_glow'];
+  if (!copy) return;
+
+  const titleEl = el('ksr-problem-title');
+  if (titleEl) titleEl.textContent = copy.title;
+
+  const bodyEl = el('ksr-problem-body');
+  if (!bodyEl) return;
+
+  bodyEl.innerHTML = '';
+
+  // Bloques de problema
+  copy.blocks.forEach((block, i) => {
+    const div = document.createElement('div');
+    div.className = 'ksr-problem-block ksr-animate-in';
+    div.style.animationDelay = `${0.1 * i}s`;
+    div.innerHTML = `
+      <div class="ksr-problem-block__icon">${block.icon}</div>
+      <div>
+        <div class="ksr-problem-block__title">${escHtml(block.title)}</div>
+        <div class="ksr-problem-block__text">${escHtml(block.text)}</div>
+      </div>`;
+    bodyEl.appendChild(div);
+  });
+
+  // Bloque solución — cierre del problema con promesa
+  const solutionDiv = document.createElement('div');
+  solutionDiv.className = 'ksr-problem-solution ksr-animate-in';
+  solutionDiv.innerHTML = `
+    <div class="ksr-problem-solution__label">✦ The KOI Solution</div>
+    <div class="ksr-problem-solution__title">${escHtml(copy.solution)}</div>`;
+  bodyEl.appendChild(solutionDiv);
+}
+
 /* ── RENDER ROUTINE ─────────────────────────────────────────────── */
 /* Orden correcto de aplicación por categoría de producto */
 function getStepOrder(product) {
   const txt = ((product.nombre || '') + ' ' + (product.paso || '')).toLowerCase();
-  if (/clean|wash|foam|cleanse|limpiador/.test(txt))                              return 1;
-  if (/toner|tónico|tonic/.test(txt))                                             return 2;
-  if (/essence|esencia|first.?care/.test(txt))                                    return 3;
+  if (/clean|wash|foam|cleanse|limpiador/.test(txt))                               return 1;
+  if (/toner|tónico|tonic/.test(txt))                                              return 2;
+  if (/essence|esencia|first.?care/.test(txt))                                     return 3;
   if (/serum|sérum|ampul|ampoule|booster|vitamin.?c|niacinamide|retinol/.test(txt)) return 4;
-  if (/eye.?cream|contorno|ojo/.test(txt))                                        return 5;
-  if (/moisturizer|cream|crema|gel.?cream|lotion|hydrat/.test(txt))               return 6;
-  if (/\boil\b|aceite|face.?oil/.test(txt))                                       return 7;
-  if (/spf|sunscreen|sun.?care|solar|protector/.test(txt))                        return 99; // siempre último en AM
-  return 8; // cualquier otro producto va antes del SPF
+  if (/eye.?cream|contorno|ojo/.test(txt))                                         return 5;
+  if (/moisturizer|cream|crema|gel.?cream|lotion|hydrat/.test(txt))                return 6;
+  if (/\boil\b|aceite|face.?oil/.test(txt))                                        return 7;
+  if (/spf|sunscreen|sun.?care|solar|protector/.test(txt))                         return 99;
+  return 8;
 }
 
 function renderRoutine(data) {
@@ -912,31 +1057,75 @@ function renderTimeline(data) {
 
 /* ── RENDER CTA ─────────────────────────────────────────────────── */
 function renderCta(data) {
-  const total = data.totalCarrito || 0;
-  const cartUrl = data.cartUrl || data.reportUrl?.replace('/pages/skin-report', '/cart') || '/cart';
+  const total    = data.totalCarrito || 0;
+  const cartUrl  = data.cartUrl || '/cart';
+  const prods    = data.productosSeleccionados || [];
+  const perfilId = data.perfil?.id || '';
+  const nombre   = KSR_PERFILES[perfilId]?.nombre || data.perfil?.nombre || 'your skin';
+  const totalStr = total ? `$${parseFloat(total).toFixed(2)}` : '';
 
-  const totalEl = el('ksr-cta-total');
-  if (totalEl) totalEl.textContent = `$${parseFloat(total).toFixed(2)}`;
+  // ── Todos los botones de carrito ───────────────────────────────
+  ['ksr-cart-btn', 'ksr-hero-cart-btn', 'ksr-mid-cart-btn', 'ksr-sticky-btn'].forEach(id => {
+    const btn = el(id);
+    if (btn) btn.href = cartUrl;
+  });
 
-  const stickyTotalEl = el('ksr-sticky-total');
-  if (stickyTotalEl) stickyTotalEl.textContent = `$${parseFloat(total).toFixed(2)}`;
+  // ── Total en todos los lugares ─────────────────────────────────
+  ['ksr-cta-total', 'ksr-sticky-total'].forEach(id => {
+    const el2 = el(id);
+    if (el2) el2.textContent = totalStr || '$0.00';
+  });
 
-  const cartBtn = el('ksr-cart-btn');
-  if (cartBtn) cartBtn.href = cartUrl;
+  // Total en hero y mid CTA
+  ['ksr-hero-total', 'ksr-mid-total'].forEach(id => {
+    const el2 = el(id);
+    if (el2) el2.textContent = totalStr || '';
+  });
 
-  const stickyBtn = el('ksr-sticky-btn');
-  if (stickyBtn) stickyBtn.href = cartUrl;
+  // ── Perfil pill en CTA ─────────────────────────────────────────
+  const profilePillEl = el('ksr-cta-profile-pill');
+  if (profilePillEl && nombre) {
+    profilePillEl.innerHTML = `<span class="ksr-cta__profile-pill">🌸 Routine for: ${escHtml(nombre)}</span>`;
+  }
 
-  // If total is 0, change CTA copy
+  // ── Lista de productos en CTA ─────────────────────────────────
+  const prodListEl = el('ksr-cta-product-list');
+  if (prodListEl && prods.length) {
+    prodListEl.innerHTML = prods.map(p =>
+      `<span class="ksr-cta__product-chip">${escHtml(p.nombre || p.paso || 'Product')}</span>`
+    ).join('');
+  }
+
+  // ── Conteo de productos ────────────────────────────────────────
+  ['ksr-cta-product-count', 'ksr-mid-cta-count'].forEach(id => {
+    const el2 = el(id);
+    if (el2) el2.textContent = prods.length || '';
+  });
+
+  // ── Precio por día (si hay total) ─────────────────────────────
+  const perDayEl = el('ksr-cta-per-day');
+  if (perDayEl && total > 0) {
+    const perDay = (total / 90).toFixed(2);
+    perDayEl.textContent = `That's $${perDay} per day for 90 days of results.`;
+  }
+
+  // ── Routine profile name ───────────────────────────────────────
+  const rpEl = el('ksr-routine-profile-name');
+  if (rpEl) rpEl.textContent = nombre;
+
+  // ── Si total = 0, adaptar copy ─────────────────────────────────
   if (!total || total === 0) {
     const ctaTitleEl = el('ksr-cta-title');
-    if (ctaTitleEl) ctaTitleEl.textContent = 'Build your routine — start with the essentials';
+    if (ctaTitleEl) ctaTitleEl.textContent = 'Build your routine — start with the essentials.';
     const ctaSubEl = el('ksr-cta-sub');
-    if (ctaSubEl) ctaSubEl.textContent = 'Every product KOI selected is available at shatokb.com. Start with the first two steps of your routine and add the rest as you go.';
-    if (cartBtn) { cartBtn.textContent = 'Shop my routine →'; cartBtn.href = 'https://shatokb.com'; }
-    if (totalEl) totalEl.closest('.ksr-cta__total-wrap').style.display = 'none';
-    const urgencyEl = el('ksr-urgency');
-    if (urgencyEl) urgencyEl.style.display = 'none';
+    if (ctaSubEl) ctaSubEl.textContent = 'Every product KOI selected is available at shatokb.com. Start with the first two steps of your routine.';
+    const mainCartBtn = el('ksr-cart-btn');
+    if (mainCartBtn) { mainCartBtn.textContent = 'Shop my routine →'; mainCartBtn.href = 'https://shatokb.com'; }
+    if (perDayEl) perDayEl.style.display = 'none';
+    const heroCtaEl = el('ksr-hero-cta');
+    if (heroCtaEl) heroCtaEl.style.display = 'none';
+    const midCtaEl = el('ksr-mid-cta');
+    if (midCtaEl) midCtaEl.style.display = 'none';
   }
 }
 
@@ -1001,11 +1190,12 @@ async function renderReport(reportData) {
 
   renderHero(reportData);
   renderDiagnosis(reportData);
+  renderProblem(reportData);      // ← NUEVO: sección de agitación del problema
   renderRoutine(reportData);
-  renderProducts(reportData);
+  renderProducts(reportData);     // no-op si el elemento no existe en el liquid
   renderIngredients(reportData);
   renderTimeline(reportData);
-  renderCta(reportData);
+  renderCta(reportData);          // ← actualizado: conecta hero + mid + main CTA
   renderGuide();
   showContent();
 }
@@ -1076,53 +1266,77 @@ async function ksrInit() {
 
     // ══════════════════════════════════════════════════════════════
     // ENRIQUECER CON CARRITO REAL DE SHOPIFY (fuente de verdad final)
+    // Si el reporte fue generado antes de que el usuario cambiara
+    // los productos (timing bug), usamos el carrito de Shopify
+    // para mostrar los productos correctos en la página del reporte.
+    // Esto cubre el caso donde el PATCH al Worker aún no se haya
+    // completado o si el usuario abre el reporte antes de hacer checkout.
     // ══════════════════════════════════════════════════════════════
     try {
       const cartRes = await fetch('/cart.js', { headers: { 'Accept': 'application/json' } });
       if (cartRes.ok) {
         const cartData = await cartRes.json();
         const cartItems = cartData.items || [];
+
         if (cartItems.length > 0) {
+          // Enriquecer reportData con los productos del carrito real
+          // Mantener la metadata del quiz (paso, momento, razon) si existe en el reporte
           const productosReporte = reportData.productosSeleccionados || [];
           const byHandle = {};
           productosReporte.forEach(p => { if (p.handle) byHandle[p.handle] = p; });
+
           const productosCarrito = cartItems.map((item, idx) => {
             const handle   = item.handle || '';
             const existing = byHandle[handle] || {};
-            const imgRaw   = item.featured_image?.url || item.image || '';
-            const imagen   = imgRaw.startsWith('//') ? 'https:' + imgRaw : imgRaw;
+            // La imagen del carrito es siempre la real (CDN de Shopify)
+            const imgRaw = item.featured_image?.url || item.image || '';
+            const imagen = imgRaw.startsWith('//') ? 'https:' + imgRaw : imgRaw;
             return {
               nombre:  item.product_title || existing.nombre || item.title || '',
               precio:  existing.precio || (item.price ? (item.price / 100).toFixed(2) : ''),
               paso:    existing.paso    || `STEP ${idx + 1}`,
               id:      existing.id      || handle,
-              handle,
+              handle:  handle,
               momento: existing.momento || 'ambos',
               razon:   existing.razon   || '',
               imagen,
               url:     handle ? `https://shatokb.com/products/${handle}` : '',
             };
           });
+
+          // SIEMPRE usar el carrito como fuente de verdad cuando hay items.
+          // El carrito de Shopify es lo que el usuario realmente eligió y pagará.
+          // No depender de si el PATCH llegó o no al KV.
           const handlesReporte = productosReporte.map(p => p.handle).sort().join(',');
           const handlesCarrito = productosCarrito.map(p => p.handle).sort().join(',');
-          console.log('[KSR] Carrito real:', handlesCarrito, '| Reporte tenía:', handlesReporte);
-          if (true) { // siempre usar carrito como fuente de verdad
+          console.log('[KSR] Usando carrito real como fuente de verdad ✅', {
+            reporteAntes: handlesReporte,
+            carritoAhora: handlesCarrito,
+          });
+          if (true) { // siempre reemplazar cuando hay carrito
             reportData.productosSeleccionados = productosCarrito;
+
+            // Recalcular rutinas AM/PM con los productos del carrito
             const isAM = p => p.momento === 'am' || p.momento === 'ambos' || !p.momento;
             const isPM = p => p.momento === 'pm' || p.momento === 'ambos';
-            const rutinaAMC = productosCarrito.filter(isAM).map(p => p.nombre).filter(Boolean);
-            const rutinaPMC = productosCarrito.filter(isPM).map(p => p.nombre).filter(Boolean);
-            if (rutinaAMC.length > 0) reportData.rutinaAM = rutinaAMC;
-            if (rutinaPMC.length > 0) reportData.rutinaPM = rutinaPMC;
+            const rutinaAMCarrito = productosCarrito.filter(isAM).map(p => p.nombre).filter(Boolean);
+            const rutinaPMCarrito = productosCarrito.filter(isPM).map(p => p.nombre).filter(Boolean);
+            if (rutinaAMCarrito.length > 0) reportData.rutinaAM = rutinaAMCarrito;
+            if (rutinaPMCarrito.length > 0) reportData.rutinaPM = rutinaPMCarrito;
+
+            // Recalcular total
             reportData.totalCarrito = productosCarrito.reduce((s, p) => {
-              return s + (parseFloat(String(p.precio || '0').replace(/[^0-9.]/g, '')) || 0);
+              const n = parseFloat(String(p.precio || '0').replace(/[^0-9.]/g, '')) || 0;
+              return s + n;
             }, 0);
-            console.log('[KSR] Productos actualizados desde carrito real ✅');
+          } else {
+            console.log('[KSR] Reporte ya tiene los productos correctos (PATCH previo OK) ✅');
           }
         }
       }
     } catch (cartErr) {
-      console.warn('[KSR] Cart enrichment skipped:', cartErr.message);
+      // Silencioso — no interrumpir la renderización del reporte
+      console.warn('[KSR] No se pudo leer carrito de Shopify (normal si no hay carrito):', cartErr.message);
     }
 
     ksrData = reportData;
