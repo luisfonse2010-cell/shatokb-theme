@@ -1157,10 +1157,9 @@ button.koi-mini-cart-bar__btn:active,
 /* ── Footer: nota + skip ──────────────────────────────────── */
 .koi-focus-card__footer {
   display: flex;
+  flex-direction: column;           /* skip en línea propia — no compite con la nota */
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  flex-wrap: wrap;
+  gap: 4px;
 }
 
 .koi-focus-card__note {
@@ -1173,20 +1172,22 @@ button.koi-mini-cart-bar__btn:active,
 .koi-focus-card__skip {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.30);
-  font-size: 11px;
+  color: rgba(255, 255, 255, 0.50); /* subido de 0.30 a 0.50 — visible en mobile */
+  font-size: 12px;                  /* subido de 11px a 12px */
   font-family: var(--koi-font-body);
   cursor: pointer;
-  padding: 4px 0;
+  padding: 6px 0;                   /* más área de toque en mobile */
   text-decoration: underline;
   text-underline-offset: 2px;
   transition: color 0.2s ease;
-  white-space: nowrap;
+  white-space: normal;              /* permite wrap en pantallas pequeñas */
   flex-shrink: 0;
+  text-align: center;
+  width: 100%;                      /* ocupa todo el ancho para ser más fácil de tocar */
 }
 
 .koi-focus-card__skip:hover {
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.75);
 }
 
 /* ── Responsive mobile ────────────────────────────────────── */
@@ -1195,9 +1196,13 @@ button.koi-mini-cart-bar__btn:active,
     width: calc(100vw - 24px) !important;
     max-width: 100% !important;
     padding: 22px 18px 18px;
-    top: 50% !important;
+    /* En mobile el teclado virtual encoge el viewport.
+       top:40% + max-height conservador mantiene la card visible
+       aunque el teclado ocupe la mitad inferior de la pantalla. */
+    top: 40% !important;
     left: 50% !important;
-    max-height: calc(100vh - 40px);
+    transform: translate(-50%, -50%) !important;
+    max-height: calc(var(--vh, 1vh) * 80);
     overflow-y: auto;
   }
 
@@ -1298,20 +1303,20 @@ button.koi-mini-cart-bar__btn:active,
 .koi-email-skip {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.30);
-  font-size: 11px;
+  color: rgba(255, 255, 255, 0.50); /* subido de 0.30 a 0.50 */
+  font-size: 12px;
   cursor: pointer;
   text-align: center;
-  margin: 6px auto 0;
+  margin: 8px auto 0;
   display: block;
-  padding: 4px 8px;
+  padding: 8px 8px;                 /* más área de toque */
   transition: color 0.2s;
   font-family: var(--koi-font-body);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 .koi-email-skip:hover {
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.75);
 }
 
 /* ── Estado confirmado (fade-out antes de eliminar) ─────── */
