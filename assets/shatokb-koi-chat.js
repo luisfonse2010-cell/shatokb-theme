@@ -2858,7 +2858,7 @@ async function enviarDesdeChip (texto) {
     const idioma = detectarIdioma();
 
     const ui = {
-      es: { placeholder: 'tu@email.com', btn: 'Enviar y continuar →', note: '🔒 Solo para tu Skin Report. Sin spam.', skip: 'Prefiero ir al carrito sin el reporte' },
+      es: { placeholder: 'tu@email.com', btn: 'Enviar y continuar →', note: '🔒 Solo para tu Skin Report. Sin spam.', skip: '🛒 Solo quiero ver el carrito' },
       en: { placeholder: 'you@email.com', btn: 'Send & continue →',   note: '🔒 Only for your Skin Report. No spam.', skip: 'Prefer to go to cart without the report' },
       fr: { placeholder: 'vous@email.com', btn: 'Envoyer et continuer →', note: '🔒 Uniquement pour votre Skin Report.', skip: 'Préférer aller au panier sans le rapport' },
       pt: { placeholder: 'voce@email.com', btn: 'Enviar e continuar →', note: '🔒 Apenas para o seu Skin Report. Sem spam.', skip: 'Prefiro ir ao carrinho sem o relatório' },
@@ -3057,18 +3057,16 @@ async function enviarDesdeChip (texto) {
     if (skipBtn) {
       skipBtn.style.cssText = [
         'display:block', 'background:none', 'border:none',
-        'color:rgba(255,255,255,0.65)', 'font-size:13px',
+        'color:rgba(255,255,255,0.45)', 'font-size:11px',
         'font-family:inherit', 'cursor:pointer',
-        'padding:8px 16px',
-        'text-decoration:underline',
-        'text-decoration-color:rgba(236,149,184,0.5)',
-        'text-underline-offset:3px',
+        'padding:6px 16px',
+        'text-decoration:none',
         'text-align:center',
         'width:100%', 'box-sizing:border-box',
         'line-height:1.5',
         'visibility:visible', 'opacity:1',
         'pointer-events:auto', 'overflow:visible',
-        'height:auto', 'min-height:36px'
+        'height:auto', 'min-height:32px'
       ].join('!important;') + '!important;';
     }
 
