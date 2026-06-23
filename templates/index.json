@@ -1269,52 +1269,6 @@
         "mg_bottom_mobile": 0
       }
     },
-    "shatokb-hero": {
-      "type": "shatokb-hero",
-      "blocks": {
-        "benefit_1": {
-          "type": "benefit",
-          "settings": {
-            "icon_emoji": "🎯",
-            "title": "Personalised recommendation",
-            "description": "We match products to your exact skin needs - no one-size-fits-all approach."
-          }
-        },
-        "benefit_2": {
-          "type": "benefit",
-          "settings": {
-            "icon_emoji": "🌿",
-            "title": "Routines for your skin type",
-            "description": "Morning and night. Step by step. Tailored to oily, dry, sensitive or combination skin."
-          }
-        },
-        "benefit_3": {
-          "type": "benefit",
-          "settings": {
-            "icon_emoji": "🇰🇷",
-            "title": "Authentic K-Beauty products",
-            "description": "Genuine Korean brands with science-backed ingredients trusted by millions worldwide."
-          }
-        },
-        "benefit_4": {
-          "type": "benefit",
-          "settings": {
-            "icon_emoji": "💬",
-            "title": "Guided shopping via WhatsApp",
-            "description": "Have questions? Our team helps you choose and build your ideal routine before you buy."
-          }
-        }
-      },
-      "block_order": [
-        "benefit_1",
-        "benefit_2",
-        "benefit_3",
-        "benefit_4"
-      ],
-      "settings": {
-        "benefits_title": "Why choose your routine with us?"
-      }
-    },
     "marquee_CPUri8": {
       "type": "marquee",
       "blocks": {
@@ -1365,6 +1319,69 @@
         "mg_bottom_desktop": 10,
         "mg_bottom_tablet": 0,
         "mg_bottom_mobile": 0
+      }
+    },
+    "shatokb-hero": {
+      "type": "shatokb-hero",
+      "blocks": {
+        "benefit_1": {
+          "type": "benefit",
+          "settings": {
+            "icon_emoji": "🎯",
+            "title": "Personalised recommendation",
+            "description": "We match products to your exact skin needs - no one-size-fits-all approach."
+          }
+        },
+        "benefit_2": {
+          "type": "benefit",
+          "settings": {
+            "icon_emoji": "🌿",
+            "title": "Routines for your skin type",
+            "description": "Morning and night. Step by step. Tailored to oily, dry, sensitive or combination skin."
+          }
+        },
+        "benefit_3": {
+          "type": "benefit",
+          "settings": {
+            "icon_emoji": "🇰🇷",
+            "title": "Authentic K-Beauty products",
+            "description": "Genuine Korean brands with science-backed ingredients trusted by millions worldwide."
+          }
+        },
+        "benefit_4": {
+          "type": "benefit",
+          "settings": {
+            "icon_emoji": "💬",
+            "title": "Guided shopping via WhatsApp",
+            "description": "Have questions? Our team helps you choose and build your ideal routine before you buy."
+          }
+        }
+      },
+      "block_order": [
+        "benefit_1",
+        "benefit_2",
+        "benefit_3",
+        "benefit_4"
+      ],
+      "settings": {
+        "show_quiz": false,
+        "badge_text": "The K-Beauty secret that actually works — now for you",
+        "subtitle": "8 questions. Real diagnosis. K-Beauty products that work for your specific skin type.",
+        "cta_primary": "Find my perfect products",
+        "benefits_title": "Your skin. Your products. Zero guessing.",
+        "quiz_titulo": "Find out exactly what your skin needs.",
+        "quiz_subtitulo": "8 questions. Real diagnosis. K-Beauty products chosen for your skin, your concerns and your budget. Free.",
+        "btn_catalogue_show": true,
+        "btn_catalogue_text": "Explore the full catalogue",
+        "btn_catalogue_url": "",
+        "btn_whatsapp_show": true,
+        "btn_whatsapp_text": "Talk to a skin expert",
+        "btn_whatsapp_number": "12345678900",
+        "btn_whatsapp_message": "Hi! I just took the skin quiz and need help with my routine.",
+        "btn_retake_show": true,
+        "btn_retake_text": "My skin feels different - redo",
+        "total_bar_label": "Estimated total for your routine",
+        "total_bar_cta": "Add my full routine to cart"
       }
     },
     "163945138066afddf5": {
@@ -4576,7 +4593,21 @@
       "blocks": {
         "instareel_instagram_reels_feed_instagram_reels_feed_YzPNQw": {
           "type": "shopify://apps/instareel-ig-reels/blocks/instagram-reels-feed/6399ee9c-54c8-4f76-97d7-8f02f7662aa1",
-          "settings": {}
+          "settings": {
+            "playlist_id": "",
+            "hide_when_no_product_playlist": false,
+            "show_background": false,
+            "background_color": "#ffffff",
+            "customize_text": false,
+            "heading_font_size": 28,
+            "heading_color": "#000000",
+            "subheading_font_size": 16,
+            "subheading_color": "#000000",
+            "customize_spacing": false,
+            "padding_top": 0,
+            "padding_bottom": 16,
+            "padding_horizontal": 0
+          }
         }
       },
       "block_order": [
