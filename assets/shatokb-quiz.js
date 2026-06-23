@@ -3567,7 +3567,14 @@ window.shatokbRevelarProductos = function () {
       'transition:opacity 0.4s ease,transform 0.4s ease'
     ].join(';');
 
-    blurred.appendChild(btn);
+    // Insertar ANTES de #shatokb-ctas (botón redo) para que quede visible
+    // encima del sticky bar y del botón "↺ My skin feels different"
+    var ctasEl = document.getElementById('shatokb-ctas');
+    if (ctasEl && ctasEl.parentNode === blurred) {
+      blurred.insertBefore(btn, ctasEl);
+    } else {
+      blurred.appendChild(btn);
+    }
 
     // Fade-in
     requestAnimationFrame(function () {
