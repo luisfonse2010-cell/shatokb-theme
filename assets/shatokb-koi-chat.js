@@ -838,7 +838,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
         placeholder: 'tu@email.com',
         btn:         'Enviar mi rutina →',
         note:        '🔒 Solo para enviarte tu rutina. Sin spam.',
-        skip:        'Prefiero no dejar mi email',
+        skip:        '🛒 Prefiero ver mi rutina sin dejar email',
       },
       en: {
         title:       '📩 Your Skin Report is ready',
@@ -852,7 +852,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
         placeholder: 'you@email.com',
         btn:         'Send my routine →',
         note:        '🔒 Only to send you your routine. No spam.',
-        skip:        'Skip, show me my routine',
+        skip:        '🛒 See my routine without email',
       },
       fr: {
         title:       '📩 Votre Skin Report est prêt',
@@ -866,7 +866,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
         placeholder: 'vous@email.com',
         btn:         'Envoyer ma routine →',
         note:        '🔒 Uniquement pour votre routine.',
-        skip:        'Ignorer, voir ma routine',
+        skip:        '🛒 Voir ma routine sans email',
       },
       pt: {
         title:       '📩 Seu Skin Report está pronto',
@@ -880,7 +880,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
         placeholder: 'voce@email.com',
         btn:         'Enviar minha rotina →',
         note:        '🔒 Apenas para sua rotina. Sem spam.',
-        skip:        'Pular, ver minha rotina',
+        skip:        '🛒 Ver minha rotina sem email',
       },
       de: {
         title:       '📩 Dein Skin Report ist fertig',
@@ -894,7 +894,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
         placeholder: 'du@email.com',
         btn:         'Routine senden →',
         note:        '🔒 Nur für deine Routine. Kein Spam.',
-        skip:        'Überspringen, Routine anzeigen',
+        skip:        '🛒 Routine ohne E-Mail ansehen',
       },
       it: {
         title:       '📩 Il tuo Skin Report è pronto',
@@ -908,7 +908,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
         placeholder: 'tu@email.com',
         btn:         'Invia la mia routine →',
         note:        '🔒 Solo per inviarti la tua routine.',
-        skip:        'Salta, mostrami la routine',
+        skip:        '🛒 Vedi la routine senza email',
       },
     };
     const lbl = LABELS[idioma] || LABELS['en'];
@@ -2859,12 +2859,12 @@ async function enviarDesdeChip (texto) {
 
     const ui = {
       es: { placeholder: 'tu@email.com', btn: 'Enviar y continuar →', note: '🔒 Solo para tu Skin Report. Sin spam.', skip: '🛒 Solo quiero ver el carrito' },
-      en: { placeholder: 'you@email.com', btn: 'Send & continue →',   note: '🔒 Only for your Skin Report. No spam.', skip: 'Prefer to go to cart without the report' },
-      fr: { placeholder: 'vous@email.com', btn: 'Envoyer et continuer →', note: '🔒 Uniquement pour votre Skin Report.', skip: 'Préférer aller au panier sans le rapport' },
-      pt: { placeholder: 'voce@email.com', btn: 'Enviar e continuar →', note: '🔒 Apenas para o seu Skin Report. Sem spam.', skip: 'Prefiro ir ao carrinho sem o relatório' },
-      de: { placeholder: 'du@email.com',   btn: 'Senden & weiter →',   note: '🔒 Nur für deinen Skin Report. Kein Spam.', skip: 'Lieber ohne Report zum Warenkorb' },
-      it: { placeholder: 'tu@email.com',   btn: 'Invia e continua →',  note: '🔒 Solo per il tuo Skin Report.',          skip: 'Preferisco andare al carrello senza il report' },
-    }[idioma] || { placeholder: 'you@email.com', btn: 'Send & continue →', note: '🔒 No spam.', skip: 'Prefer to go to cart without the report' };
+      en: { placeholder: 'you@email.com', btn: 'Send & continue →',   note: '🔒 Only for your Skin Report. No spam.', skip: '🛒 I just want to see the cart' },
+      fr: { placeholder: 'vous@email.com', btn: 'Envoyer et continuer →', note: '🔒 Uniquement pour votre Skin Report.', skip: '🛒 Je veux juste voir le panier' },
+      pt: { placeholder: 'voce@email.com', btn: 'Enviar e continuar →', note: '🔒 Apenas para o seu Skin Report. Sem spam.', skip: '🛒 Só quero ver o carrinho' },
+      de: { placeholder: 'du@email.com',   btn: 'Senden & weiter →',   note: '🔒 Nur für deinen Skin Report. Kein Spam.', skip: '🛒 Ich möchte nur den Warenkorb sehen' },
+      it: { placeholder: 'tu@email.com',   btn: 'Invia e continua →',  note: '🔒 Solo per il tuo Skin Report.',          skip: '🛒 Voglio solo vedere il carrello' },
+    }[idioma] || { placeholder: 'you@email.com', btn: 'Send & continue →', note: '🔒 No spam.', skip: '🛒 I just want to see the cart' };
 
     // Textos del pitch KOI — el mensaje que se muestra en la card
     const pitchTexts = {
