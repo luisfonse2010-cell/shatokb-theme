@@ -916,6 +916,14 @@ button.koi-mini-cart-bar__btn:active,
     font-size: 11px;
     padding: 6px 12px;
   }
+
+  /* Chip post_vision — más compacto en mobile para que el texto no se parta */
+  .koi-chip--reveal-cta {
+    font-size: 16px !important;
+    padding: 10px 18px !important;
+    white-space: normal !important;
+    line-height: 1.25 !important;
+  }
 }
 
 
