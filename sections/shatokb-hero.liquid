@@ -170,11 +170,11 @@
     </div>
 
     <div class="shatokb-hero__trust">
-      <span>⭐⭐⭐⭐⭐ +2,000 skins diagnosed</span>
+      <span>⭐⭐⭐⭐⭐ Only the best K-Beauty</span>
       <span>·</span>
-      <span>🌿 100% authentic K-Beauty</span>
+      <span>🌿 Hand-picked products</span>
       <span>·</span>
-      <span>⚡ Results in weeks, not months</span>
+      <span>⚡ Results in weeks</span>
     </div>
 
   </div>
@@ -187,20 +187,23 @@
   <div class="shatokb-beneficios__inner">
 
     {%- if section.settings.benefits_title != blank -%}
-      <h2 class="shatokb-section-title">{{ section.settings.benefits_title }}</h2>
+      <h2 class="shatokb-section-title" style="font-family:'Prompt','Arial Black',sans-serif;font-size:28px;font-weight:800;text-align:center;margin-bottom:32px;">{{ section.settings.benefits_title }}</h2>
     {%- endif -%}
 
-    <div class="shatokb-beneficios__grid">
-      {%- for block in section.blocks -%}
-        {%- if block.type == 'benefit' -%}
-          <article class="shatokb-beneficio-card" {{ block.shopify_attributes }}>
-            <div class="shatokb-beneficio-card__icon" aria-hidden="true">{{ block.settings.icon_emoji }}</div>
-            <h3 class="shatokb-beneficio-card__title">{{ block.settings.title }}</h3>
-            <p class="shatokb-beneficio-card__desc">{{ block.settings.description }}</p>
-          </article>
-        {%- endif -%}
-      {%- endfor -%}
-    </div>
+    <ul style="list-style:none;padding:0;margin:0 auto;max-width:520px;display:flex;flex-direction:column;gap:16px;">
+      <li style="display:flex;align-items:center;gap:14px;font-family:'Arimo',Arial,sans-serif;font-size:17px;font-weight:600;color:#0b0335;">
+        <span style="font-size:22px;flex-shrink:0;">✅</span>
+        Products matched to your exact skin type
+      </li>
+      <li style="display:flex;align-items:center;gap:14px;font-family:'Arimo',Arial,sans-serif;font-size:17px;font-weight:600;color:#0b0335;">
+        <span style="font-size:22px;flex-shrink:0;">✅</span>
+        Real Korean brands. Science-backed.
+      </li>
+      <li style="display:flex;align-items:center;gap:14px;font-family:'Arimo',Arial,sans-serif;font-size:17px;font-weight:600;color:#0b0335;">
+        <span style="font-size:22px;flex-shrink:0;">✅</span>
+        Your personal skin expert recommends every product
+      </li>
+    </ul>
 
   </div>
 </div>
@@ -260,7 +263,8 @@
     Find my perfect products — It's Free <span class="stk-cta-arrow">→</span>
   </a>
 
-  <p id="stk-benefit-microcopy">Takes 2 minutes · No account needed · +2,000 skins diagnosed</p>
+
+  <p id="stk-benefit-microcopy">8 questions · 2 minutes · Free</p>
 
 </div>
 
@@ -414,7 +418,7 @@
       "type": "text",
       "id": "benefits_title",
       "label": "Benefits section title",
-      "default": "Why choose your routine with us?"
+      "default": "Your skin. Your products. Zero guessing."
     },
 
     {
