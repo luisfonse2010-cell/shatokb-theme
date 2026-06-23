@@ -567,28 +567,33 @@ button.koi-mini-cart-bar__btn:active,
 
 /* ── CTA botón reveal \u2014 prominente, ocupa todo el ancho ─────── */
 .koi-chip--reveal-cta {
-  width: 100%;
-  background: linear-gradient(135deg, #3a7af5, #1d5dd9) !important;
-  color: #fff !important;
-  font-size: 15px !important;
-  font-weight: 700 !important;
-  padding: 13px 20px !important;
-  border-radius: 10px !important;
-  border: none !important;
-  box-shadow: 0 4px 16px rgba(58, 122, 245, 0.35) !important;
+  width: 100% !important;
+  /* +80%: 12px→22px, padding 7/14→13/25 */
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  padding: 13px 25px !important;
+  border-radius: 50px !important;
+  background: var(--koi-rose-light) !important;
+  color: var(--koi-rose) !important;
+  border: 1.5px solid var(--koi-rose-border) !important;
+  box-shadow: 0 4px 18px rgba(236,149,184,0.22) !important;
   letter-spacing: 0.01em;
-  animation: koi-cta-pulse 2s ease-in-out infinite;
+  white-space: normal !important;
+  line-height: 1.3 !important;
+  animation: koi-cta-pulse 2.4s ease-in-out infinite;
 }
 
 .koi-chip--reveal-cta:hover {
-  background: linear-gradient(135deg, #1d5dd9, #1448b8) !important;
+  background: rgba(236,149,184,0.22) !important;
+  border-color: var(--koi-rose) !important;
+  color: var(--koi-rose-hover) !important;
   transform: translateY(-2px) !important;
-  box-shadow: 0 6px 20px rgba(58, 122, 245, 0.45) !important;
+  box-shadow: 0 8px 28px rgba(236,149,184,0.38) !important;
 }
 
 @keyframes koi-cta-pulse {
-  0%, 100% { box-shadow: 0 4px 16px rgba(58, 122, 245, 0.35); }
-  50%       { box-shadow: 0 4px 24px rgba(58, 122, 245, 0.55); }
+  0%, 100% { box-shadow: 0 4px 18px rgba(236,149,184,0.22); }
+  50%       { box-shadow: 0 4px 26px rgba(236,149,184,0.42); }
 }
 
 .koi-chip:active {
@@ -1343,24 +1348,28 @@ button.koi-mini-cart-bar__btn:active,
    BOTÓN REVEAL — discreto, inline con los chips
    ══════════════════════════════════════════════════════════ */
 .koi-chip--reveal-cta {
-  background: rgba(236, 149, 184, 0.12) !important;
-  color: #ec95b8 !important;
-  font-size: 13px !important;
-  font-weight: 600 !important;
-  padding: 8px 18px !important;
-  border-radius: 20px !important;
-  border: 1px solid rgba(236, 149, 184, 0.35) !important;
-  box-shadow: none !important;
+  /* +80%: 12px→22px, padding 7/14→13/25 */
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  padding: 13px 25px !important;
+  border-radius: 50px !important;
+  background: var(--koi-rose-light) !important;
+  color: var(--koi-rose) !important;
+  border: 1.5px solid var(--koi-rose-border) !important;
+  box-shadow: 0 4px 18px rgba(236,149,184,0.22) !important;
   letter-spacing: 0.01em;
-  transition: background 0.2s ease, border-color 0.2s ease !important;
+  white-space: normal !important;
+  line-height: 1.3 !important;
+  width: 100% !important;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
 }
 
 .koi-chip--reveal-cta:hover {
-  background: rgba(236, 149, 184, 0.22) !important;
-  border-color: rgba(236, 149, 184, 0.60) !important;
-  color: #f0aac8 !important;
-  transform: none !important;
-  box-shadow: none !important;
+  background: rgba(236,149,184,0.22) !important;
+  border-color: var(--koi-rose) !important;
+  color: var(--koi-rose-hover) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 28px rgba(236,149,184,0.38) !important;
 }
 
 

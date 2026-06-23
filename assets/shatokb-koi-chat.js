@@ -435,7 +435,10 @@
 
     chips.forEach(texto => {
       const btn = document.createElement('button');
-      btn.className = 'koi-chip';
+      // post_vision = chip único de "muéstrame mis productos" — recibe clase CTA grande
+      btn.className = tipo === 'post_vision'
+        ? 'koi-chip koi-chip--reveal-cta'
+        : 'koi-chip';
       btn.textContent = texto;
       btn.addEventListener('click', () => {
         container.innerHTML = '';

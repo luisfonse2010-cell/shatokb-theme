@@ -2042,139 +2042,46 @@
 }
 
 /* ── Botón CTA con bounce de entrada ── */
-/* ── Keyframes exclusivos del CTA ───────────────────────── */
-@keyframes stkCtaBounce {
-  0%   { opacity: 0; transform: scale(0.88) translateY(10px); }
-  65%  { opacity: 1; transform: scale(1.03) translateY(-3px); }
-  100% { opacity: 1; transform: scale(1)    translateY(0);    }
-}
-
-@keyframes stkCtaGlow {
-  0%, 100% { box-shadow:
-    0 0 0 0   rgba(236,149,184,0),
-    0 10px 36px rgba(236,149,184,0.38),
-    inset 0 1px 0 rgba(255,255,255,0.22);
-  }
-  50% { box-shadow:
-    0 0 0 8px  rgba(236,149,184,0.13),
-    0 10px 36px rgba(236,149,184,0.38),
-    inset 0 1px 0 rgba(255,255,255,0.22);
-  }
-}
-
-@keyframes stkCtaSweep {
-  0%   { transform: translateX(-120%) skewX(-20deg); }
-  100% { transform: translateX(280%)  skewX(-20deg); }
-}
-
+/* ── Botón CTA principal ─────────────────────────────────── */
 .stk-koi-teaser__cta {
-  /* Layout */
   display: block;
   width: 100%;
-  position: relative;
-  overflow: hidden;
-  box-sizing: border-box;
-
-  /* Espaciado generoso — 80% más grande que el original */
-  padding: 22px 48px;
-  min-height: 72px;
-
-  /* Forma pill elegante */
-  border-radius: 50px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #e75480 0%, #c9446a 100%);
+  color: #fff;
   border: none;
-  outline: none;
-
-  /* Fondo: gradiente rosa KOI — opuesto al dark del panel */
-  background: linear-gradient(110deg, #f0aac8 0%, #ec95b8 45%, #e07aa0 100%);
-
-  /* Texto dark sobre rosa — máximo contraste, lectura inmediata */
-  color: #1c181a;
-
-  /* Tipografía impactante — 80% más grande */
-  font-family: 'Prompt', 'Arial Black', sans-serif;
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  text-align: center;
-  white-space: nowrap;
-
+  border-radius: 50px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
-
-  /* Sombra luminosa */
-  box-shadow:
-    0 0 0 0   rgba(236,149,184,0),
-    0 10px 36px rgba(236,149,184,0.38),
-    inset 0 1px 0 rgba(255,255,255,0.22);
+  letter-spacing: 0.01em;
+  box-shadow: 0 4px 20px rgba(231, 84, 128, 0.40);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 
   /* Invisible hasta que JS lo activa */
   opacity: 0;
-  transform: scale(0.90) translateY(10px);
-
-  transition:
-    transform  0.20s cubic-bezier(0.22,1,0.36,1),
-    box-shadow 0.22s ease,
-    background 0.22s ease;
+  transform: scale(0.92) translateY(6px);
 }
 
-/* Línea de brillo interna fija (::after) */
-.stk-koi-teaser__cta::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 10%; width: 80%; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
-  pointer-events: none;
-}
-
-/* Sweep diagonal animado (::before) */
-.stk-koi-teaser__cta::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0;
-  width: 35%; height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255,255,255,0.22) 50%,
-    transparent 100%
-  );
-  transform: translateX(-120%) skewX(-20deg);
-  animation: stkCtaSweep 4s ease-in-out infinite;
-  animation-delay: 1.6s;
-  pointer-events: none;
-}
-
-/* Bounce de entrada — JS añade esta clase */
+/* Bounce de entrada */
 .stk-koi-teaser__cta--visible {
-  animation:
-    stkCtaBounce 0.60s cubic-bezier(0.34,1.56,0.64,1) forwards,
-    stkCtaGlow   2.8s ease-in-out 0.7s infinite;
+  animation: stkTeaserCtaBounce 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-/* Hover */
+@keyframes stkTeaserCtaBounce {
+  0%   { opacity: 0; transform: scale(0.88) translateY(8px); }
+  60%  { opacity: 1; transform: scale(1.04) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
 .stk-koi-teaser__cta:hover {
-  background: linear-gradient(110deg, #f5b8d4 0%, #f0aac8 45%, #e888b0 100%);
-  transform: translateY(-3px) scale(1.015);
-  box-shadow:
-    0 0 0 6px  rgba(236,149,184,0.16),
-    0 18px 48px rgba(236,149,184,0.55),
-    inset 0 1px 0 rgba(255,255,255,0.30);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 28px rgba(231, 84, 128, 0.55);
 }
 
-/* Active */
 .stk-koi-teaser__cta:active {
-  transform: scale(0.975) translateY(-1px);
-  box-shadow:
-    0 4px 18px rgba(236,149,184,0.30),
-    inset 0 1px 0 rgba(255,255,255,0.15);
-}
-
-/* Mobile */
-@media (max-width: 600px) {
-  .stk-koi-teaser__cta {
-    font-size: 17px !important;
-    padding: 20px 32px !important;
-    min-height: 64px !important;
-  }
+  transform: scale(0.98);
 }
 
 /* ── Pulso del glow cuando KOI es scrolleado ── */
@@ -2214,10 +2121,8 @@
     font-size: 13px;
   }
   .stk-koi-teaser__cta {
-    /* Legacy override — usar valores del bloque nuevo */
-    font-size: 17px !important;
-    padding: 20px 32px !important;
-    min-height: 64px !important;
+    font-size: 13px;
+    padding: 11px 18px;
   }
 }
 
