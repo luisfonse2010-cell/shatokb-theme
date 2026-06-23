@@ -556,135 +556,38 @@
      directo. Luego ofrece los dos chips de bifurcación.
      ══════════════════════════════════════════════════════════ */
   async function enviarMensajeKOI_proactivo () {
-    // ── Ocultar barra de input mientras KOI escribe los mensajes
-    //    de apertura (insight + oferta cámara). Se restaura cuando
-    //    mostrarChips('post_camara') muestra los chips de bifurcación.
+    // ── Ocultar barra de input mientras KOI escribe el mensaje
+    //    de apertura. Se restaura cuando mostrarChips('post_camara')
+    //    muestra los chips de bifurcación.
     setInputAreaVisible(false);
     setInputHabilitado(false);
 
-    const ctx          = KOI_STATE.contexto;
-    const perfilId     = ctx?.perfil?.id     || '';
-    const perfilNombre = ctx?.perfil?.nombre || 'your skin profile';
-    const idioma       = detectarIdioma();
+    const idioma = detectarIdioma();
 
-    const nombreIdioma = {
-      es: 'Spanish', en: 'English', fr: 'French', pt: 'Portuguese',
-      de: 'German',  it: 'Italian', ko: 'Korean', ja: 'Japanese',
-      zh: 'Chinese', ar: 'Arabic', nl: 'Dutch',  pl: 'Polish', ru: 'Russian'
-    }[idioma] || 'English';
-
-    // ── Insights fallback por perfil de piel ─────────────────
-    // Uno por perfil — específicos, no genéricos. Si el Worker
-    // falla, estos garantizan que la experiencia sea poderosa.
-    const insightsFallback = {
-      es: {
-        grasa:        `Revisé tus respuestas. Tu perfil es **${perfilNombre}**.\n\nHay algo que la industria hace mal con tu tipo de piel constantemente: sobre-limpiar. La mayoría cree que necesita eliminar todo el sebo — y ese error es exactamente lo que hace que la piel produzca *más* grasa como respuesta.\n\nTu rutina está diseñada para romper ese ciclo. Tengo algo más que mostrarte antes de dártela.`,
-        seca:         `Revisé tus respuestas. Tu perfil es **${perfilNombre}**.\n\nEl error más común con tu tipo de piel: confundir sequedad con deshidratación. Son condiciones distintas con soluciones opuestas — y aplicar más crema a piel seca estructuralmente no resuelve nada, puede empeorar la barrera.\n\nTu rutina ataca la causa real. Tengo algo más que mostrarte antes de dártela.`,
-        mixta:        `Revisé tus respuestas. Tu perfil es **${perfilNombre}**.\n\nLa industria comete un error fundamental contigo todos los días: crear productos "para piel mixta" que intentan hacer dos cosas a la vez y no hacen ninguna bien. Tu zona T y tus mejillas necesitan estrategias diferentes.\n\nTu rutina está construida exactamente así. Tengo algo más que mostrarte antes de dártela.`,
-        sensible:     `Revisé tus respuestas. Tu perfil es **${perfilNombre}**.\n\nLo que la mayoría no entiende: la piel sensible no es un tipo de piel permanente — es una barrera comprometida. Y la causa número uno son los productos con demasiados activos que el mercado vende como "suaves".\n\nTu rutina prioriza reconstruir la barrera antes que todo. Tengo algo más que mostrarte antes de dártela.`,
-        deshidratada: `Revisé tus respuestas. Tu perfil es **${perfilNombre}**.\n\nAlgo importante: la deshidratación ocurre en cualquier tipo de piel, incluso en la grasa. Lo que sientes no es falta de aceite — es falta de agua en las capas superficiales. Aplicar más cremas ricas puede bloquear la hidratación que necesitas.\n\nTu rutina trabaja de adentro hacia afuera. Tengo algo más que mostrarte antes de dártela.`,
-        acne:         `Revisé tus respuestas. Tu perfil es **${perfilNombre}**.\n\nLo que más daña la piel con acné no es el acné en sí — es la respuesta agresiva. Exfoliantes fuertes, secantes, ácidos al máximo. Todo eso destruye la barrera justo cuando más la necesitas y prolonga los ciclos.\n\nTu rutina es efectiva sin ser agresiva. Tengo algo más que mostrarte antes de dártela.`,
-        madura:       `Revisé tus respuestas. Tu perfil es **${perfilNombre}**.\n\nEl error más caro en el skincare antiedad: perseguir el colágeno cuando el problema real es la pérdida de hidratación y la degradación de la barrera. La mayoría de los productos "lifting" tratan el síntoma, no la causa.\n\nTu rutina actúa en las tres capas correctas. Tengo algo más que mostrarte antes de dártela.`,
-        manchas:      `Revisé tus respuestas. Tu perfil es **${perfilNombre}**.\n\nAlgo que pocas marcas te dicen: aclarar manchas sin protección solar es trabajo perdido. La hiperpigmentación se reactiva con cada exposición UV, sin importar qué tan potente sea tu sérum.\n\nTu rutina cierra ese ciclo correctamente. Tengo algo más que mostrarte antes de dártela.`,
-        default:      `Revisé tus respuestas. Tu perfil es **${perfilNombre}**.\n\nHay algo específico sobre tu tipo de piel que quiero que sepas: la mayoría de los productos del mercado no están diseñados para lo que tu piel realmente necesita. Los que elegí para ti sí lo están.\n\nTengo algo más que mostrarte antes de dártela.`,
-      },
-      en: {
-        grasa:        `I've reviewed your answers. Your profile is **${perfilNombre}**.\n\nHere's what the skincare industry consistently gets wrong with your skin type: over-cleansing. Most people think they need to strip every trace of sebum — and that's exactly the mistake that makes skin produce *more* oil in response.\n\nYour routine is designed to break that cycle. I have one more thing to show you before I hand it over.`,
-        seca:         `I've reviewed your answers. Your profile is **${perfilNombre}**.\n\nThe most common mistake with your skin type: confusing dryness with dehydration. These are different conditions with opposite solutions — adding more moisturizer to structurally dry skin doesn't fix it, it can compromise your barrier further.\n\nYour routine addresses the real cause. I have one more thing to show you before I hand it over.`,
-        mixta:        `I've reviewed your answers. Your profile is **${perfilNombre}**.\n\nThe industry makes a fundamental error with combination skin every day: creating "combination skin" products that try to do two things at once and do neither well. Your T-zone and cheeks need different strategies.\n\nYour routine is built exactly that way. I have one more thing to show you before I hand it over.`,
-        sensible:     `I've reviewed your answers. Your profile is **${perfilNombre}**.\n\nWhat most people miss: sensitive skin isn't a permanent skin type — it's a compromised barrier. And the number one cause is products with too many actives marketed as "gentle."\n\nYour routine prioritizes rebuilding the barrier before anything else. I have one more thing to show you before I hand it over.`,
-        deshidratada: `I've reviewed your answers. Your profile is **${perfilNombre}**.\n\nImportant: dehydration can occur in any skin type — including oily skin. What you're feeling isn't a lack of oil, it's a lack of water in the surface layers. Applying rich creams can actually block the hydration you need.\n\nYour routine works from the inside out. I have one more thing to show you before I hand it over.`,
-        acne:         `I've reviewed your answers. Your profile is **${perfilNombre}**.\n\nWhat damages acne-prone skin most isn't the acne itself — it's the aggressive response to it. Strong exfoliants, harsh drying agents, maximum-strength acids. All of that destroys your barrier exactly when you need it most.\n\nYour routine is effective without being harsh. I have one more thing to show you before I hand it over.`,
-        madura:       `I've reviewed your answers. Your profile is **${perfilNombre}**.\n\nThe most expensive mistake in anti-aging skincare: chasing collagen when the real problem is hydration loss and barrier degradation. Most "lifting" products treat the symptom, not the cause.\n\nYour routine works at the three correct layers. I have one more thing to show you before I hand it over.`,
-        manchas:      `I've reviewed your answers. Your profile is **${perfilNombre}**.\n\nSomething most brands won't tell you: fading dark spots without sun protection is wasted effort. Hyperpigmentation reactivates with every UV exposure, no matter how potent your serum.\n\nYour routine closes that cycle correctly. I have one more thing to show you before I hand it over.`,
-        default:      `I've reviewed your answers. Your profile is **${perfilNombre}**.\n\nThere's something specific about your skin type I want you to know — most products on the market aren't designed for what your skin actually needs. The ones I selected for you are.\n\nI have one more thing to show you before I hand it over.`,
-      },
+    // ── Mensaje único de apertura: propuesta de cámara directa ──
+    // Sin repetir el perfil (ya visible en results page).
+    // Crea curiosidad + coste mínimo percibido + promesa concreta.
+    const mensajesCamara = {
+      es: `Ya sé qué tipo de piel tienes. Lo que no sé es cómo está hoy. La cámara detecta lo que el quiz no puede — poros, zonas inflamadas, qué necesita atención ahora mismo. Son 10 segundos.`,
+      en: `I know your skin type. What I don't know is how your skin looks today. The camera catches what the quiz can't — pores, inflamed zones, what needs attention right now. Ten seconds.`,
+      fr: `Je sais quel type de peau tu as. Ce que je ne sais pas, c'est comment elle est aujourd'hui. La caméra détecte ce que le quiz ne peut pas — pores, zones enflammées, ce qui a besoin d'attention maintenant. Dix secondes.`,
+      pt: `Já sei qual é o seu tipo de pele. O que não sei é como ela está hoje. A câmera detecta o que o quiz não pode — poros, zonas inflamadas, o que precisa de atenção agora. São 10 segundos.`,
+      de: `Ich weiß, welchen Hauttyp du hast. Was ich nicht weiß, ist wie deine Haut heute aussieht. Die Kamera erkennt, was der Quiz nicht kann — Poren, entzündete Zonen, was jetzt Aufmerksamkeit braucht. Zehn Sekunden.`,
+      it: `So che tipo di pelle hai. Quello che non so è com'è oggi. La fotocamera rileva ciò che il quiz non può — pori, zone infiammate, cosa ha bisogno di attenzione adesso. Dieci secondi.`,
     };
 
-    // ── Prompt para GPT-4o — The Reveal version ──────────────
-    const mensajeInterno = `[SYSTEM: THE REVEAL — Generate KOI's opening message. This is the most important message in the entire user experience.]
-
-Browser language: ${nombreIdioma}. Respond ENTIRELY in ${nombreIdioma}.
-Skin profile ID: ${perfilId}
-Skin profile name: ${perfilNombre}
-
-RULES — READ CAREFULLY:
-1. Do NOT introduce yourself by name first. Do NOT say "Hello" or "Hi". Enter the subject directly.
-2. Start with: "I reviewed your answers." (or equivalent in the target language)
-3. State the user's profile name clearly.
-4. Give ONE powerful, specific insight about a mistake the skincare industry makes with this exact skin type. This must be concrete, not generic. Something that makes the user think "how does she know that?"
-5. The insight must create a contrast: "most products do X wrong — yours does Y right."
-6. End with EXACTLY this (adapted to the language): "Your routine is designed for this. I have one more thing to show you before I hand it over." — Do NOT say the routine is ready to view. Do NOT ask if they want to see it. Just create anticipation.
-7. Maximum 90 words. No filler. No corporate language. No excessive emojis.
-8. NEVER say "30 years", "decades" or any years number. If you mention experience, say "9+ years".
-9. Tone: a seasoned dermatology-trained esthetician — precise, warm, direct.`;
-
+    const msg    = mensajesCamara[idioma] || mensajesCamara['en'];
     mostrarTyping();
+    await new Promise(r => setTimeout(r, 900));
+    ocultarTyping();
+    const textEl = agregarMensaje('koi', '');
+    if (textEl) await escribirConEfecto(textEl, msg);
+    KOI_STATE.historial.push({ role: 'assistant', content: msg });
+    guardarHistorialLocal();
 
-    try {
-      const payload = {
-        mensaje:   mensajeInterno,
-        historial: [],
-        contexto:  construirContexto(),
-      };
-
-      const response = await fetch(KOI_CONFIG.workerUrl, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(payload),
-      });
-
-      const data       = await response.json();
-      const mensajeKOI = data.respuesta || data.content || '';
-
-      ocultarTyping();
-
-      const textEl = agregarMensaje('koi', '', true);
-      if (textEl && mensajeKOI) {
-        await escribirConEfecto(textEl, mensajeKOI);
-      }
-
-      KOI_STATE.historial.push({ role: 'assistant', content: mensajeKOI });
-      guardarHistorialLocal();
-
-    } catch (err) {
-      console.warn('[KOI] The Reveal greeting failed, using local fallback:', err);
-      ocultarTyping();
-
-      // Fallback local por perfil e idioma
-      const setIdioma = insightsFallback[idioma] || insightsFallback['en'];
-      const mensaje   = setIdioma[perfilId] || setIdioma['default'];
-      const textEl    = agregarMensaje('koi', '', true);
-      if (textEl) await escribirConEfecto(textEl, mensaje);
-      KOI_STATE.historial.push({ role: 'assistant', content: mensaje });
-      guardarHistorialLocal();
-    }
-
-    // ── Segundo mensaje: persuasivo de cámara, directo después del insight
-    // Pequeña pausa para que se sienta como una conversación natural
-    setTimeout(async () => {
-      const mensajesCamara = {
-        es: `Puedo armar tu rutina solo con el quiz — y ya lo hice.\n\nPero hay algo que el texto no me da: la textura real de tu piel ahora mismo, cómo están tus poros hoy, si hay enrojecimiento que quizás tú misma no has notado todavía.\n\nEl análisis facial me permite afinar cada producto a lo que tu piel *realmente* necesita hoy, no solo en teoría.\n\nSon 10 segundos. ¿Lo intentamos? O si prefieres, te doy la rutina solo con el quiz.`,
-        en: `I can build your routine from the quiz alone — and I already did.\n\nBut there's something text can't give me: your skin's actual texture right now, how your pores look today, whether there's redness you might not have noticed yourself.\n\nFacial analysis lets me fine-tune every product to what your skin *actually* needs today — not just in theory.\n\nTen seconds. Shall we? Or I can show you the quiz-only routine right now.`,
-        fr: `Je peux construire votre routine uniquement avec le quiz — et c'est déjà fait.\n\nMais il y a quelque chose que le texte ne me donne pas : la texture réelle de votre peau en ce moment, l'état de vos pores aujourd'hui, une rougeur que vous n'auriez peut-être pas remarquée.\n\nL'analyse faciale me permet d'affiner chaque produit à ce que votre peau *vraiment* besoin aujourd'hui — pas seulement en théorie.\n\nDix secondes. On essaie ? Ou je vous montre la routine quiz tout de suite.`,
-        pt: `Posso montar sua rotina só com o quiz — e já fiz isso.\n\nMas há algo que o texto não me dá: a textura real da sua pele agora, como estão seus poros hoje, se há vermelhidão que talvez você mesma não tenha notado ainda.\n\nA análise facial me permite afinar cada produto ao que sua pele *realmente* precisa hoje — não só na teoria.\n\nSão 10 segundos. Vamos tentar? Ou se preferir, te mostro a rotina só com o quiz agora.`,
-        de: `Ich kann deine Routine allein aus dem Quiz zusammenstellen — und das habe ich bereits getan.\n\nAber es gibt etwas, das mir Text nicht geben kann: die tatsächliche Textur deiner Haut gerade, wie deine Poren heute aussehen, ob es Rötungen gibt, die du vielleicht selbst nicht bemerkt hast.\n\nDie Gesichtsanalyse ermöglicht es mir, jedes Produkt auf das abzustimmen, was deine Haut *wirklich* heute braucht — nicht nur in der Theorie.\n\nZehn Sekunden. Sollen wir? Oder ich zeige dir jetzt die Quiz-Routine.`,
-        it: `Posso creare la tua routine solo con il quiz — e l'ho già fatto.\n\nMa c'è qualcosa che il testo non mi dà: la texture reale della tua pelle adesso, come appaiono i tuoi pori oggi, se c'è arrossamento che forse non hai ancora notato.\n\nL'analisi facciale mi permette di affinare ogni prodotto a ciò di cui la tua pelle *ha davvero* bisogno oggi — non solo in teoria.\n\nDieci secondi. Proviamo? Oppure ti mostro subito la routine solo dal quiz.`,
-      };
-
-      const msg2   = mensajesCamara[idioma] || mensajesCamara['en'];
-      mostrarTyping();
-      await new Promise(r => setTimeout(r, 900));
-      ocultarTyping();
-      const textEl2 = agregarMensaje('koi', '');
-      if (textEl2) await escribirConEfecto(textEl2, msg2);
-      KOI_STATE.historial.push({ role: 'assistant', content: msg2 });
-      guardarHistorialLocal();
-
-      // Chips: analizar primero o ver rutina directamente
-      KOI_STATE.revealPhase = 'camara';
-      setTimeout(() => mostrarChips('post_camara'), 400);
-    }, 1200);
+    // Chips: analizar con cámara o ver productos directamente
+    KOI_STATE.revealPhase = 'camara';
+    setTimeout(() => mostrarChips('post_camara'), 400);
   }
 
   /* ══════════════════════════════════════════════════════════
