@@ -71,7 +71,7 @@
       // ── Post-cámara: después del mensaje persuasivo ──
       post_camara: ['📸 Yes, analyze my face', '✨ Show me my routine'],
       // ── Post-visión: después del análisis facial, solo reveal ──
-      post_vision: ['✨ Show me my routine now'],
+      post_vision: ['✦ See the products chosen for me →'],
       // ── Post-reveal: explorar rutina ──
       bienvenida:  ['Walk me through my routine', 'Why these specific products?', 'Explain the key ingredients', 'How long until I see results?'],
       post_rutina: ['What order do I apply them?', 'AM vs PM — what changes?', 'Are any of these pregnancy-safe?', 'Which one should I start with?'],
@@ -80,7 +80,7 @@
     es: {
       reveal:      ['📸 Analiza mi piel primero', '✨ Descubre mi rutina'],
       post_camara: ['📸 Sí, analiza mi rostro', '✨ Ver mi rutina ya'],
-      post_vision: ['✨ Muéstrame mi rutina ahora'],
+      post_vision: ['✦ Ver los productos elegidos para mí →'],
       bienvenida:  ['Explícame mi rutina paso a paso', '¿Por qué estos productos?', 'Explícame los ingredientes clave', '¿Cuánto tiempo hasta ver resultados?'],
       post_rutina: ['¿En qué orden los aplico?', 'AM vs PM — ¿qué cambia?', '¿Son seguros en el embarazo?', '¿Con cuál empiezo?'],
       objeciones:  ['¿Cuál es el producto más importante?', 'Nunca he probado K-Beauty', '¿Puedo combinar estos ingredientes?', 'Tengo otra pregunta'],
@@ -88,7 +88,7 @@
     fr: {
       reveal:      ['📸 Analyser ma peau d\'abord', '✨ Révéler ma routine'],
       post_camara: ['📸 Oui, analyser mon visage', '✨ Voir ma routine'],
-      post_vision: ['✨ Montrez-moi ma routine maintenant'],
+      post_vision: ['✦ Voir les produits choisis pour moi →'],
       bienvenida:  ['Expliquez-moi ma routine', 'Pourquoi ces produits ?', 'Expliquez les ingrédients clés', 'Combien de temps pour voir les résultats ?'],
       post_rutina: ['Dans quel ordre les appliquer ?', 'Matin vs soir — qu\'est-ce qui change ?', 'Sont-ils sûrs pendant la grossesse ?', 'Par lequel commencer ?'],
       objeciones:  ['Quel produit est le plus important ?', "Je n'ai jamais essayé la K-Beauty", 'Puis-je combiner ces ingrédients ?', "J'ai une autre question"],
@@ -96,7 +96,7 @@
     pt: {
       reveal:      ['📸 Analisar minha pele primeiro', '✨ Revelar minha rotina'],
       post_camara: ['📸 Sim, analise meu rosto', '✨ Ver minha rotina agora'],
-      post_vision: ['✨ Mostre-me minha rotina agora'],
+      post_vision: ['✦ Ver os produtos escolhidos para mim →'],
       bienvenida:  ['Explique minha rotina passo a passo', 'Por que esses produtos?', 'Explique os ingredientes principais', 'Quanto tempo para ver resultados?'],
       post_rutina: ['Em que ordem aplicar?', 'AM vs PM — o que muda?', 'São seguros na gravidez?', 'Com qual devo começar?'],
       objeciones:  ['Qual produto é mais importante?', 'Nunca experimentei K-Beauty', 'Posso combinar esses ingredientes?', 'Tenho outra pergunta'],
@@ -104,7 +104,7 @@
     de: {
       reveal:      ['📸 Zuerst meine Haut analysieren', '✨ Meine Routine enthüllen'],
       post_camara: ['📸 Ja, analysiere mein Gesicht', '✨ Routine jetzt anzeigen'],
-      post_vision: ['✨ Zeig mir meine Routine jetzt'],
+      post_vision: ['✦ Die für mich ausgewählten Produkte sehen →'],
       bienvenida:  ['Erkläre mir meine Routine', 'Warum genau diese Produkte?', 'Erkläre die wichtigsten Inhaltsstoffe', 'Wann sehe ich erste Ergebnisse?'],
       post_rutina: ['In welcher Reihenfolge auftragen?', 'Morgen vs. Abend — was ändert sich?', 'Sind sie in der Schwangerschaft sicher?', 'Mit welchem soll ich anfangen?'],
       objeciones:  ['Welches Produkt ist am wichtigsten?', 'Ich habe K-Beauty noch nie ausprobiert', 'Kann ich diese Inhaltsstoffe kombinieren?', 'Ich habe eine andere Frage'],
@@ -112,7 +112,7 @@
     it: {
       reveal:      ['📸 Analizza prima la mia pelle', '✨ Rivela la mia routine'],
       post_camara: ['📸 Sì, analizza il mio viso', '✨ Mostrami la mia routine'],
-      post_vision: ['✨ Mostrami la mia routine adesso'],
+      post_vision: ['✦ Vedere i prodotti scelti per me →'],
       bienvenida:  ['Spiegami la mia routine', 'Perché questi prodotti?', 'Spiegami gli ingredienti chiave', 'Quanto tempo per vedere i risultati?'],
       post_rutina: ['In che ordine applicarli?', 'Mattina vs sera — cosa cambia?', 'Sono sicuri in gravidanza?', 'Da quale inizio?'],
       objeciones:  ['Qual è il prodotto più importante?', 'Non ho mai provato la K-Beauty', 'Posso combinare questi ingredienti?', 'Ho un\'altra domanda'],
@@ -2425,10 +2425,12 @@ async function enviarDesdeChip (texto) {
   /* ── Detecta chip post-visión (después del análisis) ────── */
   function esChipPostVision (texto) {
     const t = texto.toLowerCase();
-    return t.includes('muéstrame') || t.includes('show me my routine') ||
-           t.includes('montrez') || t.includes('mostrar') ||
-           t.includes('mostrami') || t.includes('zeig mir') ||
-           t.includes('routine now') || t.includes('ahora');
+    return t.includes('elegidos para mí') || t.includes('elegidos para mi') ||
+           t.includes('chosen for me')    || t.includes('choisis pour moi') ||
+           t.includes('escolhidos para')  || t.includes('ausgewählten')     ||
+           t.includes('scelti per me')    || t.includes('muéstrame')        ||
+           t.includes('show me my routine') || t.includes('routine now')    ||
+           t.includes('ahora');
   }
 
   /* ── Detecta chips post-cámara ──────────────────────────── */
