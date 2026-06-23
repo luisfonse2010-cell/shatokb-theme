@@ -2809,7 +2809,7 @@ function shatokbActualizarBtnNext(mostrar, idx) {
 
   var total    = SHATOKB_PREGUNTAS.length;
   var esFinal  = idx === total - 1;
-  var label    = esFinal ? 'See My Routine →' : 'Next →';
+  var label    = esFinal ? 'See what works for my skin →' : 'Next →';
 
   if (mostrar) {
     var esNuevo = !document.getElementById('shatokb-btn-siguiente');
