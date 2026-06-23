@@ -350,48 +350,40 @@
 
       <p class="stk-hook-eyebrow">
         <span class="stk-hook-eyebrow-dot" aria-hidden="true"></span>
-        Your skin has been waiting
+        Sound familiar?
         <span class="stk-hook-eyebrow-dot" aria-hidden="true"></span>
       </p>
 
       <h3 class="stk-hook-headline">
-        At some point you'll stop trying products&nbsp;<span class="stk-hook-azar"><span class="stk-hook-azar-text">at random</span></span>
+        You've probably spent money on products
       </h3>
 
       <p class="stk-hook-headline-b">
-        and start with your exact routine.
+        that did <span class="stk-hook-azar"><span class="stk-hook-azar-text">nothing</span></span> for your skin.
       </p>
 
-      <p class="stk-hook-remate">That moment can be today.</p>
-      <p class="stk-hook-hoy">Discover it in 3 minutes.</p>
+      <p class="stk-hook-remate">That ends today.</p>
+      <p class="stk-hook-hoy">Find out what actually works for YOU.</p>
 
-      <div class="stk-hook-social" aria-label="Over 50,000 personalized routines created">
+      <div class="stk-hook-social">
         <span class="stk-hook-social-dot" aria-hidden="true"></span>
-        <span><strong>+50,000</strong> personalized routines created</span>
+        <span>Only the <strong>best K-Beauty</strong> — hand-picked for your skin</span>
       </div>
 
     </div>
 
-    {%- comment -%} ── Section header ──────────────────────────── {%- endcomment -%}
-    <header class="shatokb-quiz-section__header" id="shatokb-quiz-cabecera">
-      <h2 class="shatokb-quiz-section__titulo">{{ section.settings.titulo }}</h2>
-      <p class="shatokb-quiz-section__subtitulo">{{ section.settings.subtitulo }}</p>
-    </header>
-
     {%- comment -%} ── Quiz start screen ──────────────────────── {%- endcomment -%}
     <div id="shatokb-quiz-inicio" style="text-align:center; padding:12px 0 40px;">
-      <p style="font-family:'Arimo',Arial,sans-serif; font-size:15px; color:#6b7280; line-height:1.65; max-width:480px; margin:0 auto 28px;">
-        Most people spend years — and hundreds of dollars — trying random products that don't work for their skin.<br><br>
-        <strong>This quiz ends that.</strong> In 2 minutes you'll know your exact skin profile and the Korean products proven to work for it.
-      </p>
       <button
         id="shatokb-btn-inicio"
-        style="display:inline-flex;align-items:center;justify-content:center;padding:15px 36px;background:#3a7af5;color:#fff;font-family:'Arimo',Arial,sans-serif;font-size:16px;font-weight:700;border:none;border-radius:6px;cursor:pointer;transition:background 0.2s;"
+        style="display:inline-flex;align-items:center;justify-content:center;padding:17px 40px;background:#f5a0bb;color:#1c1c1e;font-family:'Arimo',Arial,sans-serif;font-size:16px;font-weight:800;border:none;border-radius:6px;cursor:pointer;transition:background 0.2s,transform 0.15s,box-shadow 0.2s;box-shadow:0 8px 28px rgba(245,160,187,0.35);letter-spacing:0.01em;"
+        onmouseover="this.style.background='#f5a0bb';this.style.outline='2px solid #e0607e';this.style.transform='translateY(-2px)';"
+        onmouseout="this.style.background='#f5a0bb';this.style.outline='none';this.style.transform='translateY(0)';"
         type="button"
         onclick="event.stopPropagation();event.preventDefault();shatokbIniciarQuiz();return false;">
-        Yes — show me my routine →
+        Show me what works for my skin →
       </button>
-      <p style="font-family:'Arimo',Arial,sans-serif; font-size:13px; color:#9ca3af; margin-top:14px;">Free · No account needed · Results in 2 minutes</p>
+      <p style="font-family:'Arimo',Arial,sans-serif; font-size:12px; color:#9ca3af; margin-top:14px; letter-spacing:0.02em;">Free · No account needed · No guessing</p>
     </div>
 
     {%- comment -%} ── Progress bar ────────────────────────────── {%- endcomment -%}
@@ -404,7 +396,7 @@
       aria-valuemax="100"
       aria-valuenow="0">
       <div class="shatokb-progreso__meta">
-        <span id="shatokb-progreso-texto">Question 1 of 6</span>
+        <span id="shatokb-progreso-texto">Question 1 of 8</span>
         <span id="shatokb-pregunta-num" aria-hidden="true">0%</span>
       </div>
       <div class="shatokb-progreso__track">
@@ -434,8 +426,8 @@
   <div class="stk-gate__backdrop" onclick="shatokbSaltarEmail()"></div>
   <div class="stk-gate__card">
     <span class="stk-gate__emoji">🎁</span>
-    <h2 class="stk-gate__title" id="stk-gate-title">Your routine is ready!</h2>
-    <p class="stk-gate__sub">Where should we send it so you can come back to it anytime?</p>
+    <h2 class="stk-gate__title" id="stk-gate-title">Your results are ready!</h2>
+    <p class="stk-gate__sub">Where should we send them so you can come back anytime?</p>
     <form class="stk-gate__form" onsubmit="shatokbSubmitEmail(event)">
       <input
         type="email"
@@ -445,7 +437,7 @@
         required
         autocomplete="email" />
       <button type="submit" class="stk-gate__btn" id="stk-gate-submit">
-        Show me my routine ✨
+        Show me my results ✨
       </button>
     </form>
     <button class="stk-gate__skip" type="button" onclick="shatokbSaltarEmail()">
