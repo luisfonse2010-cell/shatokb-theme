@@ -2598,15 +2598,17 @@ function shatokbRenderPregunta(idx) {
   shatokbState.preguntaActual = idx;
   const total = SHATOKB_PREGUNTAS.length;
   const q     = SHATOKB_PREGUNTAS[idx];
-  const pct   = Math.round((idx / total) * 100);
+  const pct   = Math.round(((idx + 1) / total) * 100);
 
   const fill  = document.getElementById('shatokb-progreso-barra');
   const texto = document.getElementById('shatokb-progreso-texto');
   const pctEl = document.getElementById('shatokb-pregunta-num');
 
-  if (fill)  fill.style.width     = pct + '%';
-  if (texto) texto.textContent    = 'Question ' + (idx + 1) + ' of ' + total;
-  if (pctEl) pctEl.textContent    = pct + '%';
+  if (fill) {
+    fill.style.setProperty('width', pct + '%', 'important');
+  }
+  if (texto) texto.textContent = 'Question ' + (idx + 1) + ' of ' + total;
+  if (pctEl) pctEl.textContent = pct + '%';
 
   const container = document.getElementById('shatokb-quiz-form');
   if (!container) return;

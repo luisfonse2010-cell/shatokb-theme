@@ -514,19 +514,22 @@
 }
 
 .shatokb-progreso__track {
-  height: 5px;
-  background: var(--stk-border);
-  border-radius: 50px;
-  overflow: hidden;
+  height: 6px !important;
+  background: #e5e7eb !important;
+  border-radius: 50px !important;
+  overflow: hidden !important;
+  display: block !important;
+  width: 100% !important;
 }
 
 .shatokb-progreso__fill {
-  height: 100%;
-  /* Gradiente negro → navy, colores reales del tema */
-  background: linear-gradient(90deg, var(--stk-primary), var(--stk-secondary));
-  border-radius: 50px;
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  width: 0%;
+  height: 100% !important;
+  background: linear-gradient(90deg, #f5a0bb, #e0607e) !important;
+  border-radius: 50px !important;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  width: 0% !important;
+  display: block !important;
+  min-width: 0 !important;
 }
 
 /* ── Pregunta ─────────────────────────────────────────── */
