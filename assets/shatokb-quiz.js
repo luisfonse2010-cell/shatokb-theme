@@ -3739,11 +3739,24 @@ function shatokbRenderPasoHTML(paso, stepIdx, budgetMax, displayNum) {
       </div>`;
   }).join('');
 
+  const numOpciones = paso.opciones.length;
+  const pickLabels = {
+    es: { bold: `Elige 1 de ${numOpciones}`, soft: `— todas son igual de efectivas para tu piel` },
+    en: { bold: `Choose 1 of ${numOpciones}`, soft: `— all equally effective for your skin` },
+    fr: { bold: `Choisissez 1 sur ${numOpciones}`, soft: `— toutes également efficaces pour votre peau` },
+    pt: { bold: `Escolha 1 de ${numOpciones}`, soft: `— todas igualmente eficazes para sua pele` },
+    de: { bold: `Wähle 1 von ${numOpciones}`, soft: `— alle gleich wirksam für deine Haut` },
+    it: { bold: `Scegli 1 di ${numOpciones}`, soft: `— tutte ugualmente efficaci per la tua pelle` },
+  };
+  const lang = (typeof detectarIdioma === 'function' ? detectarIdioma() : null) ||
+               document.documentElement.lang?.slice(0,2) || 'en';
+  const pick = pickLabels[lang] || pickLabels['en'];
+
   return `
     <div class="stk-routine-step shatokb-paso" data-step="${stepIdx}" data-momento="${paso.momento || 'both'}">
       <div class="stk-routine-step__header">
         <div class="stk-routine-step__num">${displayNum !== undefined ? displayNum : stepIdx + 1}</div>
-        <div style="flex:1">
+        <div style="flex:1;min-width:0;">
           <div class="stk-routine-step__name">
             ${paso.paso}
             ${momentoBadge}
@@ -3751,10 +3764,15 @@ function shatokbRenderPasoHTML(paso, stepIdx, budgetMax, displayNum) {
           <div class="stk-routine-step__why">${paso.por_que}</div>
         </div>
       </div>
-      <p style="font-size:12px;color:#6b7280;margin-bottom:10px;font-style:italic;">
-        ✦ All ${paso.opciones.length} options match your skin profile — pick your favourite:
-      </p>
-      <div class="stk-routine-step__options">${opcionesHTML}</div>
+      <div class="stk-routine-step__body">
+        <div class="stk-step-pick-hint">
+          <span class="stk-step-pick-hint__icon">👆</span>
+          <p class="stk-step-pick-hint__text">
+            ${pick.bold} <span>${pick.soft}</span>
+          </p>
+        </div>
+        <div class="stk-routine-step__options">${opcionesHTML}</div>
+      </div>
     </div>`;
 }
 
