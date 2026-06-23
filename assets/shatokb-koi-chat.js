@@ -1871,21 +1871,31 @@ async function manejarResultadoVision (data) {
     await new Promise(r => setTimeout(r, 900));
     ocultarTyping();
 
-    // 1. Mensaje principal de KOI con typewriter
-    const textEl = agregarMensaje('koi', '', false);
+    // 1. Mensaje corto de apertura — la tarjeta habla sola, no repetir el diagnóstico
+    const mensajesApertura = {
+      es: 'Listo. Esto es lo que encontré en tu piel hoy.',
+      en: 'Done. This is what I found in your skin today.',
+      fr: 'Voilà. C\'est ce que j\'ai trouvé dans ta peau aujourd\'hui.',
+      pt: 'Pronto. Isso é o que encontrei na sua pele hoje.',
+      de: 'Fertig. Das habe ich heute in deiner Haut gefunden.',
+      it: 'Fatto. Questo è quello che ho trovato nella tua pelle oggi.',
+    };
+    let mensajeFinal = mensajesApertura[idioma] || mensajesApertura['en'];
 
     // Si la foto recalculó un perfil diferente al del quiz → añadir nota WOW
-    let mensajeFinal = result.mensaje_koi;
     if (huboCambioPerfilReal && perfilRecalculado) {
       const notaReasignacion = {
-        es: `\n\n✦ *Nota: tu foto reveló que tu piel es diferente a lo que indicaste en el quiz. He ajustado tu rutina en tiempo real basándome en lo que realmente veo.*`,
-        en: `\n\n✦ *Note: your photo revealed your skin differs from your quiz answers. I've updated your routine in real time based on what I actually see.*`,
-        fr: `\n\n✦ *Note: votre photo révèle que votre peau est différente de vos réponses au quiz. J'ai mis à jour votre routine en temps réel.*`,
-        pt: `\n\n✦ *Nota: sua foto revelou que sua pele é diferente do que você indicou no quiz. Atualizei sua rotina em tempo real.*`,
+        es: `\n\n✦ *Tu foto reveló que tu piel es diferente a lo que indicaste en el quiz. He ajustado tu rutina en tiempo real.*`,
+        en: `\n\n✦ *Your photo revealed your skin differs from your quiz answers. I've updated your routine in real time.*`,
+        fr: `\n\n✦ *Votre photo révèle que votre peau est différente de vos réponses au quiz. J'ai mis à jour votre routine en temps réel.*`,
+        pt: `\n\n✦ *Sua foto revelou que sua pele é diferente do que você indicou no quiz. Atualizei sua rotina em tempo real.*`,
+        de: `\n\n✦ *Dein Foto hat gezeigt, dass deine Haut anders ist als deine Quiz-Antworten. Ich habe deine Routine in Echtzeit angepasst.*`,
+        it: `\n\n✦ *La tua foto ha rivelato che la tua pelle è diversa da quanto indicato nel quiz. Ho aggiornato la tua routine in tempo reale.*`,
       };
       mensajeFinal += (notaReasignacion[idioma] || notaReasignacion.en);
     }
 
+    const textEl = agregarMensaje('koi', '', false);
     await escribirConEfecto(textEl, mensajeFinal);
     KOI_STATE.historial.push({ role: 'koi', content: mensajeFinal });
 
@@ -2266,33 +2276,10 @@ function _construirCardAnalisis(result, idioma) {
         <p class="kva-protocolo__text">${result.protocolo_urgente}</p>
       </div>` : '';
 
-  // ── Meta (edad bio + confirmación perfil) ─────────────────
-  // Normalizar edad biológica: puede venir como número, string "40", o
-  // string descriptivo "Skin appears biologically consistent with 40-45"
-  const edadBioRaw = result.edad_biologica_estimada;
-  const edadBioStr = (function() {
-    if (!edadBioRaw) return '';
-    if (typeof edadBioRaw === 'number') return edadBioRaw + ' años';
-    if (typeof edadBioRaw === 'string') {
-      // Si es solo un número o "40-45" → mostrarlo tal cual + "años"
-      if (/^\d[\d\-–]+$/.test(edadBioRaw.trim())) return edadBioRaw.trim() + ' años';
-      // Si es una frase larga → extraer el número con regex
-      const match = edadBioRaw.match(/\b(\d{2}(?:[\-–]\d{2})?)\b/);
-      if (match) return match[1] + ' años';
-      // Fallback: mostrar el string completo pero acortado
-      return edadBioRaw.length > 40 ? edadBioRaw.slice(0, 40) + '…' : edadBioRaw;
-    }
-    return '';
-  })();
-
-  const edadBioHTML = edadBioStr
-    ? `<div class="kva-meta__item">
-        <span class="kva-meta__icon">🔬</span>
-        <div class="kva-meta__body">
-          <span class="kva-meta__key">${lbl.edadBio}</span>
-          <span class="kva-meta__val">${edadBioStr}</span>
-        </div>
-      </div>` : '';
+  // ── Meta (confirmación perfil) ────────────────────────────
+  // Edad biológica eliminada del chat — puede romper el entusiasmo.
+  // Se conserva en el Skin Report por email donde el contexto es apropiado.
+  const edadBioHTML = ''; // oculta en el chat, aparece en el reporte email
 
   const perfilOk = result.confirmacion_perfil;
   // ajuste_perfil puede ser un objeto {nuevo_perfil_id:...} o un string — normalizar
