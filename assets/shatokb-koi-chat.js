@@ -2401,11 +2401,36 @@ async function enviarDesdeChip (texto) {
     }
 
     // ── Chip post-visión: revelar rutina después del análisis ──
+    // BYPASS: ir directamente a productos sin pasar por revelarRutinaConKOI()
+    // (el diálogo de 3 párrafos + botón era redundante y creaba fricción extra)
     if (KOI_STATE.revealPhase === 'post_vision' && esChipPostVision(texto)) {
       agregarMensaje('user', texto);
       ocultarChips();
-      KOI_STATE.revealPhase = 'email';
-      await revelarRutinaConKOI('');
+      KOI_STATE.revealPhase = 'revealed';
+      setInputAreaVisible(false);
+
+      // 1. Scroll hacia la sección de productos
+      const rutinaElPV = document.getElementById('shatokb-resultado') ||
+                         document.getElementById('stk-reveal-section');
+      if (rutinaElPV) rutinaElPV.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // 2. Revelar productos
+      setTimeout(() => {
+        if (typeof window.shatokbRevelarProductos === 'function') {
+          window.shatokbRevelarProductos();
+        }
+      }, 300);
+
+      // 3. Restaurar input + chips de bienvenida + mini cart bar
+      setTimeout(() => {
+        setInputAreaVisible(true);
+        setInputHabilitado(true);
+        mostrarChips('bienvenida');
+        if (typeof window.shatokbMostrarMiniCartBar === 'function') {
+          window.shatokbMostrarMiniCartBar();
+        }
+      }, 1800);
+
       return;
     }
 
@@ -2514,8 +2539,32 @@ async function enviarDesdeChip (texto) {
       setTimeout(() => mostrarChips('reveal'), 400);
 
     } else {
-      // ── Usuario elige ver rutina directamente → revelar sin email gate
-      await revelarRutinaConKOI('');
+      // ── Usuario elige ver rutina directamente desde chip post-cámara
+      // BYPASS: ir directamente a productos (mismo flujo que post_vision)
+      KOI_STATE.revealPhase = 'revealed';
+      setInputAreaVisible(false);
+
+      // 1. Scroll hacia la sección de productos
+      const rutinaElPC = document.getElementById('shatokb-resultado') ||
+                         document.getElementById('stk-reveal-section');
+      if (rutinaElPC) rutinaElPC.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // 2. Revelar productos
+      setTimeout(() => {
+        if (typeof window.shatokbRevelarProductos === 'function') {
+          window.shatokbRevelarProductos();
+        }
+      }, 300);
+
+      // 3. Restaurar input + chips de bienvenida + mini cart bar
+      setTimeout(() => {
+        setInputAreaVisible(true);
+        setInputHabilitado(true);
+        mostrarChips('bienvenida');
+        if (typeof window.shatokbMostrarMiniCartBar === 'function') {
+          window.shatokbMostrarMiniCartBar();
+        }
+      }, 1800);
     }
   }
 
