@@ -527,7 +527,7 @@ function renderHero(data) {
   }
 
   // Heroinner fallback — si el liquid v1 está activo, usa innerHTML
-  const heroInner = el('ksr-hero__inner') || document.querySelector('.ksr-hero__inner');
+  // heroInner ya declarado arriba (línea 435) — reutilizamos la misma variable
   // Solo usar innerHTML fallback si los IDs nuevos no existen (compatibilidad)
   if (heroInner && !el('ksr-hero-headline')) {
     heroInner.innerHTML = `
