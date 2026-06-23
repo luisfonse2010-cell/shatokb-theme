@@ -196,11 +196,12 @@ const SHATOKB_PREGUNTAS = [
     id: 'presupuesto',
     titulo: "Last one — what's your monthly skincare budget?",
     emoji: '💳',
-    subtitulo: 'K-Beauty delivers real results at every price point.',
+    subtitulo: 'Be honest. I\'ll build the best possible routine around what you can actually commit to.',
+    koiTip: 'Budget doesn\'t predict results — consistency does. A $30 routine you stick to beats a $200 one you abandon. 💳',
     opciones: [
-      { valor: 'bajo',  label: '💚 Under $40',   desc: 'Smart essentials only. No compromise on what counts.' },
-      { valor: 'medio', label: '💛 $40–$80',     desc: 'Willing to invest in key products. Our sweet spot.' },
-      { valor: 'alto',  label: '🖤 $80+',        desc: 'Best-in-class formulas only. No ceiling.' }
+      { valor: 'bajo',  label: '💚 Under $40',   desc: 'K-Beauty was built for this. You\'ll be surprised what works.' },
+      { valor: 'medio', label: '💛 $40–$80',     desc: 'The sweet spot. Targeted actives, real results.' },
+      { valor: 'alto',  label: '🖤 $80+',        desc: 'Best-in-class only. Every product earns its place.' }
     ]
   }
 
