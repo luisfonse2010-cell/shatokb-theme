@@ -3029,7 +3029,10 @@ async function shatokbMostrarResultado() {
   const fill  = document.getElementById('shatokb-progreso-barra');
   const texto = document.getElementById('shatokb-progreso-texto');
   const pctEl = document.getElementById('shatokb-pregunta-num');
-  if (fill)  fill.style.width   = '100%';
+  if (fill) {
+    fill.style.setProperty('width', '100%', 'important');
+    fill.style.setProperty('background', 'linear-gradient(90deg, #f5a0bb, #e0607e)', 'important');
+  }
   if (texto) texto.textContent  = '✓ Complete!';
   if (pctEl) pctEl.textContent  = '100%';
 
@@ -3048,10 +3051,10 @@ async function shatokbMostrarResultado() {
       <div style="text-align:center; padding: 60px 20px;">
         <div style="font-size:40px; margin-bottom:16px;">⏳</div>
         <p style="font-family:'Prompt',sans-serif; font-size:18px; font-weight:700; color:#0b0335;">
-          Building your personalized routine…
+          Matching products to your skin…
         </p>
         <p style="font-size:14px; color:#6b7280; margin-top:8px;">
-          Loading your skin profile and product catalogue
+          Analyzing your profile
         </p>
       </div>`;
 
@@ -3107,7 +3110,6 @@ async function shatokbMostrarResultado() {
 
     <!-- Profile header -->
     <div class="shatokb-resultado__header">
-      <div class="shatokb-resultado__check">✨</div>
       <h2 class="shatokb-resultado__titulo">Your Skin Profile</h2>
       <p class="shatokb-resultado__perfil-nombre">${perfil.titulo}</p>
       <div class="shatokb-resultado__badges">
@@ -3118,7 +3120,7 @@ async function shatokbMostrarResultado() {
       <!-- v6.0: Skin Analysis Summary — barrier + tolerance cards -->
       ${(barrierStatus || ingredientTolerance) ? `
       <div class="stk-skin-analysis" aria-label="Skin analysis summary">
-        <p class="stk-skin-analysis__title">Your Skin Analysis</p>
+        <p class="stk-skin-analysis__title"></p>
         <div class="stk-skin-analysis__grid">
           ${barrierStatus ? `
           <div class="stk-skin-analysis__card stk-skin-analysis__card--barrier${barrierStatus === 'damaged' ? ' stk-skin-analysis__card--alert' : ''}">
@@ -3126,7 +3128,7 @@ async function shatokbMostrarResultado() {
             <div class="stk-skin-analysis__info">
               <span class="stk-skin-analysis__label">Barrier Status</span>
               <strong class="stk-skin-analysis__value">${barrierInfo.label}</strong>
-              <span class="stk-skin-analysis__sub">${barrierInfo.desc}</span>
+
             </div>
           </div>` : ''}
           ${ingredientTolerance ? `
@@ -3135,13 +3137,13 @@ async function shatokbMostrarResultado() {
             <div class="stk-skin-analysis__info">
               <span class="stk-skin-analysis__label">Ingredient Level</span>
               <strong class="stk-skin-analysis__value">${toleranceInfo.label}</strong>
-              <span class="stk-skin-analysis__sub">${toleranceInfo.desc}</span>
+
             </div>
           </div>` : ''}
         </div>
         ${barrierStatus === 'damaged' ? `
         <div class="stk-skin-analysis__damaged-note" role="alert">
-          🚨 <strong>Barrier Repair Mode active.</strong> We've prioritized repair products and held back all exfoliating actives until your barrier recovers. Ask KOI when you can reintroduce them.
+          🚨 <strong>Barrier Repair Mode.</strong> Gentle products only — ask KOI when to reintroduce actives.
         </div>` : ''}
       </div>` : ''}
     </div>
@@ -3155,12 +3157,8 @@ async function shatokbMostrarResultado() {
     <div class="stk-reveal-section stk-reveal-section--locked" id="stk-reveal-section">
 
       <div class="stk-reveal-header">
-        <p class="stk-section-title">Your Personalized Routine</p>
-        <p class="stk-section-sub">
-          For each step we've hand-picked the best options for your skin profile and budget.<br>
-          <strong>All options within each step work for your skin — pick the one you prefer.</strong>
-          Your estimated total updates automatically as you choose.
-        </p>
+        <p class="stk-section-title">Your matched products</p>
+        <p class="stk-section-sub">Hand-picked for your exact skin. Every product earns its place here.</p>
       </div>
 
       <!-- Aviso KOI — Teaser card WOW -->
@@ -3205,7 +3203,7 @@ async function shatokbMostrarResultado() {
           <p class="stk-koi-teaser__text" aria-live="polite"></p>
         </div>
         <button class="stk-koi-teaser__cta" onclick="shatokbScrollAKOI()" type="button">
-          Open my analysis →
+          Show me my products →
         </button>
       </div>`;
       })()}

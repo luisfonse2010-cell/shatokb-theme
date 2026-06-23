@@ -825,10 +825,10 @@
 /* Fondo navy oscuro — paleta real del tema */
 .shatokb-resultado__header {
   text-align: center;
-  padding: 48px 28px 40px;
+  padding: 28px 24px 24px;
   background: #1c181a;
   border-radius: var(--stk-radius);
-  margin-bottom: 40px;
+  margin-bottom: 20px;
   border: none;
   color: #fff;
   position: relative;
@@ -849,30 +849,28 @@
 }
 
 .shatokb-resultado__check {
-  font-size: 48px;
-  margin-bottom: 12px;
-  position: relative;
+  display: none;
 }
 
 .shatokb-resultado__titulo {
   font-family: var(--stk-font-heading);
-  font-size: clamp(13px, 2vw, 15px);
+  font-size: clamp(11px, 2vw, 13px);
   font-weight: 700;
   color: #ec95b8;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   position: relative;
 }
 
 .shatokb-resultado__perfil-nombre {
   font-family: var(--stk-font-heading);
-  font-size: clamp(26px, 4vw, 36px);
+  font-size: clamp(22px, 4vw, 30px);
   font-weight: 800;
   color: #ffffff;
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  margin: 0 0 20px;
+  margin: 0 0 14px;
   line-height: 1.1;
   position: relative;
 }
@@ -881,8 +879,8 @@
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 20px;
+  gap: 6px;
+  margin-bottom: 14px;
   position: relative;
 }
 
@@ -900,12 +898,16 @@
 
 .shatokb-resultado__desc {
   font-family: var(--stk-font-body);
-  font-size: 15px;
-  color: rgba(255,255,255,0.65);
-  line-height: 1.7;
-  max-width: 540px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.60);
+  line-height: 1.55;
+  max-width: 480px;
   margin: 0 auto;
   position: relative;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* ── Rutinas AM/PM ────────────────────────────────────── */
@@ -1468,18 +1470,18 @@
 .stk-section-title {
   font-family: var(--stk-font-heading);
   font-weight: 800;
-  font-size: 18px;
+  font-size: 16px;
   text-transform: uppercase;
   letter-spacing: .06em;
   color: var(--stk-secondary);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .stk-section-sub {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--stk-text-muted);
-  margin-bottom: 24px;
-  line-height: 1.55;
+  margin-bottom: 14px;
+  line-height: 1.5;
 }
 
 
@@ -1759,7 +1761,7 @@
 /* ── Contenedor principal de la sección de rutina ────────── */
 .stk-reveal-section {
   position: relative;
-  margin-top: 32px;
+  margin-top: 16px;
 }
 
 /* ── Estado BLOQUEADO: productos con blur ─────────────────── */
@@ -1803,8 +1805,8 @@
   background: #ffffff;
   border: 1.5px solid rgba(231, 84, 128, 0.22);
   border-radius: 16px;
-  padding: 16px 18px 14px;
-  margin-bottom: 20px;
+  padding: 14px 16px 12px;
+  margin-bottom: 12px;
   box-shadow:
     0 2px 12px rgba(231, 84, 128, 0.10),
     0 1px 3px rgba(0, 0, 0, 0.06);
