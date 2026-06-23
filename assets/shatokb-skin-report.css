@@ -1804,3 +1804,50 @@
   .ksr-cta__urgency-block { flex-direction: column; text-align: center; gap: 8px; }
   .ksr-cta__urgency-text { text-align: center; }
 }
+
+/* ── VISION META — Biological Age + Profile Adjustment ─────────── */
+/* Estas dos cajas se renderizan dinámicamente en renderDiagnosis()  */
+/* Deben estar contenidas y alineadas con el resto del diagnosis     */
+.ksr-vmeta-grid {
+  max-width: 852px; /* = 900px container - 48px padding (24px × 2) */
+  margin: 24px auto 0;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  box-sizing: border-box;
+}
+.ksr-vmeta-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--ksr-radius);
+  padding: 18px 20px;
+}
+.ksr-vmeta-item__icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.ksr-vmeta-item__label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 4px;
+}
+.ksr-vmeta-item__val {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.3;
+}
+@media (max-width: 600px) {
+  .ksr-vmeta-grid {
+    grid-template-columns: 1fr;
+    padding: 0 16px;
+  }
+}

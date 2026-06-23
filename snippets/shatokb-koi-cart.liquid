@@ -1,20 +1,22 @@
 {% comment %}
-  ============================================================
-  SHATOKB · KOI Cart Widget — Snippet
-  Archivo: snippets/shatokb-koi-cart.liquid
-  Version: 1.0
+============================================================
+SHATOKB · KOI Cart Widget — Snippet de carga
+Archivo: snippets/shatokb-koi-cart.liquid
 
-  Incluir en: layout/theme.liquid (antes del </body>)
-  Solo carga en la página del carrito (/cart)
+Incluir en layout/theme.liquid justo antes de </body>:
+  {% render 'shatokb-koi-cart' %}
 
-  Uso:
-    {% render 'shatokb-koi-cart' %}
-  ============================================================
+Solo carga el CSS + JS en la página del carrito (/cart).
+En el resto de páginas no añade ningún peso.
+============================================================
 {% endcomment %}
 
-{% if template.name == 'cart' or request.path == '/cart' %}
+{%- if request.path == '/cart' or request.page_type == 'cart' -%}
 
+  {%- comment %} — CSS del widget KOI Cart — {%- endcomment -%}
   {{ 'shatokb-koi-cart.css' | asset_url | stylesheet_tag }}
-  {{ 'shatokb-koi-cart.js' | asset_url | script_tag }}
 
-{% endif %}
+  {%- comment %} — JS del widget KOI Cart (defer para no bloquear render) — {%- endcomment -%}
+  <script src="{{ 'shatokb-koi-cart.js' | asset_url }}" defer></script>
+
+{%- endif -%}
