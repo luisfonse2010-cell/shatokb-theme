@@ -4082,6 +4082,8 @@ async function shatokbEjecutarAddToCart(handles, btn) {
     }
 
     btn.textContent = '✅ Added! Redirecting...';
+    // Marcar en sessionStorage para que el scroll al top ocurra al cargar /cart
+    try { sessionStorage.setItem('shatokb_scroll_top', '1'); } catch(_) {}
     // Pequeño delay para dar tiempo al PATCH de completarse antes de navegar
     setTimeout(() => { window.location.href = '/cart'; }, 1200);
 
@@ -4622,3 +4624,33 @@ document.addEventListener('DOMContentLoaded', function () {
    es más quirúrgico y evita bloquear los propios listeners
    del quiz en la fase de capture.
 ============================================================ */
+
+/* ============================================================
+   SCROLL AL TOP EN /cart — Fix mobile footer visible
+   Cuando el usuario llega al carrito desde el botón KOI,
+   el tema Shopify a veces renderiza el footer primero en mobile.
+   Detectamos la flag de sessionStorage y forzamos scroll(0,0)
+   inmediatamente, antes del primer paint visible.
+============================================================ */
+(function() {
+  try {
+    if (sessionStorage.getItem('shatokb_scroll_top') === '1') {
+      sessionStorage.removeItem('shatokb_scroll_top');
+
+      // Ejecutar inmediatamente — antes de que el DOM esté listo
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+
+      // Refuerzo en DOMContentLoaded (por si el tema hace scroll propio al cargar)
+      document.addEventListener('DOMContentLoaded', function() {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      });
+
+      // Refuerzo en load completo (último recurso — cubre lazy load que empuja el scroll)
+      window.addEventListener('load', function() {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      });
+    }
+  } catch(_) {}
+})();

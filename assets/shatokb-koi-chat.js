@@ -2855,13 +2855,13 @@ async function enviarDesdeChip (texto) {
     const idioma = detectarIdioma();
 
     const ui = {
-      es: { placeholder: 'tu@email.com', btn: 'Enviar y continuar →', note: '🔒 Solo para tu Skin Report. Sin spam.', skip: 'Prefiero ir directo al carrito' },
-      en: { placeholder: 'you@email.com', btn: 'Send & continue →',   note: '🔒 Only for your Skin Report. No spam.', skip: 'Skip, take me to cart' },
-      fr: { placeholder: 'vous@email.com', btn: 'Envoyer et continuer →', note: '🔒 Uniquement pour votre Skin Report.', skip: 'Passer, aller au panier' },
-      pt: { placeholder: 'voce@email.com', btn: 'Enviar e continuar →', note: '🔒 Apenas para o seu Skin Report. Sem spam.', skip: 'Pular, ir para o carrinho' },
-      de: { placeholder: 'du@email.com',   btn: 'Senden & weiter →',   note: '🔒 Nur für deinen Skin Report. Kein Spam.', skip: 'Überspringen, zum Warenkorb' },
-      it: { placeholder: 'tu@email.com',   btn: 'Invia e continua →',  note: '🔒 Solo per il tuo Skin Report.',          skip: 'Salta, vai al carrello' },
-    }[idioma] || { placeholder: 'you@email.com', btn: 'Send & continue →', note: '🔒 No spam.', skip: 'Skip' };
+      es: { placeholder: 'tu@email.com', btn: 'Enviar y continuar →', note: '🔒 Solo para tu Skin Report. Sin spam.', skip: 'Prefiero ir al carrito sin el reporte' },
+      en: { placeholder: 'you@email.com', btn: 'Send & continue →',   note: '🔒 Only for your Skin Report. No spam.', skip: 'Prefer to go to cart without the report' },
+      fr: { placeholder: 'vous@email.com', btn: 'Envoyer et continuer →', note: '🔒 Uniquement pour votre Skin Report.', skip: 'Préférer aller au panier sans le rapport' },
+      pt: { placeholder: 'voce@email.com', btn: 'Enviar e continuar →', note: '🔒 Apenas para o seu Skin Report. Sem spam.', skip: 'Prefiro ir ao carrinho sem o relatório' },
+      de: { placeholder: 'du@email.com',   btn: 'Senden & weiter →',   note: '🔒 Nur für deinen Skin Report. Kein Spam.', skip: 'Lieber ohne Report zum Warenkorb' },
+      it: { placeholder: 'tu@email.com',   btn: 'Invia e continua →',  note: '🔒 Solo per il tuo Skin Report.',          skip: 'Preferisco andare al carrello senza il report' },
+    }[idioma] || { placeholder: 'you@email.com', btn: 'Send & continue →', note: '🔒 No spam.', skip: 'Prefer to go to cart without the report' };
 
     // Textos del pitch KOI — el mensaje que se muestra en la card
     const pitchTexts = {
