@@ -3529,6 +3529,83 @@ window.shatokbRevelarProductos = function () {
   setTimeout(function () {
     if (overlay && overlay.parentNode) overlay.remove();
   }, 800);
+
+  // 7. Inyectar botón CTA al final de los productos — visible garantizado
+  var delayBtn = 200 + steps.length * 130 + 400;
+  setTimeout(function () {
+    if (document.getElementById('stk-add-btn-bottom')) return;
+
+    var btn = document.createElement('button');
+    btn.id        = 'stk-add-btn-bottom';
+    btn.type      = 'button';
+    btn.className = 'stk-cta-bottom';
+    btn.textContent = '✦ Add my full routine to cart ✦';
+    btn.setAttribute('onclick', 'shatokbAddAllToCart()');
+    btn.style.cssText = [
+      'display:block',
+      'width:100%',
+      'box-sizing:border-box',
+      'position:relative',
+      'overflow:hidden',
+      'background:linear-gradient(135deg,#2b1e24 0%,#1c181a 55%,#261820 100%)',
+      'color:#ec95b8',
+      'border:1.5px solid rgba(236,149,184,0.55)',
+      'border-radius:14px',
+      'padding:20px 28px',
+      'min-height:62px',
+      'font-family:Prompt,"Arial Black",sans-serif',
+      'font-size:17px',
+      'font-weight:800',
+      'letter-spacing:0.04em',
+      'text-transform:uppercase',
+      'text-align:center',
+      'cursor:pointer',
+      'margin-top:24px',
+      'box-shadow:0 8px 28px rgba(236,149,184,0.28),inset 0 1px 0 rgba(255,255,255,0.08)',
+      'opacity:0',
+      'transform:translateY(12px)',
+      'transition:opacity 0.4s ease,transform 0.4s ease'
+    ].join(';');
+
+    blurred.appendChild(btn);
+
+    // Fade-in
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        btn.style.opacity   = '1';
+        btn.style.transform = 'translateY(0)';
+      });
+    });
+
+    // Keyframes + pulso
+    if (!document.getElementById('stk-cta-bottom-style')) {
+      var s = document.createElement('style');
+      s.id = 'stk-cta-bottom-style';
+      s.textContent =
+        '@keyframes _stkShimmer{0%{transform:translateX(-130%) skewX(-18deg)}100%{transform:translateX(270%) skewX(-18deg)}}' +
+        '@keyframes _stkPulse{0%,100%{box-shadow:0 0 0 0 rgba(236,149,184,0),0 8px 28px rgba(236,149,184,.28),inset 0 1px 0 rgba(255,255,255,.08)}50%{box-shadow:0 0 0 7px rgba(236,149,184,.11),0 8px 28px rgba(236,149,184,.28),inset 0 1px 0 rgba(255,255,255,.08)}}' +
+        '#stk-add-btn-bottom{animation:_stkPulse 3s ease-in-out 0.5s infinite!important;}' +
+        '#stk-add-btn-bottom::before{content:"";position:absolute;top:0;left:0;width:38%;height:100%;background:linear-gradient(90deg,transparent,rgba(236,149,184,.16),transparent);transform:translateX(-130%) skewX(-18deg);animation:_stkShimmer 3.8s ease-in-out 1s infinite;pointer-events:none;}' +
+        '#stk-add-btn-bottom::after{content:"";position:absolute;top:0;left:10%;width:80%;height:1px;background:linear-gradient(90deg,transparent,rgba(236,149,184,.55),transparent);pointer-events:none;}';
+      document.head.appendChild(s);
+    }
+
+    // Hover
+    btn.addEventListener('mouseenter', function () {
+      this.style.background  = 'linear-gradient(135deg,#36212a 0%,#271d22 55%,#301e27 100%)';
+      this.style.borderColor = 'rgba(236,149,184,0.90)';
+      this.style.color       = '#f5bad0';
+      this.style.transform   = 'translateY(-3px)';
+      this.style.boxShadow   = '0 0 0 5px rgba(236,149,184,0.10),0 18px 44px rgba(236,149,184,0.40)';
+    });
+    btn.addEventListener('mouseleave', function () {
+      this.style.background  = 'linear-gradient(135deg,#2b1e24 0%,#1c181a 55%,#261820 100%)';
+      this.style.borderColor = 'rgba(236,149,184,0.55)';
+      this.style.color       = '#ec95b8';
+      this.style.transform   = '';
+      this.style.boxShadow   = '0 8px 28px rgba(236,149,184,0.28),inset 0 1px 0 rgba(255,255,255,0.08)';
+    });
+  }, delayBtn);
 };
 
 
@@ -3844,8 +3921,14 @@ function shatokbIniciarTimer() {
    13. CART INTEGRATION
 ============================================================ */
 async function shatokbAddAllToCart() {
-  const btn = document.getElementById('stk-add-btn');
-  if (!btn) return;
+  const btn       = document.getElementById('stk-add-btn');
+  const btnBottom = document.getElementById('stk-add-btn-bottom');
+  if (!btn && !btnBottom) return;
+
+  function _syncBtns(disabled, text) {
+    if (btn)       { btn.disabled = disabled; if (text) btn.textContent = text; }
+    if (btnBottom) { btnBottom.disabled = disabled; if (text) btnBottom.textContent = text; }
+  }
 
   const handles = Object.entries(shatokbState.selectedProducts)
     .map(([, prodId]) => {
@@ -3861,18 +3944,15 @@ async function shatokbAddAllToCart() {
 
   // ── Interceptar con KOI para pedir email antes del carrito ──
   if (typeof window.shatokbInterceptarCarrito === 'function') {
-    btn.disabled    = true;
-    btn.textContent = '⏳ Un momento...';
+    _syncBtns(true, '⏳ Un momento...');
     window.shatokbInterceptarCarrito(function () {
-      btn.disabled    = true;
-      btn.textContent = '⏳ Adding to cart...';
-      shatokbEjecutarAddToCart(handles, btn);
+      _syncBtns(true, '⏳ Adding to cart...');
+      shatokbEjecutarAddToCart(handles, btn || btnBottom);
     });
     return;
   }
 
-  btn.disabled    = true;
-  btn.textContent = '⏳ Adding to cart...';
+  _syncBtns(true, '⏳ Adding to cart...');
 
   shatokbEjecutarAddToCart(handles, btn);
 }
@@ -4081,7 +4161,9 @@ async function shatokbEjecutarAddToCart(handles, btn) {
       console.warn('[SHATOKB] Skin Report PATCH error (silencioso):', patchErr.message);
     }
 
-    btn.textContent = '✅ Added! Redirecting...';
+    const _bb = document.getElementById('stk-add-btn-bottom');
+    if (btn) btn.textContent = '✅ Added! Redirecting...';
+    if (_bb) _bb.textContent = '✅ Added! Redirecting...';
     // Marcar en sessionStorage para que el scroll al top ocurra al cargar /cart
     try { sessionStorage.setItem('shatokb_scroll_top', '1'); } catch(_) {}
     // Pequeño delay para dar tiempo al PATCH de completarse antes de navegar
@@ -4089,8 +4171,9 @@ async function shatokbEjecutarAddToCart(handles, btn) {
 
   } catch (err) {
     console.error('[SHATOKB] addAllToCart error:', err);
-    btn.disabled    = false;
-    btn.textContent = '🛒 Add my full routine to cart';
+    const _bb2 = document.getElementById('stk-add-btn-bottom');
+    if (btn)  { btn.disabled  = false; btn.textContent  = '🛒 Add my full routine to cart'; }
+    if (_bb2) { _bb2.disabled = false; _bb2.textContent = '✦ Add my full routine to cart ✦'; }
     let errEl = document.getElementById('stk-cart-error');
     if (!errEl) {
       errEl = document.createElement('p');
