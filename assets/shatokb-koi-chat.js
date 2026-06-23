@@ -2843,39 +2843,9 @@ async function enviarDesdeChip (texto) {
       return;
     }
 
-    const idioma = detectarIdioma();
-
-    // Scroll al chat para que el usuario vea la interacción (centrado en desktop)
-    const panel = document.getElementById('shatokb-koi-wrapper');
-    if (panel) {
-      var r2      = panel.getBoundingClientRect();
-      var absTop2 = r2.top + window.pageYOffset;
-      window.scrollTo({ top: Math.max(0, absTop2 - 80), behavior: 'smooth' });
-    }
-
-    // Pequeño delay para que el scroll ocurra antes del mensaje
-    setTimeout(async function () {
-
-      // Mensaje de KOI ofreciendo el Skin Report
-      const mensajes = {
-        es: `¡Perfecto, lista para ir al carrito! 🛒\n\nAntes de enviarte, quiero prepararte algo: tu **Skin Report personalizado** — incluye tu análisis de piel, el por qué de cada producto y un **manual paso a paso** para usarlos correctamente juntos.\n\nTe lo envío ahora mismo a tu email. ¿Cuál es?`,
-        en: `Perfect, ready to go to cart! 🛒\n\nBefore I send you over, I want to prepare something for you: your **personalized Skin Report** — it includes your skin analysis, the reason behind each product, and a **step-by-step guide** on how to use them together correctly.\n\nI'll send it to your email right now. What is it?`,
-        fr: `Parfait, prêt pour le panier ! 🛒\n\nAvant de vous y envoyer, je veux vous préparer quelque chose : votre **Skin Report personnalisé** — il inclut votre analyse de peau, la raison de chaque produit et un **guide étape par étape** pour les utiliser correctement ensemble.\n\nJe vous l'envoie par email maintenant. Lequel ?`,
-        pt: `Perfeito, pronto para o carrinho! 🛒\n\nAntes de te enviar, quero preparar algo: seu **Skin Report personalizado** — inclui sua análise de pele, o motivo de cada produto e um **guia passo a passo** para usá-los corretamente juntos.\n\nVou enviar agora para o seu email. Qual é?`,
-        de: `Perfekt, bereit für den Warenkorb! 🛒\n\nBevor ich dich weiterleite, möchte ich etwas für dich vorbereiten: deinen **persönlichen Skin Report** — er enthält deine Hautanalyse, den Grund für jedes Produkt und eine **Schritt-für-Schritt-Anleitung** zur richtigen Anwendung.\n\nIch schicke ihn dir gleich per E-Mail. Wie lautet sie?`,
-        it: `Perfetto, pronto per il carrello! 🛒\n\nPrima di mandarti lì, voglio prepararti qualcosa: il tuo **Skin Report personalizzato** — include la tua analisi della pelle, il motivo di ogni prodotto e una **guida passo dopo passo** su come usarli correttamente insieme.\n\nTe lo mando ora via email. Qual è?`,
-      };
-
-      const msg    = mensajes[idioma] || mensajes['en'];
-      const textEl = agregarMensaje('koi', '');
-      if (textEl) await escribirConEfecto(textEl, msg);
-      KOI_STATE.historial.push({ role: 'assistant', content: msg });
-      guardarHistorialLocal();
-
-      // Inyectar el campo de email adaptado para este contexto
-      setTimeout(() => inyectarEmailGateCarrito(callbackProcederAlCarrito), 300);
-
-    }, panel ? 500 : 0);
+    // Ir directamente al modal de email — sin mensaje previo en el chat
+    // (el modal ya contiene toda la explicación del Skin Report)
+    inyectarEmailGateCarrito(callbackProcederAlCarrito);
   };
 
   function inyectarEmailGateCarrito (callbackProcederAlCarrito) {
