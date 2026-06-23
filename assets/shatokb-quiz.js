@@ -80,7 +80,7 @@ const SHATOKB_PREGUNTAS = [
     titulo: 'How does your skin feel 30 minutes after cleansing?',
     emoji: '🪞',
     subtitulo: 'Before any products. That raw, honest moment — that\'s your real skin type.',
-    koiTip: 'The 30-minute rule is the most reliable self-test in dermatology. Right after cleansing your skin is in a neutral state — no products masking it, no stress response yet. What you feel then is exactly what your skin does naturally.',
+    koiTip: 'Cleanse. Wait 30 min. No products. Then answer honestly — that feeling is your real skin type. 👇',
     opciones: [
       { valor: 'seca',     label: '🌵 Dry & tight',     desc: 'Feels tight, looks dull. Sometimes flaky around the nose or cheeks.' },
       { valor: 'grasa',    label: '🫧 Oily all over',   desc: 'Shiny across the whole face by midday. Pores are visible.' },
@@ -97,7 +97,7 @@ const SHATOKB_PREGUNTAS = [
     titulo: 'What\'s the ONE thing you most want to fix?',
     emoji: '🎯',
     subtitulo: 'One answer only — this determines your hero product.',
-    koiTip: 'Choosing your primary concern isn\'t about what bothers you most emotionally — it\'s about what your skin is doing biologically right now. That\'s what drives which active ingredients I\'ll recommend.',
+    koiTip: 'Pick the ONE thing you want gone first. I\'ll build everything else around it. 🎯',
     opciones: [
       { valor: 'acne',           label: '🎯 Acne & breakouts',           desc: 'Active pimples, blackheads, clogged pores, oily skin.' },
       { valor: 'manchas',        label: '🌗 Dark spots & post-acne marks', desc: 'Hyperpigmentation, melasma, marks left after breakouts.' },
@@ -114,7 +114,7 @@ const SHATOKB_PREGUNTAS = [
     titulo: 'Anything else bothering your skin?',
     emoji: '➕',
     subtitulo: 'Pick up to 2 — these refine your routine beyond the hero product.',
-    koiTip: 'Secondary concerns tell me which supporting ingredients to add around your hero product. A good routine addresses your main issue directly and prevents the secondary ones from getting worse.',
+    koiTip: 'Up to 2. These fine-tune what goes around your hero product. 🔧',
     multiSelect: true,
     maxSelect: 2,
     // Dynamic: excludes whatever was selected in P2 (handled by renderer)
@@ -136,7 +136,7 @@ const SHATOKB_PREGUNTAS = [
     titulo: 'How does your skin react to new products?',
     emoji: '⚡',
     subtitulo: 'This is your safety gate — it determines which ingredients are safe for you right now.',
-    koiTip: 'A compromised skin barrier doesn\'t just mean sensitivity — it means your skin can\'t absorb actives properly, can\'t retain moisture, and can\'t protect itself from environmental damage. Knowing your barrier status changes everything about which products I recommend.',
+    koiTip: 'Your barrier status decides which ingredients are safe for you right now. Be honest here. ⚡',
     opciones: [
       { valor: 'baja',    label: '💪 Rarely reacts',       desc: 'New products almost never cause problems. My skin is resilient.' },
       { valor: 'media',   label: '🌤️ Sometimes reacts',    desc: 'Occasional breakouts or redness with strong products. Generally okay.' },
@@ -151,7 +151,7 @@ const SHATOKB_PREGUNTAS = [
     titulo: 'Have you used stronger skincare ingredients before?',
     emoji: '🧪',
     subtitulo: 'Like acids, Vitamin C, or retinol. This unlocks the right product strength for you.',
-    koiTip: 'This isn\'t about what you\'ve heard of — it\'s about what your skin has actually tolerated. An advanced product on an unprepared skin barrier causes purging, irritation, and damage that sets you back months. I need to know exactly where you are.',
+    koiTip: 'Not what you\'ve heard of — what your skin has actually used. This unlocks the right strength for you. 🧪',
     opciones: [
       { valor: 'none',         label: '🌱 New to all of this',      desc: 'Never used acids, Vitamin C, retinol or similar. Starting fresh.' },
       { valor: 'basic',        label: '🧴 Some experience',         desc: 'Used niacinamide, gentle Vitamin C, or light AHAs. Skin handled it.' },
@@ -166,7 +166,7 @@ const SHATOKB_PREGUNTAS = [
     titulo: 'What does your ideal skin look like in 90 days?',
     emoji: '💭',
     subtitulo: 'One answer — this sets the direction of your entire routine.',
-    koiTip: 'The 90-day frame is intentional. Real skin transformation doesn\'t happen in 2 weeks — it happens in one full skin cell turnover cycle. Knowing your 90-day goal helps me prioritize which changes to make first.',
+    koiTip: 'One answer. This sets the direction of everything I pick for you. 💭',
     opciones: [
       { valor: 'clear',    label: '🎯 Clear, acne-free skin',    desc: 'No breakouts. No marks. Clean, even, controlled.' },
       { valor: 'unificar', label: '🌗 Even, spot-free tone',     desc: 'Faded marks. Uniform complexion. Confident bare-faced.' },
@@ -183,7 +183,7 @@ const SHATOKB_PREGUNTAS = [
     titulo: 'How much time will you actually commit?',
     emoji: '⏱️',
     subtitulo: 'Be honest — a routine you stick to beats a perfect one you abandon.',
-    koiTip: 'A 3-step routine done every single day outperforms a 10-step routine done twice a week. Consistency is the only variable that actually predicts results in skincare — not the number of products.',
+    koiTip: 'A routine you actually do beats a perfect one you skip. Be real with yourself. ⏱️',
     opciones: [
       { valor: 'basica',     label: '⚡ 2–3 min max',        desc: 'Cleanser + moisturizer + SPF. Minimal. Still effective.' },
       { valor: 'intermedia', label: '🧴 5–7 min',            desc: 'Happy to add a serum or toner. The sweet spot.' },
