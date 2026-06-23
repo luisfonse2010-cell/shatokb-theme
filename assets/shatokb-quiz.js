@@ -3516,9 +3516,16 @@ window.shatokbRevelarProductos = function () {
     }, 200 + i * 130); // 130ms de delay entre cada producto
   });
 
-  // 5. Mostrar sticky bar con animación después de que los productos aparezcan
+  // 5. Mover sticky bar al final del stk-reveal-section (después del chat KOI)
+  //    y mostrarla con animación una vez los productos estén revelados.
+  //    Si la dejamos dentro de #stk-routine-blurred con position:sticky
+  //    aparece encima del chat KOI (sticky bottom del scroll container del quiz).
   const totalBar = document.getElementById('stk-total-bar');
   if (totalBar) {
+    const revealSection = document.getElementById('stk-reveal-section');
+    if (revealSection && totalBar.parentNode !== revealSection) {
+      revealSection.appendChild(totalBar);
+    }
     const delayTotal = 200 + steps.length * 130 + 300;
     setTimeout(function () {
       totalBar.classList.add('stk-total-bar--visible');
