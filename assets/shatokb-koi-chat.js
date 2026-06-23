@@ -2964,38 +2964,113 @@ async function enviarDesdeChip (texto) {
     card.id        = 'koi-email-gate';
     card.className = 'koi-focus-card';
     card.innerHTML = `
-      <div class="koi-focus-card__koi">
-        <div class="koi-focus-card__avatar">🌸</div>
-        <div class="koi-focus-card__name">KOI</div>
-      </div>
-
-      <div class="koi-focus-card__bubble">
-        <p class="koi-focus-card__headline">${pitch.headline}</p>
-        <p class="koi-focus-card__body">${pitch.body}</p>
-        <p class="koi-focus-card__ask">${pitch.ask}</p>
-      </div>
-
-      ${precioStr ? `<div class="koi-focus-card__price-badge">${precioStr} · Tu rutina completa</div>` : ''}
-
-      <div class="koi-focus-card__form">
-        <input
-          type="email"
-          id="koi-email-input"
-          class="koi-focus-card__input"
-          placeholder="${ui.placeholder}"
-          autocomplete="email"
-          inputmode="email"
-        />
-        <button class="koi-focus-card__btn" id="koi-email-btn">${ui.btn}</button>
-        <div class="koi-focus-card__footer">
-          <span class="koi-focus-card__note">${ui.note}</span>
-          <button class="koi-focus-card__skip" id="koi-email-skip">${ui.skip}</button>
+      <div class="koi-focus-card__scroll-body">
+        <div class="koi-focus-card__koi">
+          <div class="koi-focus-card__avatar">🌸</div>
+          <div class="koi-focus-card__name">KOI</div>
         </div>
+
+        <div class="koi-focus-card__bubble">
+          <p class="koi-focus-card__headline">${pitch.headline}</p>
+          <p class="koi-focus-card__body">${pitch.body}</p>
+          <p class="koi-focus-card__ask">${pitch.ask}</p>
+        </div>
+
+        ${precioStr ? `<div class="koi-focus-card__price-badge">${precioStr} · Tu rutina completa</div>` : ''}
+
+        <div class="koi-focus-card__form">
+          <input
+            type="email"
+            id="koi-email-input"
+            class="koi-focus-card__input"
+            placeholder="${ui.placeholder}"
+            autocomplete="email"
+            inputmode="email"
+          />
+          <button class="koi-focus-card__btn" id="koi-email-btn">${ui.btn}</button>
+        </div>
+      </div>
+      <div class="koi-focus-card__footer">
+        <span class="koi-focus-card__note">${ui.note}</span>
+        <button class="koi-focus-card__skip" id="koi-email-skip">${ui.skip}</button>
       </div>
     `;
 
     // Card → document.body para escapar del transform:matrix() del wrapper
     document.body.appendChild(card);
+
+    // ── Forzar inline styles post-append — Halo no puede sobreescribir esto ──
+    card.style.cssText = [
+      'position:fixed', 'top:50%', 'left:50%',
+      'transform:translate(-50%,-50%)',
+      'z-index:2147483647',
+      'display:flex', 'flex-direction:column',
+      'width:calc(100vw - 40px)', 'max-width:440px',
+      'max-height:92dvh', 'overflow:hidden',
+      'background:#1c181a',
+      'border:1px solid rgba(236,149,184,0.35)',
+      'border-radius:18px',
+      'box-shadow:0 24px 64px rgba(0,0,0,0.75)',
+      'padding:0', 'gap:0',
+      'box-sizing:border-box',
+      'pointer-events:auto'
+    ].join('!important;') + '!important;';
+
+    const scrollBody = card.querySelector('.koi-focus-card__scroll-body');
+    if (scrollBody) {
+      scrollBody.style.cssText = [
+        'flex:1 1 auto', 'overflow-y:auto',
+        '-webkit-overflow-scrolling:touch',
+        'padding:26px 26px 16px',
+        'display:flex', 'flex-direction:column', 'gap:16px',
+        'box-sizing:border-box', 'min-height:0'
+      ].join('!important;') + '!important;';
+    }
+
+    const footer = card.querySelector('.koi-focus-card__footer');
+    if (footer) {
+      footer.style.cssText = [
+        'flex-shrink:0', 'flex-grow:0',
+        'display:flex', 'flex-direction:column',
+        'align-items:center', 'gap:8px',
+        'padding:12px 26px 18px',
+        'border-top:1px solid rgba(255,255,255,0.07)',
+        'background:#1c181a',
+        'border-radius:0 0 18px 18px',
+        'width:100%', 'box-sizing:border-box',
+        'visibility:visible', 'opacity:1',
+        'overflow:visible', 'height:auto'
+      ].join('!important;') + '!important;';
+    }
+
+    const noteEl = card.querySelector('.koi-focus-card__note');
+    if (noteEl) {
+      noteEl.style.cssText = [
+        'display:block', 'font-size:11px',
+        'color:rgba(255,255,255,0.45)',
+        'text-align:center', 'line-height:1.4',
+        'visibility:visible', 'opacity:1'
+      ].join('!important;') + '!important;';
+    }
+
+    const skipBtn = document.getElementById('koi-email-skip');
+    if (skipBtn) {
+      skipBtn.style.cssText = [
+        'display:block', 'background:none', 'border:none',
+        'color:rgba(255,255,255,0.65)', 'font-size:13px',
+        'font-family:inherit', 'cursor:pointer',
+        'padding:8px 16px',
+        'text-decoration:underline',
+        'text-decoration-color:rgba(236,149,184,0.5)',
+        'text-underline-offset:3px',
+        'text-align:center',
+        'width:100%', 'box-sizing:border-box',
+        'line-height:1.5',
+        'visibility:visible', 'opacity:1',
+        'pointer-events:auto', 'overflow:visible',
+        'height:auto', 'min-height:36px'
+      ].join('!important;') + '!important;';
+    }
 
     // Focus al input (solo desktop para no abrir teclado en mobile automáticamente)
     setTimeout(() => {
