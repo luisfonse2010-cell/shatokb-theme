@@ -461,6 +461,26 @@
 <script src="{{ 'shatokb-koi-vision.js' | asset_url }}&v=79" defer></script>
 <script src="{{ 'shatokb-koi-chat.js' | asset_url }}&v=85" defer></script>
 
+<script>
+  (function () {
+    function scrollToHook() {
+      var hook = document.getElementById('stk-hook-block');
+      if (!hook) return;
+      var rect   = hook.getBoundingClientRect();
+      var absTop = rect.top + window.pageYOffset;
+      /* -16px de margen superior para que respire un poco */
+      window.scrollTo({ top: Math.max(0, absTop - 16), behavior: 'smooth' });
+    }
+    if (document.readyState === 'complete') {
+      setTimeout(scrollToHook, 300);
+    } else {
+      window.addEventListener('load', function () {
+        setTimeout(scrollToHook, 300);
+      });
+    }
+  })();
+</script>
+
 {% schema %}
 {
   "name": "🔬 Skin Quiz",
