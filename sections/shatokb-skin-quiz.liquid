@@ -397,6 +397,63 @@
   .stk-reveal-header {
     padding-bottom: 0 !important;
   }
+
+  /* ── Tags en línea — sin cajas, solo texto con diamante ── */
+  .shatokb-resultado__tags-line {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px 10px !important;
+    margin: 0 0 16px !important;
+  }
+  .shatokb-resultado__tag-dot {
+    color: #ec95b8 !important;
+    font-size: 10px !important;
+    opacity: 0.7 !important;
+  }
+  .shatokb-resultado__tag-text {
+    font-family: 'Arimo', Arial, sans-serif !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    color: rgba(255,255,255,0.55) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
+  }
+
+  /* ── Insights personales — frases sin marcos ──────────── */
+  .stk-skin-insights {
+    margin-top: 18px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    text-align: left !important;
+    border-top: 1px solid rgba(255,255,255,0.08) !important;
+    padding-top: 16px !important;
+  }
+  .stk-skin-insight {
+    font-family: 'Arimo', Arial, sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    color: rgba(255,255,255,0.70) !important;
+    line-height: 1.55 !important;
+    margin: 0 !important;
+    padding-left: 4px !important;
+  }
+  .stk-skin-insight strong {
+    color: #fff !important;
+  }
+
+  /* Ocultar los badges enmarcados viejos */
+  .shatokb-resultado__badges,
+  .stk-skin-analysis {
+    display: none !important;
+  }
+
+  /* Descripción — sin corte, máx 3 líneas */
+  .shatokb-resultado__desc {
+    -webkit-line-clamp: 3 !important;
+  }
 </style>
 
 {%- comment -%}

@@ -3088,7 +3088,21 @@ async function shatokbMostrarResultado() {
   const barrierStatus      = shatokbState.respuestas.sensibilidad      || '';
   const ingredientTolerance = shatokbState.respuestas.ingredient_tolerance || '';
 
-  // Labels legibles para el usuario
+  // Frases de insight personal — voz de KOI, orientadas a valor
+  const BARRIER_INSIGHTS = {
+    baja:    'Your barrier is strong — your skin handles new products without drama. We unlocked more powerful actives for you.',
+    media:   'Your barrier is a little cautious. We\'ve kept the actives effective but picked formulas that won\'t push it over the edge.',
+    alta:    'Your skin reacts fast — we filtered out every potential trigger. Only ingredients your skin can actually handle made the cut.',
+    damaged: 'Your barrier needs to recover first. We\'ve paused all actives and built around repair. Ask KOI when you\'re ready to reintroduce them.',
+  };
+  const TOLERANCE_INSIGHTS = {
+    none:         'You\'re starting fresh — we kept every formula gentle enough to build a solid base without any shock to your skin.',
+    basic:        'You have some experience, so we went one level up from basics. Targeted actives, no overkill.',
+    intermediate: 'Your skin knows what it\'s doing. We matched ingredients at the strength that actually moves the needle for you.',
+    advanced:     'Your skin is adapted and ready. We picked the high-performance formulas — no need to hold back.',
+  };
+
+  // Labels legibles para el usuario (mantenidos para compatibilidad)
   const BARRIER_LABELS = {
     baja:    { icon: '💪', label: 'Resilient',         desc: 'Your barrier handles new products well.' },
     media:   { icon: '🌤️', label: 'Moderate',          desc: 'Occasionally reacts — some caution needed.' },
@@ -3102,6 +3116,9 @@ async function shatokbMostrarResultado() {
     advanced:     { icon: '🔬', label: 'Advanced',           desc: 'Adapted skin ready for retinol & high-strength actives.' },
   };
 
+  const barrierInsight   = BARRIER_INSIGHTS[barrierStatus] || '';
+  const toleranceInsight = TOLERANCE_INSIGHTS[ingredientTolerance] || '';
+
   const barrierInfo    = BARRIER_LABELS[barrierStatus]       || { icon: '🌸', label: barrierStatus,       desc: '' };
   const toleranceInfo  = TOLERANCE_LABELS[ingredientTolerance] || { icon: '🧪', label: ingredientTolerance, desc: '' };
 
@@ -3110,41 +3127,18 @@ async function shatokbMostrarResultado() {
 
     <!-- Profile header -->
     <div class="shatokb-resultado__header">
-      <h2 class="shatokb-resultado__titulo">Your Skin Profile</h2>
+      <h2 class="shatokb-resultado__titulo">Your skin. Your match.</h2>
       <p class="shatokb-resultado__perfil-nombre">${perfil.titulo}</p>
-      <div class="shatokb-resultado__badges">
-        ${tags.map(t => `<span class="shatokb-resultado__badge">${t}</span>`).join('')}
+      <div class="shatokb-resultado__tags-line">
+        ${tags.map(t => `<span class="shatokb-resultado__tag-dot">&#x2726;</span><span class="shatokb-resultado__tag-text">${t}</span>`).join('')}
       </div>
       <p class="shatokb-resultado__desc">${perfil.descripcion}</p>
 
-      <!-- v6.0: Skin Analysis Summary — barrier + tolerance cards -->
-      ${(barrierStatus || ingredientTolerance) ? `
-      <div class="stk-skin-analysis" aria-label="Skin analysis summary">
-        <p class="stk-skin-analysis__title"></p>
-        <div class="stk-skin-analysis__grid">
-          ${barrierStatus ? `
-          <div class="stk-skin-analysis__card stk-skin-analysis__card--barrier${barrierStatus === 'damaged' ? ' stk-skin-analysis__card--alert' : ''}">
-            <span class="stk-skin-analysis__icon" aria-hidden="true">${barrierInfo.icon}</span>
-            <div class="stk-skin-analysis__info">
-              <span class="stk-skin-analysis__label">Barrier Status</span>
-              <strong class="stk-skin-analysis__value">${barrierInfo.label}</strong>
-
-            </div>
-          </div>` : ''}
-          ${ingredientTolerance ? `
-          <div class="stk-skin-analysis__card stk-skin-analysis__card--tolerance">
-            <span class="stk-skin-analysis__icon" aria-hidden="true">${toleranceInfo.icon}</span>
-            <div class="stk-skin-analysis__info">
-              <span class="stk-skin-analysis__label">Ingredient Level</span>
-              <strong class="stk-skin-analysis__value">${toleranceInfo.label}</strong>
-
-            </div>
-          </div>` : ''}
-        </div>
-        ${barrierStatus === 'damaged' ? `
-        <div class="stk-skin-analysis__damaged-note" role="alert">
-          🚨 <strong>Barrier Repair Mode.</strong> Gentle products only — ask KOI when to reintroduce actives.
-        </div>` : ''}
+      <!-- Insights personales — sin marcos, voz de KOI -->
+      ${(barrierInsight || toleranceInsight) ? `
+      <div class="stk-skin-insights">
+        ${barrierInsight ? `<p class="stk-skin-insight">${barrierInfo.icon} ${barrierInsight}</p>` : ''}
+        ${toleranceInsight ? `<p class="stk-skin-insight">${toleranceInfo.icon} ${toleranceInsight}</p>` : ''}
       </div>` : ''}
     </div>
 
