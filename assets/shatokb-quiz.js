@@ -2790,6 +2790,9 @@ function shatokbElegirRespuesta(qId, valor, btn, esMulti, maxSelect) {
     shatokbState.respuestas[qId] = valor;
     document.querySelectorAll('.shatokb-opcion').forEach(b => b.classList.remove('shatokb-opcion--selected'));
     btn.classList.add('shatokb-opcion--selected');
+    // Forzar esNuevo=true para que el scroll se ejecute siempre al seleccionar
+    var slotAntes = document.getElementById('stk-next-slot');
+    if (slotAntes) slotAntes.innerHTML = '';
     shatokbActualizarBtnNext(true, shatokbState.preguntaActual);
   }
 }
@@ -2819,14 +2822,24 @@ function shatokbActualizarBtnNext(mostrar, idx) {
         >${label}</button>`;
     }
 
-    // Scroll suave hasta el botón Next cuando aparece por primera vez
-    // (o cuando el usuario selecciona en single-select)
-    if (esNuevo) {
-      setTimeout(function() {
-        var btn = document.getElementById('shatokb-btn-siguiente');
-        if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }, 80);
-    }
+    // Scroll suave hasta el botón Next cada vez que el usuario selecciona.
+    // En móvil compensa el footer fijo de Shopify (~60px) para que el botón
+    // no quede oculto detrás de la barra de navegación inferior.
+    setTimeout(function() {
+      var btnEl = document.getElementById('shatokb-btn-siguiente');
+      if (!btnEl) return;
+      var rect        = btnEl.getBoundingClientRect();
+      var viewH       = window.innerHeight;
+      // Detecta si hay footer fijo móvil (barra nav inferior Shopify ≈ 60px)
+      var mobileFooter = window.innerWidth < 768 ? 70 : 20;
+      var bottomEdge  = rect.bottom + mobileFooter;
+      // Solo hace scroll si el botón NO es completamente visible
+      if (bottomEdge > viewH || rect.top < 0) {
+        var absTop  = rect.top + window.pageYOffset;
+        var target  = absTop - (viewH - rect.height - mobileFooter - 16);
+        window.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+      }
+    }, 80);
 
   } else {
     slot.style.display = 'none';
