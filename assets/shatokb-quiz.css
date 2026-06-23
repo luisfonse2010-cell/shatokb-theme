@@ -634,15 +634,81 @@
 
 /* ── Multi-select — opciones con checkbox ─────────────── */
 
-/* Contenedor multi-select: añade padding-left para el checkbox */
+/* Contenedor multi-select: checkbox a la izq, texto a la derecha */
 .shatokb-opciones--multi .shatokb-opcion {
-  flex-direction: row;
-  align-items: center;
-  gap: 14px;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+/* Label + desc forman una columna vertical a la derecha del checkbox */
+.shatokb-opciones--multi .shatokb-opcion__label {
+  display: block !important;
+  flex: 1 !important;
+  font-size: 15px !important;
+  line-height: 1.3 !important;
+  white-space: normal !important;
+  word-break: normal !important;
+}
+
+.shatokb-opciones--multi .shatokb-opcion__desc {
+  display: block !important;
+  flex-basis: 100% !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  color: var(--stk-text-muted) !important;
+  margin-top: 2px !important;
+}
+
+/* Wrapper interno: label + desc en columna, ocupa el espacio disponible */
+.shatokb-opciones--multi .shatokb-opcion__check {
+  align-self: center !important;
+  flex-shrink: 0 !important;
+}
+
+/* Agrupa label y desc verticalmente dejando espacio al checkbox */
+.shatokb-opciones--multi .shatokb-opcion {
+  flex-wrap: nowrap !important;
+}
+
+/* El label y desc se apilan — usamos grid en el contenido textual */
+.shatokb-opciones--multi .shatokb-opcion__label,
+.shatokb-opciones--multi .shatokb-opcion__desc {
+  grid-column: 1 !important;
+}
+
+/* Redefine el botón multi como grid: [checkbox] [label+desc] */
+.shatokb-opciones--multi .shatokb-opcion {
+  display: grid !important;
+  grid-template-columns: 26px 1fr !important;
+  grid-template-rows: auto auto !important;
+  align-items: center !important;
+  gap: 0 14px !important;
+}
+
+.shatokb-opciones--multi .shatokb-opcion__check {
+  grid-column: 1 !important;
+  grid-row: 1 / 3 !important;
+  align-self: center !important;
 }
 
 .shatokb-opciones--multi .shatokb-opcion__label {
-  flex: 1;
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: var(--stk-text) !important;
+  line-height: 1.3 !important;
+  margin: 0 !important;
+}
+
+.shatokb-opciones--multi .shatokb-opcion__desc {
+  grid-column: 2 !important;
+  grid-row: 2 !important;
+  font-size: 13px !important;
+  color: var(--stk-text-muted) !important;
+  line-height: 1.35 !important;
+  margin: 2px 0 0 !important;
 }
 
 /* Checkbox visual vacío / relleno */
