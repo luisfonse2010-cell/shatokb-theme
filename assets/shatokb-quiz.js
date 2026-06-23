@@ -4311,29 +4311,9 @@ function shatokbReiniciar() {
 
 /* ============================================================
    15a. REVELAR PRODUCTOS
-   Llamado por KOI cuando el usuario completa el reveal flow.
-   Quita el blur, oculta el overlay y hace scroll suave.
+   — Definición canónica en sección 10 arriba (window.shatokbRevelarProductos).
+   Esta sección reservada para no romper numeración de bloques.
 ============================================================ */
-window.shatokbRevelarProductos = function () {
-  // 1. Quitar clase locked del wrapper principal
-  const section = document.getElementById('stk-reveal-section');
-  if (section) section.classList.remove('stk-reveal-section--locked');
-
-  // 2. Ocultar el overlay con animación
-  const overlay = document.getElementById('stk-blur-overlay');
-  if (overlay) {
-    overlay.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-    overlay.style.opacity    = '0';
-    overlay.style.transform  = 'translateY(-8px)';
-    setTimeout(() => { overlay.style.display = 'none'; }, 420);
-  }
-
-  // 3. Scroll suave al principio de la rutina
-  setTimeout(() => {
-    const rutina = document.getElementById('stk-reveal-section');
-    if (rutina) rutina.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, 300);
-};
 
 
 /* ============================================================
