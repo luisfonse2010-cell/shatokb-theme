@@ -18,7 +18,7 @@
  *
  * ============================================================
  */
-/* ── Last deploy: 2026-06-21T02:45:47.234Z */
+/* ── Last deploy: 2026-06-24T00:33:44.585Z */
 
 
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
@@ -601,15 +601,52 @@ async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
                 timezone: reportData.idioma === 'en' ? 'America/New_York' : 'America/Bogota',
               },
               properties: {
+                // ── Perfil de piel ──────────────────────────────
                 skin_profile_id:    perfilId,
                 skin_profile_name:  perfilNombreCanon,
                 skin_profile_desc:  perfil.descripcion || '',
                 skin_tags:          (perfil.tags || []).join(', '),
+                // ── Datos del quiz para personalización de emails ─
+                skin_type:          reportData.respuestas?.tipo_piel   || reportData.perfil?.tipo || perfilId.split('_')[0] || '',
+                main_concern:       Array.isArray(reportData.respuestas?.preocupacion)
+                                      ? reportData.respuestas.preocupacion[0] || ''
+                                      : reportData.respuestas?.preocupacion   || '',
+                all_concerns:       Array.isArray(reportData.respuestas?.preocupacion)
+                                      ? reportData.respuestas.preocupacion.join(', ')
+                                      : reportData.respuestas?.preocupacion || '',
+                sensibilidad:       reportData.respuestas?.sensibilidad  || '',
+                presupuesto:        reportData.respuestas?.presupuesto   || '',
+                experiencia:        reportData.respuestas?.experiencia   || '',
+                // ── Rutina seleccionada ───────────────────────────
                 rutina_am:          rutinaAM.join(' → '),
                 rutina_pm:          rutinaPM.join(' → '),
                 total_rutina:       total,
+                productos_count:    (reportData.productosSeleccionados || []).length,
+                // ── Ingredientes estrella (del primer producto principal) ─
+                ingrediente_estrella: (() => {
+                  const p = (reportData.productosSeleccionados || [])[0];
+                  if (!p) return '';
+                  const nombre = (p.nombre || '').toLowerCase();
+                  if (/niacinam/i.test(nombre)) return 'Niacinamide';
+                  if (/centella|cica/i.test(nombre)) return 'Centella Asiatica';
+                  if (/retino/i.test(nombre)) return 'Retinol';
+                  if (/salicyl|bha/i.test(nombre)) return 'BHA';
+                  if (/hyaluron/i.test(nombre)) return 'Hyaluronic Acid';
+                  if (/ceramid/i.test(nombre)) return 'Ceramides';
+                  if (/vitamin.*c|ascorb/i.test(nombre)) return 'Vitamin C';
+                  if (/snail|caracol/i.test(nombre)) return 'Snail Mucin';
+                  if (/peptid/i.test(nombre)) return 'Peptides';
+                  return p.nombre || '';
+                })(),
+                // ── Metadatos ────────────────────────────────────
                 idioma:             reportData.idioma  || 'es',
                 report_url:         reportUrl,
+                koi_report_token:   reportData.token   || '',
+                quiz_completed_at:  new Date().toISOString(),
+                // ── Segmentación de flows ────────────────────────
+                flow_segment:       'no_purchase',  // Klaviyo lo actualiza a 'purchased' via integration
+                score_global:       typeof reportData.visionAnalysis?.score_global === 'number'
+                                      ? reportData.visionAnalysis.score_global : null,
               }
             }
           }
@@ -674,6 +711,137 @@ async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
             return prods.map((p, i) => buildProductCard(p, i + 1)).join('');
           })(),
           idioma:              reportData.idioma  || 'es',
+
+          // ── Análisis cutáneo KOI (foto GPT-4o) ───────────────────────────────
+          // vision_html — bloque HTML pregenerado listo para incrustar en Klaviyo.
+          // Se incluye SOLO si el usuario hizo el análisis de foto; si no, es ''.
+          vision_html: (() => {
+            const v = reportData.visionAnalysis;
+            if (!v || typeof v !== 'object') return '';
+
+            const sg = typeof v.score_global === 'number' ? v.score_global : null;
+            const scoreColor = s => {
+              if (s === null) return '#a89ea6';
+              if (s >= 8) return '#4caf7d';
+              if (s >= 6) return '#84cc16';
+              if (s >= 4) return '#f59e0b';
+              return '#ef4444';
+            };
+            const scoreGrade = s => {
+              if (s === null) return '—';
+              if (s >= 9) return 'A+'; if (s >= 8) return 'A';
+              if (s >= 7) return 'B+'; if (s >= 6) return 'B';
+              if (s >= 5) return 'C+'; if (s >= 4) return 'C';
+              return 'D';
+            };
+            const esc = t => String(t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+            // ── Score global ──
+            const sgColor = scoreColor(sg);
+            const sgHtml = sg !== null ? `
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+                <tr>
+                  <td style="width:70px;vertical-align:middle;text-align:center;padding-right:16px;">
+                    <div style="width:60px;height:60px;border-radius:50%;background:${sgColor}22;border:3px solid ${sgColor};display:inline-flex;align-items:center;justify-content:center;line-height:1;">
+                      <span style="font-size:18px;font-weight:800;color:${sgColor};">${sg.toFixed(1)}</span>
+                    </div>
+                    <div style="font-size:10px;font-weight:700;color:${sgColor};margin-top:3px;">${scoreGrade(sg)}</div>
+                  </td>
+                  <td style="vertical-align:middle;">
+                    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#a89ea6;margin-bottom:3px;">Overall Skin Health</div>
+                    <div style="font-size:16px;font-weight:800;color:#1c181a;">${sg >= 8 ? 'Excellent condition' : sg >= 6 ? 'Good condition' : sg >= 4 ? 'Areas to improve' : 'Needs attention'}</div>
+                    <div style="width:100%;height:6px;background:#ede3e9;border-radius:3px;margin-top:8px;overflow:hidden;">
+                      <div style="width:${Math.round((sg/10)*100)}%;height:6px;background:${sgColor};border-radius:3px;"></div>
+                    </div>
+                  </td>
+                </tr>
+              </table>` : '';
+
+            // ── Zonas ──
+            const zonaLabels = { tzone:'T-Zone', mejillas:'Cheeks', ojos:'Eye Contour', boca:'Lip Area' };
+            const zonaIcons  = { tzone:'📍', mejillas:'🌸', ojos:'👁️', boca:'💋' };
+            const zonas = v.zonas || {};
+            const zonasHtml = Object.keys(zonaLabels).filter(k => zonas[k]).map(k => `
+              <tr>
+                <td style="width:30px;vertical-align:top;padding:7px 10px 7px 0;font-size:14px;">${zonaIcons[k]}</td>
+                <td style="vertical-align:top;padding:7px 0;border-bottom:1px solid #f5edf2;">
+                  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#c9a0b4;margin-bottom:2px;">${zonaLabels[k]}</div>
+                  <div style="font-size:13px;color:#3d3540;line-height:1.45;">${esc(zonas[k])}</div>
+                </td>
+              </tr>`).join('');
+
+            // ── 8 Dimensiones ──
+            const dimMeta = {
+              hidratacion:  { icon:'💧', name:'Hydration' },
+              barrera:      { icon:'🛡️', name:'Skin Barrier' },
+              sebum:        { icon:'✨', name:'Sebum Balance' },
+              pigmentacion: { icon:'🌟', name:'Pigmentation' },
+              textura:      { icon:'🔬', name:'Texture' },
+              circulacion:  { icon:'🩸', name:'Circulation' },
+              firmeza:      { icon:'💪', name:'Firmness' },
+              microbioma:   { icon:'🌿', name:'Microbiome' },
+            };
+            const dims = v.dimensiones || {};
+            const dimsHtml = Object.keys(dimMeta).filter(k => dims[k]).map(k => {
+              const d = dims[k];
+              const sc = typeof d.score === 'number' ? d.score : null;
+              const col = scoreColor(sc);
+              const pct = sc !== null ? Math.round((sc / 10) * 100) : 0;
+              return `
+              <td style="width:50%;padding:6px 6px 12px;vertical-align:top;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="background:#faf6f9;border-radius:10px;padding:10px;overflow:hidden;">
+                  <tr>
+                    <td>
+                      <div style="font-size:11px;color:#a89ea6;margin-bottom:4px;">${dimMeta[k].icon} ${dimMeta[k].name}</div>
+                      <div style="font-size:18px;font-weight:800;color:${col};margin-bottom:2px;">${sc !== null ? sc+'/10' : '—'}</div>
+                      <div style="font-size:12px;color:#5a4e58;margin-bottom:6px;">${esc(d.label || '')}</div>
+                      <div style="width:100%;height:4px;background:#ede3e9;border-radius:2px;overflow:hidden;">
+                        <div style="width:${pct}%;height:4px;background:${col};border-radius:2px;"></div>
+                      </div>
+                      ${d.detalle ? `<div style="font-size:11px;color:#7a6e77;line-height:1.45;margin-top:6px;">${esc(d.detalle)}</div>` : ''}
+                    </td>
+                  </tr>
+                </table>
+              </td>`;
+            });
+            // Agrupar en filas de 2
+            const dimRows = [];
+            for (let i = 0; i < dimsHtml.length; i += 2) {
+              dimRows.push(`<tr>${dimsHtml[i]}${dimsHtml[i+1] || '<td></td>'}</tr>`);
+            }
+            const dimsTableHtml = dimRows.length ? `<table width="100%" cellpadding="0" cellspacing="0">${dimRows.join('')}</table>` : '';
+
+            // ── Puntos críticos ──
+            const pts = (v.puntos_criticos || []).slice(0, 4);
+            const ptsHtml = pts.length ? `
+              <div style="margin-top:16px;padding:14px 16px;background:#fff7f0;border-radius:10px;border-left:4px solid #f59e0b;">
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#b45309;margin-bottom:10px;">🔍 Key Observations</div>
+                ${pts.map(p => `<div style="font-size:12px;color:#3d3540;line-height:1.5;padding:3px 0 3px 12px;border-bottom:1px solid #fde6c8;">→ ${esc(p)}</div>`).join('')}
+              </div>` : '';
+
+            // ── Edad biológica (solo en email — contexto apropiado) ──
+            const edadHtml = v.edad_biologica_estimada ? `
+              <div style="display:inline-block;margin-top:14px;padding:8px 14px;background:#f0f7ff;border-radius:8px;border:1px solid #c7deff;">
+                <span style="font-size:11px;font-weight:700;color:#1d5dd9;text-transform:uppercase;letter-spacing:0.08em;">🔬 Estimated Biological Skin Age: </span>
+                <span style="font-size:14px;font-weight:800;color:#0b0335;">${esc(v.edad_biologica_estimada)}</span>
+              </div>` : '';
+
+            // ── Ensamblado final ──
+            return `
+              <div style="background:#1a1318;border-radius:14px;padding:22px 20px;margin:28px 0;">
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#e8a8c0;margin-bottom:4px;">📸 KOI Photo Analysis</div>
+                <div style="font-size:17px;font-weight:800;color:#ffffff;margin-bottom:16px;">What KOI found in your skin</div>
+                ${sgHtml}
+                ${zonasHtml ? `
+                  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#a89ea6;margin-bottom:8px;">Zone Diagnosis</div>
+                  <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">${zonasHtml}</table>` : ''}
+                ${dimsTableHtml ? `
+                  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#a89ea6;margin:16px 0 8px;">Dimensional Analysis</div>
+                  ${dimsTableHtml}` : ''}
+                ${ptsHtml}
+                ${edadHtml}
+              </div>`;
+          })(),
         },
       }
     }
