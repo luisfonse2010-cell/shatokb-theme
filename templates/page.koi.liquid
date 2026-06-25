@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page.title }} · {{ shop.name }}</title>
+  {{ content_for_header }}
+  <style>
+    #shopify-section-header,
+    #shopify-section-footer,
+    #shopify-section-announcement-bar,
+    .site-header, .site-footer,
+    header[role="banner"],
+    footer[role="contentinfo"] {
+      display: none !important;
+    }
+    body { margin: 0 !important; padding: 0 !important; }
+    #MainContent { padding: 0 !important; margin: 0 !important; }
+  </style>
+</head>
+<body>
+  {{ page.content }}
+</body>
+</html>
