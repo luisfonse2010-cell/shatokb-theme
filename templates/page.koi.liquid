@@ -1,24 +1,71 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ page.title }} · {{ shop.name }}</title>
-  {{ content_for_header }}
-  <style>
-    #shopify-section-header,
-    #shopify-section-footer,
-    #shopify-section-announcement-bar,
-    .site-header, .site-footer,
-    header[role="banner"],
-    footer[role="contentinfo"] {
-      display: none !important;
-    }
-    body { margin: 0 !important; padding: 0 !important; }
-    #MainContent { padding: 0 !important; margin: 0 !important; }
-  </style>
-</head>
-<body>
-  {{ page.content }}
-</body>
-</html>
+{% comment %}
+  KOI Landing Page Template — SHATO Korean Beauty
+  Oculta header, footer y nav del tema
+  Selector real del tema: .wrapper-header / .wrapper-footer
+{% endcomment %}
+
+<style>
+  /* ── Selectores reales del tema SHATO ── */
+  .wrapper-header,
+  .wrapper-footer,
+  #shopify-section-header,
+  #shopify-section-footer,
+  [id^="shopify-section-header"],
+  [id^="shopify-section-footer"],
+  [id*="announcement"],
+  .halo-toolbar-mobile,
+  #shopify-section-halo-toolbar-mobile,
+  .announcement-bar,
+  .announcement__bar,
+  .site-header,
+  .site-footer,
+  header[role="banner"],
+  footer[role="contentinfo"],
+  .header-wrapper,
+  .footer-wrapper,
+  #header,
+  #footer,
+  .main-header,
+  .main-footer,
+  nav.main-nav,
+  nav#mainNav {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+  }
+
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+
+  body.template-page,
+  body[class*="template-page"] {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+
+  #MainContent,
+  main[role="main"],
+  .wrapper-body,
+  .content-for-layout {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+  }
+
+  .body-content-wrapper,
+  .page-container,
+  .page-width {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+</style>
+
+{{ page.content }}
