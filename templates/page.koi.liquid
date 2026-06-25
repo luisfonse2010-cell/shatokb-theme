@@ -1,71 +1,64 @@
-{% comment %}
-  KOI Landing Page Template — SHATO Korean Beauty
-  Oculta header, footer y nav del tema
-  Selector real del tema: .wrapper-header / .wrapper-footer
-{% endcomment %}
+{%- comment -%}
+  KOI Landing — DEFINITIVO: CSS + JS MutationObserver
+{%- endcomment -%}
 
-<style>
-  /* ── Selectores reales del tema SHATO ── */
-  .wrapper-header,
-  .wrapper-footer,
-  #shopify-section-header,
-  #shopify-section-footer,
-  [id^="shopify-section-header"],
-  [id^="shopify-section-footer"],
-  [id*="announcement"],
-  .halo-toolbar-mobile,
-  #shopify-section-halo-toolbar-mobile,
-  .announcement-bar,
-  .announcement__bar,
-  .site-header,
-  .site-footer,
-  header[role="banner"],
-  footer[role="contentinfo"],
-  .header-wrapper,
-  .footer-wrapper,
-  #header,
-  #footer,
-  .main-header,
-  .main-footer,
-  nav.main-nav,
-  nav#mainNav {
-    display: none !important;
-    visibility: hidden !important;
-    height: 0 !important;
-    max-height: 0 !important;
-    overflow: hidden !important;
-    pointer-events: none !important;
-  }
-
-  html, body {
-    margin: 0 !important;
-    padding: 0 !important;
-    padding-top: 0 !important;
-    margin-top: 0 !important;
-  }
-
-  body.template-page,
-  body[class*="template-page"] {
-    padding-top: 0 !important;
-    margin-top: 0 !important;
-  }
-
-  #MainContent,
-  main[role="main"],
-  .wrapper-body,
-  .content-for-layout {
-    padding: 0 !important;
-    margin: 0 !important;
-    max-width: none !important;
-    width: 100% !important;
-  }
-
-  .body-content-wrapper,
-  .page-container,
-  .page-width {
-    padding-top: 0 !important;
-    margin-top: 0 !important;
-  }
+<style id="koi-hide">
+#shopify-section-header,.shopify-section-group-header-group,
+[id*="shopify-section-header"],[class*="shopify-section-group-header"],
+#shopify-section-wrapper-header,[id*="wrapper-header"],
+.wrapper-header,.header-wrapper,.header-top,.shopify-section-header-sticky,
+#shopify-section-announcement-bar,[id*="announcement"],.announcement-bar,
+#shopify-section-halo-toolbar-mobile,.halo-toolbar-mobile,[id*="halo-toolbar"],
+.wrapper-footer,#shopify-section-footer,[id*="shopify-section-footer"],
+[class*="shopify-section-group-footer"],
+.site-header,.site-footer,header[role="banner"],footer[role="contentinfo"],
+.footer-wrapper,#header,#footer{
+  display:none!important;visibility:hidden!important;
+  height:0!important;max-height:0!important;min-height:0!important;
+  overflow:hidden!important;padding:0!important;margin:0!important;
+  border:none!important;pointer-events:none!important;
+  position:absolute!important;top:-9999px!important;left:-9999px!important;
+}
+html,body,body.template-page,body[class*="template-page"]{
+  margin-top:0!important;padding-top:0!important;
+}
+.body-content-wrapper{padding-top:0!important;margin-top:0!important;}
+#MainContent,main[role="main"],.wrapper-body,.content-for-layout{
+  padding:0!important;margin:0!important;
+  max-width:none!important;width:100%!important;
+}
+.page-container,.page-width{padding-top:0!important;margin-top:0!important;}
 </style>
+
+<script>
+(function(){
+var H=['#shopify-section-header','[id*="shopify-section-header"]',
+'.shopify-section-group-header-group','[class*="shopify-section-group-header"]',
+'#shopify-section-wrapper-header','[id*="wrapper-header"]',
+'.wrapper-header','.header-wrapper','.header-top','.shopify-section-header-sticky',
+'#shopify-section-announcement-bar','[id*="announcement"]','.announcement-bar',
+'#shopify-section-halo-toolbar-mobile','.halo-toolbar-mobile','[id*="halo-toolbar"]',
+'.wrapper-footer','#shopify-section-footer','[id*="shopify-section-footer"]',
+'[class*="shopify-section-group-footer"]',
+'.site-header','.site-footer','header[role="banner"]','footer[role="contentinfo"]',
+'.footer-wrapper','#header','#footer'];
+function f(){H.forEach(function(s){try{document.querySelectorAll(s).forEach(function(e){
+  e.style.setProperty('display','none','important');
+  e.style.setProperty('visibility','hidden','important');
+  e.style.setProperty('height','0','important');
+  e.style.setProperty('overflow','hidden','important');
+  e.style.setProperty('position','absolute','important');
+  e.style.setProperty('top','-9999px','important');
+});}catch(x){}});
+try{document.body.style.setProperty('padding-top','0','important');
+document.body.style.setProperty('margin-top','0','important');}catch(x){}}
+f();
+document.addEventListener('DOMContentLoaded',f);
+window.addEventListener('load',f);
+var o=new MutationObserver(f);
+o.observe(document.documentElement,{childList:true,subtree:true});
+setTimeout(function(){o.disconnect();},5000);
+})();
+</script>
 
 {{ page.content }}
