@@ -62,3 +62,33 @@ setTimeout(function(){o.disconnect();},5000);
 </script>
 
 {{ page.content }}
+<script>
+(function() {
+  var CTA_TEXTS = ['Analyze my skin','Get my free skin report','Meet KOI'];
+  function fireInitiateQuiz(label) {
+    try {
+      if (typeof fbq === 'function') {
+        fbq('trackCustom', 'InitiateQuiz', {
+          content_name: 'koi_sales_letter',
+          button_text: label
+        });
+      }
+    } catch(e) {}
+  }
+  function handleClick(e) {
+    var el = e.target;
+    for (var i = 0; i < 4; i++) {
+      if (!el) break;
+      var text = (el.textContent || el.innerText || '').trim();
+      for (var j = 0; j < CTA_TEXTS.length; j++) {
+        if (text.indexOf(CTA_TEXTS[j]) !== -1) {
+          fireInitiateQuiz(text.slice(0,80));
+          return;
+        }
+      }
+      el = el.parentElement;
+    }
+  }
+  document.addEventListener('click', handleClick, true);
+})();
+</script>
