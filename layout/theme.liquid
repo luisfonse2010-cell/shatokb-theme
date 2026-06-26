@@ -164,18 +164,52 @@ src="https://www.facebook.com/tr?id=1394512687552157&ev=PageView&noscript=1"/>
 <!-- End Meta Pixel -->
 <style>
 /* ── Footer compact fix ── */
-.footer { padding-top: 20px !important; padding-bottom: 20px !important; }
-.footer__content-top { padding-top: 12px !important; padding-bottom: 12px !important; gap: 6px !important; }
-.footer__content-bottom { padding-top: 10px !important; padding-bottom: 10px !important; }
-.footer-block { padding-top: 6px !important; padding-bottom: 6px !important; }
-.footer-block__heading { padding-top: 6px !important; padding-bottom: 6px !important; margin-bottom: 0 !important; }
-.newsletter-form { margin-top: 8px !important; margin-bottom: 8px !important; }
+footer.footer,
+.footer.footer-1 {
+  padding-top: 16px !important;
+  padding-bottom: 16px !important;
+}
+footer.footer .footer__content-top,
+.footer-1 .footer__content-top {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+footer.footer .container,
+footer.footer .container-1170 {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+.footer-block__item {
+  margin-top: 4px !important;
+  margin-bottom: 4px !important;
+}
+.footer-block__heading {
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  font-size: 13px !important;
+}
+.footer__content-bottom {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+.footer-block__newsletter .newsletter__form,
+.footer-block__newsletter .newsletter-form {
+  margin-top: 6px !important;
+  margin-bottom: 0 !important;
+}
 @media (max-width: 749px) {
-  .footer { padding-top: 14px !important; padding-bottom: 14px !important; }
-  .footer__content-top { gap: 2px !important; }
-  .footer-block__heading { font-size: 13px !important; }
+  .footer-block__item {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    margin-top: 2px !important;
+    margin-bottom: 2px !important;
+  }
+  .footer__content-top {
+    gap: 2px !important;
+  }
 }
 </style>
+
 
 </head>
 
