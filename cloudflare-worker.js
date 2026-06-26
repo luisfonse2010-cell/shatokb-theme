@@ -18,7 +18,7 @@
  *
  * ============================================================
  */
-/* ── Last deploy: 2026-06-24T00:33:44.585Z */
+/* ── Last deploy: 2026-06-26T19:09:50.797Z */
 
 
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
@@ -1429,9 +1429,14 @@ ABSOLUTE RULES — violation means the analysis is worthless:
           { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
       }
 
-      // Seguridad básica: solo permitir rutas de Admin API de temas
-      const allowedPaths = ['/admin/api/2024-01/themes', '/admin/api/2024-01/themes/'];
-      const isAllowed = path.startsWith('/admin/api/2024-01/themes');
+      // Seguridad básica: solo permitir rutas de Admin API autorizadas
+      const isAllowed = (
+        path.startsWith('/admin/api/2024-01/themes') ||
+        path.startsWith('/admin/api/2024-01/products') ||
+        path.startsWith('/admin/api/2024-01/variants') ||
+        path.startsWith('/admin/api/2023-10/products') ||
+        path.startsWith('/admin/api/2023-10/variants')
+      );
       if (!isAllowed) {
         return new Response(JSON.stringify({ error: 'Path not allowed' }),
           { status: 403, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
