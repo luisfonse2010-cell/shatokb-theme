@@ -113,6 +113,71 @@
     color: rgba(255,255,255,0.40) !important;
     font-family: 'Arimo', Arial, sans-serif !important;
   }
+  /* SOCIAL PROOF BAR */
+  #shatokb-hero .stk-social-proof {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    margin-bottom: 20px !important;
+    font-family: 'Arimo', Arial, sans-serif !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #f5c842 !important;
+  }
+  #shatokb-hero .stk-social-proof span.stk-sp-count {
+    color: rgba(255,255,255,0.85) !important;
+    font-weight: 700 !important;
+  }
+  /* URGENCY LINE */
+  #shatokb-hero .stk-urgency {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    background: rgba(245,160,187,0.10) !important;
+    border: 1px solid rgba(245,160,187,0.25) !important;
+    border-radius: 50px !important;
+    padding: 7px 18px !important;
+    font-family: 'Arimo', Arial, sans-serif !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    color: #f5a0bb !important;
+    margin-bottom: 20px !important;
+    letter-spacing: 0.02em !important;
+  }
+  /* GUARANTEE */
+  #shatokb-hero .stk-guarantee {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    margin-top: 16px !important;
+    font-family: 'Arimo', Arial, sans-serif !important;
+    font-size: 12px !important;
+    color: rgba(255,255,255,0.45) !important;
+  }
+  /* SECONDARY BTN */
+  #shatokb-hero .shatokb-btn--secondary {
+    background: transparent !important;
+    color: rgba(255,255,255,0.65) !important;
+    border: 1px solid rgba(255,255,255,0.20) !important;
+    padding: 16px 32px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    cursor: pointer !important;
+    font-family: 'Arimo', Arial, sans-serif !important;
+    transition: all 0.2s ease !important;
+    margin-top: 12px !important;
+  }
+  #shatokb-hero .shatokb-btn--secondary:hover {
+    border-color: rgba(255,255,255,0.45) !important;
+    color: #fff !important;
+    background: rgba(255,255,255,0.05) !important;
+  }
   /* ── Quiz section title/subtitle — override Halo base 10px ── */
   .shatokb-quiz-section__titulo {
     font-family: 'Prompt', 'Arial Black', sans-serif !important;
@@ -163,18 +228,37 @@
       {{ section.settings.subtitle }}
     </p>
 
-    <div class="shatokb-hero__ctas">
+    <!-- SOCIAL PROOF -->
+    <div class="stk-social-proof">
+      ⭐⭐⭐⭐⭐&nbsp;<span class="stk-sp-count">2,400+ women</span>&nbsp;already know their exact routine
+    </div>
+
+    <!-- URGENCY -->
+    <div class="stk-urgency">
+      🔥 <span>847 skin analyses this week &mdash; Free today only</span>
+    </div>
+
+    <!-- CTAs -->
+    <div class="shatokb-hero__ctas" style="flex-direction:column;align-items:center;gap:0;margin-bottom:12px;">
       <a href="/pages/skin-quiz" class="shatokb-btn shatokb-btn--primary">
         {{ section.settings.cta_primary }} →
       </a>
+      <a href="/collections/best-sellers" class="shatokb-btn--secondary">
+        🛍️ Already know your skin type? Shop Best Sellers →
+      </a>
     </div>
 
-    <div class="shatokb-hero__trust">
-      <span>⭐⭐⭐⭐⭐ Only the best K-Beauty</span>
-      <span>·</span>
-      <span>🌿 Hand-picked products</span>
+    <!-- GUARANTEE -->
+    <div class="stk-guarantee">
+      🛡️ <span>30-Day Money Back Guarantee &mdash; No results? Full refund. No questions asked.</span>
+    </div>
+
+    <div class="shatokb-hero__trust" style="margin-top:20px;">
+      <span>🌿 Hand-picked K-Beauty</span>
       <span>·</span>
       <span>⚡ Results in weeks</span>
+      <span>·</span>
+      <span>🚚 Free US shipping over $49</span>
     </div>
 
   </div>
@@ -315,7 +399,17 @@
     <a id="stk-benefit-cta-btn" href="/pages/skin-quiz">
       Find my perfect products — It's Free <span class="stk-cta-arrow">→</span>
     </a>
-    <p id="stk-benefit-microcopy">8 questions · 2 minutes · Free</p>
+    <p id="stk-benefit-microcopy">8 questions · 2 minutes · Free · No account needed</p>
+
+    <!-- GUARANTEE BADGE -->
+    <div style="display:inline-flex;align-items:center;gap:8px;margin-top:18px;padding:10px 20px;background:#fff;border:1px solid #f0e0e8;border-radius:50px;font-family:'Arimo',Arial,sans-serif;font-size:12px;font-weight:600;color:#6b7280;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      🛡️ <span style="color:#0b0335;">30-Day Money Back Guarantee</span> &nbsp;·&nbsp; No results? Full refund.
+    </div>
+
+    <!-- PRICE ANCHOR -->
+    <p style="font-family:'Arimo',Arial,sans-serif;font-size:13px;color:#9ca3af;margin-top:14px;">
+      Routines starting from <strong style="color:#e0607e;">$24</strong> &nbsp;·&nbsp; Free shipping over $49
+    </p>
 
   </div>
 </div>
