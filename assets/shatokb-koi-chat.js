@@ -2844,8 +2844,20 @@ async function enviarDesdeChip (texto) {
      tu Skin Report" y luego ejecuta el callback.
      ══════════════════════════════════════════════════════════ */
   window.shatokbInterceptarCarrito = function (callbackProcederAlCarrito) {
-    // Si ya tenemos email, no interrumpir — ir directo al carrito
+    // Si ya tenemos email, enviamos el reporte igualmente (para que Klaviyo
+    // reciba el evento aunque el usuario ya haya dado su email antes).
+    // FIX v4.7: antes se saltaba enviarSkinReport() → Klaviyo nunca recibía
+    // el evento en pruebas repetidas o cuando email venía de localStorage.
     if (KOI_STATE.emailCaptured) {
+      const emailYaGuardado = KOI_STATE.emailCaptured;
+      // Lanzar enviarSkinReport en background — no bloqueamos el carrito
+      enviarSkinReport(emailYaGuardado).then(token => {
+        if (token) {
+          console.log('%c[KOI] v4.7 — Re-envío reporte con email ya capturado ✅', 'color:#22c55e;font-weight:bold', token.slice(0,8) + '…');
+        } else {
+          console.warn('[KOI] v4.7 — Re-envío reporte falló (email ya capturado) — PATCH intentará con token previo');
+        }
+      }).catch(() => {});
       callbackProcederAlCarrito();
       return;
     }
