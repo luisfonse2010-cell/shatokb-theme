@@ -3729,138 +3729,211 @@ window.shatokbRevelarProductos = function () {
     // FIN KOI STARTER KIT
     // ══════════════════════════════════════════════════════════════
 
-    // ── Wrapper Full Routine con badge 25% OFF ────────────────────────────────
-    var fullWrap = document.createElement('div');
-    fullWrap.id = 'stk-full-routine-wrap';
-    fullWrap.style.cssText = 'margin-top:28px;opacity:0;transform:translateY(12px);transition:opacity 0.4s ease 0.1s,transform 0.4s ease 0.1s;';
+    // ══════════════════════════════════════════════════════════════
+    // FULL ROUTINE CARD — Bloque visual idéntico al Starter Kit
+    // 25% OFF · precio tachado · FREE SHIPPING · timer sincronizado
+    // ══════════════════════════════════════════════════════════════
+    (function shatokbInyectarFullRoutineCard() {
+      if (document.getElementById('stk-full-card')) return;
 
-    // Badge superior "Mejor valor · 25% OFF · Free shipping"
-    var fullBadge = document.createElement('div');
-    fullBadge.id = 'stk-full-badge';
-    fullBadge.innerHTML =
-      '<span style="font-family:Prompt,sans-serif;font-size:11px;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:#f5e6ef;">⭐ BEST VALUE</span>' +
-      '<span style="font-family:Arimo,Arial,sans-serif;font-size:11px;color:rgba(236,149,184,.8);">·</span>' +
-      '<span style="font-family:Prompt,sans-serif;font-size:11px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;background:linear-gradient(135deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">25% OFF</span>' +
-      '<span style="font-family:Arimo,Arial,sans-serif;font-size:11px;color:rgba(236,149,184,.8);">·</span>' +
-      '<span style="font-family:Arimo,Arial,sans-serif;font-size:11px;font-weight:700;color:#4ade80;">🚚 Free shipping</span>';
-    fullBadge.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;' +
-      'background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);border-radius:10px 10px 0 0;' +
-      'padding:8px 14px;';
+      // ── 1. Obtener TODOS los productos seleccionados ──────────────────────────
+      var allProds = Object.entries(shatokbState.selectedProducts || {})
+        .map(function(e) {
+          return SHATOKB_CATALOGO.find(function(p) { return p.id === e[1]; });
+        })
+        .filter(Boolean);
 
-    var btn = document.createElement('button');
-    btn.id        = 'stk-add-btn-bottom';
-    btn.type      = 'button';
-    btn.className = 'stk-cta-bottom';
-    btn.textContent = '✦ Add my full routine — 25% OFF ✦';
-    btn.style.cssText = [
-      'display:block',
-      'width:100%',
-      'box-sizing:border-box',
-      'position:relative',
-      'overflow:hidden',
-      'background:linear-gradient(135deg,#2b1e24 0%,#1c181a 55%,#261820 100%)',
-      'color:#ec95b8',
-      'border:1.5px solid rgba(99,102,241,0.55)',
-      'border-radius:0 0 14px 14px',
-      'padding:20px 28px',
-      'min-height:62px',
-      'font-family:Prompt,"Arial Black",sans-serif',
-      'font-size:17px',
-      'font-weight:800',
-      'letter-spacing:0.04em',
-      'text-transform:uppercase',
-      'text-align:center',
-      'cursor:pointer',
-      'margin-top:0',
-      'box-shadow:0 8px 28px rgba(99,102,241,0.22),inset 0 1px 0 rgba(255,255,255,0.08)'
-    ].join(';');
+      if (allProds.length === 0) return;
 
-    // Click → añadir TODOS los productos + código KOI25FULL
-    btn.addEventListener('click', async function() {
-      var self = this;
-      self.disabled    = true;
-      self.textContent = '⏳ Adding your full routine...';
-      try {
-        var allHandles = Object.entries(shatokbState.selectedProducts || {})
-          .map(function(e) {
-            var prod = SHATOKB_CATALOGO.find(function(p) { return p.id === e[1]; });
-            return prod ? (prod.handle || prod.id) : null;
-          })
-          .filter(Boolean);
+      // ── 2. Calcular precios con 25% OFF ───────────────────────────────────────
+      var totalOriginalFull = allProds.reduce(function(sum, p) { return sum + (p.precio_num || 0); }, 0);
+      var totalFullDesc     = totalOriginalFull * 0.75; // 25% OFF
+      function fmtF(n) { return '$' + n.toFixed(2); }
 
-        if (allHandles.length === 0) throw new Error('No products selected.');
+      // ── 3. Handles para el carrito ───────────────────────────────────────────
+      var fullHandles = allProds.map(function(p) { return p.handle || p.id; });
 
-        var vRequests = allHandles.map(function(handle) {
-          return fetch('/products/' + handle + '.js')
-            .then(function(r) { return r.ok ? r.json() : null; })
-            .then(function(d) { return d && d.variants && d.variants[0] ? d.variants[0].id : null; })
-            .catch(function() { return null; });
-        });
-        var vIds = await Promise.all(vRequests);
-        var items = vIds.filter(Boolean).map(function(id) { return { id: id, quantity: 1 }; });
-        if (items.length === 0) throw new Error('Could not load products.');
+      // ── 4. Lista de productos (hasta 6, luego "+N more") ──────────────────────
+      var maxVisible = 6;
+      var visibleProds = allProds.slice(0, maxVisible);
+      var extraCount   = allProds.length - maxVisible;
+      var prodListHTMLFull = visibleProds.map(function(p, i) {
+        return '<span class="stk-full__prod-item">' +
+               '<span class="stk-full__prod-num">' + (i + 1) + '</span>' +
+               '<span class="stk-full__prod-name">' + (p.nombre || p.id) + '</span>' +
+               '<span class="stk-full__prod-price">' + fmtF(p.precio_num || 0) + '</span>' +
+               '</span>';
+      }).join('') + (extraCount > 0
+        ? '<span class="stk-full__prod-more">+ ' + extraCount + ' more product' + (extraCount > 1 ? 's' : '') + '</span>'
+        : '');
 
-        var cartRes = await fetch('/cart/add.js', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ items: items })
-        });
-        if (!cartRes.ok) throw new Error('Could not add to cart.');
+      // ── 5. Crear el card Full Routine ─────────────────────────────────────────
+      var fullCard = document.createElement('div');
+      fullCard.id = 'stk-full-card';
+      fullCard.setAttribute('role', 'region');
+      fullCard.setAttribute('aria-label', 'Full Routine — Best Value 25% OFF');
 
-        self.textContent = '✓ Full routine added! Going to checkout...';
-        setTimeout(function() { window.location.href = '/checkout?discount=KOI25FULL'; }, 600);
-      } catch(err) {
-        console.error('[SHATOKB FULL]', err);
-        self.disabled    = false;
-        self.textContent = '✦ Add my full routine — 25% OFF ✦';
-        if (typeof shatokbAddAllToCart === 'function') shatokbAddAllToCart();
+      fullCard.innerHTML =
+        '<div class="stk-full__badge-row">' +
+          '<span class="stk-full__badge stk-full__badge--label">✦ FULL ROUTINE ✦</span>' +
+          '<span class="stk-full__badge stk-full__badge--off">25% OFF</span>' +
+          '<span class="stk-full__badge stk-full__badge--best">⭐ BEST VALUE</span>' +
+        '</div>' +
+        '<p class="stk-full__headline">Your complete K-Beauty ritual</p>' +
+        '<p class="stk-full__sub">Every step KOI selected for your skin · Free shipping · No minimum</p>' +
+        '<div class="stk-full__prods">' + prodListHTMLFull + '</div>' +
+        '<div class="stk-full__price-row">' +
+          '<span class="stk-full__price-original">' + fmtF(totalOriginalFull) + '</span>' +
+          '<span class="stk-full__price-final">' + fmtF(totalFullDesc) + '</span>' +
+          '<span class="stk-full__shipping-badge">🚚 FREE SHIPPING</span>' +
+        '</div>' +
+        '<div class="stk-full__countdown-wrap">' +
+          '<span class="stk-full__countdown-label">⏱ Offer expires in</span>' +
+          '<span class="stk-full__countdown-display" id="stk-full-timer">30:00</span>' +
+        '</div>' +
+        '<button class="stk-full__cta" id="stk-full-btn" type="button">' +
+          '✦ Add my Full Routine — ' + fmtF(totalFullDesc) + ' ✦' +
+        '</button>' +
+        '<p class="stk-full__guarantee">🛡️ 30-Day Money-Back Guarantee · Cancel anytime</p>';
+
+      // ── 6. Insertar DESPUÉS del Kit card o al final de blurred ────────────────
+      var kitCardEl = document.getElementById('stk-kit-card');
+      if (kitCardEl && kitCardEl.parentNode === blurred) {
+        var nextSibling = kitCardEl.nextSibling;
+        if (nextSibling) {
+          blurred.insertBefore(fullCard, nextSibling);
+        } else {
+          blurred.appendChild(fullCard);
+        }
+      } else {
+        var ctasEl2 = document.getElementById('shatokb-ctas');
+        if (ctasEl2 && ctasEl2.parentNode === blurred) {
+          blurred.insertBefore(fullCard, ctasEl2);
+        } else {
+          blurred.appendChild(fullCard);
+        }
       }
-    });
 
-    // Hover
-    btn.addEventListener('mouseenter', function () {
-      this.style.background   = 'linear-gradient(135deg,#36212a 0%,#271d22 55%,#301e27 100%)';
-      this.style.borderColor  = 'rgba(99,102,241,0.85)';
-      this.style.color        = '#c4b5fd';
-      this.style.transform    = 'translateY(-2px)';
-      this.style.boxShadow    = '0 0 0 4px rgba(99,102,241,0.12),0 16px 40px rgba(99,102,241,0.30)';
-    });
-    btn.addEventListener('mouseleave', function () {
-      this.style.background   = 'linear-gradient(135deg,#2b1e24 0%,#1c181a 55%,#261820 100%)';
-      this.style.borderColor  = 'rgba(99,102,241,0.55)';
-      this.style.color        = '#ec95b8';
-      this.style.transform    = '';
-      this.style.boxShadow    = '0 8px 28px rgba(99,102,241,0.22),inset 0 1px 0 rgba(255,255,255,0.08)';
-    });
-
-    fullWrap.appendChild(fullBadge);
-    fullWrap.appendChild(btn);
-
-    var ctasEl = document.getElementById('shatokb-ctas');
-    if (ctasEl && ctasEl.parentNode === blurred) {
-      blurred.insertBefore(fullWrap, ctasEl);
-    } else {
-      blurred.appendChild(fullWrap);
-    }
-
-    requestAnimationFrame(function () {
-      requestAnimationFrame(function () {
-        fullWrap.style.opacity   = '1';
-        fullWrap.style.transform = 'translateY(0)';
+      // ── 7. Fade-in suave ──────────────────────────────────────────────────────
+      fullCard.style.opacity    = '0';
+      fullCard.style.transform  = 'translateY(16px)';
+      fullCard.style.transition = 'opacity 0.5s ease 0.2s, transform 0.5s ease 0.2s';
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          fullCard.style.opacity   = '1';
+          fullCard.style.transform = 'translateY(0)';
+        });
       });
-    });
 
-    if (!document.getElementById('stk-cta-bottom-style')) {
-      var s = document.createElement('style');
-      s.id = 'stk-cta-bottom-style';
-      s.textContent =
-        '@keyframes _stkShimmer{0%{transform:translateX(-130%) skewX(-18deg)}100%{transform:translateX(270%) skewX(-18deg)}}' +
-        '@keyframes _stkPulse{0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,0),0 8px 28px rgba(99,102,241,.22),inset 0 1px 0 rgba(255,255,255,.08)}50%{box-shadow:0 0 0 6px rgba(99,102,241,.10),0 8px 28px rgba(99,102,241,.22),inset 0 1px 0 rgba(255,255,255,.08)}}' +
-        '#stk-add-btn-bottom{animation:_stkPulse 3.5s ease-in-out 1s infinite!important;}' +
-        '#stk-add-btn-bottom::before{content:"";position:absolute;top:0;left:0;width:38%;height:100%;background:linear-gradient(90deg,transparent,rgba(99,102,241,.12),transparent);transform:translateX(-130%) skewX(-18deg);animation:_stkShimmer 4s ease-in-out 1.5s infinite;pointer-events:none;}' +
-        '#stk-add-btn-bottom::after{content:"";position:absolute;top:0;left:10%;width:80%;height:1px;background:linear-gradient(90deg,transparent,rgba(99,102,241,.45),transparent);pointer-events:none;}';
-      document.head.appendChild(s);
-    }
+      // ── 8. Timer sincronizado con el Kit (lee #stk-kit-timer cada segundo) ────
+      var fullTimerEl = document.getElementById('stk-full-timer');
+      var fullTimerInterval = setInterval(function() {
+        var kitTimerEl2 = document.getElementById('stk-kit-timer');
+        if (kitTimerEl2 && fullTimerEl) {
+          var val = kitTimerEl2.textContent;
+          fullTimerEl.textContent = val;
+          // urgencia visual sincronizada
+          if (val === '00:00' || val === '') {
+            fullTimerEl.textContent = '00:00';
+            clearInterval(fullTimerInterval);
+            var fullBtn2 = document.getElementById('stk-full-btn');
+            if (fullBtn2) {
+              fullBtn2.disabled = true;
+              fullBtn2.style.opacity = '0.5';
+              fullBtn2.textContent = 'Offer expired';
+            }
+          }
+          var parts = val.split(':');
+          var secs  = (parseInt(parts[0] || 0) * 60) + parseInt(parts[1] || 0);
+          if (secs < 300 && fullTimerEl) fullTimerEl.style.color = '#ff6b6b';
+          if (secs < 60  && fullTimerEl) fullTimerEl.style.animation = '_stkFullBlink 0.7s ease-in-out infinite';
+        }
+      }, 1000);
+
+      // ── 9. Botón CTA Full Routine ─────────────────────────────────────────────
+      var fullCta = document.getElementById('stk-full-btn');
+      if (fullCta) {
+        fullCta.addEventListener('click', async function() {
+          var self = this;
+          self.disabled    = true;
+          self.textContent = '⏳ Adding your full routine...';
+          try {
+            var vRequests = fullHandles.map(function(handle) {
+              return fetch('/products/' + handle + '.js')
+                .then(function(r) { return r.ok ? r.json() : null; })
+                .then(function(d) { return d && d.variants && d.variants[0] ? d.variants[0].id : null; })
+                .catch(function() { return null; });
+            });
+            var vIds  = await Promise.all(vRequests);
+            var items = vIds.filter(Boolean).map(function(id) { return { id: id, quantity: 1 }; });
+            if (items.length === 0) throw new Error('Could not load products.');
+            var cartRes = await fetch('/cart/add.js', {
+              method:  'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body:    JSON.stringify({ items: items })
+            });
+            if (!cartRes.ok) throw new Error('Could not add to cart.');
+            self.textContent = '✓ Full routine added! Going to checkout...';
+            setTimeout(function() { window.location.href = '/checkout?discount=KOI25FULL'; }, 600);
+          } catch(err) {
+            console.error('[SHATOKB FULL]', err);
+            self.disabled    = false;
+            self.textContent = '✦ Add my Full Routine — ' + fmtF(totalFullDesc) + ' ✦';
+            alert('Something went wrong. Please try again.');
+          }
+        });
+      }
+
+      // ── 10. Estilos del Full Routine card (solo una vez) ──────────────────────
+      if (!document.getElementById('stk-full-style')) {
+        var stFull = document.createElement('style');
+        stFull.id = 'stk-full-style';
+        stFull.textContent = [
+          '@keyframes _stkFullShimmer{0%{transform:translateX(-130%) skewX(-18deg)}100%{transform:translateX(280%) skewX(-18deg)}}',
+          '@keyframes _stkFullPulse{0%,100%{box-shadow:0 0 0 0 rgba(139,92,246,0),0 10px 32px rgba(99,102,241,.35)}50%{box-shadow:0 0 0 8px rgba(99,102,241,.12),0 10px 32px rgba(99,102,241,.35)}}',
+          '@keyframes _stkFullBlink{0%,100%{opacity:1}50%{opacity:0.4}}',
+
+          '#stk-full-card{box-sizing:border-box;background:linear-gradient(145deg,#11111e 0%,#0d0d1a 60%,#131320 100%);border:1.5px solid rgba(99,102,241,0.45);border-radius:18px;padding:24px 22px 20px;margin:20px 0 20px;position:relative;overflow:hidden;}',
+          '#stk-full-card::before{content:"";position:absolute;top:0;left:10%;width:80%;height:2px;background:linear-gradient(90deg,transparent,rgba(99,102,241,.7),transparent);pointer-events:none;}',
+          '#stk-full-card::after{content:"";position:absolute;top:0;left:0;width:35%;height:100%;background:linear-gradient(90deg,transparent,rgba(99,102,241,.06),transparent);transform:translateX(-130%) skewX(-18deg);animation:_stkFullShimmer 5s ease-in-out 2.5s infinite;pointer-events:none;}',
+
+          '.stk-full__badge-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}',
+          '.stk-full__badge{font-family:Prompt,"Arial Black",sans-serif;font-size:11px;font-weight:800;letter-spacing:0.08em;padding:4px 10px;border-radius:20px;text-transform:uppercase;}',
+          '.stk-full__badge--label{background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.4);}',
+          '.stk-full__badge--off{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;}',
+          '.stk-full__badge--best{background:rgba(250,204,21,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.35);}',
+
+          '.stk-full__headline{font-family:Prompt,"Arial Black",sans-serif;font-size:18px;font-weight:700;color:#e0e7ff;margin:0 0 6px;line-height:1.3;}',
+          '.stk-full__sub{font-family:Arimo,Arial,sans-serif;font-size:13px;color:rgba(129,140,248,.75);margin:0 0 18px;}',
+
+          '.stk-full__prods{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;}',
+          '.stk-full__prod-item{display:flex;align-items:center;gap:10px;background:rgba(99,102,241,.06);border-radius:8px;padding:8px 12px;}',
+          '.stk-full__prod-num{width:22px;height:22px;border-radius:50%;background:rgba(99,102,241,.18);color:#818cf8;font-family:Prompt,sans-serif;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}',
+          '.stk-full__prod-name{flex:1;font-family:Arimo,Arial,sans-serif;font-size:13px;font-weight:600;color:#c7d2fe;}',
+          '.stk-full__prod-price{font-family:Arimo,Arial,sans-serif;font-size:13px;color:rgba(129,140,248,.7);white-space:nowrap;}',
+          '.stk-full__prod-more{font-family:Arimo,Arial,sans-serif;font-size:12px;color:rgba(129,140,248,.55);padding:4px 12px;text-align:center;}',
+
+          '.stk-full__price-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;}',
+          '.stk-full__price-original{font-family:Arimo,Arial,sans-serif;font-size:16px;color:rgba(99,102,241,.5);text-decoration:line-through;}',
+          '.stk-full__price-final{font-family:Prompt,"Arial Black",sans-serif;font-size:26px;font-weight:800;color:#818cf8;}',
+          '.stk-full__shipping-badge{font-family:Arimo,Arial,sans-serif;font-size:12px;font-weight:700;color:#4ade80;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);border-radius:20px;padding:3px 10px;}',
+
+          '.stk-full__countdown-wrap{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.3);border-radius:10px;padding:10px 14px;margin-bottom:18px;}',
+          '.stk-full__countdown-label{font-family:Arimo,Arial,sans-serif;font-size:12px;color:rgba(129,140,248,.7);}',
+          '.stk-full__countdown-display{font-family:Prompt,"Arial Black",sans-serif;font-size:22px;font-weight:800;color:#e0e7ff;letter-spacing:0.06em;min-width:70px;}',
+
+          '.stk-full__cta{display:block;width:100%;box-sizing:border-box;position:relative;overflow:hidden;background:linear-gradient(135deg,#4338ca 0%,#3730a3 55%,#4f46e5 100%);color:#fff;border:none;border-radius:14px;padding:20px 28px;min-height:62px;font-family:Prompt,"Arial Black",sans-serif;font-size:17px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;text-align:center;cursor:pointer;margin-bottom:12px;box-shadow:0 10px 32px rgba(79,70,229,.45),inset 0 1px 0 rgba(255,255,255,.12);animation:_stkFullPulse 3s ease-in-out 1.5s infinite;transition:filter 0.2s,transform 0.2s;}',
+          '.stk-full__cta:hover{filter:brightness(1.12);transform:translateY(-2px);}',
+          '.stk-full__cta:disabled{animation:none;opacity:0.5;cursor:not-allowed;}',
+          '.stk-full__guarantee{font-family:Arimo,Arial,sans-serif;font-size:12px;color:rgba(129,140,248,.6);text-align:center;margin:0;}',
+        ].join('');
+        document.head.appendChild(stFull);
+      }
+
+    })(); // fin shatokbInyectarFullRoutineCard
+    // ══════════════════════════════════════════════════════════════
+    // FIN FULL ROUTINE CARD
+    // ══════════════════════════════════════════════════════════════
   }, delayBtn);
 };
 
