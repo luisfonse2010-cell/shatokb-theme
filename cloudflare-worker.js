@@ -18,7 +18,7 @@
  *
  * ============================================================
  */
-/* ── Last deploy: 2026-06-26T19:09:50.797Z */
+/* ── Last deploy: 2026-07-24T17:37:20.237Z */
 
 
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
@@ -518,6 +518,18 @@ async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
   const totalRaw   = reportData.totalCarrito || 0;
   const total      = parseFloat(Number(totalRaw).toFixed(2));
 
+  // ── Campos de descuento ──────────────────────────────────────────────────
+  // Full Routine: 25% OFF con código KOI25FULL
+  // Kit Starter:  20% OFF con código KOI20
+  // El evento Klaviyo siempre refleja el descuento de Full Routine (25%)
+  // porque el primer email se dispara cuando el usuario ve su Skin Report
+  // y aún no ha elegido qué pack comprar — se le presenta KOI25FULL.
+  const DESCUENTO_PCT   = 0.25;
+  const CODIGO_DESC     = 'KOI25FULL';
+  const totalConDesc    = parseFloat((total * (1 - DESCUENTO_PCT)).toFixed(2));
+  const ahorroTotal     = parseFloat((total - totalConDesc).toFixed(2));
+  const pctDescDisplay  = Math.round(DESCUENTO_PCT * 100); // 25
+
   // Garantizar nombre bonito del perfil — si el nombre recibido coincide con una clave
   // del mapa (es el ID raw), o no está en el mapa de nombres bonitos, usar el mapa.
   const perfilId      = perfil.id || '';
@@ -621,6 +633,10 @@ async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
                 rutina_am:          rutinaAM.join(' → '),
                 rutina_pm:          rutinaPM.join(' → '),
                 total_rutina:       total,
+                total_con_descuento: totalConDesc,
+                ahorro_total:       ahorroTotal,
+                porcentaje_descuento: pctDescDisplay,
+                codigo_descuento:   CODIGO_DESC,
                 productos_count:    (reportData.productosSeleccionados || []).length,
                 // ── Ingredientes estrella (del primer producto principal) ─
                 ingrediente_estrella: (() => {
@@ -658,6 +674,14 @@ async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
           rutina_am:           rutinaAM.join(' → '),
           rutina_pm:           rutinaPM.join(' → '),
           total_carrito:       total,
+          // ── Descuento Full Routine (25% OFF · KOI25FULL) ─────────────────
+          total_con_descuento: totalConDesc,
+          ahorro_total:        ahorroTotal,
+          porcentaje_descuento: pctDescDisplay,
+          codigo_descuento:    CODIGO_DESC,
+          checkout_url_con_descuento: reportData.checkoutUrl
+            ? `${reportData.checkoutUrl}?discount=${CODIGO_DESC}`
+            : `https://shatokb.com/cart?discount=${CODIGO_DESC}`,
           productos_count:     productos.length,
           // Array estructurado — usado en template Klaviyo con {% for product in event.productos %}
           productos: productos.map(p => {
@@ -711,6 +735,28 @@ async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
             return prods.map((p, i) => buildProductCard(p, i + 1)).join('');
           })(),
           idioma:              reportData.idioma  || 'es',
+
+          // ── Bloque HTML de precio con descuento — listo para incrustar en Klaviyo ──
+          // Variables disponibles: {{ event.total_carrito }}, {{ event.total_con_descuento }},
+          // {{ event.codigo_descuento }}, {{ event.ahorro_total }}, {{ event.porcentaje_descuento }}
+          precio_html: total > 0 ? `
+<table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#1a1318 0%,#2d1a26 100%);border-radius:16px;margin:24px 0;overflow:hidden;">
+  <tr>
+    <td style="padding:28px 24px;text-align:center;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#e8a8c0;margin-bottom:10px;">🌸 YOUR PERSONALIZED ROUTINE</div>
+      <div style="margin-bottom:6px;">
+        <span style="font-size:16px;font-weight:500;color:#a89ea6;text-decoration:line-through;margin-right:8px;">$${total.toFixed(2)}</span>
+        <span style="display:inline-block;background:linear-gradient(135deg,#db2777,#be185d);color:#fff;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;">-${pctDescDisplay}% OFF</span>
+      </div>
+      <div style="font-size:42px;font-weight:800;color:#ffffff;line-height:1;margin-bottom:4px;">$${totalConDesc.toFixed(2)}</div>
+      <div style="font-size:13px;color:#e8a8c0;margin-bottom:20px;">You save <strong style="color:#f9a8d4;">$${ahorroTotal.toFixed(2)}</strong> with your KOI routine</div>
+      <div style="background:rgba(219,39,119,0.15);border:1.5px dashed rgba(219,39,119,0.50);border-radius:10px;padding:12px 20px;margin-bottom:20px;display:inline-block;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#e8a8c0;margin-bottom:4px;">Use this code at checkout</div>
+        <div style="font-size:22px;font-weight:900;letter-spacing:0.15em;color:#ffffff;">${CODIGO_DESC}</div>
+      </div>
+    </td>
+  </tr>
+</table>` : '',
 
           // ── Análisis cutáneo KOI (foto GPT-4o) ───────────────────────────────
           // vision_html — bloque HTML pregenerado listo para incrustar en Klaviyo.
