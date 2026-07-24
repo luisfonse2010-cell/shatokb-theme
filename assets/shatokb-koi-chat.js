@@ -20,7 +20,7 @@
 
 (function () {
   'use strict';
-  console.log('%c[KOI] shatokb-koi-chat.js v4.4 cargado ✅ — PATCH timing fix (quiz.js lo maneja post-cart/add.js)', 'color:#e75480;font-weight:bold;font-size:13px');
+  console.log('%c[KOI] shatokb-koi-chat.js v4.7 cargado ✅ — FIX: enviarSkinReport() siempre se llama aunque email ya exista en localStorage', 'color:#e75480;font-weight:bold;font-size:13px');
 
   /* ── Configuración ──────────────────────────────────────── */
   const KOI_CONFIG = {
