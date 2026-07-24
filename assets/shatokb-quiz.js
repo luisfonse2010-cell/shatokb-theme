@@ -3537,10 +3537,197 @@ window.shatokbRevelarProductos = function () {
     if (overlay && overlay.parentNode) overlay.remove();
   }, 800);
 
-  // 7. Inyectar botón CTA al final de los productos — visible garantizado
+  // 7. Inyectar botón CTA directamente al final del blurred, visible garantizado
   var delayBtn = 200 + steps.length * 130 + 400;
   setTimeout(function () {
+    // Evitar duplicado si ya existe
     if (document.getElementById('stk-add-btn-bottom')) return;
+
+    // ══════════════════════════════════════════════════════════════
+    // KOI STARTER KIT — Bloque de conversión con 20% OFF + envío gratis + countdown 30 min
+    // Se inyecta ANTES del botón "Add my full routine to cart"
+    // ══════════════════════════════════════════════════════════════
+    (function shatokbInyectarStarterKit() {
+      if (document.getElementById('stk-kit-card')) return;
+
+      // ── 1. Obtener top-3 productos seleccionados del catálogo ──────────────────
+      var kitProds = [];
+      var selectedEntries = Object.entries(shatokbState.selectedProducts || {});
+      var kitEntries = selectedEntries.slice(0, 3);
+      kitEntries.forEach(function(entry) {
+        var prodId = entry[1];
+        var prod = SHATOKB_CATALOGO.find(function(p) { return p.id === prodId; });
+        if (prod) kitProds.push(prod);
+      });
+
+      if (kitProds.length < 2) return;
+
+      // ── 2. Calcular precios ───────────────────────────────────────────────────
+      var totalOriginal = kitProds.reduce(function(sum, p) { return sum + (p.precio_num || 0); }, 0);
+      var totalKit      = totalOriginal * 0.80;
+      function fmt(n) { return '$' + n.toFixed(2); }
+
+      // ── 3. Handles para el carrito ───────────────────────────────────────────
+      var kitHandles = kitProds.map(function(p) { return p.handle || p.id; });
+
+      // ── 4. HTML de lista de productos ─────────────────────────────────────────
+      var prodListHTML = kitProds.map(function(p, i) {
+        return '<span class="stk-kit__prod-item">' +
+               '<span class="stk-kit__prod-num">' + (i + 1) + '</span>' +
+               '<span class="stk-kit__prod-name">' + (p.nombre || p.id) + '</span>' +
+               '<span class="stk-kit__prod-price">' + fmt(p.precio_num || 0) + '</span>' +
+               '</span>';
+      }).join('');
+
+      // ── 5. Crear el card del Kit ──────────────────────────────────────────────
+      var kitCard = document.createElement('div');
+      kitCard.id = 'stk-kit-card';
+      kitCard.setAttribute('role', 'region');
+      kitCard.setAttribute('aria-label', 'KOI Starter Kit — Exclusive offer');
+
+      kitCard.innerHTML =
+        '<div class="stk-kit__badge-row">' +
+          '<span class="stk-kit__badge stk-kit__badge--new">✦ KOI STARTER KIT ✦</span>' +
+          '<span class="stk-kit__badge stk-kit__badge--off">20% OFF</span>' +
+        '</div>' +
+        '<p class="stk-kit__headline">Your personalized first-step routine</p>' +
+        '<p class="stk-kit__sub">Curated by KOI for your exact skin · Free shipping · No minimum</p>' +
+        '<div class="stk-kit__prods">' + prodListHTML + '</div>' +
+        '<div class="stk-kit__price-row">' +
+          '<span class="stk-kit__price-original">' + fmt(totalOriginal) + '</span>' +
+          '<span class="stk-kit__price-final">' + fmt(totalKit) + '</span>' +
+          '<span class="stk-kit__shipping-badge">🚚 FREE SHIPPING</span>' +
+        '</div>' +
+        '<div class="stk-kit__countdown-wrap">' +
+          '<span class="stk-kit__countdown-label">⏱ Offer expires in</span>' +
+          '<span class="stk-kit__countdown-timer" id="stk-kit-timer">30:00</span>' +
+        '</div>' +
+        '<button class="stk-kit__cta" id="stk-kit-btn" type="button">' +
+          '✦ Add my Starter Kit — ' + fmt(totalKit) + ' ✦' +
+        '</button>' +
+        '<p class="stk-kit__guarantee">🛡️ 30-Day Money-Back Guarantee · Cancel anytime</p>';
+
+      // ── 6. Insertar ANTES de #shatokb-ctas ───────────────────────────────────
+      var ctasEl = document.getElementById('shatokb-ctas');
+      if (ctasEl && ctasEl.parentNode === blurred) {
+        blurred.insertBefore(kitCard, ctasEl);
+      } else {
+        blurred.appendChild(kitCard);
+      }
+
+      // ── 7. Fade-in suave ──────────────────────────────────────────────────────
+      kitCard.style.opacity    = '0';
+      kitCard.style.transform  = 'translateY(16px)';
+      kitCard.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          kitCard.style.opacity   = '1';
+          kitCard.style.transform = 'translateY(0)';
+        });
+      });
+
+      // ── 8. Countdown 30 minutos ───────────────────────────────────────────────
+      var kitTimerEl = document.getElementById('stk-kit-timer');
+      var kitSeconds = 30 * 60;
+      var kitTimerInterval = setInterval(function() {
+        if (kitSeconds <= 0) {
+          clearInterval(kitTimerInterval);
+          if (kitTimerEl) kitTimerEl.textContent = '00:00';
+          var kitBtn = document.getElementById('stk-kit-btn');
+          if (kitBtn) {
+            kitBtn.disabled = true;
+            kitBtn.style.opacity = '0.5';
+            kitBtn.textContent = 'Offer expired — see full routine below';
+          }
+          return;
+        }
+        kitSeconds--;
+        var m  = String(Math.floor(kitSeconds / 60)).padStart(2, '0');
+        var s2 = String(kitSeconds % 60).padStart(2, '0');
+        if (kitTimerEl) {
+          kitTimerEl.textContent = m + ':' + s2;
+          if (kitSeconds < 300) kitTimerEl.style.color     = '#ff6b6b';
+          if (kitSeconds < 60)  kitTimerEl.style.animation = '_stkKitBlink 0.7s ease-in-out infinite';
+        }
+      }, 1000);
+
+      // ── 9. Botón "Add Starter Kit" ────────────────────────────────────────────
+      var kitCta = document.getElementById('stk-kit-btn');
+      if (kitCta) {
+        kitCta.addEventListener('click', async function() {
+          var self = this;
+          self.disabled    = true;
+          self.textContent = '⏳ Adding your kit...';
+          try {
+            var variantRequests = kitHandles.map(function(handle) {
+              return fetch('/products/' + handle + '.js')
+                .then(function(r) { return r.ok ? r.json() : null; })
+                .then(function(d) { return d && d.variants && d.variants[0] ? d.variants[0].id : null; })
+                .catch(function() { return null; });
+            });
+            var variantIds = await Promise.all(variantRequests);
+            var items = variantIds
+              .filter(function(id) { return id !== null; })
+              .map(function(id)    { return { id: id, quantity: 1 }; });
+            if (items.length === 0) throw new Error('Could not load product data.');
+            var cartRes = await fetch('/cart/add.js', {
+              method:  'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body:    JSON.stringify({ items: items })
+            });
+            if (!cartRes.ok) throw new Error('Could not add to cart.');
+            self.textContent = '✓ Kit added! Going to checkout...';
+            setTimeout(function() { window.location.href = '/checkout?discount=KOI20'; }, 600);
+          } catch(err) {
+            console.error('[SHATOKB KIT]', err);
+            self.disabled    = false;
+            self.textContent = '✦ Add my Starter Kit — ' + fmt(totalKit) + ' ✦';
+            alert('Something went wrong. Please try again.');
+          }
+        });
+      }
+
+      // ── 10. Inyectar estilos del Kit (solo una vez) ───────────────────────────
+      if (!document.getElementById('stk-kit-style')) {
+        var st = document.createElement('style');
+        st.id = 'stk-kit-style';
+        st.textContent = [
+          '@keyframes _stkKitShimmer{0%{transform:translateX(-130%) skewX(-18deg)}100%{transform:translateX(280%) skewX(-18deg)}}',
+          '@keyframes _stkKitPulse{0%,100%{box-shadow:0 0 0 0 rgba(236,149,184,0),0 10px 32px rgba(236,149,184,.35)}50%{box-shadow:0 0 0 8px rgba(236,149,184,.12),0 10px 32px rgba(236,149,184,.35)}}',
+          '@keyframes _stkKitBlink{0%,100%{opacity:1}50%{opacity:0.4}}',
+          '#stk-kit-card{box-sizing:border-box;background:linear-gradient(145deg,#1e1115 0%,#180e12 60%,#1c1018 100%);border:1.5px solid rgba(236,149,184,0.45);border-radius:18px;padding:24px 22px 20px;margin:32px 0 20px;position:relative;overflow:hidden;}',
+          '#stk-kit-card::before{content:"";position:absolute;top:0;left:10%;width:80%;height:2px;background:linear-gradient(90deg,transparent,rgba(236,149,184,.7),transparent);pointer-events:none;}',
+          '#stk-kit-card::after{content:"";position:absolute;top:0;left:0;width:35%;height:100%;background:linear-gradient(90deg,transparent,rgba(236,149,184,.06),transparent);transform:translateX(-130%) skewX(-18deg);animation:_stkKitShimmer 5s ease-in-out 2s infinite;pointer-events:none;}',
+          '.stk-kit__badge-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}',
+          '.stk-kit__badge{font-family:Prompt,"Arial Black",sans-serif;font-size:11px;font-weight:800;letter-spacing:0.08em;padding:4px 10px;border-radius:20px;text-transform:uppercase;}',
+          '.stk-kit__badge--new{background:rgba(236,149,184,0.15);color:#ec95b8;border:1px solid rgba(236,149,184,0.4);}',
+          '.stk-kit__badge--off{background:linear-gradient(135deg,#b83280,#ec95b8);color:#fff;border:none;}',
+          '.stk-kit__headline{font-family:Prompt,"Arial Black",sans-serif;font-size:18px;font-weight:700;color:#f5e6ef;margin:0 0 6px;line-height:1.3;}',
+          '.stk-kit__sub{font-family:Arimo,Arial,sans-serif;font-size:13px;color:rgba(236,149,184,.75);margin:0 0 18px;}',
+          '.stk-kit__prods{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;}',
+          '.stk-kit__prod-item{display:flex;align-items:center;gap:10px;background:rgba(236,149,184,.06);border-radius:8px;padding:8px 12px;}',
+          '.stk-kit__prod-num{width:22px;height:22px;border-radius:50%;background:rgba(236,149,184,.18);color:#ec95b8;font-family:Prompt,sans-serif;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}',
+          '.stk-kit__prod-name{flex:1;font-family:Arimo,Arial,sans-serif;font-size:13px;font-weight:600;color:#f0dce6;}',
+          '.stk-kit__prod-price{font-family:Arimo,Arial,sans-serif;font-size:13px;color:rgba(236,149,184,.7);white-space:nowrap;}',
+          '.stk-kit__price-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;}',
+          '.stk-kit__price-original{font-family:Arimo,Arial,sans-serif;font-size:16px;color:rgba(236,149,184,.5);text-decoration:line-through;}',
+          '.stk-kit__price-final{font-family:Prompt,"Arial Black",sans-serif;font-size:26px;font-weight:800;color:#ec95b8;}',
+          '.stk-kit__shipping-badge{font-family:Arimo,Arial,sans-serif;font-size:12px;font-weight:700;color:#4ade80;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);border-radius:20px;padding:3px 10px;}',
+          '.stk-kit__countdown-wrap{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.25);border-radius:10px;padding:10px 14px;margin-bottom:18px;}',
+          '.stk-kit__countdown-label{font-family:Arimo,Arial,sans-serif;font-size:12px;color:rgba(236,149,184,.7);}',
+          '.stk-kit__countdown-timer{font-family:Prompt,"Arial Black",sans-serif;font-size:22px;font-weight:800;color:#f5e6ef;letter-spacing:0.06em;min-width:70px;}',
+          '.stk-kit__cta{display:block;width:100%;box-sizing:border-box;position:relative;overflow:hidden;background:linear-gradient(135deg,#b83280 0%,#8b1a6b 55%,#9c2073 100%);color:#fff;border:none;border-radius:14px;padding:20px 28px;min-height:62px;font-family:Prompt,"Arial Black",sans-serif;font-size:17px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;text-align:center;cursor:pointer;margin-bottom:12px;box-shadow:0 10px 32px rgba(184,50,128,.45),inset 0 1px 0 rgba(255,255,255,.12);animation:_stkKitPulse 3s ease-in-out 1s infinite;transition:filter 0.2s,transform 0.2s;}',
+          '.stk-kit__cta:hover{filter:brightness(1.12);transform:translateY(-2px);}',
+          '.stk-kit__cta:disabled{animation:none;opacity:0.5;cursor:not-allowed;}',
+          '.stk-kit__guarantee{font-family:Arimo,Arial,sans-serif;font-size:12px;color:rgba(236,149,184,.6);text-align:center;margin:0;}',
+        ].join('');
+        document.head.appendChild(st);
+      }
+
+    })(); // fin shatokbInyectarStarterKit
+    // ══════════════════════════════════════════════════════════════
+    // FIN KOI STARTER KIT
+    // ══════════════════════════════════════════════════════════════
 
     var btn = document.createElement('button');
     btn.id        = 'stk-add-btn-bottom';
@@ -3574,8 +3761,6 @@ window.shatokbRevelarProductos = function () {
       'transition:opacity 0.4s ease,transform 0.4s ease'
     ].join(';');
 
-    // Insertar ANTES de #shatokb-ctas (botón redo) para que quede visible
-    // encima del sticky bar y del botón "↺ My skin feels different"
     var ctasEl = document.getElementById('shatokb-ctas');
     if (ctasEl && ctasEl.parentNode === blurred) {
       blurred.insertBefore(btn, ctasEl);
@@ -3583,7 +3768,6 @@ window.shatokbRevelarProductos = function () {
       blurred.appendChild(btn);
     }
 
-    // Fade-in
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
         btn.style.opacity   = '1';
@@ -3591,7 +3775,6 @@ window.shatokbRevelarProductos = function () {
       });
     });
 
-    // Keyframes + pulso
     if (!document.getElementById('stk-cta-bottom-style')) {
       var s = document.createElement('style');
       s.id = 'stk-cta-bottom-style';
@@ -3604,20 +3787,19 @@ window.shatokbRevelarProductos = function () {
       document.head.appendChild(s);
     }
 
-    // Hover
     btn.addEventListener('mouseenter', function () {
-      this.style.background  = 'linear-gradient(135deg,#36212a 0%,#271d22 55%,#301e27 100%)';
-      this.style.borderColor = 'rgba(236,149,184,0.90)';
-      this.style.color       = '#f5bad0';
-      this.style.transform   = 'translateY(-3px)';
-      this.style.boxShadow   = '0 0 0 5px rgba(236,149,184,0.10),0 18px 44px rgba(236,149,184,0.40)';
+      this.style.background   = 'linear-gradient(135deg,#36212a 0%,#271d22 55%,#301e27 100%)';
+      this.style.borderColor  = 'rgba(236,149,184,0.90)';
+      this.style.color        = '#f5bad0';
+      this.style.transform    = 'translateY(-3px)';
+      this.style.boxShadow    = '0 0 0 5px rgba(236,149,184,0.10),0 18px 44px rgba(236,149,184,0.40)';
     });
     btn.addEventListener('mouseleave', function () {
-      this.style.background  = 'linear-gradient(135deg,#2b1e24 0%,#1c181a 55%,#261820 100%)';
-      this.style.borderColor = 'rgba(236,149,184,0.55)';
-      this.style.color       = '#ec95b8';
-      this.style.transform   = '';
-      this.style.boxShadow   = '0 8px 28px rgba(236,149,184,0.28),inset 0 1px 0 rgba(255,255,255,0.08)';
+      this.style.background   = 'linear-gradient(135deg,#2b1e24 0%,#1c181a 55%,#261820 100%)';
+      this.style.borderColor  = 'rgba(236,149,184,0.55)';
+      this.style.color        = '#ec95b8';
+      this.style.transform    = '';
+      this.style.boxShadow    = '0 8px 28px rgba(236,149,184,0.28),inset 0 1px 0 rgba(255,255,255,0.08)';
     });
   }, delayBtn);
 };
