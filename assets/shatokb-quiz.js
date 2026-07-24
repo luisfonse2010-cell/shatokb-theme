@@ -4017,48 +4017,48 @@ window.shatokbRevelarProductos = function () {
         stFull.id = 'stk-full-style';
         stFull.textContent = [
           '@keyframes _stkFullShimmer{0%{transform:translateX(-130%) skewX(-18deg)}100%{transform:translateX(280%) skewX(-18deg)}}',
-          '@keyframes _stkFullPulse{0%,100%{box-shadow:0 0 0 0 rgba(249,168,212,0),0 10px 32px rgba(249,168,212,.20)}50%{box-shadow:0 0 0 8px rgba(249,168,212,.10),0 10px 32px rgba(249,168,212,.20)}}',
+          '@keyframes _stkFullPulse{0%,100%{box-shadow:0 0 0 0 rgba(236,149,184,0),0 10px 32px rgba(236,149,184,.18)}50%{box-shadow:0 0 0 8px rgba(236,149,184,.12),0 10px 32px rgba(236,149,184,.18)}}',
           '@keyframes _stkFullBlink{0%,100%{opacity:1}50%{opacity:0.4}}',
 
-          /* Card — fondo gris oscuro neutro, borde rosa claro sutil */
-          '#stk-full-card{box-sizing:border-box;background:linear-gradient(145deg,#1c1c1e 0%,#161618 60%,#1a1a1c 100%);border:1.5px solid rgba(249,168,212,0.22);border-radius:18px;padding:24px 22px 20px;margin:20px 0 20px;position:relative;overflow:hidden;}',
-          '#stk-full-card::before{content:"";position:absolute;top:0;left:10%;width:80%;height:2px;background:linear-gradient(90deg,transparent,rgba(249,168,212,.40),transparent);pointer-events:none;}',
-          '#stk-full-card::after{content:"";position:absolute;top:0;left:0;width:35%;height:100%;background:linear-gradient(90deg,transparent,rgba(249,168,212,.03),transparent);transform:translateX(-130%) skewX(-18deg);animation:_stkFullShimmer 5s ease-in-out 2.5s infinite;pointer-events:none;}',
+          /* Card — fondo blanco / rosa muy suave, borde rosa claro */
+          '#stk-full-card{box-sizing:border-box;background:linear-gradient(145deg,#ffffff 0%,#fdf2f8 55%,#fff0f6 100%);border:1.5px solid rgba(236,149,184,0.35);border-radius:18px;padding:24px 22px 20px;margin:20px 0 20px;position:relative;overflow:hidden;box-shadow:0 4px 24px rgba(236,149,184,.15);}',
+          '#stk-full-card::before{content:"";position:absolute;top:0;left:10%;width:80%;height:2px;background:linear-gradient(90deg,transparent,rgba(236,149,184,.50),transparent);pointer-events:none;}',
+          '#stk-full-card::after{content:"";position:absolute;top:0;left:0;width:35%;height:100%;background:linear-gradient(90deg,transparent,rgba(236,149,184,.06),transparent);transform:translateX(-130%) skewX(-18deg);animation:_stkFullShimmer 5s ease-in-out 2.5s infinite;pointer-events:none;}',
 
           '.stk-full__badge-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}',
           '.stk-full__badge{font-family:Prompt,"Arial Black",sans-serif;font-size:11px;font-weight:800;letter-spacing:0.08em;padding:4px 10px;border-radius:20px;text-transform:uppercase;}',
-          /* Badge etiqueta — rosa claro sobre fondo oscuro */
-          '.stk-full__badge--label{background:rgba(249,168,212,0.12);color:#f9a8d4;border:1px solid rgba(249,168,212,0.28);}',
-          /* Badge 25% OFF — rosa medio oscuro sólido */
+          /* Badge etiqueta — rosa suave sobre fondo claro */
+          '.stk-full__badge--label{background:rgba(236,149,184,0.15);color:#9d174d;border:1px solid rgba(236,149,184,0.40);}',
+          /* Badge 25% OFF — rosa medio sólido */
           '.stk-full__badge--off{background:linear-gradient(135deg,#be185d,#db2777);color:#fff;border:none;}',
           /* Badge BEST VALUE — rosa pálido muy sutil */
-          '.stk-full__badge--best{background:rgba(249,168,212,0.10);color:#fce7f3;border:1px solid rgba(249,168,212,0.22);}',
+          '.stk-full__badge--best{background:rgba(236,149,184,0.12);color:#be185d;border:1px solid rgba(236,149,184,0.30);}',
 
-          '.stk-full__headline{font-family:Prompt,"Arial Black",sans-serif;font-size:18px;font-weight:700;color:#ffffff;margin:0 0 6px;line-height:1.3;}',
-          '.stk-full__sub{font-family:Arimo,Arial,sans-serif;font-size:13px;color:rgba(249,168,212,.65);margin:0 0 18px;}',
+          '.stk-full__headline{font-family:Prompt,"Arial Black",sans-serif;font-size:18px;font-weight:700;color:#1c181a;margin:0 0 6px;line-height:1.3;}',
+          '.stk-full__sub{font-family:Arimo,Arial,sans-serif;font-size:13px;color:#9d174d;margin:0 0 18px;}',
 
           '.stk-full__prods{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;}',
-          '.stk-full__prod-item{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border-radius:8px;padding:8px 12px;}',
-          '.stk-full__prod-num{width:22px;height:22px;border-radius:50%;background:rgba(249,168,212,.15);color:#f9a8d4;font-family:Prompt,sans-serif;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}',
-          '.stk-full__prod-name{flex:1;font-family:Arimo,Arial,sans-serif;font-size:13px;font-weight:500;color:#f3f4f6;}',
-          '.stk-full__prod-price{font-family:Arimo,Arial,sans-serif;font-size:13px;color:rgba(249,168,212,.70);white-space:nowrap;}',
-          '.stk-full__prod-more{font-family:Arimo,Arial,sans-serif;font-size:12px;color:rgba(249,168,212,.40);padding:4px 12px;text-align:center;}',
+          '.stk-full__prod-item{display:flex;align-items:center;gap:10px;background:rgba(236,149,184,.08);border-radius:8px;padding:8px 12px;border:1px solid rgba(236,149,184,.18);}',
+          '.stk-full__prod-num{width:22px;height:22px;border-radius:50%;background:rgba(236,149,184,.25);color:#be185d;font-family:Prompt,sans-serif;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}',
+          '.stk-full__prod-name{flex:1;font-family:Arimo,Arial,sans-serif;font-size:13px;font-weight:500;color:#1c181a;}',
+          '.stk-full__prod-price{font-family:Arimo,Arial,sans-serif;font-size:13px;color:#be185d;white-space:nowrap;}',
+          '.stk-full__prod-more{font-family:Arimo,Arial,sans-serif;font-size:12px;color:rgba(157,23,77,.55);padding:4px 12px;text-align:center;}',
 
           '.stk-full__price-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;}',
-          '.stk-full__price-original{font-family:Arimo,Arial,sans-serif;font-size:16px;color:rgba(255,255,255,.35);text-decoration:line-through;}',
-          /* Precio final — blanco puro, tamaño grande */
-          '.stk-full__price-final{font-family:Prompt,"Arial Black",sans-serif;font-size:26px;font-weight:800;color:#ffffff;}',
-          '.stk-full__shipping-badge{font-family:Arimo,Arial,sans-serif;font-size:12px;font-weight:700;color:#4ade80;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);border-radius:20px;padding:3px 10px;}',
+          '.stk-full__price-original{font-family:Arimo,Arial,sans-serif;font-size:16px;color:rgba(28,24,26,.35);text-decoration:line-through;}',
+          /* Precio final — rosa intenso, legible sobre fondo claro */
+          '.stk-full__price-final{font-family:Prompt,"Arial Black",sans-serif;font-size:26px;font-weight:800;color:#be185d;}',
+          '.stk-full__shipping-badge{font-family:Arimo,Arial,sans-serif;font-size:12px;font-weight:700;color:#166534;background:rgba(22,101,52,.10);border:1px solid rgba(22,101,52,.25);border-radius:20px;padding:3px 10px;}',
 
-          '.stk-full__countdown-wrap{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.20);border-radius:10px;padding:10px 14px;margin-bottom:18px;}',
-          '.stk-full__countdown-label{font-family:Arimo,Arial,sans-serif;font-size:12px;color:rgba(249,168,212,.60);}',
-          '.stk-full__countdown-display{font-family:Prompt,"Arial Black",sans-serif;font-size:22px;font-weight:800;color:#ffffff;letter-spacing:0.06em;min-width:70px;}',
+          '.stk-full__countdown-wrap{display:flex;align-items:center;gap:10px;background:rgba(236,149,184,.12);border:1px solid rgba(236,149,184,.25);border-radius:10px;padding:10px 14px;margin-bottom:18px;}',
+          '.stk-full__countdown-label{font-family:Arimo,Arial,sans-serif;font-size:12px;color:#9d174d;}',
+          '.stk-full__countdown-display{font-family:Prompt,"Arial Black",sans-serif;font-size:22px;font-weight:800;color:#be185d;letter-spacing:0.06em;min-width:70px;}',
 
-          /* Botón — rosa oscuro/magenta, distinto del Kit (magenta puro) */
-          '.stk-full__cta{display:block;width:100%;box-sizing:border-box;position:relative;overflow:hidden;background:linear-gradient(135deg,#9d174d 0%,#be185d 55%,#a21151 100%);color:#fff;border:none;border-radius:14px;padding:20px 28px;min-height:62px;font-family:Prompt,"Arial Black",sans-serif;font-size:17px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;text-align:center;cursor:pointer;margin-bottom:12px;box-shadow:0 10px 32px rgba(190,24,93,.35),inset 0 1px 0 rgba(255,255,255,.12);animation:_stkFullPulse 3s ease-in-out 1.5s infinite;transition:filter 0.2s,transform 0.2s;}',
-          '.stk-full__cta:hover{filter:brightness(1.12);transform:translateY(-2px);}',
+          /* Botón — rosa claro vivo (igual al hero del quiz), texto oscuro */
+          '.stk-full__cta{display:block;width:100%;box-sizing:border-box;position:relative;overflow:hidden;background:#ec95b8;color:#1c181a;border:none;border-radius:14px;padding:20px 28px;min-height:62px;font-family:Prompt,"Arial Black",sans-serif;font-size:17px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;text-align:center;cursor:pointer;margin-bottom:12px;box-shadow:0 8px 28px rgba(236,149,184,.45),inset 0 1px 0 rgba(255,255,255,.35);animation:_stkFullPulse 3s ease-in-out 1.5s infinite;transition:filter 0.2s,transform 0.2s;}',
+          '.stk-full__cta:hover{filter:brightness(1.08);transform:translateY(-2px);}',
           '.stk-full__cta:disabled{animation:none;opacity:0.5;cursor:not-allowed;}',
-          '.stk-full__guarantee{font-family:Arimo,Arial,sans-serif;font-size:12px;color:rgba(249,168,212,.50);text-align:center;margin:0;}',
+          '.stk-full__guarantee{font-family:Arimo,Arial,sans-serif;font-size:12px;color:rgba(157,23,77,.55);text-align:center;margin:0;}',
         ].join('');
         document.head.appendChild(stFull);
       }

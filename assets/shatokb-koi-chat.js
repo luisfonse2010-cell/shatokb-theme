@@ -331,7 +331,11 @@
         <div class="koi-mini-cart-bar" id="koi-mini-cart-bar">
           <div class="koi-mini-cart-bar__info">
             <span class="koi-mini-cart-bar__label" id="koi-mini-cart-label"></span>
-            <span class="koi-mini-cart-bar__total" id="koi-mini-cart-total"></span>
+            <div class="koi-mini-cart-bar__prices">
+              <span class="koi-mini-cart-bar__total-orig" id="koi-mini-cart-total-orig"></span>
+              <span class="koi-mini-cart-bar__total" id="koi-mini-cart-total"></span>
+              <span class="koi-mini-cart-bar__off-badge">25% OFF</span>
+            </div>
           </div>
           <button class="koi-mini-cart-bar__btn" id="koi-mini-cart-btn"></button>
         </div>
@@ -3205,14 +3209,15 @@ async function enviarDesdeChip (texto) {
 
   // Datos en memoria — se llenan en cuanto llega el precio,
   // aunque la barra aún no sea visible.
-  var _miniCartData = { total: '', label: '', cta: '' };
+  var _miniCartData = { total: '', totalOrig: '', label: '', cta: '' };
 
   // Flag: ¿ya puede mostrarse la barra? (se activa al hacer reveal)
   var _miniCartRevealed = false;
 
-  function _actualizarMiniCartBar (total, label, cta) {
+  function _actualizarMiniCartBar (total, label, cta, totalOrig) {
     // Guardar siempre en memoria (para cuando se active el reveal)
-    if (total) _miniCartData.total = total;
+    if (total)     _miniCartData.total     = total;
+    if (totalOrig) _miniCartData.totalOrig = totalOrig;
     if (label) _miniCartData.label = label;
     if (cta)   _miniCartData.cta   = cta;
 
@@ -3222,15 +3227,17 @@ async function enviarDesdeChip (texto) {
   }
 
   function _renderizarMiniCartBar () {
-    const bar      = document.getElementById('koi-mini-cart-bar');
-    const labelEl  = document.getElementById('koi-mini-cart-label');
-    const totalEl  = document.getElementById('koi-mini-cart-total');
-    const btnEl    = document.getElementById('koi-mini-cart-btn');
+    const bar         = document.getElementById('koi-mini-cart-bar');
+    const labelEl     = document.getElementById('koi-mini-cart-label');
+    const totalEl     = document.getElementById('koi-mini-cart-total');
+    const totalOrigEl = document.getElementById('koi-mini-cart-total-orig');
+    const btnEl       = document.getElementById('koi-mini-cart-btn');
     if (!bar || !labelEl || !totalEl || !btnEl) return;
 
-    const total = _miniCartData.total;
-    const label = _miniCartData.label;
-    const cta   = _miniCartData.cta;
+    const total     = _miniCartData.total;
+    const totalOrig = _miniCartData.totalOrig;
+    const label     = _miniCartData.label;
+    const cta       = _miniCartData.cta;
 
     // Solo mostrar si tenemos precio
     if (!total) return;
@@ -3248,7 +3255,8 @@ async function enviarDesdeChip (texto) {
 
     // Rellenar contenido (label/cta del quiz override si vienen, si no usar i18n)
     labelEl.textContent = label || _t.label;
-    totalEl.textContent = total;
+    totalEl.textContent = total;   // precio con 25% OFF
+    if (totalOrigEl) totalOrigEl.textContent = totalOrig || '';
     btnEl.textContent   = cta   || _t.cta;
 
     // ── LAYOUT BARRA: precio izq fijo, botón centrado/der ───────────────
@@ -3308,12 +3316,63 @@ async function enviarDesdeChip (texto) {
       'border:none',
     ].join(';') + ';');
 
-    // Precio "$107.08"
+    // Contenedor de precios (flex row)
+    const pricesEl = bar.querySelector('.koi-mini-cart-bar__prices');
+    if (pricesEl) {
+      pricesEl.setAttribute('style', [
+        'display:flex',
+        'align-items:center',
+        'gap:6px',
+        'flex-wrap:wrap',
+        'margin:0',
+        'padding:0',
+      ].join(';') + ';');
+    }
+
+    // Precio original — tachado y apagado
+    if (totalOrigEl) {
+      totalOrigEl.setAttribute('style', [
+        'font-family:Arimo,Arial,sans-serif',
+        'font-size:13px',
+        'font-weight:600',
+        'color:rgba(255,255,255,0.35)',
+        'text-decoration:line-through',
+        'line-height:1',
+        'display:' + (totalOrig ? 'inline' : 'none'),
+        'margin:0',
+        'padding:0',
+        'background:transparent',
+        'border:none',
+      ].join(';') + ';');
+    }
+
+    // Badge 25% OFF
+    const offBadgeEl = bar.querySelector('.koi-mini-cart-bar__off-badge');
+    if (offBadgeEl) {
+      offBadgeEl.setAttribute('style', [
+        'display:' + (totalOrig ? 'inline-flex' : 'none'),
+        'align-items:center',
+        'font-family:Arimo,Arial,sans-serif',
+        'font-size:9px',
+        'font-weight:700',
+        'letter-spacing:0.04em',
+        'color:#fff',
+        'background:linear-gradient(135deg,#be185d,#db2777)',
+        'border-radius:20px',
+        'padding:2px 7px',
+        'white-space:nowrap',
+        'margin:0',
+        'border:none',
+        'box-shadow:0 1px 4px rgba(190,24,93,0.35)',
+      ].join(';') + ';');
+    }
+
+    // Precio con 25% OFF — en rosa claro
     totalEl.setAttribute('style', [
       'font-family:Prompt,Arial Black,sans-serif',
       'font-size:20px',
       'font-weight:700',
-      'color:#ffffff',
+      'color:#f9a8d4',
       'line-height:1',
       'display:block',
       'margin:0',
@@ -3523,18 +3582,24 @@ async function enviarDesdeChip (texto) {
       }
 
       // ── 2. Leer precio actual del quiz ───────────────────────
-      // Fuente primaria: #stk-total-amount (escrito por shatokbActualizarTotal())
-      var totalEl = document.getElementById('stk-total-amount');
-      var precioActual = totalEl ? totalEl.textContent.trim() : '';
+      // Fuente primaria: #stk-total-amount (precio con 25% OFF)
+      // y #stk-total-amount-orig (precio original tachado)
+      var totalEl      = document.getElementById('stk-total-amount');
+      var totalOrigEl2 = document.getElementById('stk-total-amount-orig');
+      var precioActual     = totalEl      ? totalEl.textContent.trim()      : '';
+      var precioOrigActual = totalOrigEl2 ? totalOrigEl2.textContent.trim() : '';
 
-      // Fuente secundaria: window.shatokbState.selectedProducts → calcular en vivo
+      // Fuente secundaria: window.shatokbState → calcular en vivo
       if (!precioActual && window.shatokbState && window.SHATOKB_CATALOGO) {
         var total = 0;
         Object.values(window.shatokbState.selectedProducts || {}).forEach(function (prodId) {
           var prod = window.SHATOKB_CATALOGO.find(function (p) { return p.id === prodId; });
           if (prod) total += prod.precio_num || 0;
         });
-        if (total > 0) precioActual = '$' + total.toFixed(2);
+        if (total > 0) {
+          precioOrigActual = '$' + total.toFixed(2);
+          precioActual     = '$' + (total * 0.75).toFixed(2);
+        }
       }
 
       // Fuente terciaria: buscar cualquier elemento con precio en el DOM del quiz
@@ -3557,7 +3622,7 @@ async function enviarDesdeChip (texto) {
 
       var label = 'Estimated total for your routine';
       var cta   = '🛒 Add my full routine to cart';
-      _actualizarMiniCartBar(precioActual, label, cta);
+      _actualizarMiniCartBar(precioActual, label, cta, precioOrigActual);
 
     }, 600);
   })();
@@ -3571,11 +3636,13 @@ async function enviarDesdeChip (texto) {
       var _fnOriginalTotal = window.shatokbActualizarTotal;
       window.shatokbActualizarTotal = function () {
         _fnOriginalTotal.apply(this, arguments);
-        // Leer el precio recién escrito por la función original
+        // Leer ambos precios recién escritos por la función original
         setTimeout(function () {
-          var totalEl = document.getElementById('stk-total-amount');
-          var precio  = totalEl ? totalEl.textContent.trim() : '';
-          if (precio) _actualizarMiniCartBar(precio, 'Estimated total for your routine', '🛒 Add my full routine to cart');
+          var totalEl     = document.getElementById('stk-total-amount');
+          var totalOrigEl = document.getElementById('stk-total-amount-orig');
+          var precio      = totalEl     ? totalEl.textContent.trim()     : '';
+          var precioOrig  = totalOrigEl ? totalOrigEl.textContent.trim() : '';
+          if (precio) _actualizarMiniCartBar(precio, 'Estimated total for your routine', '🛒 Add my full routine to cart', precioOrig);
         }, 50);
       };
     }
