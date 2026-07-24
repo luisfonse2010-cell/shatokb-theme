@@ -3729,12 +3729,29 @@ window.shatokbRevelarProductos = function () {
     // FIN KOI STARTER KIT
     // ══════════════════════════════════════════════════════════════
 
+    // ── Wrapper Full Routine con badge 25% OFF ────────────────────────────────
+    var fullWrap = document.createElement('div');
+    fullWrap.id = 'stk-full-routine-wrap';
+    fullWrap.style.cssText = 'margin-top:28px;opacity:0;transform:translateY(12px);transition:opacity 0.4s ease 0.1s,transform 0.4s ease 0.1s;';
+
+    // Badge superior "Mejor valor · 25% OFF · Free shipping"
+    var fullBadge = document.createElement('div');
+    fullBadge.id = 'stk-full-badge';
+    fullBadge.innerHTML =
+      '<span style="font-family:Prompt,sans-serif;font-size:11px;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:#f5e6ef;">⭐ BEST VALUE</span>' +
+      '<span style="font-family:Arimo,Arial,sans-serif;font-size:11px;color:rgba(236,149,184,.8);">·</span>' +
+      '<span style="font-family:Prompt,sans-serif;font-size:11px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;background:linear-gradient(135deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">25% OFF</span>' +
+      '<span style="font-family:Arimo,Arial,sans-serif;font-size:11px;color:rgba(236,149,184,.8);">·</span>' +
+      '<span style="font-family:Arimo,Arial,sans-serif;font-size:11px;font-weight:700;color:#4ade80;">🚚 Free shipping</span>';
+    fullBadge.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;' +
+      'background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);border-radius:10px 10px 0 0;' +
+      'padding:8px 14px;';
+
     var btn = document.createElement('button');
     btn.id        = 'stk-add-btn-bottom';
     btn.type      = 'button';
     btn.className = 'stk-cta-bottom';
-    btn.textContent = '✦ Add my full routine to cart ✦';
-    btn.setAttribute('onclick', 'shatokbAddAllToCart()');
+    btn.textContent = '✦ Add my full routine — 25% OFF ✦';
     btn.style.cssText = [
       'display:block',
       'width:100%',
@@ -3743,8 +3760,8 @@ window.shatokbRevelarProductos = function () {
       'overflow:hidden',
       'background:linear-gradient(135deg,#2b1e24 0%,#1c181a 55%,#261820 100%)',
       'color:#ec95b8',
-      'border:1.5px solid rgba(236,149,184,0.55)',
-      'border-radius:14px',
+      'border:1.5px solid rgba(99,102,241,0.55)',
+      'border-radius:0 0 14px 14px',
       'padding:20px 28px',
       'min-height:62px',
       'font-family:Prompt,"Arial Black",sans-serif',
@@ -3754,24 +3771,82 @@ window.shatokbRevelarProductos = function () {
       'text-transform:uppercase',
       'text-align:center',
       'cursor:pointer',
-      'margin-top:24px',
-      'box-shadow:0 8px 28px rgba(236,149,184,0.28),inset 0 1px 0 rgba(255,255,255,0.08)',
-      'opacity:0',
-      'transform:translateY(12px)',
-      'transition:opacity 0.4s ease,transform 0.4s ease'
+      'margin-top:0',
+      'box-shadow:0 8px 28px rgba(99,102,241,0.22),inset 0 1px 0 rgba(255,255,255,0.08)'
     ].join(';');
+
+    // Click → añadir TODOS los productos + código KOI25FULL
+    btn.addEventListener('click', async function() {
+      var self = this;
+      self.disabled    = true;
+      self.textContent = '⏳ Adding your full routine...';
+      try {
+        var allHandles = Object.entries(shatokbState.selectedProducts || {})
+          .map(function(e) {
+            var prod = SHATOKB_CATALOGO.find(function(p) { return p.id === e[1]; });
+            return prod ? (prod.handle || prod.id) : null;
+          })
+          .filter(Boolean);
+
+        if (allHandles.length === 0) throw new Error('No products selected.');
+
+        var vRequests = allHandles.map(function(handle) {
+          return fetch('/products/' + handle + '.js')
+            .then(function(r) { return r.ok ? r.json() : null; })
+            .then(function(d) { return d && d.variants && d.variants[0] ? d.variants[0].id : null; })
+            .catch(function() { return null; });
+        });
+        var vIds = await Promise.all(vRequests);
+        var items = vIds.filter(Boolean).map(function(id) { return { id: id, quantity: 1 }; });
+        if (items.length === 0) throw new Error('Could not load products.');
+
+        var cartRes = await fetch('/cart/add.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: items })
+        });
+        if (!cartRes.ok) throw new Error('Could not add to cart.');
+
+        self.textContent = '✓ Full routine added! Going to checkout...';
+        setTimeout(function() { window.location.href = '/checkout?discount=KOI25FULL'; }, 600);
+      } catch(err) {
+        console.error('[SHATOKB FULL]', err);
+        self.disabled    = false;
+        self.textContent = '✦ Add my full routine — 25% OFF ✦';
+        if (typeof shatokbAddAllToCart === 'function') shatokbAddAllToCart();
+      }
+    });
+
+    // Hover
+    btn.addEventListener('mouseenter', function () {
+      this.style.background   = 'linear-gradient(135deg,#36212a 0%,#271d22 55%,#301e27 100%)';
+      this.style.borderColor  = 'rgba(99,102,241,0.85)';
+      this.style.color        = '#c4b5fd';
+      this.style.transform    = 'translateY(-2px)';
+      this.style.boxShadow    = '0 0 0 4px rgba(99,102,241,0.12),0 16px 40px rgba(99,102,241,0.30)';
+    });
+    btn.addEventListener('mouseleave', function () {
+      this.style.background   = 'linear-gradient(135deg,#2b1e24 0%,#1c181a 55%,#261820 100%)';
+      this.style.borderColor  = 'rgba(99,102,241,0.55)';
+      this.style.color        = '#ec95b8';
+      this.style.transform    = '';
+      this.style.boxShadow    = '0 8px 28px rgba(99,102,241,0.22),inset 0 1px 0 rgba(255,255,255,0.08)';
+    });
+
+    fullWrap.appendChild(fullBadge);
+    fullWrap.appendChild(btn);
 
     var ctasEl = document.getElementById('shatokb-ctas');
     if (ctasEl && ctasEl.parentNode === blurred) {
-      blurred.insertBefore(btn, ctasEl);
+      blurred.insertBefore(fullWrap, ctasEl);
     } else {
-      blurred.appendChild(btn);
+      blurred.appendChild(fullWrap);
     }
 
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
-        btn.style.opacity   = '1';
-        btn.style.transform = 'translateY(0)';
+        fullWrap.style.opacity   = '1';
+        fullWrap.style.transform = 'translateY(0)';
       });
     });
 
@@ -3780,27 +3855,12 @@ window.shatokbRevelarProductos = function () {
       s.id = 'stk-cta-bottom-style';
       s.textContent =
         '@keyframes _stkShimmer{0%{transform:translateX(-130%) skewX(-18deg)}100%{transform:translateX(270%) skewX(-18deg)}}' +
-        '@keyframes _stkPulse{0%,100%{box-shadow:0 0 0 0 rgba(236,149,184,0),0 8px 28px rgba(236,149,184,.28),inset 0 1px 0 rgba(255,255,255,.08)}50%{box-shadow:0 0 0 7px rgba(236,149,184,.11),0 8px 28px rgba(236,149,184,.28),inset 0 1px 0 rgba(255,255,255,.08)}}' +
-        '#stk-add-btn-bottom{animation:_stkPulse 3s ease-in-out 0.5s infinite!important;}' +
-        '#stk-add-btn-bottom::before{content:"";position:absolute;top:0;left:0;width:38%;height:100%;background:linear-gradient(90deg,transparent,rgba(236,149,184,.16),transparent);transform:translateX(-130%) skewX(-18deg);animation:_stkShimmer 3.8s ease-in-out 1s infinite;pointer-events:none;}' +
-        '#stk-add-btn-bottom::after{content:"";position:absolute;top:0;left:10%;width:80%;height:1px;background:linear-gradient(90deg,transparent,rgba(236,149,184,.55),transparent);pointer-events:none;}';
+        '@keyframes _stkPulse{0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,0),0 8px 28px rgba(99,102,241,.22),inset 0 1px 0 rgba(255,255,255,.08)}50%{box-shadow:0 0 0 6px rgba(99,102,241,.10),0 8px 28px rgba(99,102,241,.22),inset 0 1px 0 rgba(255,255,255,.08)}}' +
+        '#stk-add-btn-bottom{animation:_stkPulse 3.5s ease-in-out 1s infinite!important;}' +
+        '#stk-add-btn-bottom::before{content:"";position:absolute;top:0;left:0;width:38%;height:100%;background:linear-gradient(90deg,transparent,rgba(99,102,241,.12),transparent);transform:translateX(-130%) skewX(-18deg);animation:_stkShimmer 4s ease-in-out 1.5s infinite;pointer-events:none;}' +
+        '#stk-add-btn-bottom::after{content:"";position:absolute;top:0;left:10%;width:80%;height:1px;background:linear-gradient(90deg,transparent,rgba(99,102,241,.45),transparent);pointer-events:none;}';
       document.head.appendChild(s);
     }
-
-    btn.addEventListener('mouseenter', function () {
-      this.style.background   = 'linear-gradient(135deg,#36212a 0%,#271d22 55%,#301e27 100%)';
-      this.style.borderColor  = 'rgba(236,149,184,0.90)';
-      this.style.color        = '#f5bad0';
-      this.style.transform    = 'translateY(-3px)';
-      this.style.boxShadow    = '0 0 0 5px rgba(236,149,184,0.10),0 18px 44px rgba(236,149,184,0.40)';
-    });
-    btn.addEventListener('mouseleave', function () {
-      this.style.background   = 'linear-gradient(135deg,#2b1e24 0%,#1c181a 55%,#261820 100%)';
-      this.style.borderColor  = 'rgba(236,149,184,0.55)';
-      this.style.color        = '#ec95b8';
-      this.style.transform    = '';
-      this.style.boxShadow    = '0 8px 28px rgba(236,149,184,0.28),inset 0 1px 0 rgba(255,255,255,0.08)';
-    });
   }, delayBtn);
 };
 
