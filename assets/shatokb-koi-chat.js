@@ -551,9 +551,10 @@
      Devuelve el idioma primario (ej: "es", "en", "fr", "pt")
      ══════════════════════════════════════════════════════════ */
   function detectarIdioma () {
-    const lang = (navigator.language || navigator.userLanguage || 'en').split('-')[0].toLowerCase();
-    const soportados = ['es','en','fr','pt','de','it','ko','ja','zh','ar','nl','pl','ru'];
-    return soportados.includes(lang) ? lang : 'en';
+    // Hardcoded 'en' — USA English audience only.
+    // Previously auto-detected browser language, which caused Spanish UI
+    // for users with Spanish browser settings. Fixed 2026-07.
+    return 'en';
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -1406,8 +1407,7 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     // POST al Worker — guarda en KV y retorna token.
     // Esta función ahora es async y RETORNA el token para que confirmarEmailCarrito()
     // pueda hacer await real sin setTimeout fijo.
-    const sendKlaviyoDirect = true;
-
+    const sendKlaviyoDirect = options?.sendKlaviyoDirect === true;
 
     try {
       const res = await fetch(KOI_CONFIG.reportUrl, {

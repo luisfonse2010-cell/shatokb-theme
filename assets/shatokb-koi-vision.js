@@ -1350,7 +1350,7 @@
   async function llamarWorkerVision(imageBase64) {
     try {
       const ctx    = KV_STATE.contexto || {};
-      const idioma = (navigator.language || 'en').split('-')[0].toLowerCase();
+      const idioma = 'en'; // Hardcoded EN — USA audience only. Fixed 2026-07.
 
       const payload = {
         image:   imageBase64,
