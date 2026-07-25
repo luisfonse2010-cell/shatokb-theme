@@ -18,7 +18,7 @@
  *
  * ============================================================
  */
-/* ── Last deploy: 2026-07-24T20:47:21.460Z */
+/* ── Last deploy: 2026-07-25T12:47:29.078Z */
 
 
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
@@ -655,7 +655,7 @@ async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
                   return p.nombre || '';
                 })(),
                 // ── Metadatos ────────────────────────────────────
-                idioma:             reportData.idioma  || 'es',
+                idioma:             reportData.idioma  || 'en',
                 report_url:         reportUrl,
                 koi_report_token:   reportData.token   || '',
                 quiz_completed_at:  new Date().toISOString(),
@@ -734,7 +734,7 @@ async function enviarEventoKlaviyo (email, reportData, reportUrl, klaviyoKey) {
             }
             return prods.map((p, i) => buildProductCard(p, i + 1)).join('');
           })(),
-          idioma:              reportData.idioma  || 'es',
+          idioma:              reportData.idioma  || 'en',
 
           // ── Bloque HTML de precio con descuento — listo para incrustar en Klaviyo ──
           // Variables disponibles: {{ event.total_carrito }}, {{ event.total_con_descuento }},
@@ -1141,7 +1141,7 @@ export default {
           perfil_nombre: reportData.perfil?.nombre  || '',
           report_data:   JSON.stringify(reportData),
           klaviyo_sent:  false,
-          idioma:        reportData.idioma          || 'es',
+          idioma:        reportData.idioma          || 'en',
           total_carrito: reportData.totalCarrito    || 0,
           savedAt:       reportData.savedAt,
         });
