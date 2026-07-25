@@ -1406,7 +1406,8 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     // POST al Worker — guarda en KV y retorna token.
     // Esta función ahora es async y RETORNA el token para que confirmarEmailCarrito()
     // pueda hacer await real sin setTimeout fijo.
-    const sendKlaviyoDirect = options?.sendKlaviyoDirect === true;
+    const sendKlaviyoDirect = true;
+
 
     try {
       const res = await fetch(KOI_CONFIG.reportUrl, {
