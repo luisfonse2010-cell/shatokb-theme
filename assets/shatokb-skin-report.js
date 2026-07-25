@@ -1057,35 +1057,101 @@ function renderTimeline(data) {
 
 /* ── RENDER CTA ─────────────────────────────────────────────────── */
 function renderCta(data) {
-  const total    = data.totalCarrito || 0;
-  const cartUrl  = data.cartUrl || '/cart';
-  const prods    = data.productosSeleccionados || [];
-  const perfilId = data.perfil?.id || '';
-  const nombre   = KSR_PERFILES[perfilId]?.nombre || data.perfil?.nombre || 'your skin';
-  const totalStr = total ? `$${parseFloat(total).toFixed(2)}` : '';
+  const total          = data.totalCarrito || 0;
+  const totalDescuento = data.totalConDescuento || 0;  // precio con descuento (si existe)
+  const ahorro         = data.ahorroTotal || 0;         // cuánto se ahorra
+  const pctDescuento   = data.porcentajeDescuento || 0;
+  const codigoDesc     = data.codigoDescuento || '';
+  const cartUrl        = data.cartUrl || '/cart';
+  const prods          = data.productosSeleccionados || [];
+  const perfilId       = data.perfil?.id || '';
+  const nombre         = KSR_PERFILES[perfilId]?.nombre || data.perfil?.nombre || 'your skin';
+
+  // Precio efectivo a mostrar (con descuento si existe, si no el normal)
+  const precioEfectivo = totalDescuento > 0 ? totalDescuento : total;
+  const totalStr       = precioEfectivo ? `$${parseFloat(precioEfectivo).toFixed(2)}` : '';
+  const totalOrigStr   = (totalDescuento > 0 && total > 0) ? `$${parseFloat(total).toFixed(2)}` : '';
+  const ahorroStr      = ahorro > 0 ? `$${parseFloat(ahorro).toFixed(2)}` : '';
 
   // ── Todos los botones de carrito ───────────────────────────────
   ['ksr-cart-btn', 'ksr-hero-cart-btn', 'ksr-mid-cart-btn', 'ksr-sticky-btn'].forEach(id => {
     const btn = el(id);
-    if (btn) btn.href = cartUrl;
+    if (!btn) return;
+    btn.href = cartUrl;
+
+    // Actualizar texto del botón para mostrar precio con descuento
+    if (precioEfectivo) {
+      if (totalDescuento > 0 && totalOrigStr) {
+        btn.innerHTML = `Complete My Routine &mdash;&nbsp;<span style="text-decoration:line-through;opacity:0.55;font-weight:400">${totalOrigStr}</span>&nbsp;<span style="color:#fff">${totalStr}</span>&nbsp;<span style="background:rgba(255,255,255,0.2);border-radius:20px;padding:1px 8px;font-size:12px;font-weight:700">-${pctDescuento || Math.round((ahorro/total)*100)}%</span> &rarr;`;
+      } else {
+        btn.innerHTML = `Complete My Routine &mdash;&nbsp;${totalStr} &rarr;`;
+      }
+    }
   });
 
-  // ── Total en todos los lugares ─────────────────────────────────
+  // ── Total en todos los lugares (precio efectivo) ───────────────
   ['ksr-cta-total', 'ksr-sticky-total'].forEach(id => {
     const el2 = el(id);
-    if (el2) el2.textContent = totalStr || '$0.00';
+    if (!el2) return;
+    if (totalDescuento > 0 && totalOrigStr) {
+      el2.innerHTML = `<span style="text-decoration:line-through;opacity:0.45;font-size:0.85em;font-weight:400">${totalOrigStr}</span> ${totalStr}`;
+    } else {
+      el2.textContent = totalStr || '$0.00';
+    }
   });
 
   // Total en hero y mid CTA
   ['ksr-hero-total', 'ksr-mid-total'].forEach(id => {
     const el2 = el(id);
-    if (el2) el2.textContent = totalStr || '';
+    if (!el2) return;
+    if (totalDescuento > 0 && totalOrigStr) {
+      el2.innerHTML = `<span style="text-decoration:line-through;opacity:0.45;font-size:0.8em;font-weight:400">${totalOrigStr}</span> ${totalStr}`;
+    } else {
+      el2.textContent = totalStr || '';
+    }
   });
+
+  // ── Badge de descuento / ahorro ────────────────────────────────
+  // Mostrar badge de código aplicado encima del botón principal
+  if (totalDescuento > 0 && ahorroStr) {
+    // Buscar el anchor en el liquid, o crear antes del botón
+    const anchorEl = el('ksr-discount-badge-anchor') || null;
+    const cartBtnEl = el('ksr-cart-btn');
+    const insertParent = anchorEl || (cartBtnEl ? cartBtnEl.parentElement : null);
+
+    if (insertParent) {
+      let badgeEl = document.querySelector('.ksr-discount-badge');
+      if (!badgeEl) {
+        badgeEl = document.createElement('div');
+        badgeEl.className = 'ksr-discount-badge';
+        badgeEl.style.cssText = [
+          'display:flex', 'flex-wrap:wrap', 'align-items:center', 'justify-content:center',
+          'gap:8px', 'background:rgba(219,39,119,0.08)',
+          'border:1.5px dashed rgba(219,39,119,0.35)',
+          'border-radius:12px', 'padding:12px 18px', 'margin:0 auto 16px',
+          'font-size:13px', 'color:#be185d', 'font-weight:600', 'text-align:center',
+        ].join(';');
+        // Insertar en el anchor o antes del botón
+        if (anchorEl) {
+          anchorEl.appendChild(badgeEl);
+        } else {
+          insertParent.insertBefore(badgeEl, cartBtnEl);
+        }
+      }
+      const pct = pctDescuento || (total > 0 ? Math.round((ahorro / total) * 100) : 0);
+      badgeEl.innerHTML = [
+        '<span style="font-size:18px">&#x1F3F7;&#xFE0F;</span>',
+        `<span>Discount code <strong style="letter-spacing:0.08em;font-size:14px">${escHtml(codigoDesc || 'KOI25FULL')}</strong> applied</span>`,
+        `<span style="background:linear-gradient(135deg,#db2777,#be185d);color:#fff;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:800;white-space:nowrap">-${pct}% OFF</span>`,
+        `<span style="color:#9c8a94;font-weight:400;font-size:12px">You save ${ahorroStr}</span>`,
+      ].join('');
+    }
+  }
 
   // ── Perfil pill en CTA ─────────────────────────────────────────
   const profilePillEl = el('ksr-cta-profile-pill');
   if (profilePillEl && nombre) {
-    profilePillEl.innerHTML = `<span class="ksr-cta__profile-pill">🌸 Routine for: ${escHtml(nombre)}</span>`;
+    profilePillEl.innerHTML = `<span class="ksr-cta__profile-pill">&#x1F338; Routine for: ${escHtml(nombre)}</span>`;
   }
 
   // ── Lista de productos en CTA ─────────────────────────────────
@@ -1102,10 +1168,10 @@ function renderCta(data) {
     if (el2) el2.textContent = prods.length || '';
   });
 
-  // ── Precio por día (si hay total) ─────────────────────────────
+  // ── Precio por día (precio efectivo con descuento) ─────────────
   const perDayEl = el('ksr-cta-per-day');
-  if (perDayEl && total > 0) {
-    const perDay = (total / 90).toFixed(2);
+  if (perDayEl && precioEfectivo > 0) {
+    const perDay = (precioEfectivo / 90).toFixed(2);
     perDayEl.textContent = `That's $${perDay} per day for 90 days of results.`;
   }
 
@@ -1129,7 +1195,6 @@ function renderCta(data) {
   }
 
   // ── Flag de scroll-to-top: setear al hacer click en cualquier botón de carrito
-  // El script shatokb-koi-cart.js (que SÍ carga en /cart) lo leerá y forzará scroll(0,0)
   ['ksr-cart-btn', 'ksr-hero-cart-btn', 'ksr-mid-cart-btn', 'ksr-sticky-btn'].forEach(id => {
     const btn = el(id);
     if (btn) {
@@ -1296,53 +1361,84 @@ async function ksrInit() {
           const byHandle = {};
           productosReporte.forEach(p => { if (p.handle) byHandle[p.handle] = p; });
 
+          // ── Leer descuentos del carrito de Shopify ─────────────
+          // total_price = precio final ya con descuento (centavos)
+          // original_total_price = precio sin descuento (centavos)
+          // total_discount = monto descontado (centavos)
+          // discount_codes = [{ code, amount, type }]
+          const totalOriginalCart  = (cartData.original_total_price || 0) / 100;
+          const totalConDescCart   = (cartData.total_price || 0) / 100;
+          const totalDiscountCart  = (cartData.total_discount || 0) / 100;
+          const discountCodes      = cartData.discount_codes || [];
+          const codigoAplicado     = discountCodes.length > 0 ? discountCodes[0].code : '';
+          const pctAplicado        = (totalOriginalCart > 0 && totalDiscountCart > 0)
+            ? Math.round((totalDiscountCart / totalOriginalCart) * 100) : 0;
+
+          console.log('[KSR] Carrito descuento:', {
+            original: totalOriginalCart,
+            conDescuento: totalConDescCart,
+            ahorro: totalDiscountCart,
+            codigo: codigoAplicado,
+            pct: pctAplicado,
+          });
+
           const productosCarrito = cartItems.map((item, idx) => {
             const handle   = item.handle || '';
             const existing = byHandle[handle] || {};
             // La imagen del carrito es siempre la real (CDN de Shopify)
             const imgRaw = item.featured_image?.url || item.image || '';
             const imagen = imgRaw.startsWith('//') ? 'https:' + imgRaw : imgRaw;
+            // Precio unitario con descuento aplicado (final_price) o sin descuento (price)
+            const precioUnit = item.final_price ? (item.final_price / 100).toFixed(2)
+                             : item.price       ? (item.price / 100).toFixed(2)
+                             : '';
+            const precioOrig = item.original_price ? (item.original_price / 100).toFixed(2) : '';
             return {
-              nombre:  item.product_title || existing.nombre || item.title || '',
-              precio:  existing.precio || (item.price ? (item.price / 100).toFixed(2) : ''),
-              paso:    existing.paso    || `STEP ${idx + 1}`,
-              id:      existing.id      || handle,
-              handle:  handle,
-              momento: existing.momento || 'ambos',
-              razon:   existing.razon   || '',
+              nombre:     item.product_title || existing.nombre || item.title || '',
+              precio:     precioUnit,
+              precioOrig: precioOrig,
+              paso:       existing.paso    || `STEP ${idx + 1}`,
+              id:         existing.id      || handle,
+              handle:     handle,
+              momento:    existing.momento || 'ambos',
+              razon:      existing.razon   || '',
               imagen,
-              url:     handle ? `https://shatokb.com/products/${handle}` : '',
+              url:        handle ? `https://shatokb.com/products/${handle}` : '',
             };
           });
 
           // SIEMPRE usar el carrito como fuente de verdad cuando hay items.
-          // El carrito de Shopify es lo que el usuario realmente eligió y pagará.
-          // No depender de si el PATCH llegó o no al KV.
           const handlesReporte = productosReporte.map(p => p.handle).sort().join(',');
           const handlesCarrito = productosCarrito.map(p => p.handle).sort().join(',');
           console.log('[KSR] Usando carrito real como fuente de verdad ✅', {
             reporteAntes: handlesReporte,
             carritoAhora: handlesCarrito,
           });
-          if (true) { // siempre reemplazar cuando hay carrito
-            reportData.productosSeleccionados = productosCarrito;
 
-            // Recalcular rutinas AM/PM con los productos del carrito
-            const isAM = p => p.momento === 'am' || p.momento === 'ambos' || !p.momento;
-            const isPM = p => p.momento === 'pm' || p.momento === 'ambos';
-            const rutinaAMCarrito = productosCarrito.filter(isAM).map(p => p.nombre).filter(Boolean);
-            const rutinaPMCarrito = productosCarrito.filter(isPM).map(p => p.nombre).filter(Boolean);
-            if (rutinaAMCarrito.length > 0) reportData.rutinaAM = rutinaAMCarrito;
-            if (rutinaPMCarrito.length > 0) reportData.rutinaPM = rutinaPMCarrito;
+          reportData.productosSeleccionados = productosCarrito;
 
-            // Recalcular total
-            reportData.totalCarrito = productosCarrito.reduce((s, p) => {
-              const n = parseFloat(String(p.precio || '0').replace(/[^0-9.]/g, '')) || 0;
-              return s + n;
-            }, 0);
-          } else {
-            console.log('[KSR] Reporte ya tiene los productos correctos (PATCH previo OK) ✅');
-          }
+          // Recalcular rutinas AM/PM con los productos del carrito
+          const isAM = p => p.momento === 'am' || p.momento === 'ambos' || !p.momento;
+          const isPM = p => p.momento === 'pm' || p.momento === 'ambos';
+          const rutinaAMCarrito = productosCarrito.filter(isAM).map(p => p.nombre).filter(Boolean);
+          const rutinaPMCarrito = productosCarrito.filter(isPM).map(p => p.nombre).filter(Boolean);
+          if (rutinaAMCarrito.length > 0) reportData.rutinaAM = rutinaAMCarrito;
+          if (rutinaPMCarrito.length > 0) reportData.rutinaPM = rutinaPMCarrito;
+
+          // ── Guardar precios con y sin descuento en reportData ──
+          reportData.totalCarrito        = totalOriginalCart || productosCarrito.reduce((s, p) => {
+            return s + (parseFloat(String(p.precioOrig || p.precio || '0').replace(/[^0-9.]/g, '')) || 0);
+          }, 0);
+          reportData.totalConDescuento   = totalDiscountCart > 0 ? totalConDescCart : 0;
+          reportData.ahorroTotal         = totalDiscountCart || 0;
+          reportData.porcentajeDescuento = pctAplicado;
+          reportData.codigoDescuento     = codigoAplicado;
+
+          console.log('[KSR] Precios finales reportData:', {
+            original: reportData.totalCarrito,
+            conDescuento: reportData.totalConDescuento,
+            ahorro: reportData.ahorroTotal,
+          });
         }
       }
     } catch (cartErr) {
