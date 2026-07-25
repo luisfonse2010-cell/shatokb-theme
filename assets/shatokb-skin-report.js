@@ -1081,10 +1081,14 @@ function renderCta(data) {
 
     // Actualizar texto del botón para mostrar precio con descuento
     if (precioEfectivo) {
-      if (totalDescuento > 0 && totalOrigStr) {
-        btn.innerHTML = `Complete My Routine &mdash;&nbsp;<span style="text-decoration:line-through;opacity:0.55;font-weight:400">${totalOrigStr}</span>&nbsp;<span style="color:#fff">${totalStr}</span>&nbsp;<span style="background:rgba(255,255,255,0.2);border-radius:20px;padding:1px 8px;font-size:12px;font-weight:700">-${pctDescuento || Math.round((ahorro/total)*100)}%</span> &rarr;`;
-      } else {
-        btn.innerHTML = `Complete My Routine &mdash;&nbsp;${totalStr} &rarr;`;
+      const btnLabel = btn.querySelector('.ksr-btn-label') || btn;
+      if (btnLabel === btn) {
+        // Reemplazar texto del botón: mostrar precio descontado
+        if (totalDescuento > 0 && totalOrigStr) {
+          btn.innerHTML = `Complete My Routine &mdash;&nbsp;<span style="text-decoration:line-through;opacity:0.55;font-weight:400">${totalOrigStr}</span>&nbsp;<span style="color:#fff">${totalStr}</span>&nbsp;<span style="background:rgba(255,255,255,0.2);border-radius:20px;padding:1px 8px;font-size:12px;font-weight:700">-${pctDescuento || Math.round((ahorro/total)*100)}%</span> &rarr;`;
+        } else {
+          btn.innerHTML = `Complete My Routine &mdash;&nbsp;${totalStr} &rarr;`;
+        }
       }
     }
   });
@@ -1114,8 +1118,7 @@ function renderCta(data) {
   // ── Badge de descuento / ahorro ────────────────────────────────
   // Mostrar badge de código aplicado encima del botón principal
   if (totalDescuento > 0 && ahorroStr) {
-    // Buscar el anchor en el liquid, o crear antes del botón
-    const anchorEl = el('ksr-discount-badge-anchor') || null;
+    const anchorEl  = el('ksr-discount-badge-anchor') || null;
     const cartBtnEl = el('ksr-cart-btn');
     const insertParent = anchorEl || (cartBtnEl ? cartBtnEl.parentElement : null);
 
@@ -1131,7 +1134,6 @@ function renderCta(data) {
           'border-radius:12px', 'padding:12px 18px', 'margin:0 auto 16px',
           'font-size:13px', 'color:#be185d', 'font-weight:600', 'text-align:center',
         ].join(';');
-        // Insertar en el anchor o antes del botón
         if (anchorEl) {
           anchorEl.appendChild(badgeEl);
         } else {
@@ -1151,7 +1153,7 @@ function renderCta(data) {
   // ── Perfil pill en CTA ─────────────────────────────────────────
   const profilePillEl = el('ksr-cta-profile-pill');
   if (profilePillEl && nombre) {
-    profilePillEl.innerHTML = `<span class="ksr-cta__profile-pill">&#x1F338; Routine for: ${escHtml(nombre)}</span>`;
+    profilePillEl.innerHTML = `<span class="ksr-cta__profile-pill">🌸 Routine for: ${escHtml(nombre)}</span>`;
   }
 
   // ── Lista de productos en CTA ─────────────────────────────────
@@ -1362,17 +1364,18 @@ async function ksrInit() {
           productosReporte.forEach(p => { if (p.handle) byHandle[p.handle] = p; });
 
           // ── Leer descuentos del carrito de Shopify ─────────────
-          // total_price = precio final ya con descuento (centavos)
-          // original_total_price = precio sin descuento (centavos)
-          // total_discount = monto descontado (centavos)
-          // discount_codes = [{ code, amount, type }]
-          const totalOriginalCart  = (cartData.original_total_price || 0) / 100;
-          const totalConDescCart   = (cartData.total_price || 0) / 100;
-          const totalDiscountCart  = (cartData.total_discount || 0) / 100;
-          const discountCodes      = cartData.discount_codes || [];
-          const codigoAplicado     = discountCodes.length > 0 ? discountCodes[0].code : '';
-          const pctAplicado        = (totalOriginalCart > 0 && totalDiscountCart > 0)
-            ? Math.round((totalDiscountCart / totalOriginalCart) * 100) : 0;
+          // cartData.total_price = precio final ya con descuento (en centavos)
+          // cartData.original_total_price = precio original sin descuento (en centavos)
+          // cartData.total_discount = monto total descontado (en centavos)
+          // cartData.discount_codes = array de { code, amount, type }
+          const totalOriginalCart   = (cartData.original_total_price || 0) / 100; // sin descuento
+          const totalConDescCart    = (cartData.total_price || 0) / 100;           // con descuento
+          const totalDiscountCart   = (cartData.total_discount || 0) / 100;        // ahorro
+          const discountCodes       = cartData.discount_codes || [];
+          const codigoAplicado      = discountCodes.length > 0 ? discountCodes[0].code : '';
+          const pctAplicado         = (totalOriginalCart > 0 && totalDiscountCart > 0)
+            ? Math.round((totalDiscountCart / totalOriginalCart) * 100)
+            : 0;
 
           console.log('[KSR] Carrito descuento:', {
             original: totalOriginalCart,
@@ -1388,22 +1391,22 @@ async function ksrInit() {
             // La imagen del carrito es siempre la real (CDN de Shopify)
             const imgRaw = item.featured_image?.url || item.image || '';
             const imagen = imgRaw.startsWith('//') ? 'https:' + imgRaw : imgRaw;
-            // Precio unitario con descuento aplicado (final_price) o sin descuento (price)
+            // Precio unitario: usar final_price (con descuento si aplica) o price (original)
             const precioUnit = item.final_price ? (item.final_price / 100).toFixed(2)
                              : item.price       ? (item.price / 100).toFixed(2)
                              : '';
             const precioOrig = item.original_price ? (item.original_price / 100).toFixed(2) : '';
             return {
-              nombre:     item.product_title || existing.nombre || item.title || '',
-              precio:     precioUnit,
-              precioOrig: precioOrig,
-              paso:       existing.paso    || `STEP ${idx + 1}`,
-              id:         existing.id      || handle,
-              handle:     handle,
-              momento:    existing.momento || 'ambos',
-              razon:      existing.razon   || '',
+              nombre:       item.product_title || existing.nombre || item.title || '',
+              precio:       precioUnit,
+              precioOrig:   precioOrig,
+              paso:         existing.paso    || `STEP ${idx + 1}`,
+              id:           existing.id      || handle,
+              handle:       handle,
+              momento:      existing.momento || 'ambos',
+              razon:        existing.razon   || '',
               imagen,
-              url:        handle ? `https://shatokb.com/products/${handle}` : '',
+              url:          handle ? `https://shatokb.com/products/${handle}` : '',
             };
           });
 
@@ -1426,13 +1429,13 @@ async function ksrInit() {
           if (rutinaPMCarrito.length > 0) reportData.rutinaPM = rutinaPMCarrito;
 
           // ── Guardar precios con y sin descuento en reportData ──
-          reportData.totalCarrito        = totalOriginalCart || productosCarrito.reduce((s, p) => {
+          reportData.totalCarrito         = totalOriginalCart || productosCarrito.reduce((s, p) => {
             return s + (parseFloat(String(p.precioOrig || p.precio || '0').replace(/[^0-9.]/g, '')) || 0);
           }, 0);
-          reportData.totalConDescuento   = totalDiscountCart > 0 ? totalConDescCart : 0;
-          reportData.ahorroTotal         = totalDiscountCart || 0;
-          reportData.porcentajeDescuento = pctAplicado;
-          reportData.codigoDescuento     = codigoAplicado;
+          reportData.totalConDescuento    = (totalDiscountCart > 0) ? totalConDescCart : 0;
+          reportData.ahorroTotal          = totalDiscountCart || 0;
+          reportData.porcentajeDescuento  = pctAplicado;
+          reportData.codigoDescuento      = codigoAplicado;
 
           console.log('[KSR] Precios finales reportData:', {
             original: reportData.totalCarrito,
