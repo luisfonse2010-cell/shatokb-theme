@@ -1318,12 +1318,14 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
     fetch(KOI_CONFIG.reportUrl, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({
+            body:    JSON.stringify({
         email,
         reportData,
         siteUrl:     KOI_CONFIG.siteUrl,
         tableApiUrl,
+        send_klaviyo: true,
       }),
+
     })
     .then(r => r.json())
     .then(data => {
