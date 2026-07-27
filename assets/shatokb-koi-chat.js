@@ -2845,13 +2845,40 @@ async function enviarDesdeChip (texto) {
      tu Skin Report" y luego ejecuta el callback.
      ══════════════════════════════════════════════════════════ */
   window.shatokbInterceptarCarrito = function (callbackProcederAlCarrito) {
-    // Si ya tenemos email, enviamos el reporte igualmente (para que Klaviyo
-    // reciba el evento aunque el usuario ya haya dado su email antes).
-    // FIX v4.7: antes se saltaba enviarSkinReport() → Klaviyo nunca recibía
-    // el evento en pruebas repetidas o cuando email venía de localStorage.
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // GATE 3 (email gate en ADD) DESACTIVADO — 2026-07-27
+    // Gate 1 (stk-email-gate en el quiz) captura el email ANTES de que
+    // el usuario llegue a ver productos. El ADD va directo al carrito.
+    // Si ya hay email capturado, se lanza enviarSkinReport() en background.
+    // Para reactivar el gate: eliminar este bloque y descomentar el de abajo.
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    const emailGuardado = KOI_STATE.emailCaptured
+      || (function(){ try { return localStorage.getItem('shatokb_email'); } catch(_){ return null; } })();
+
+    if (emailGuardado && !KOI_STATE.emailCaptured) {
+      KOI_STATE.emailCaptured = emailGuardado; // sincronizar state si venía de localStorage
+    }
+
+    if (emailGuardado) {
+      // Lanzar skin report en background — no bloquea el carrito
+      enviarSkinReport(emailGuardado).then(token => {
+        if (token) {
+          console.log('%c[KOI] Gate3-off — Reporte enviado en background ✅', 'color:#22c55e;font-weight:bold', token.slice(0,8) + '…');
+        } else {
+          console.warn('[KOI] Gate3-off — Reporte background falló — quiz.js hará retry');
+        }
+      }).catch(() => {});
+    } else {
+      console.log('[KOI] Gate3-off — Sin email todavía, ADD va directo al carrito.');
+    }
+
+    callbackProcederAlCarrito();
+    return;
+
+    // ── CÓDIGO ORIGINAL (desactivado) — descomenta para reactivar el gate ──
+    /*
     if (KOI_STATE.emailCaptured) {
       const emailYaGuardado = KOI_STATE.emailCaptured;
-      // Lanzar enviarSkinReport en background — no bloqueamos el carrito
       enviarSkinReport(emailYaGuardado).then(token => {
         if (token) {
           console.log('%c[KOI] v4.7 — Re-envío reporte con email ya capturado ✅', 'color:#22c55e;font-weight:bold', token.slice(0,8) + '…');
@@ -2862,10 +2889,8 @@ async function enviarDesdeChip (texto) {
       callbackProcederAlCarrito();
       return;
     }
-
-    // Ir directamente al modal de email — sin mensaje previo en el chat
-    // (el modal ya contiene toda la explicación del Skin Report)
     inyectarEmailGateCarrito(callbackProcederAlCarrito);
+    */
   };
 
   function inyectarEmailGateCarrito (callbackProcederAlCarrito) {
