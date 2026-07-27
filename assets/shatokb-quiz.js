@@ -2898,24 +2898,10 @@ function shatokbMostrarGateEmail() {
   shatokbTrackPixel('QuizCompleted', { skin_profile: shatokbCalcularPerfil(shatokbState.respuestas) });
 
   // Mostrar pantalla de transición "construyendo tu rutina"
-  // Después de la transición → mostrar el email gate (NO el resultado directamente)
+  // → directo al resultado. El email se captura en Gate 3 (ADD al carrito).
   shatokbMostrarTransicion(function() {
     if (form) form.style.display = 'none';
-
-    // ── EMAIL GATE — obligatorio, sin skip ─────────────────────────────────
-    // Si el email ya fue capturado (ej: visita repetida con localStorage),
-    // saltamos el gate directamente al resultado.
-    const emailPrevio = shatokbEmailCaptured
-      || (function(){ try { return localStorage.getItem('shatokb_email'); } catch(_){ return null; } })();
-
-    if (emailPrevio) {
-      // Email ya conocido — no molestar de nuevo, ir directo al resultado
-      shatokbEmailCaptured = emailPrevio;
-      shatokbMostrarResultado();
-    } else {
-      // Primera visita sin email — mostrar el gate
-      shatokbAbrirGate();
-    }
+    shatokbMostrarResultado();
   });
 }
 

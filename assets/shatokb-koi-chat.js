@@ -2859,51 +2859,38 @@ async function enviarDesdeChip (texto) {
      ══════════════════════════════════════════════════════════ */
   window.shatokbInterceptarCarrito = function (callbackProcederAlCarrito) {
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // GATE 3 (email gate en ADD) DESACTIVADO — 2026-07-27
-    // Gate 1 (stk-email-gate en el quiz) captura el email ANTES de que
-    // el usuario llegue a ver productos. El ADD va directo al carrito.
-    // Si ya hay email capturado, se lanza enviarSkinReport() en background.
-    // Para reactivar el gate: eliminar este bloque y descomentar el de abajo.
+    // GATE 3 — ACTIVO — 2026-07-27
+    // Se muestra cuando el usuario hace clic en ADD (Starter Kit o Full Routine).
+    // En este punto el usuario ya seleccionó sus productos — el reporte
+    // se genera con los datos correctos (perfil + productos seleccionados).
+    // El modal NO tiene botón skip — el único camino es dar el email.
+    // Si el email ya fue capturado (visita repetida), va directo al carrito.
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    // Recuperar email de localStorage si KOI_STATE no lo tiene aún
     const emailGuardado = KOI_STATE.emailCaptured
       || (function(){ try { return localStorage.getItem('shatokb_email'); } catch(_){ return null; } })();
 
     if (emailGuardado && !KOI_STATE.emailCaptured) {
-      KOI_STATE.emailCaptured = emailGuardado; // sincronizar state si venía de localStorage
+      KOI_STATE.emailCaptured = emailGuardado;
     }
 
-    if (emailGuardado) {
-      // Lanzar skin report en background — no bloquea el carrito
-      enviarSkinReport(emailGuardado).then(token => {
-        if (token) {
-          console.log('%c[KOI] Gate3-off — Reporte enviado en background ✅', 'color:#22c55e;font-weight:bold', token.slice(0,8) + '…');
-        } else {
-          console.warn('[KOI] Gate3-off — Reporte background falló — quiz.js hará retry');
-        }
-      }).catch(() => {});
-    } else {
-      console.log('[KOI] Gate3-off — Sin email todavía, ADD va directo al carrito.');
-    }
-
-    callbackProcederAlCarrito();
-    return;
-
-    // ── CÓDIGO ORIGINAL (desactivado) — descomenta para reactivar el gate ──
-    /*
     if (KOI_STATE.emailCaptured) {
+      // Email ya conocido — enviar reporte en background y proceder al carrito
       const emailYaGuardado = KOI_STATE.emailCaptured;
       enviarSkinReport(emailYaGuardado).then(token => {
         if (token) {
-          console.log('%c[KOI] v4.7 — Re-envío reporte con email ya capturado ✅', 'color:#22c55e;font-weight:bold', token.slice(0,8) + '…');
+          console.log('%c[KOI] Gate3 — Email conocido, reporte enviado ✅', 'color:#22c55e;font-weight:bold', token.slice(0,8) + '…');
         } else {
-          console.warn('[KOI] v4.7 — Re-envío reporte falló (email ya capturado) — PATCH intentará con token previo');
+          console.warn('[KOI] Gate3 — Reporte falló (email conocido) — quiz.js hará retry');
         }
       }).catch(() => {});
       callbackProcederAlCarrito();
       return;
     }
+
+    // Sin email → mostrar el modal (sin skip)
     inyectarEmailGateCarrito(callbackProcederAlCarrito);
-    */
   };
 
   function inyectarEmailGateCarrito (callbackProcederAlCarrito) {
@@ -2914,12 +2901,12 @@ async function enviarDesdeChip (texto) {
 
     const ui = {
       es: { placeholder: 'tu@email.com', btn: 'Enviar y continuar →', note: '🔒 Solo para tu Skin Report. Sin spam.', skip: '🛒 Solo quiero ver el carrito' },
-      en: { placeholder: 'you@email.com', btn: 'Send & continue →',   note: '🔒 Only for your Skin Report. No spam.', skip: '🛒 I just want to see the cart' },
+      en: { placeholder: 'you@email.com', btn: 'Send my report →', note: '🔒 Only for your Skin Report. No spam. Unsubscribe anytime.' },
       fr: { placeholder: 'vous@email.com', btn: 'Envoyer et continuer →', note: '🔒 Uniquement pour votre Skin Report.', skip: '🛒 Je veux juste voir le panier' },
       pt: { placeholder: 'voce@email.com', btn: 'Enviar e continuar →', note: '🔒 Apenas para o seu Skin Report. Sem spam.', skip: '🛒 Só quero ver o carrinho' },
       de: { placeholder: 'du@email.com',   btn: 'Senden & weiter →',   note: '🔒 Nur für deinen Skin Report. Kein Spam.', skip: '🛒 Ich möchte nur den Warenkorb sehen' },
       it: { placeholder: 'tu@email.com',   btn: 'Invia e continua →',  note: '🔒 Solo per il tuo Skin Report.',          skip: '🛒 Voglio solo vedere il carrello' },
-    }[idioma] || { placeholder: 'you@email.com', btn: 'Send & continue →', note: '🔒 No spam.', skip: '🛒 I just want to see the cart' };
+    }[idioma] || { placeholder: 'you@email.com', btn: 'Send my report →', note: '🔒 Only for your Skin Report. No spam.' };
 
     // Textos del pitch KOI — el mensaje que se muestra en la card
     const pitchTexts = {
@@ -2929,9 +2916,9 @@ async function enviarDesdeChip (texto) {
         ask: 'Te lo envío ahora mismo a tu email. ¿Cuál es?',
       },
       en: {
-        headline: 'Perfect, ready for cart! 🛒',
-        body: 'Before I send you over, I want to prepare something: your <strong>personalized Skin Report</strong> — includes your skin analysis, the reason behind each product, and a <strong>step-by-step guide</strong> on how to use them together.',
-        ask: 'I\'ll send it to your email right now. What is it?',
+        headline: '🔬 One last step before your cart',
+        body: 'I built your <strong>personalized Skin Report</strong> with the exact products you chose — your skin analysis, why each product works for you, and your <strong>step-by-step AM/PM routine guide</strong>.',
+        ask: 'Where should I send it? <strong style="color:#ec95b8;">It expires in 24 hours.</strong>',
       },
       fr: {
         headline: 'Parfait, prêt pour le panier ! 🛒',
@@ -3047,7 +3034,7 @@ async function enviarDesdeChip (texto) {
       </div>
       <div class="koi-focus-card__footer">
         <span class="koi-focus-card__note">${ui.note}</span>
-        <button class="koi-focus-card__skip" id="koi-email-skip">${ui.skip}</button>
+        <!-- SKIP ELIMINADO — el único camino es dar el email -->
       </div>
     `;
 
