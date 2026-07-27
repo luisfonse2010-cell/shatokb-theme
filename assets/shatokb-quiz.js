@@ -2898,10 +2898,53 @@ function shatokbMostrarGateEmail() {
   shatokbTrackPixel('QuizCompleted', { skin_profile: shatokbCalcularPerfil(shatokbState.respuestas) });
 
   // Mostrar pantalla de transición "construyendo tu rutina"
+  // Después de la transición → mostrar el email gate (NO el resultado directamente)
   shatokbMostrarTransicion(function() {
     if (form) form.style.display = 'none';
-    shatokbMostrarResultado();
+
+    // ── EMAIL GATE — obligatorio, sin skip ─────────────────────────────────
+    // Si el email ya fue capturado (ej: visita repetida con localStorage),
+    // saltamos el gate directamente al resultado.
+    const emailPrevio = shatokbEmailCaptured
+      || (function(){ try { return localStorage.getItem('shatokb_email'); } catch(_){ return null; } })();
+
+    if (emailPrevio) {
+      // Email ya conocido — no molestar de nuevo, ir directo al resultado
+      shatokbEmailCaptured = emailPrevio;
+      shatokbMostrarResultado();
+    } else {
+      // Primera visita sin email — mostrar el gate
+      shatokbAbrirGate();
+    }
   });
+}
+
+function shatokbAbrirGate() {
+  const gate = document.getElementById('stk-email-gate');
+  if (!gate) {
+    // El gate no está en el DOM — fallback directo al resultado
+    console.warn('[Quiz] stk-email-gate no encontrado en el DOM — mostrando resultado sin gate');
+    shatokbMostrarResultado();
+    return;
+  }
+  // Asegurarse de que el input esté limpio
+  const input = document.getElementById('stk-email-input');
+  if (input) input.value = '';
+  const btn = document.getElementById('stk-gate-submit');
+  if (btn) { btn.textContent = 'Send my routine →'; btn.disabled = false; }
+
+  // Mostrar el gate
+  gate.style.display = 'flex';
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      gate.classList.add('visible');
+    });
+  });
+
+  // Focus al input en desktop
+  setTimeout(function() {
+    if (input && window.innerWidth > 768) input.focus();
+  }, 400);
 }
 
 function shatokbMostrarTransicion(callback) {
