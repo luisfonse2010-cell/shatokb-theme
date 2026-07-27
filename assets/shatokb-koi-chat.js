@@ -1268,6 +1268,19 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
      Se llama silenciosamente al capturar el email en el
      interceptor del carrito.
      ══════════════════════════════════════════════════════════ */
+  // ── Exponer globalmente para que shatokb-quiz.js pueda llamarla desde Gate 1 ──
+  // El quiz.js no tiene acceso al closure de koi-chat.js, así que necesitamos
+  // este puente. Se asigna aquí (dentro del closure) para que tenga acceso a
+  // KOI_CONFIG, KOI_STATE, y todas las funciones helper internas.
+  // Añadido 2026-07-27.
+  window.shatokbEnviarSkinReportGlobal = async function(email) {
+    // Sincronizar email en KOI_STATE para que shatokbInterceptarCarrito lo encuentre
+    if (email && !KOI_STATE.emailCaptured) {
+      KOI_STATE.emailCaptured = email;
+    }
+    return enviarSkinReport(email, { sendKlaviyoDirect: true });
+  };
+
   async function enviarSkinReport (email, options = {}) {
     const ctx    = KOI_STATE.contexto;
     if (!ctx || !email) return;

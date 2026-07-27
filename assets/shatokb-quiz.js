@@ -2988,6 +2988,38 @@ async function shatokbSubmitEmail(e) {
   if (btn) { btn.textContent = 'One moment…'; btn.disabled = true; }
   shatokbEmailCaptured = email;
 
+  // ── 1. Guardar en localStorage para que el interceptor del carrito lo encuentre ──
+  try { localStorage.setItem('shatokb_email', email); } catch(_) {}
+
+  // ── 2. Sincronizar en KOI_STATE si ya está disponible (koi-chat.js cargado) ──
+  // Esto hace que shatokbInterceptarCarrito() no muestre el Gate 3 modal.
+  try {
+    if (typeof KOI_STATE !== 'undefined' && !KOI_STATE.emailCaptured) {
+      KOI_STATE.emailCaptured = email;
+    }
+  } catch(_) {}
+
+  // ── 3. POST al Worker de Cloudflare → guarda en KV + dispara Klaviyo ──
+  // Este es el único path que envía el email a Klaviyo.
+  // shatokbEnviarSkinReportGlobal() está expuesto por shatokb-koi-chat.js.
+  // Se llama en background (no bloqueamos mostrar el resultado al usuario).
+  if (typeof window.shatokbEnviarSkinReportGlobal === 'function') {
+    window.shatokbEnviarSkinReportGlobal(email).catch(() => {});
+    console.log('[Quiz Gate1] shatokbEnviarSkinReportGlobal() llamado → Worker /report → Klaviyo');
+  } else {
+    // Fallback: el koi-chat.js todavía no cargó — intentar de nuevo en 2s
+    // (koi-chat.js carga después del quiz en algunos temas)
+    setTimeout(function() {
+      if (typeof window.shatokbEnviarSkinReportGlobal === 'function') {
+        window.shatokbEnviarSkinReportGlobal(email).catch(() => {});
+        console.log('[Quiz Gate1] shatokbEnviarSkinReportGlobal() llamado (delayed) → Klaviyo');
+      } else {
+        console.warn('[Quiz Gate1] shatokbEnviarSkinReportGlobal no disponible — koi-chat.js no cargó');
+      }
+    }, 2000);
+  }
+
+  // ── 4. POST a /contact de Shopify como backup (llega a Shopify Customers) ──
   try {
     await fetch('/contact', {
       method:  'POST',
@@ -3000,9 +3032,11 @@ async function shatokbSubmitEmail(e) {
         'contact[body]':    'Skin quiz profile: ' + shatokbCalcularPerfil(shatokbState.respuestas)
       })
     });
-  } catch(_) { /* non-blocking — don't gate results on network failure */ }
+  } catch(_) { /* non-blocking */ }
 
+  // ── 5. Pixel Meta Lead ──
   shatokbTrackPixel('Lead', { content_name: 'quiz_' + shatokbCalcularPerfil(shatokbState.respuestas) });
+
   shatokbCerrarGate();
   shatokbMostrarResultado();
 }
