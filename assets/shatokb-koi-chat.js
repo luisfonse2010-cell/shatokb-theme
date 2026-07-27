@@ -20,7 +20,7 @@
 
 (function () {
   'use strict';
-  console.log('%c[KOI] shatokb-koi-chat.js v4.7 cargado ✅ — FIX: enviarSkinReport() siempre se llama aunque email ya exista en localStorage', 'color:#e75480;font-weight:bold;font-size:13px');
+  console.log('%c[KOI] shatokb-koi-chat.js v4.8 cargado ✅ — Gate3 v92: modal 100% autosuficiente, NO depende del panel KOI', 'color:#e75480;font-weight:bold;font-size:13px');
 
   /* ── Configuración ──────────────────────────────────────── */
   const KOI_CONFIG = {
@@ -2859,13 +2859,11 @@ async function enviarDesdeChip (texto) {
      ══════════════════════════════════════════════════════════ */
   window.shatokbInterceptarCarrito = function (callbackProcederAlCarrito) {
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // GATE 3 — ACTIVO — 2026-07-27
-    // Se muestra cuando el usuario hace clic en ADD (Starter Kit o Full Routine).
-    // En este punto el usuario ya seleccionó sus productos — el reporte
-    // se genera con los datos correctos (perfil + productos seleccionados).
-    // El modal NO tiene botón skip — el único camino es dar el email.
-    // Si el email ya fue capturado (visita repetida), va directo al carrito.
+    // GATE 3 — ACTIVO — 2026-07-27 v92 — Modal autosuficiente
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    console.log('%c[KOI Gate3 v92] shatokbInterceptarCarrito llamado', 'color:#ec95b8;font-size:14px;font-weight:bold');
+    console.log('[KOI Gate3 v92] emailCaptured:', KOI_STATE.emailCaptured);
+    console.log('[KOI Gate3 v92] localStorage email:', (function(){ try { return localStorage.getItem('shatokb_email'); } catch(_){ return 'ERROR'; } })());
 
     // Recuperar email de localStorage si KOI_STATE no lo tiene aún
     const emailGuardado = KOI_STATE.emailCaptured
@@ -2880,40 +2878,51 @@ async function enviarDesdeChip (texto) {
       const emailYaGuardado = KOI_STATE.emailCaptured;
       enviarSkinReport(emailYaGuardado).then(token => {
         if (token) {
-          console.log('%c[KOI] Gate3 — Email conocido, reporte enviado ✅', 'color:#22c55e;font-weight:bold', token.slice(0,8) + '…');
+          console.log('%c[KOI Gate3 v92] Email conocido, reporte enviado ✅', 'color:#22c55e;font-weight:bold', token.slice(0,8) + '…');
         } else {
-          console.warn('[KOI] Gate3 — Reporte falló (email conocido) — quiz.js hará retry');
+          console.warn('[KOI Gate3 v92] Reporte falló (email conocido) — quiz.js hará retry');
         }
       }).catch(() => {});
       callbackProcederAlCarrito();
       return;
     }
 
-    // Sin email → mostrar el modal (sin skip)
+    // Sin email → mostrar el modal autosuficiente (sin skip)
+    console.log('%c[KOI Gate3 v92] Sin email — llamando inyectarEmailGateCarrito()', 'color:#f59e0b;font-weight:bold');
     inyectarEmailGateCarrito(callbackProcederAlCarrito);
   };
 
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // GATE 3 v92 — MODAL 100% AUTOSUFICIENTE
+  // NO depende del panel KOI ni de ningún otro elemento del DOM del chat.
+  // Funciona aunque el chat no esté abierto, no esté inicializado, o no exista.
+  // Se inyecta directamente en document.body con position:fixed.
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   function inyectarEmailGateCarrito (callbackProcederAlCarrito) {
-    // Evitar duplicados
-    if (document.getElementById('koi-focus-overlay')) return;
+    // Evitar duplicados — check por la card directamente (no el overlay que dependía del panel)
+    if (document.getElementById('koi-email-gate-modal')) {
+      console.warn('[KOI Gate3 v92] Modal ya existe — ignorando duplicado');
+      return;
+    }
+
+    console.log('%c[KOI Gate3 v92] Inyectando modal...', 'color:#ec95b8;font-weight:bold');
 
     const idioma = detectarIdioma();
 
     const ui = {
-      es: { placeholder: 'tu@email.com', btn: 'Enviar y continuar →', note: '🔒 Solo para tu Skin Report. Sin spam.', skip: '🛒 Solo quiero ver el carrito' },
-      en: { placeholder: 'you@email.com', btn: 'Send my report →', note: '🔒 Only for your Skin Report. No spam. Unsubscribe anytime.' },
-      fr: { placeholder: 'vous@email.com', btn: 'Envoyer et continuer →', note: '🔒 Uniquement pour votre Skin Report.', skip: '🛒 Je veux juste voir le panier' },
-      pt: { placeholder: 'voce@email.com', btn: 'Enviar e continuar →', note: '🔒 Apenas para o seu Skin Report. Sem spam.', skip: '🛒 Só quero ver o carrinho' },
-      de: { placeholder: 'du@email.com',   btn: 'Senden & weiter →',   note: '🔒 Nur für deinen Skin Report. Kein Spam.', skip: '🛒 Ich möchte nur den Warenkorb sehen' },
-      it: { placeholder: 'tu@email.com',   btn: 'Invia e continua →',  note: '🔒 Solo per il tuo Skin Report.',          skip: '🛒 Voglio solo vedere il carrello' },
+      es: { placeholder: 'tu@email.com', btn: 'Enviar mi reporte →', note: '🔒 Solo para tu Skin Report. Sin spam.' },
+      en: { placeholder: 'you@email.com', btn: 'Send my report →',    note: '🔒 Only for your Skin Report. No spam. Unsubscribe anytime.' },
+      fr: { placeholder: 'vous@email.com', btn: 'Envoyer et continuer →', note: '🔒 Uniquement pour votre Skin Report.' },
+      pt: { placeholder: 'voce@email.com', btn: 'Enviar e continuar →', note: '🔒 Apenas para o seu Skin Report. Sem spam.' },
+      de: { placeholder: 'du@email.com',   btn: 'Senden & weiter →',   note: '🔒 Nur für deinen Skin Report. Kein Spam.' },
+      it: { placeholder: 'tu@email.com',   btn: 'Invia e continua →',  note: '🔒 Solo per il tuo Skin Report.' },
     }[idioma] || { placeholder: 'you@email.com', btn: 'Send my report →', note: '🔒 Only for your Skin Report. No spam.' };
 
-    // Textos del pitch KOI — el mensaje que se muestra en la card
     const pitchTexts = {
       es: {
-        headline: '¡Perfecto, lista para ir al carrito! 🛒',
-        body: 'Antes de enviarte, quiero prepararte algo: tu <strong>Skin Report personalizado</strong> — incluye tu análisis de piel, el por qué de cada producto y un <strong>manual paso a paso</strong> para usarlos correctamente juntos.',
-        ask: 'Te lo envío ahora mismo a tu email. ¿Cuál es?',
+        headline: '🔬 Un último paso antes del carrito',
+        body: 'Preparé tu <strong>Skin Report personalizado</strong> — incluye tu análisis de piel, el por qué de cada producto que elegiste y tu <strong>rutina AM/PM paso a paso</strong>.',
+        ask: '¿A dónde te lo envío? <strong style="color:#ec95b8;">Expira en 24 horas.</strong>',
       },
       en: {
         headline: '🔬 One last step before your cart',
@@ -2921,309 +2930,168 @@ async function enviarDesdeChip (texto) {
         ask: 'Where should I send it? <strong style="color:#ec95b8;">It expires in 24 hours.</strong>',
       },
       fr: {
-        headline: 'Parfait, prêt pour le panier ! 🛒',
-        body: 'Avant de vous envoyer, je veux préparer quelque chose : votre <strong>Skin Report personnalisé</strong> — inclut votre analyse de peau, la raison de chaque produit et un <strong>guide étape par étape</strong>.',
-        ask: 'Je vous l\'envoie par email maintenant. Lequel ?',
+        headline: '🔬 Une dernière étape avant le panier',
+        body: 'J\'ai préparé votre <strong>Skin Report personnalisé</strong> avec les produits que vous avez choisis.',
+        ask: 'Où dois-je vous l\'envoyer ? <strong style="color:#ec95b8;">Il expire dans 24 heures.</strong>',
       },
       pt: {
-        headline: 'Perfeito, pronto para o carrinho! 🛒',
-        body: 'Antes de te enviar, quero preparar algo: seu <strong>Skin Report personalizado</strong> — inclui sua análise de pele, o motivo de cada produto e um <strong>guia passo a passo</strong>.',
-        ask: 'Vou enviar agora para o seu email. Qual é?',
+        headline: '🔬 Último passo antes do carrinho',
+        body: 'Preparei seu <strong>Skin Report personalizado</strong> com os produtos que você escolheu.',
+        ask: 'Para onde devo enviar? <strong style="color:#ec95b8;">Expira em 24 horas.</strong>',
       },
       de: {
-        headline: 'Perfekt, bereit für den Warenkorb! 🛒',
-        body: 'Bevor ich dich weiterleite, möchte ich etwas vorbereiten: deinen <strong>persönlichen Skin Report</strong> — enthält deine Hautanalyse, den Grund für jedes Produkt und eine <strong>Schritt-für-Schritt-Anleitung</strong>.',
-        ask: 'Ich schicke ihn dir gleich per E-Mail. Wie lautet sie?',
+        headline: '🔬 Letzter Schritt vor dem Warenkorb',
+        body: 'Ich habe deinen <strong>persönlichen Skin Report</strong> mit den Produkten erstellt, die du gewählt hast.',
+        ask: 'Wohin soll ich ihn schicken? <strong style="color:#ec95b8;">Er verfällt in 24 Stunden.</strong>',
       },
       it: {
-        headline: 'Perfetto, pronto per il carrello! 🛒',
-        body: 'Prima di mandarti lì, voglio prepararti qualcosa: il tuo <strong>Skin Report personalizzato</strong> — include la tua analisi della pelle, il motivo di ogni prodotto e una <strong>guida passo dopo passo</strong>.',
-        ask: 'Te lo mando ora via email. Qual è?',
+        headline: '🔬 Ultimo passaggio prima del carrello',
+        body: 'Ho preparato il tuo <strong>Skin Report personalizzato</strong> con i prodotti che hai scelto.',
+        ask: 'Dove devo inviarlo? <strong style="color:#ec95b8;">Scade in 24 ore.</strong>',
       },
     };
     const pitch = pitchTexts[idioma] || pitchTexts['en'];
 
-    // Precio actual para mostrarlo en la card
-    const precioEl  = document.getElementById('koi-mini-cart-total');
-    const precioStr = precioEl ? precioEl.textContent.trim() : (_miniCartData.total || '');
+    // ── Inyectar CSS del modal (solo una vez) ──────────────────────────────
+    if (!document.getElementById('koi-gate3-style')) {
+      const st = document.createElement('style');
+      st.id = 'koi-gate3-style';
+      st.textContent = [
+        '#koi-gate3-backdrop{position:fixed!important;inset:0!important;z-index:2147483640!important;background:rgba(0,0,0,0.72)!important;backdrop-filter:blur(2px)!important;-webkit-backdrop-filter:blur(2px)!important;}',
+        '#koi-email-gate-modal{position:fixed!important;top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;z-index:2147483647!important;width:calc(100vw - 32px)!important;max-width:420px!important;max-height:90dvh!important;background:#1c181a!important;border:1px solid rgba(236,149,184,0.4)!important;border-radius:20px!important;box-shadow:0 24px 80px rgba(0,0,0,0.85),0 0 0 1px rgba(236,149,184,0.12)!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;box-sizing:border-box!important;font-family:Arimo,Arial,sans-serif!important;}',
+        '#koi-gate3-body{flex:1 1 auto!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;padding:28px 26px 20px!important;display:flex!important;flex-direction:column!important;gap:18px!important;box-sizing:border-box!important;}',
+        '#koi-gate3-koi-row{display:flex!important;align-items:center!important;gap:10px!important;}',
+        '#koi-gate3-avatar{width:40px!important;height:40px!important;border-radius:50%!important;background:linear-gradient(135deg,#b83280,#ec95b8)!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:20px!important;flex-shrink:0!important;}',
+        '#koi-gate3-name{font-family:Prompt,Arial,sans-serif!important;font-size:13px!important;font-weight:700!important;color:#ec95b8!important;letter-spacing:0.05em!important;}',
+        '#koi-gate3-bubble{background:rgba(236,149,184,0.07)!important;border-radius:0 14px 14px 14px!important;border:1px solid rgba(236,149,184,0.15)!important;padding:16px 18px!important;}',
+        '#koi-gate3-headline{font-family:Prompt,Arial,sans-serif!important;font-size:17px!important;font-weight:700!important;color:#f5e6ef!important;margin:0 0 10px!important;line-height:1.3!important;}',
+        '#koi-gate3-body-text{font-size:14px!important;color:rgba(240,220,230,0.85)!important;margin:0 0 10px!important;line-height:1.55!important;}',
+        '#koi-gate3-ask{font-size:14px!important;color:rgba(240,220,230,0.85)!important;margin:0!important;line-height:1.55!important;}',
+        '#koi-gate3-form{display:flex!important;flex-direction:column!important;gap:10px!important;}',
+        '#koi-gate3-input{width:100%!important;box-sizing:border-box!important;background:#13100f!important;border:1.5px solid rgba(236,149,184,0.3)!important;border-radius:10px!important;padding:14px 16px!important;font-size:16px!important;color:#f5e6ef!important;outline:none!important;font-family:Arimo,Arial,sans-serif!important;transition:border-color 0.2s!important;}',
+        '#koi-gate3-input:focus{border-color:rgba(236,149,184,0.7)!important;}',
+        '#koi-gate3-input.error{border-color:#f87171!important;animation:koi-shake 0.3s ease!important;}',
+        '#koi-gate3-btn{width:100%!important;box-sizing:border-box!important;background:linear-gradient(135deg,#b83280,#ec95b8)!important;border:none!important;border-radius:10px!important;padding:15px!important;font-size:16px!important;font-weight:700!important;color:#fff!important;cursor:pointer!important;font-family:Prompt,Arial,sans-serif!important;letter-spacing:0.03em!important;transition:opacity 0.2s!important;}',
+        '#koi-gate3-btn:hover{opacity:0.9!important;}',
+        '#koi-gate3-btn:disabled{opacity:0.6!important;cursor:not-allowed!important;}',
+        '#koi-gate3-footer{flex-shrink:0!important;padding:12px 26px 20px!important;border-top:1px solid rgba(255,255,255,0.07)!important;text-align:center!important;}',
+        '#koi-gate3-note{font-size:11px!important;color:rgba(255,255,255,0.38)!important;line-height:1.4!important;}',
+        '@keyframes koi-shake{0%,100%{transform:translate(-50%,-50%) translateX(0)!important}25%{transform:translate(-50%,-50%) translateX(-6px)!important}75%{transform:translate(-50%,-50%) translateX(6px)!important}}',
+        '@keyframes koi-gate3-in{from{opacity:0;transform:translate(-50%,-50%) scale(0.94)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}',
+        '#koi-email-gate-modal{animation:koi-gate3-in 0.25s ease!important;}',
+      ].join('\n');
+      document.head.appendChild(st);
+    }
 
-    // ── Referencias DOM ─────────────────────────────────────────────────────
-    const panel    = document.querySelector('#shatokb-koi-wrapper .koi-panel');
-    const messages = document.getElementById('koi-messages');
-    const chips    = document.getElementById('koi-chips');
-    const inputArea = document.querySelector('#shatokb-koi-wrapper .koi-input-area');
-    if (!panel || !messages) return;
-
-    // ── Activar focus mode en el panel ─────────────────────────────────────
-    panel.classList.add('koi--focus-mode');
-    if (chips)     chips.style.display    = 'none';
-    if (inputArea) inputArea.style.display = 'none';
-
-    // ── Crear overlay sobre TODO el panel (header + mini-cart + mensajes) ───
-    const overlay = document.createElement('div');
-    overlay.id        = 'koi-focus-overlay';
-    overlay.className = 'koi-focus-overlay';
-    // Color directo via setProperty — garantizado contra cualquier CSS cacheado
-    overlay.style.setProperty('position',       'absolute',               'important');
-    overlay.style.setProperty('inset',          '0',                      'important');
-    overlay.style.setProperty('width',          '100%',                   'important');
-    overlay.style.setProperty('height',         '100%',                   'important');
-    overlay.style.setProperty('background',     'rgba(236,149,184,0.25)', 'important');
-    overlay.style.setProperty('z-index',        '10',                     'important');
-    overlay.style.setProperty('pointer-events', 'auto',                   'important');
-    overlay.style.setProperty('display',        'block',                  'important');
-    panel.appendChild(overlay);
-    // Color vino en el panel para que el overlay semitransparente se vea diferente
-    panel.style.setProperty('background',       '#3e2b32',                'important');
-    panel.style.setProperty('background-color', '#3e2b32',                'important');
-
-    // ── Bloquear scroll: página exterior + panel del chat ────────────────────
-    // Se bloquea <html> Y <body> porque Shopify usa distintos scroll roots
-    // según el tema. Ambos deben estar hidden para que no haya franja blanca.
-    const _bodyScrollPrev  = document.body.style.overflow;
-    const _htmlScrollPrev  = document.documentElement.style.overflow;
-    const _panelScrollPrev = panel.style.overflow;
+    // ── Bloquear scroll ────────────────────────────────────────────────────
+    const _bodyScrollPrev = document.body.style.overflow;
+    const _htmlScrollPrev = document.documentElement.style.overflow;
     document.body.style.overflow            = 'hidden';
     document.documentElement.style.overflow = 'hidden';
-    panel.style.overflow                    = 'hidden';
 
-    // ── Backdrop de página completa — cubre el 100% del viewport real ───────
-    // El overlay del panel solo cubre el área del chat. Este backdrop oscuro
-    // cubre toda la pantalla (franjas blancas arriba/abajo) con position:fixed.
-    // Mismo CSS del styleTag de _inyectarFocusMode.
-    if (!document.getElementById('koi-page-backdrop')) {
-      const backdropStyle = document.createElement('style');
-      backdropStyle.id = 'koi-backdrop-style';
-      backdropStyle.textContent = '#koi-page-backdrop{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;background:rgba(236,149,184,0.18)!important;z-index:2147483640!important;pointer-events:auto!important;}';
-      document.head.appendChild(backdropStyle);
-    }
+    // ── Backdrop oscuro ────────────────────────────────────────────────────
     const backdrop = document.createElement('div');
-    backdrop.id = 'koi-page-backdrop';
+    backdrop.id = 'koi-gate3-backdrop';
     document.body.appendChild(backdrop);
 
-    // ── Crear card centrada flotante sobre el panel ─────────────────────────
+    // ── Card del modal ─────────────────────────────────────────────────────
     const card = document.createElement('div');
-    card.id        = 'koi-email-gate';
-    card.className = 'koi-focus-card';
-    card.innerHTML = `
-      <div class="koi-focus-card__scroll-body">
-        <div class="koi-focus-card__koi">
-          <div class="koi-focus-card__avatar">🌸</div>
-          <div class="koi-focus-card__name">KOI</div>
-        </div>
+    card.id = 'koi-email-gate-modal';
+    card.setAttribute('role', 'dialog');
+    card.setAttribute('aria-modal', 'true');
+    card.setAttribute('aria-label', pitch.headline);
+    card.innerHTML = '<div id="koi-gate3-body">' +
+      '<div id="koi-gate3-koi-row">' +
+        '<div id="koi-gate3-avatar">\uD83C\uDF38</div>' +
+        '<div id="koi-gate3-name">KOI</div>' +
+      '</div>' +
+      '<div id="koi-gate3-bubble">' +
+        '<p id="koi-gate3-headline">' + pitch.headline + '</p>' +
+        '<p id="koi-gate3-body-text">' + pitch.body + '</p>' +
+        '<p id="koi-gate3-ask">' + pitch.ask + '</p>' +
+      '</div>' +
+      '<div id="koi-gate3-form">' +
+        '<input type="email" id="koi-gate3-input" placeholder="' + ui.placeholder + '" autocomplete="email" inputmode="email" />' +
+        '<button id="koi-gate3-btn">' + ui.btn + '</button>' +
+      '</div>' +
+    '</div>' +
+    '<div id="koi-gate3-footer">' +
+      '<span id="koi-gate3-note">' + ui.note + '</span>' +
+    '</div>';
 
-        <div class="koi-focus-card__bubble">
-          <p class="koi-focus-card__headline">${pitch.headline}</p>
-          <p class="koi-focus-card__body">${pitch.body}</p>
-          <p class="koi-focus-card__ask">${pitch.ask}</p>
-        </div>
-
-        ${precioStr ? `<div class="koi-focus-card__price-badge">${precioStr} · Tu rutina completa</div>` : ''}
-
-        <div class="koi-focus-card__form">
-          <input
-            type="email"
-            id="koi-email-input"
-            class="koi-focus-card__input"
-            placeholder="${ui.placeholder}"
-            autocomplete="email"
-            inputmode="email"
-          />
-          <button class="koi-focus-card__btn" id="koi-email-btn">${ui.btn}</button>
-        </div>
-      </div>
-      <div class="koi-focus-card__footer">
-        <span class="koi-focus-card__note">${ui.note}</span>
-        <!-- SKIP ELIMINADO — el único camino es dar el email -->
-      </div>
-    `;
-
-    // Card → document.body para escapar del transform:matrix() del wrapper
     document.body.appendChild(card);
+    console.log('%c[KOI Gate3 v92] Modal inyectado en DOM ✅', 'color:#22c55e;font-weight:bold');
 
-    // ── Forzar inline styles post-append — Halo no puede sobreescribir esto ──
-    card.style.cssText = [
-      'position:fixed', 'top:50%', 'left:50%',
-      'transform:translate(-50%,-50%)',
-      'z-index:2147483647',
-      'display:flex', 'flex-direction:column',
-      'width:calc(100vw - 40px)', 'max-width:440px',
-      'max-height:92dvh', 'overflow:hidden',
-      'background:#1c181a',
-      'border:1px solid rgba(236,149,184,0.35)',
-      'border-radius:18px',
-      'box-shadow:0 24px 64px rgba(0,0,0,0.75)',
-      'padding:0', 'gap:0',
-      'box-sizing:border-box',
-      'pointer-events:auto'
-    ].join('!important;') + '!important;';
-
-    const scrollBody = card.querySelector('.koi-focus-card__scroll-body');
-    if (scrollBody) {
-      scrollBody.style.cssText = [
-        'flex:1 1 auto', 'overflow-y:auto',
-        '-webkit-overflow-scrolling:touch',
-        'padding:26px 26px 16px',
-        'display:flex', 'flex-direction:column', 'gap:16px',
-        'box-sizing:border-box', 'min-height:0'
-      ].join('!important;') + '!important;';
-    }
-
-    const footer = card.querySelector('.koi-focus-card__footer');
-    if (footer) {
-      footer.style.cssText = [
-        'flex-shrink:0', 'flex-grow:0',
-        'display:flex', 'flex-direction:column',
-        'align-items:center', 'gap:8px',
-        'padding:12px 26px 18px',
-        'border-top:1px solid rgba(255,255,255,0.07)',
-        'background:#1c181a',
-        'border-radius:0 0 18px 18px',
-        'width:100%', 'box-sizing:border-box',
-        'visibility:visible', 'opacity:1',
-        'overflow:visible', 'height:auto'
-      ].join('!important;') + '!important;';
-    }
-
-    const noteEl = card.querySelector('.koi-focus-card__note');
-    if (noteEl) {
-      noteEl.style.cssText = [
-        'display:block', 'font-size:11px',
-        'color:rgba(255,255,255,0.45)',
-        'text-align:center', 'line-height:1.4',
-        'visibility:visible', 'opacity:1'
-      ].join('!important;') + '!important;';
-    }
-
-    const skipBtn = document.getElementById('koi-email-skip');
-    if (skipBtn) {
-      skipBtn.style.cssText = [
-        'display:block', 'background:none', 'border:none',
-        'color:rgba(255,255,255,0.45)', 'font-size:11px',
-        'font-family:inherit', 'cursor:pointer',
-        'padding:6px 16px',
-        'text-decoration:none',
-        'text-align:center',
-        'width:100%', 'box-sizing:border-box',
-        'line-height:1.5',
-        'visibility:visible', 'opacity:1',
-        'pointer-events:auto', 'overflow:visible',
-        'height:auto', 'min-height:32px'
-      ].join('!important;') + '!important;';
-    }
-
-    // Focus al input (solo desktop para no abrir teclado en mobile automáticamente)
-    setTimeout(() => {
-      const inp = document.getElementById('koi-email-input');
+    // Focus al input (solo desktop — no abrir teclado en mobile automáticamente)
+    setTimeout(function() {
+      var inp = document.getElementById('koi-gate3-input');
       if (inp && window.innerWidth > 900) inp.focus();
-    }, 400);
+    }, 300);
 
-    // ── Cerrar focus mode ───────────────────────────────────────────────────
-    function _cerrarFocusMode (confirmado) {
-      card.classList.add('koi-focus-card--exit');
-      overlay.classList.add('koi-focus-overlay--exit');
-      // Restaurar scroll inmediatamente (no esperar al timeout)
+    // ── Cerrar modal ────────────────────────────────────────────────────────
+    function _cerrarModal() {
+      // Restaurar scroll
       document.body.style.overflow            = _bodyScrollPrev;
       document.documentElement.style.overflow = _htmlScrollPrev;
-      panel.style.overflow                    = _panelScrollPrev;
-      // Restaurar color del panel
-      panel.style.removeProperty('background');
-      panel.style.removeProperty('background-color');
-      // Eliminar backdrop de página
-      const bg = document.getElementById('koi-page-backdrop');
-      if (bg) bg.remove();
-      const bs = document.getElementById('koi-backdrop-style');
-      if (bs) bs.remove();
-      setTimeout(() => {
-        panel.classList.remove('koi--focus-mode');
-        if (chips)     chips.style.display     = '';
-        if (inputArea) inputArea.style.display  = '';
-        if (card.parentNode)    card.remove();
-        if (overlay.parentNode) overlay.remove();
-        if (!confirmado) {
-          // Restaurar scroll al último mensaje
-          messages.scrollTop = messages.scrollHeight;
-        }
-      }, 350);
+      // Quitar backdrop y card
+      if (backdrop.parentNode) backdrop.remove();
+      if (card.parentNode)     card.remove();
+      // Quitar CSS solo si no hay otro modal abierto
+      var st = document.getElementById('koi-gate3-style');
+      if (st) st.remove();
     }
 
     // ── Confirmar email ─────────────────────────────────────────────────────
     async function confirmarEmailCarrito () {
-      const inp = document.getElementById('koi-email-input');
+      var inp = document.getElementById('koi-gate3-input');
       if (!inp) return;
-      const email = inp.value.trim();
+      var email = inp.value.trim();
 
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        inp.classList.add('koi-focus-card__input--error');
-        setTimeout(() => inp.classList.remove('koi-focus-card__input--error'), 800);
+        inp.classList.add('error');
+        setTimeout(function() { inp.classList.remove('error'); }, 800);
         return;
       }
 
-      // Deshabilitar controles para evitar doble clic
-      const btnEl  = document.getElementById('koi-email-btn');
-      const skipEl = document.getElementById('koi-email-skip');
-      if (btnEl)  { btnEl.disabled = true; btnEl.textContent = '⏳ Un momento...'; }
-      if (skipEl)   skipEl.disabled = true;
+      // Deshabilitar botón para evitar doble clic
+      var btnEl = document.getElementById('koi-gate3-btn');
+      if (btnEl) { btnEl.disabled = true; btnEl.textContent = '⏳ Un momento...'; }
 
-      // Guardar email
+      // Guardar email en estado y localStorage
       KOI_STATE.emailCaptured = email;
       try { localStorage.setItem('shatokb_email', email); } catch (_) {}
+
+      // Enviar a Shopify /contact (best-effort — no bloqueante)
       shatokbEnviarEmailShopify(email);
 
-      // ── Cerrar focus mode ──────────────────────────────────────
-      _cerrarFocusMode(true);
+      // Cerrar modal inmediatamente para buena UX
+      _cerrarModal();
 
-      // Añadir email como mensaje del usuario en el chat
-      agregarMensaje('user', email);
+      // Añadir al chat si está disponible (best-effort — no bloqueante)
+      try { if (typeof agregarMensaje === 'function') agregarMensaje('user', email); } catch(_) {}
 
-      // Mensaje de confirmación de KOI
-      const confirmaciones = {
-        es: '¡Listo! Te lo envío en breve. Ahora sí, aquí está tu carrito 🛒',
-        en: 'Done! Sending it shortly. Here\'s your cart 🛒',
-        fr: 'Fait ! Je vous l\'envoie dans un instant. Voici votre panier 🛒',
-        pt: 'Feito! Enviando em breve. Aqui está seu carrinho 🛒',
-        de: 'Erledigt! Ich schicke es dir gleich. Hier ist dein Warenkorb 🛒',
-        it: 'Fatto! Te lo invio a breve. Ecco il tuo carrello 🛒',
-      };
-      const confirmMsg = confirmaciones[idioma] || confirmaciones['en'];
-      const textEl = agregarMensaje('koi', '');
-      if (textEl) await escribirConEfecto(textEl, confirmMsg, 18);
-
-      // ── Generar el reporte y token — AWAIT REAL, sin setTimeout fijo ──────
-      // enviarSkinReport() ahora es async y retorna el token directamente.
-      // Esperamos a que el Worker responda ANTES de llamar al carrito.
-      // El botón ya está deshabilitado (⏳) así que el UX no se bloquea visualmente.
-      console.log('%c[KOI] Generando token del reporte...', 'color:#a78bfa;font-weight:bold');
-
-      const tokenObtenido = await enviarSkinReport(email);
-
+      // Generar Skin Report + token (async — no bloquea el carrito visualmente)
+      console.log('%c[KOI Gate3 v92] Generando Skin Report para: ' + email, 'color:#a78bfa;font-weight:bold');
+      var tokenObtenido = await enviarSkinReport(email);
       if (tokenObtenido) {
-        console.log('%c[KOI] Token listo ✅ — procediendo al carrito', 'color:#22c55e;font-weight:bold', tokenObtenido.slice(0, 8) + '…');
+        console.log('%c[KOI Gate3 v92] Token listo ✅', 'color:#22c55e;font-weight:bold', tokenObtenido.slice(0,8) + '…');
       } else {
-        // Red de seguridad: si el Worker falló (network error, cold start, etc.)
-        // shatokb-quiz.js tiene su propio waitForToken() con retry de 8s.
-        // Procedemos igual — el PATCH intentará hasta 8 veces cada 500ms.
-        console.warn('[KOI] Token no obtenido — procediendo al carrito. quiz.js hará retry del token.');
+        console.warn('[KOI Gate3 v92] Token no obtenido — quiz.js hará retry si es necesario');
       }
 
-      // Pequeña pausa UX (300ms) para que el mensaje de KOI termine de renderizar
-      await new Promise(resolve => setTimeout(resolve, 300));
-      callbackProcederAlCarrito();
-    }
-
-    function saltarAlCarrito () {
-      _cerrarFocusMode(false);
+      // Pequeña pausa UX para que el modal se vea cerrar antes del carrito
+      await new Promise(function(resolve) { setTimeout(resolve, 200); });
       callbackProcederAlCarrito();
     }
 
     // ── Eventos ─────────────────────────────────────────────────────────────
-    const btnEl  = document.getElementById('koi-email-btn');
-    const inpEl  = document.getElementById('koi-email-input');
-    const skipEl = document.getElementById('koi-email-skip');
+    var btnEl = document.getElementById('koi-gate3-btn');
+    var inpEl = document.getElementById('koi-gate3-input');
 
-    if (btnEl)  btnEl.addEventListener('click', confirmarEmailCarrito);
-    if (inpEl)  inpEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); confirmarEmailCarrito(); } });
-    if (skipEl) skipEl.addEventListener('click', saltarAlCarrito);
+    if (btnEl) btnEl.addEventListener('click', confirmarEmailCarrito);
+    if (inpEl) inpEl.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); confirmarEmailCarrito(); }
+    });
   }
 
   /* ══════════════════════════════════════════════════════════
