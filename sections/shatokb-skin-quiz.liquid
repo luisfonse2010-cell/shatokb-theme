@@ -576,11 +576,14 @@
 
 {%- comment -%} ── Email gate modal (outside section for z-index) ─ {%- endcomment -%}
 <div id="stk-email-gate" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="stk-gate-title">
-  <div class="stk-gate__backdrop" onclick="shatokbSaltarEmail()"></div>
+  <div class="stk-gate__backdrop"></div>
   <div class="stk-gate__card">
-    <span class="stk-gate__emoji">🎁</span>
-    <h2 class="stk-gate__title" id="stk-gate-title">Your results are ready!</h2>
-    <p class="stk-gate__sub">Where should we send them so you can come back anytime?</p>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+      <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#ec95b8,#d4688a);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🌸</div>
+      <span style="font-size:14px;font-weight:700;color:#fff;">KOI</span>
+    </div>
+    <h2 class="stk-gate__title" id="stk-gate-title">🔬 Your skin analysis is ready</h2>
+    <p class="stk-gate__sub">KOI built a custom routine for your exact profile. Send it to your email — <strong style="color:#ec95b8;">it expires in 24 hours.</strong></p>
     <form class="stk-gate__form" onsubmit="shatokbSubmitEmail(event)">
       <input
         type="email"
@@ -590,13 +593,10 @@
         required
         autocomplete="email" />
       <button type="submit" class="stk-gate__btn" id="stk-gate-submit">
-        Show me my results ✨
+        Send my routine →
       </button>
     </form>
-    <button class="stk-gate__skip" type="button" onclick="shatokbSaltarEmail()">
-      No thanks, just show me my results
-    </button>
-    <p class="stk-gate__privacy">🔒 No spam. No subscriptions. Just your results.</p>
+    <p class="stk-gate__privacy">🔒 No spam. Unsubscribe anytime. Just your personalized routine.</p>
   </div>
 </div>
 
