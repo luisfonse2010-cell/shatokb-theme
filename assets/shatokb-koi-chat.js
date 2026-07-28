@@ -3554,4 +3554,112 @@ async function enviarDesdeChip (texto) {
     }
   }, 1500);
 
+  /* ══════════════════════════════════════════════════════════
+     GATE 3 — EMAIL GATE AL HACER ADD AL CARRITO
+     Se muestra cuando el usuario pulsa ADD (Starter Kit o
+     Full Routine) si aún no ha dado su email.
+     Modal 100% autosuficiente — no depende del panel KOI.
+     ══════════════════════════════════════════════════════════ */
+  window.shatokbInterceptarCarrito = function (callbackProcederAlCarrito) {
+    // Si ya tenemos el email, ir directo al carrito
+    var email = '';
+    try { email = localStorage.getItem('shatokb_email') || ''; } catch (_) {}
+    if (!email && typeof KOI_STATE !== 'undefined') {
+      email = KOI_STATE.emailCaptured || '';
+    }
+    if (email) {
+      callbackProcederAlCarrito();
+      return;
+    }
+
+    // Inyectar CSS (solo una vez)
+    if (!document.getElementById('koi-g3-style')) {
+      var st = document.createElement('style');
+      st.id = 'koi-g3-style';
+      st.textContent =
+        '#koi-g3-bd{position:fixed!important;inset:0!important;z-index:2147483640!important;background:rgba(0,0,0,0.75)!important;}' +
+        '#koi-g3-modal{position:fixed!important;top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;z-index:2147483647!important;width:calc(100vw - 32px)!important;max-width:420px!important;background:#1c181a!important;border:1.5px solid rgba(236,149,184,0.45)!important;border-radius:20px!important;box-shadow:0 24px 80px rgba(0,0,0,0.9)!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;font-family:Arimo,Arial,sans-serif!important;}' +
+        '#koi-g3-body{padding:28px 24px 20px!important;display:flex!important;flex-direction:column!important;gap:16px!important;}' +
+        '#koi-g3-avatar-row{display:flex!important;align-items:center!important;gap:10px!important;}' +
+        '#koi-g3-avatar{width:42px!important;height:42px!important;border-radius:50%!important;background:linear-gradient(135deg,#b83280,#ec95b8)!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:22px!important;flex-shrink:0!important;}' +
+        '#koi-g3-name{font-size:13px!important;font-weight:700!important;color:#ec95b8!important;}' +
+        '#koi-g3-bubble{background:rgba(236,149,184,0.07)!important;border-radius:0 14px 14px 14px!important;border:1px solid rgba(236,149,184,0.15)!important;padding:16px 18px!important;}' +
+        '#koi-g3-headline{font-size:17px!important;font-weight:700!important;color:#f5e6ef!important;margin:0 0 10px!important;line-height:1.3!important;}' +
+        '#koi-g3-sub{font-size:14px!important;color:rgba(240,220,230,0.85)!important;margin:0 0 8px!important;line-height:1.5!important;}' +
+        '#koi-g3-ask{font-size:14px!important;color:rgba(240,220,230,0.85)!important;margin:0!important;line-height:1.5!important;}' +
+        '#koi-g3-input{width:100%!important;box-sizing:border-box!important;background:#13100f!important;border:1.5px solid rgba(236,149,184,0.35)!important;border-radius:10px!important;padding:14px 16px!important;font-size:16px!important;color:#f5e6ef!important;outline:none!important;font-family:Arimo,Arial,sans-serif!important;}' +
+        '#koi-g3-input:focus{border-color:rgba(236,149,184,0.75)!important;}' +
+        '#koi-g3-btn{width:100%!important;box-sizing:border-box!important;background:linear-gradient(135deg,#b83280,#ec95b8)!important;border:none!important;border-radius:10px!important;padding:15px!important;font-size:16px!important;font-weight:700!important;color:#fff!important;cursor:pointer!important;font-family:Prompt,Arial,sans-serif!important;}' +
+        '#koi-g3-footer{padding:10px 24px 18px!important;border-top:1px solid rgba(255,255,255,0.07)!important;text-align:center!important;}' +
+        '#koi-g3-note{font-size:11px!important;color:rgba(255,255,255,0.38)!important;}';
+      document.head.appendChild(st);
+    }
+
+    // Bloquear scroll del body
+    var prevBodyOverflow = document.body.style.overflow;
+    var prevHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    // Backdrop
+    var bd = document.createElement('div');
+    bd.id = 'koi-g3-bd';
+    document.body.appendChild(bd);
+
+    // Modal
+    var modal = document.createElement('div');
+    modal.id = 'koi-g3-modal';
+    modal.innerHTML =
+      '<div id="koi-g3-body">' +
+        '<div id="koi-g3-avatar-row">' +
+          '<div id="koi-g3-avatar">\uD83C\uDF38</div>' +
+          '<div id="koi-g3-name">KOI</div>' +
+        '</div>' +
+        '<div id="koi-g3-bubble">' +
+          '<p id="koi-g3-headline">\uD83D\uDD2C One last step before your cart</p>' +
+          '<p id="koi-g3-sub">I built your <strong>personalized Skin Report</strong> \u2014 your skin analysis and your <strong>step-by-step AM/PM routine</strong>.</p>' +
+          '<p id="koi-g3-ask">Where should I send it? <strong style="color:#ec95b8;">It expires in 24\u00a0hours.</strong></p>' +
+        '</div>' +
+        '<input type="email" id="koi-g3-input" placeholder="you@email.com" autocomplete="email" inputmode="email" />' +
+        '<button id="koi-g3-btn" type="button">Send my report \u2192</button>' +
+      '</div>' +
+      '<div id="koi-g3-footer"><span id="koi-g3-note">\uD83D\uDD12 Only for your Skin Report. No spam. Unsubscribe anytime.</span></div>';
+    document.body.appendChild(modal);
+
+    function cerrar() {
+      document.body.style.overflow = prevBodyOverflow;
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      try { if (bd.parentNode) bd.remove(); } catch (_) {}
+      try { if (modal.parentNode) modal.remove(); } catch (_) {}
+    }
+
+    var btn = document.getElementById('koi-g3-btn');
+    var inp = document.getElementById('koi-g3-input');
+
+    btn.addEventListener('click', function () {
+      var val = inp ? inp.value.trim() : '';
+      if (!val || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+        if (inp) { inp.style.borderColor = '#f87171'; setTimeout(function () { inp.style.borderColor = ''; }, 800); }
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = '\u23F3 Sending\u2026';
+      try { localStorage.setItem('shatokb_email', val); } catch (_) {}
+      if (typeof KOI_STATE !== 'undefined') KOI_STATE.emailCaptured = val;
+      if (typeof window.shatokbEnviarSkinReportGlobal === 'function') {
+        try { window.shatokbEnviarSkinReportGlobal(val).catch(function () {}); } catch (_) {}
+      }
+      try { if (typeof fbq === 'function') fbq('track', 'Lead', { content_name: 'cart_email_gate', content_category: 'skin_quiz' }); } catch (_) {}
+      cerrar();
+      callbackProcederAlCarrito();
+    });
+
+    if (inp) {
+      inp.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); btn.click(); }
+      });
+      setTimeout(function () { try { if (window.innerWidth > 768) inp.focus(); } catch (_) {} }, 200);
+    }
+  };
+
 })();

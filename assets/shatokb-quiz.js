@@ -2898,10 +2898,10 @@ function shatokbMostrarGateEmail() {
   shatokbTrackPixel('QuizCompleted', { skin_profile: shatokbCalcularPerfil(shatokbState.respuestas) });
 
   // Mostrar pantalla de transición "construyendo tu rutina"
-  // → después abre Gate 1 (email gate) → después muestra resultado.
+  // → directo al resultado. El email se captura al hacer ADD al carrito (Gate 3).
   shatokbMostrarTransicion(function() {
     if (form) form.style.display = 'none';
-    shatokbAbrirGate();
+    shatokbMostrarResultado();
   });
 }
 
