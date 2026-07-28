@@ -20,7 +20,7 @@
 
 (function () {
   'use strict';
-  console.log('%c[KOI] shatokb-koi-chat.js v4.8 cargado ✅ — Gate3 v92: modal 100% autosuficiente, NO depende del panel KOI', 'color:#e75480;font-weight:bold;font-size:13px');
+  console.log('%c[KOI] shatokb-koi-chat.js v4.8 cargado ✅ — Gate3 v96: modal 100% autosuficiente, NO depende del panel KOI', 'color:#e75480;font-weight:bold;font-size:13px');
 
   /* ── Configuración ──────────────────────────────────────── */
   const KOI_CONFIG = {
@@ -3561,6 +3561,7 @@ async function enviarDesdeChip (texto) {
      Modal 100% autosuficiente — no depende del panel KOI.
      ══════════════════════════════════════════════════════════ */
   window.shatokbInterceptarCarrito = function (callbackProcederAlCarrito) {
+    console.log('%c[KOI Gate3] shatokbInterceptarCarrito LLAMADO ✅', 'color:#ec95b8;font-weight:bold;font-size:12px');
     // Si ya tenemos el email, ir directo al carrito
     var email = '';
     try { email = localStorage.getItem('shatokb_email') || ''; } catch (_) {}
@@ -3568,9 +3569,11 @@ async function enviarDesdeChip (texto) {
       email = KOI_STATE.emailCaptured || '';
     }
     if (email) {
+      console.log('%c[KOI Gate3] Email ya capturado — bypass modal → carrito directo', 'color:#4ade80;font-size:11px');
       callbackProcederAlCarrito();
       return;
     }
+    console.log('%c[KOI Gate3] Sin email → mostrando modal de captura', 'color:#fbbf24;font-size:11px');
 
     // Inyectar CSS (solo una vez)
     if (!document.getElementById('koi-g3-style')) {
