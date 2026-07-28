@@ -686,8 +686,8 @@ Vuoi provare? Ci vogliono circa 10 secondi.`,
       setTimeout(() => mostrarChips('post_camara'), 400);
 
     } else {
-      // ── Reveal directo — sin gate de email
-      await revelarRutinaConKOI('');
+      // ── Pedir email ANTES del reveal (flujo original)
+      await pedirEmailEnChat();
     }
   }
 
