@@ -18,7 +18,7 @@
  *
  * ============================================================
  */
-/* ── Last deploy: 2026-07-28T00:17:35.530Z */
+/* ── Last deploy: 2026-08-27T15:36:35.733Z */
 
 
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
@@ -934,6 +934,42 @@ export default {
     }
 
     const url = new URL(request.url);
+
+    // ── Endpoint GET /shopify-products — Proxy CORS para shatokb.com ──
+    // El eBay Command Center (en gensparksite.com) no puede hacer fetch directo
+    // a shatokb.com por CORS. Este proxy lo hace server-side desde el Worker
+    // (que no tiene restricciones de CORS) y devuelve el resultado con headers CORS.
+    // URL de uso: GET https://koi-proxy.luisfonse2010.workers.dev/shopify-products?page=1&limit=250
+    if (request.method === 'GET' && url.pathname === '/shopify-products') {
+      try {
+        const page  = url.searchParams.get('page')  || '1';
+        const limit = url.searchParams.get('limit') || '250';
+        const shopifyUrl = `https://shatokb.com/products.json?limit=${limit}&page=${page}`;
+        const shopifyRes = await fetch(shopifyUrl, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; KoiProxy/1.0)' }
+        });
+        if (!shopifyRes.ok) {
+          return new Response(JSON.stringify({ error: 'Shopify error', status: shopifyRes.status }), {
+            status: shopifyRes.status,
+            headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
+          });
+        }
+        const shopifyData = await shopifyRes.text();
+        return new Response(shopifyData, {
+          status: 200,
+          headers: {
+            ...CORS_HEADERS,
+            'Content-Type': 'application/json',
+            'Cache-Control': 'public, max-age=900'  // caché 15 min
+          }
+        });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), {
+          status: 500,
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
+        });
+      }
+    }
 
     // ── Endpoint GET /report/:token — leer reporte desde KV ──
     // shatokb-skin-report.js llama a este endpoint para obtener
