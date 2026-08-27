@@ -1,4 +1,4 @@
-/* ── MELI Deploy: 2026-08-27T15:48:06.650Z ── */
+/* ── MELI Deploy: 2026-08-27T15:54:38.037Z ── */
 /**
  * ============================================================
  * SHATO MARKETPLACE CONNECTOR — Cloudflare Worker v1.0
@@ -508,14 +508,22 @@ async function kvPatch(env, key, patch) {
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data, null, 2), {
     status,
-    headers: { 'Content-Type': 'application/json' }
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    }
   });
 }
 
 function htmlResponse(html, status = 200) {
   return new Response(html, {
     status,
-    headers: { 'Content-Type': 'text/html; charset=utf-8' }
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Access-Control-Allow-Origin': '*',
+    }
   });
 }
 
