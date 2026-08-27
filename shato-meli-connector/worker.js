@@ -1,4 +1,4 @@
-/* ── MELI Deploy: 2026-08-27T15:44:16.374Z ── */
+/* ── MELI Deploy: 2026-08-27T15:48:06.650Z ── */
 /**
  * ============================================================
  * SHATO MARKETPLACE CONNECTOR — Cloudflare Worker v1.0
