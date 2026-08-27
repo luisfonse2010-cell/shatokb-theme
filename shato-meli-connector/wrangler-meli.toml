@@ -1,0 +1,7 @@
+name            = "shato-meli-connector"
+main            = "shato-meli-connector/worker.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+MELI_REDIRECT_URI     = "https://shato-meli-connector.luisfonse2010.workers.dev/integrations/mercadolibre/oauth/callback"
+MELI_NOTIFICATION_URL = "https://shato-meli-connector.luisfonse2010.workers.dev/integrations/mercadolibre/notifications"
