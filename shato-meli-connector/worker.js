@@ -1,4 +1,4 @@
-/* ── MELI Deploy: 2026-08-27T15:54:38.037Z ── */
+/* ── MELI Deploy: 2026-08-27T17:00:18.198Z ── */
 /**
  * ============================================================
  * SHATO MARKETPLACE CONNECTOR — Cloudflare Worker v1.0
@@ -75,16 +75,81 @@ export default {
         return await handleStatus(request, env);
       }
 
+      if (path === '/integrations/mercadolibre/oauth/start' && method === 'GET') {
+        return await handleOAuthStart(request, env);
+      }
+
       // 404 para cualquier otra ruta
       return jsonResponse({ error: 'Not found', path }, 404);
 
     } catch (err) {
       // Log del error SIN incluir secretos
-      console.error('[SHATO-MELI] Unhandled error:', sanitizeError(err));
-      return jsonResponse({ error: 'Internal server error' }, 500);
+      const safe = sanitizeError(err);
+      console.error('[SHATO-MELI] Unhandled error:', safe);
+      return htmlResponse(pageError(
+        'Error interno del servidor',
+        safe.message || 'Error inesperado.',
+        'Si el problema persiste, revisa los logs en Cloudflare Dashboard → shato-meli-connector → Observability → Logs.'
+      ), 500);
     }
   }
 };
+
+// ─────────────────────────────────────────────
+// ENDPOINT 0: GET /integrations/mercadolibre/oauth/start
+// Genera el state anti-CSRF, lo guarda en KV y redirige a MELI
+// ─────────────────────────────────────────────
+async function handleOAuthStart(request, env) {
+  // Verificar que CLIENT_ID está configurado
+  if (!env.MELI_CLIENT_ID) {
+    return htmlResponse(pageError(
+      'Configuración incompleta',
+      'MELI_CLIENT_ID no está configurado como secret en el Worker.',
+      'Ve a Cloudflare Dashboard → shato-meli-connector → Settings → Variables.'
+    ), 500);
+  }
+
+  // Generar state aleatorio anti-CSRF (32 bytes hex)
+  const stateBytes = new Uint8Array(32);
+  crypto.getRandomValues(stateBytes);
+  const state = Array.from(stateBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+
+  // Guardar state en KV con TTL de 10 minutos
+  try {
+    await env.MELI_STORE.put('oauth:pending_state', state, { expirationTtl: 600 });
+  } catch (err) {
+    console.error('[OAUTH-START] Error saving state to KV:', sanitizeError(err));
+    return htmlResponse(pageError(
+      'Error interno',
+      'No se pudo guardar el state OAuth en KV.',
+      'Verifica que el binding MELI_STORE esté configurado correctamente.'
+    ), 500);
+  }
+
+  // Construir URL de autorización
+  const redirectUri = env.MELI_REDIRECT_URI ||
+    'https://shato-meli-connector.luisfonse2010.workers.dev/integrations/mercadolibre/oauth/callback';
+
+  const authParams = new URLSearchParams({
+    response_type: 'code',
+    client_id:     env.MELI_CLIENT_ID,
+    redirect_uri:  redirectUri,
+    state:         state,
+  });
+
+  const authUrl = `${MELI_AUTH_URL}?${authParams.toString()}`;
+
+  console.log('[OAUTH-START] Redirecting to MELI auth, state:', state.slice(0, 8) + '...');
+
+  // Redirigir al usuario a Mercado Libre
+  return new Response(null, {
+    status: 302,
+    headers: {
+      'Location': authUrl,
+      'Cache-Control': 'no-store',
+    }
+  });
+}
 
 // ─────────────────────────────────────────────
 // ENDPOINT 1: GET /integrations/mercadolibre/oauth/callback
@@ -134,11 +199,21 @@ async function handleOAuthCallback(request, env, url) {
   try {
     tokenData = await exchangeCodeForTokens(code, env);
   } catch (err) {
+    const errMsg = err?.message || 'Unknown';
     console.error('[OAUTH] Token exchange failed:', sanitizeError(err));
+    // Diagnóstico específico por tipo de error
+    let hint = 'Revisa las credenciales MELI_CLIENT_ID y MELI_CLIENT_SECRET en Cloudflare.';
+    if (errMsg.includes('400')) {
+      hint = 'El authorization code ya fue usado o expiró (duran ~10 min, un solo uso). Vuelve a /oauth/start para obtener uno nuevo.';
+    } else if (errMsg.includes('401')) {
+      hint = 'MELI_CLIENT_ID o MELI_CLIENT_SECRET incorrectos. Verifica en Cloudflare Dashboard → Settings → Variables.';
+    } else if (errMsg.includes('redirect_uri')) {
+      hint = 'El Redirect URI no coincide. Debe ser exactamente: https://shato-meli-connector.luisfonse2010.workers.dev/integrations/mercadolibre/oauth/callback';
+    }
     return htmlResponse(pageError(
       'Error al obtener tokens',
-      'No se pudo completar el intercambio de autorización.',
-      'Revisa las credenciales MELI_CLIENT_ID y MELI_CLIENT_SECRET en Cloudflare.'
+      `No se pudo completar el intercambio de autorización. (${errMsg})`,
+      hint
     ), 500);
   }
 
@@ -322,11 +397,16 @@ async function handleStatus(request, env) {
   }
 
   return jsonResponse({
-    service:       'shato-meli-connector',
+    worker:        'shato-meli-connector',
     version:       '1.0.0',
     status:        'operational',
     timestamp:     new Date().toISOString(),
+    // Campos que el panel de test lee directamente
+    kv_connected:  !!env.MELI_STORE,
+    tokens_stored: tokenStatus === 'configured' || tokenStatus === 'expired',
+    // Info extendida
     endpoints: {
+      oauth_start:     '/integrations/mercadolibre/oauth/start',
       oauth_callback:  '/integrations/mercadolibre/oauth/callback',
       notifications:   '/integrations/mercadolibre/notifications',
       status:          '/integrations/mercadolibre/status'
@@ -338,8 +418,7 @@ async function handleStatus(request, env) {
     },
     stats: {
       notifications_today: notificationCount
-    },
-    kv_available: !!env.MELI_STORE
+    }
   });
 }
 
