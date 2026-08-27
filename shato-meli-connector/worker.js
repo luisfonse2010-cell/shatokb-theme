@@ -1,4 +1,4 @@
-/* ── MELI Deploy: 2026-08-27T17:00:18.198Z ── */
+/* ── MELI Deploy: 2026-08-27T21:27:38.929Z ── */
 /**
  * ============================================================
  * SHATO MARKETPLACE CONNECTOR — Cloudflare Worker v1.0
@@ -35,7 +35,7 @@
 // CONSTANTES
 // ─────────────────────────────────────────────
 const MELI_API_BASE   = 'https://api.mercadolibre.com';
-const MELI_AUTH_URL   = 'https://auth.mercadolibre.com.ar/authorization';
+const MELI_AUTH_URL   = 'https://auth.mercadolibre.com/authorization';
 const MELI_TOKEN_URL  = 'https://api.mercadolibre.com/oauth/token';
 
 // Tiempo en segundos antes de que expire el token en que se renueva automáticamente
