@@ -392,8 +392,18 @@ body { overflow-x: hidden; }
 
       <!-- PENDIENTES -->
       <div id="tab-pendientes" class="tab-content">
-        <div class="section-header"><div><div class="section-title">📥 Productos Pendientes</div><div class="section-sub">Capturados de Amazon — revisá y publicá antes de que lleguen a tu tienda</div></div><button class="btn btn-primary" onclick="shatoOpenCaptureModal()"><i class="fas fa-plus"></i> Capturar nuevo</button></div>
-        <div class="products-grid" id="pendientes-grid"><div class="empty-state" style="grid-column:1/-1;padding:60px"><i class="fas fa-inbox"></i><h3>No hay productos pendientes</h3><p>Usá la extensión Chrome en Amazon para capturar productos<br>o hacé click en "Capturar producto" para agregar uno manualmente</p></div></div>
+        <div class="section-header">
+          <div>
+            <div class="section-title">📥 Bandeja de entrada</div>
+            <div class="section-sub">Productos capturados desde Amazon — revisá, editá y publicá en el nicho que corresponda</div>
+          </div>
+          <button class="btn btn-primary" onclick="shatoOpenCaptureModal()"><i class="fas fa-plus"></i> Agregar manual</button>
+        </div>
+        <div style="background:rgba(108,99,255,0.08);border:1px solid rgba(108,99,255,0.25);border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:12px;color:#a5b4fc;display:flex;align-items:center;gap:10px">
+          <i class="fas fa-info-circle" style="color:#6c63ff;font-size:16px"></i>
+          <span>Flujo: <strong>Amazon</strong> → "Enviar K-Beauty" → aparece aquí → hacé click en <strong>"Ver detalle"</strong> para editar → <strong>"Publicar"</strong> para moverlo a su nicho (K-Beauty, etc.)</span>
+        </div>
+        <div class="products-grid" id="pendientes-grid"><div class="empty-state" style="grid-column:1/-1;padding:60px"><i class="fas fa-inbox"></i><h3>No hay productos pendientes</h3><p>Usá la extensión Chrome en Amazon para capturar productos</p></div></div>
       </div>
 
       <!-- DESPACHOS -->
@@ -727,27 +737,42 @@ function shatoRenderNicho(nicho) {
 
 function shatoRenderProductCard(p) {
   const isKB   = p.nicho === 'kbeauty';
+  const isPending = p.status === 'pending';
   const margin = p.priceAmazon > 0 ? Math.round(((p.priceStore - p.priceAmazon) / p.priceStore) * 100) : 0;
   const afLink = shatoBuildAffiliateLink(p.asin);
-  const statusBadge = p.status === 'published'
-    ? '<span class="tag core">✅ Publicado</span>'
-    : '<span class="tag" style="color:#fbbf24;border-color:#92400e">⏳ Pendiente</span>';
-  return '<div class="product-card">'
-    + (p.image ? '<img class="product-card-img" src="' + p.image + '" alt="" onerror="this.style.display=\'none\'">' : '')
+  const statusBadge = isPending
+    ? '<span class="tag" style="color:#fbbf24;border-color:#92400e;background:rgba(146,64,14,0.15)">⏳ Pendiente revisión</span>'
+    : '<span class="tag core" style="color:#2ade80;border-color:#065f46;background:rgba(6,95,70,0.2)">✅ Publicado</span>';
+  const nichoLabel = isKB
+    ? '<span class="tag kbeauty">🌸 K-Beauty</span>'
+    : (p.nicho ? '<span class="tag nicho">' + (SHATO_NICHO_MAP[p.nicho]?.emoji||'📦') + ' ' + (SHATO_NICHO_MAP[p.nicho]?.label||p.nicho) + '</span>' : '<span class="tag" style="color:#6b6b8a">📦 Sin nicho</span>');
+
+  // Barra de accciones según estado
+  let actions = '<a href="' + afLink + '" target="_blank" class="btn btn-amazon btn-sm" style="text-decoration:none"><i class="fab fa-amazon"></i> Amazon</a>'
+    + '<button class="btn btn-outline btn-sm" onclick="shatoEditProduct(\'' + p.id + '\')"><i class="fas fa-edit"></i> Ver detalle</button>';
+  if (isPending) {
+    actions += '<button class="btn btn-success btn-sm" onclick="shatoQuickPublish(\'' + p.id + '\')" style="background:#6c63ff;border-color:#6c63ff"><i class="fas fa-rocket"></i> Publicar</button>';
+    actions += '<button class="btn btn-sm" onclick="shatoRejectById(\'' + p.id + '\')" style="background:rgba(244,63,94,0.15);border:1px solid #f43f5e;color:#f43f5e" title="Descartar"><i class="fas fa-trash"></i></button>';
+  }
+
+  // Card con borde color según estado
+  const cardBorder = isPending ? 'border-left:3px solid #6c63ff' : 'border-left:3px solid #2ade80';
+
+  return '<div class="product-card" style="' + cardBorder + ';cursor:default">'
+    + (p.image ? '<img class="product-card-img" src="' + p.image + '" alt="" onerror="this.style.display=\'none\'" style="cursor:pointer" onclick="shatoEditProduct(\'' + p.id + '\')">' : '')
     + '<div class="product-card-body">'
-    + '<div class="product-card-asin">ASIN: ' + (p.asin || '—') + '</div>'
-    + '<div class="product-card-title">' + (p.titleStore || p.titleAmazon || 'Sin título') + '</div>'
-    + '<div class="product-card-prices"><div class="price-amazon">Amazon: <span>$' + (p.priceAmazon||0).toFixed(2) + '</span></div><div class="price-arrow">→</div><div class="price-store">$' + (p.priceStore||0).toFixed(2) + '</div><div class="margin-badge">' + margin + '%</div></div>'
-    + '<div class="product-card-tags">'
-    + (isKB ? '<span class="tag kbeauty">🌸 K-Beauty</span>' : '<span class="tag nicho">' + (SHATO_NICHO_MAP[p.nicho]?.emoji||'📦') + ' ' + (SHATO_NICHO_MAP[p.nicho]?.label||p.nicho) + '</span>')
+    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px">'
+    + '<div class="product-card-asin" style="font-size:10px;color:#6b6b8a">ASIN: ' + (p.asin || '—') + '</div>'
     + statusBadge
-    + (isKB && p.koiTier ? '<span class="tag core">' + p.koiTier + '</span>' : '')
     + '</div>'
-    + '<div class="product-card-actions">'
-    + '<a href="' + afLink + '" target="_blank" class="btn btn-amazon btn-sm" style="text-decoration:none"><i class="fab fa-amazon"></i> Amazon</a>'
-    + '<button class="btn btn-outline btn-sm" onclick="shatoEditProduct(\'' + p.id + '\')"><i class="fas fa-edit"></i> Editar</button>'
-    + (p.status === 'pending' ? '<button class="btn btn-success btn-sm" onclick="shatoQuickPublish(\'' + p.id + '\')"><i class="fas fa-rocket"></i> Publicar</button>' : '')
-    + '</div></div></div>';
+    + '<div class="product-card-title" style="cursor:pointer;margin-bottom:8px" onclick="shatoEditProduct(\'' + p.id + '\')">' + (p.titleStore || p.titleAmazon || 'Sin título') + '</div>'
+    + '<div class="product-card-prices" style="margin-bottom:8px"><div class="price-amazon">Amazon: <span>$' + (p.priceAmazon||0).toFixed(2) + '</span></div><div class="price-arrow">→</div><div class="price-store" style="font-weight:700;color:#2ade80">$' + (p.priceStore||0).toFixed(2) + '</div><div class="margin-badge" style="background:' + (margin>=20?'rgba(42,222,128,0.15)':'rgba(244,63,94,0.15)') + ';color:' + (margin>=20?'#2ade80':'#f43f5e') + '">' + margin + '%</div></div>'
+    + '<div class="product-card-tags" style="margin-bottom:10px">'
+    + nichoLabel
+    + (isKB && p.koiTier ? '<span class="tag core" style="font-size:10px">' + p.koiTier + '</span>' : '')
+    + '</div>'
+    + '<div class="product-card-actions">' + actions + '</div>'
+    + '</div></div>';
 }
 
 function shatoRenderInventario() {
@@ -1019,7 +1044,10 @@ function shatoPublishProduct() {
   const priceStore  = margin > 0 ? cost / (1 - margin / 100) : cost;
   if (!nicho) { shatoShowNotif('⚠️ Seleccioná un nicho', 'warning'); return; }
   if (!titleAmazon && !titleStore) { shatoShowNotif('⚠️ Completá el título', 'warning'); return; }
-  const prod = { id: shatoEditingId || 'p-' + Date.now(), status:'pending', nicho, image:document.getElementById('f-img').value.trim(), asin, titleAmazon, titleStore:titleStore||titleAmazon, description:document.getElementById('f-desc').value.trim(), categoryAmazon:document.getElementById('f-category-amazon').value.trim(), priceAmazon, shipping, priceStore:parseFloat(priceStore.toFixed(2)), stock:parseInt(document.getElementById('f-stock').value)||0, stockMin:parseInt(document.getElementById('f-stock-min').value)||2, sold:0, ingredients:[...SHATO_INGREDIENTS], createdAt:new Date().toISOString(), affiliateLink:shatoBuildAffiliateLink(asin) };
+  // Preservar status del producto si ya estaba publicado; de lo contrario marcar como published ahora
+  const existingProd = shatoEditingId ? SHATO_PRODUCTS.find(p => p.id === shatoEditingId) : null;
+  const newStatus = existingProd && existingProd.status === 'published' ? 'published' : 'published'; // Siempre published al guardar desde modal
+  const prod = { id: shatoEditingId || 'p-' + Date.now(), status: newStatus, nicho, image:document.getElementById('f-img').value.trim(), asin, titleAmazon, titleStore:titleStore||titleAmazon, description:document.getElementById('f-desc').value.trim(), categoryAmazon:document.getElementById('f-category-amazon').value.trim(), priceAmazon, shipping, priceStore:parseFloat(priceStore.toFixed(2)), stock:parseInt(document.getElementById('f-stock').value)||0, stockMin:parseInt(document.getElementById('f-stock-min').value)||2, sold:existingProd?existingProd.sold||0:0, ingredients:[...SHATO_INGREDIENTS], createdAt:existingProd?existingProd.createdAt:new Date().toISOString(), publishedAt:new Date().toISOString(), affiliateLink:shatoBuildAffiliateLink(asin) };
   if (nicho === 'kbeauty') {
     prod.koiCategoria   = document.getElementById('f-koi-categoria').value;
     prod.koiSubcategoria = document.getElementById('f-koi-subcategoria').value;
@@ -1040,15 +1068,48 @@ function shatoPublishProduct() {
   shatoCloseModal('captureModal');
   shatoRenderDashboard();
   shatoRenderPendientes();
-  if (SHATO_CONFIG.shopifyToken) { shatoPublishToShopify(prod); }
-  else { shatoShowNotif('⚠️ Guardado localmente. Configurá el token Shopify para publicar.', 'warning'); }
+  const nichoInfoP = SHATO_NICHO_MAP[prod.nicho] || null;
+  if (SHATO_CONFIG.shopifyToken) {
+    shatoPublishToShopify(prod);
+  } else {
+    const nichoTxtP = nichoInfoP ? ' ' + nichoInfoP.emoji + ' ' + nichoInfoP.label : '';
+    shatoShowNotifWithAction(
+      '✅ Guardado' + nichoTxtP + ' · Configurá el token Shopify para publicar en la tienda',
+      nichoInfoP ? 'Ver en ' + nichoInfoP.label + ' →' : 'Ver Pendientes →',
+      () => nichoInfoP ? shatoShowNicho(prod.nicho) : shatoShowTab('pendientes')
+    );
+  }
 }
 
 function shatoQuickPublish(id) {
   const prod = SHATO_PRODUCTS.find(p => p.id === id);
   if (!prod) return;
-  if (SHATO_CONFIG.shopifyToken) { shatoPublishToShopify(prod); }
-  else { shatoShowNotif('⚠️ Configurá el token Shopify primero (⚙️ Configuración)', 'warning'); }
+  // Si no tiene nicho asignado, intentar detectar automáticamente o pedir
+  if (!prod.nicho) {
+    const nicho = prompt('¿A qué nicho pertenece este producto?\nEjemplos: kbeauty, electronica, hogar, herramientas, deportes, salud, otros', 'kbeauty');
+    if (!nicho) return;
+    prod.nicho = nicho.trim().toLowerCase();
+  }
+  // Marcar como publicado localmente siempre
+  const idx = SHATO_PRODUCTS.findIndex(p => p.id === id);
+  if (idx !== -1) {
+    SHATO_PRODUCTS[idx].status = 'published';
+    SHATO_PRODUCTS[idx].publishedAt = new Date().toISOString();
+  }
+  shatoSaveData();
+  shatoRenderDashboard();
+  shatoRenderPendientes();
+  // Mostrar notificación con link al nicho
+  const nichoInfo = SHATO_NICHO_MAP[prod.nicho] || { label: prod.nicho, emoji: '📦' };
+  shatoShowNotifWithAction(
+    '✅ Publicado en ' + nichoInfo.emoji + ' ' + nichoInfo.label,
+    'Ver en ' + nichoInfo.label + ' →',
+    () => shatoShowNicho(prod.nicho)
+  );
+  // Si hay token Shopify, publicar en la API también
+  if (SHATO_CONFIG.shopifyToken) {
+    shatoPublishToShopify(SHATO_PRODUCTS[idx] || prod);
+  }
 }
 
 function shatoRejectProduct() {
@@ -1060,6 +1121,16 @@ function shatoRejectProduct() {
   shatoRenderDashboard();
   shatoRenderPendientes();
   shatoShowNotif('🗑️ Producto rechazado', 'warning');
+}
+
+// Rechazar directamente desde tarjeta (sin modal)
+function shatoRejectById(id) {
+  if (!confirm('¿Descartar este producto?')) return;
+  SHATO_PRODUCTS = SHATO_PRODUCTS.filter(p => p.id !== id);
+  shatoSaveData();
+  shatoRenderDashboard();
+  shatoRenderPendientes();
+  shatoShowNotif('🗑️ Producto descartado', 'warning');
 }
 
 // ── SHOPIFY API ──
@@ -1077,9 +1148,18 @@ async function shatoPublishToShopify(prod) {
     if (res.ok) {
       const data = await res.json();
       const idx = SHATO_PRODUCTS.findIndex(p => p.id === prod.id);
-      if (idx !== -1) { SHATO_PRODUCTS[idx].status = 'published'; SHATO_PRODUCTS[idx].shopifyId = data.product?.id; SHATO_PRODUCTS[idx].publishedAt = new Date().toISOString(); }
+      if (idx !== -1) {
+        SHATO_PRODUCTS[idx].status = 'published';
+        SHATO_PRODUCTS[idx].shopifyId = data.product?.id;
+        SHATO_PRODUCTS[idx].publishedAt = new Date().toISOString();
+      }
       shatoSaveData(); shatoRenderDashboard(); shatoRenderPendientes();
-      shatoShowNotif('✅ Publicado en Shopify' + (isKB ? ' + KOI Intel guardado' : ' (oculto en tienda)'), 'success');
+      const nichoInfoS = SHATO_NICHO_MAP[prod.nicho] || null;
+      shatoShowNotifWithAction(
+        '✅ Publicado en Shopify' + (isKB ? ' 🌸 K-Beauty' : ' (multi-nicho)'),
+        nichoInfoS ? 'Ver en ' + nichoInfoS.label + ' →' : 'Ver →',
+        () => nichoInfoS ? shatoShowNicho(prod.nicho) : shatoShowTab('pendientes')
+      );
     } else { shatoShowNotif('❌ Error al publicar — verificá el token API', 'error'); }
   } catch (e) { shatoShowNotif('❌ Error de red al conectar con Shopify', 'error'); }
 }
@@ -1129,21 +1209,17 @@ function shatoCheckChromeStorage() {
   const params = new URLSearchParams(location.search);
   if (!params.has('shato_import')) return;
 
-  // ── Método 1: leer desde parámetro ?shato_data= (más confiable) ──
+  // ── Método 1: leer desde parámetro ?shato_data= (base64 JSON) ──
   const shatoData = params.get('shato_data');
   if (shatoData) {
     try {
       const json    = decodeURIComponent(escape(atob(shatoData)));
-      const product = JSON.parse(json);
-      if (product && (product.title || product.asin)) {
-        setTimeout(() => {
-          shatoOpenCaptureModal(product);
-          shatoShowNotif('📦 Producto recibido de Amazon', 'success');
-          // Limpiar URL sin recargar
-          const cleanUrl = location.pathname;
-          history.replaceState({}, '', cleanUrl);
-        }, 600);
-        return; // Ya lo procesamos, no seguir
+      const scraped = JSON.parse(json);
+      if (scraped && (scraped.title || scraped.asin)) {
+        // Limpiar URL sin recargar
+        history.replaceState({}, '', location.pathname);
+        setTimeout(() => shatoReceiveProduct(scraped), 600);
+        return;
       }
     } catch (e) {
       console.warn('[SHATO] Error decodificando shato_data:', e);
@@ -1154,14 +1230,103 @@ function shatoCheckChromeStorage() {
   if (typeof chrome !== 'undefined' && chrome.storage) {
     chrome.storage.local.get(['shato_pending_product'], (result) => {
       if (chrome.runtime.lastError) return;
-      const product = result.shato_pending_product;
-      if (!product) return;
+      const scraped = result.shato_pending_product;
+      if (!scraped) return;
       setTimeout(() => {
-        shatoOpenCaptureModal(product);
-        shatoShowNotif('📦 Producto recibido de Amazon vía extensión', 'success');
+        shatoReceiveProduct(scraped);
         try { chrome.runtime.sendMessage({ action: 'productConsumed' }); } catch(_) {}
       }, 800);
     });
+  }
+}
+
+// ── Recibir producto de Amazon: agregar a Pendientes SIN abrir modal ──
+function shatoReceiveProduct(scraped) {
+  // Convertir formato scraper → formato portal
+  const mapped = shatoMapScraperToPortal(scraped);
+  if (!mapped) return;
+
+  // Verificar si ya existe por ASIN para no duplicar
+  if (mapped.asin && SHATO_PRODUCTS.find(p => p.asin === mapped.asin)) {
+    shatoShowNotif('ℹ️ Producto ya existe en tu lista (ASIN: ' + mapped.asin + ')', 'info');
+    shatoNavigate('pendientes');
+    return;
+  }
+
+  // Asegurar nicho kbeauty si vino con importMode kbeauty o detectedKBeauty
+  if (!mapped.nicho) {
+    if (scraped.importMode === 'kbeauty' || scraped.detectedKBeauty) {
+      mapped.nicho = 'kbeauty';
+    }
+  }
+
+  // Calcular precio de tienda con margen
+  const priceAmazon = parseFloat(mapped.priceAmazon) || 0;
+  const margin = SHATO_CONFIG.defaultMargin || 35;
+  const priceStore = priceAmazon > 0
+    ? parseFloat((priceAmazon / (1 - margin / 100)).toFixed(2))
+    : 0;
+
+  // Crear producto con estado pendiente
+  const prod = Object.assign({}, mapped, {
+    id:         'p-' + Date.now(),
+    status:     'pending',
+    stock:      0,
+    stockMin:   2,
+    shipping:   0,
+    sold:       0,
+    createdAt:  new Date().toISOString(),
+    priceStore: priceStore
+  });
+
+  // Agregar al inicio de la lista
+  SHATO_PRODUCTS.unshift(prod);
+  shatoSaveData();
+
+  // Nombre del nicho para la notificación
+  const nichoInfo = SHATO_NICHO_MAP[prod.nicho] || null;
+  const nichoTxt  = nichoInfo ? ' → ' + nichoInfo.emoji + ' ' + nichoInfo.label : '';
+  const shortTitle = (prod.titleAmazon || prod.titleStore || 'Producto').substring(0, 45);
+
+  // Mostrar notificación con botón para abrir detalle
+  shatoShowNotifWithAction(
+    '📦 ' + shortTitle + '...' + nichoTxt,
+    'Ver detalle →',
+    () => shatoEditProduct(prod.id)
+  );
+
+  // Navegar a Pendientes y renderizar
+  shatoNavigate('pendientes');
+}
+
+// ── Notificación con botón de acción ──
+function shatoShowNotifWithAction(msg, actionLabel, actionFn) {
+  const container = document.getElementById('notif-container');
+  if (!container) { shatoShowNotif(msg, 'success'); return; }
+  const el = document.createElement('div');
+  el.className = 'notif success';
+  el.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:default;';
+  el.innerHTML = '<span>' + msg + '</span>';
+  const btn = document.createElement('button');
+  btn.textContent = actionLabel;
+  btn.style.cssText = 'background:#6c63ff;border:none;border-radius:6px;color:#fff;font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer;white-space:nowrap;';
+  btn.addEventListener('click', () => { el.remove(); actionFn(); });
+  el.appendChild(btn);
+  container.appendChild(el);
+  setTimeout(() => { if (el.parentNode) el.remove(); }, 8000);
+}
+
+// ── Navegación programática ──
+function shatoNavigate(section) {
+  // Activar item del sidebar
+  document.querySelectorAll('#shato-app .sidebar-item').forEach(i => i.classList.remove('active'));
+  // Mostrar tab correcto
+  document.querySelectorAll('#shato-app .tab-content').forEach(t => t.classList.remove('active'));
+  const tab = document.getElementById('tab-' + section);
+  if (tab) {
+    tab.classList.add('active');
+    if (section === 'pendientes') shatoRenderPendientes();
+    if (section === 'dashboard') shatoRenderDashboard();
   }
 }
 
