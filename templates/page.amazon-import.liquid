@@ -1120,21 +1120,49 @@ window.addEventListener('message', (e) => {
   }
 });
 
-// ── CHROME STORAGE: leer producto pendiente ──
+// ── RECIBIR PRODUCTO DESDE LA EXTENSIÓN CHROME ──
+// Método 1: shato_data en la URL (base64 JSON) — funciona siempre
+// Método 2: chrome.storage.local — fallback si está disponible
+// Método 3: window.postMessage — para pestañas ya abiertas
+
 function shatoCheckChromeStorage() {
   const params = new URLSearchParams(location.search);
   if (!params.has('shato_import')) return;
-  if (typeof chrome === 'undefined' || !chrome.storage) return;
-  chrome.storage.local.get(['shato_pending_product'], (result) => {
-    if (chrome.runtime.lastError) return;
-    const product = result.shato_pending_product;
-    if (!product) return;
-    setTimeout(() => {
-      shatoOpenCaptureModal(product);
-      shatoShowNotif('📦 Producto recibido de Amazon vía extensión', 'success');
-      chrome.runtime.sendMessage({ action: 'productConsumed' });
-    }, 800);
-  });
+
+  // ── Método 1: leer desde parámetro ?shato_data= (más confiable) ──
+  const shatoData = params.get('shato_data');
+  if (shatoData) {
+    try {
+      const json    = decodeURIComponent(escape(atob(shatoData)));
+      const product = JSON.parse(json);
+      if (product && (product.title || product.asin)) {
+        setTimeout(() => {
+          shatoOpenCaptureModal(product);
+          shatoShowNotif('📦 Producto recibido de Amazon', 'success');
+          // Limpiar URL sin recargar
+          const cleanUrl = location.pathname;
+          history.replaceState({}, '', cleanUrl);
+        }, 600);
+        return; // Ya lo procesamos, no seguir
+      }
+    } catch (e) {
+      console.warn('[SHATO] Error decodificando shato_data:', e);
+    }
+  }
+
+  // ── Método 2: chrome.storage.local (fallback) ──
+  if (typeof chrome !== 'undefined' && chrome.storage) {
+    chrome.storage.local.get(['shato_pending_product'], (result) => {
+      if (chrome.runtime.lastError) return;
+      const product = result.shato_pending_product;
+      if (!product) return;
+      setTimeout(() => {
+        shatoOpenCaptureModal(product);
+        shatoShowNotif('📦 Producto recibido de Amazon vía extensión', 'success');
+        try { chrome.runtime.sendMessage({ action: 'productConsumed' }); } catch(_) {}
+      }, 800);
+    });
+  }
 }
 
 // ── INIT ──
