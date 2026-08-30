@@ -473,7 +473,7 @@ body { overflow-x: hidden; }
       <div class="modal-body">
         <div class="alert alert-info" id="mode-alert"><i class="fas fa-info-circle"></i><span id="mode-alert-text">Completá los datos del producto para detectar el modo automáticamente</span></div>
         <div class="form-grid">
-          <div class="form-group"><label class="form-label">URL de imagen principal</label><input type="text" class="form-input" id="f-img" placeholder="https://..." oninput="shatoUpdatePreview()"><img id="f-img-preview" src="" style="width:100%;height:120px;object-fit:contain;background:#fff;border-radius:8px;margin-top:8px;display:none;padding:8px"></div>
+          <div class="form-group"><label class="form-label">URL de imagen principal</label><input type="text" class="form-input" id="f-img" placeholder="https://..." oninput="shatoUpdatePreview()"><img id="f-img-preview" src="" style="width:100%;height:120px;object-fit:contain;background:#fff;border-radius:8px;margin-top:8px;display:none;padding:8px"><div id="f-img-gallery" style="display:none;gap:8px;flex-wrap:wrap;margin-top:10px;padding:10px;background:rgba(108,99,255,0.06);border:1px solid #2a2a40;border-radius:8px"><div style="width:100%;font-size:11px;color:#6b6b8a;margin-bottom:6px">📸 Todas las imágenes — clic para seleccionar como principal</div><div id="f-img-gallery-thumbs" style="display:flex;gap:8px;flex-wrap:wrap"></div></div></div>
           <div class="form-group"><label class="form-label">ASIN de Amazon</label><input type="text" class="form-input" id="f-asin" placeholder="B08XYZ1234" oninput="shatoUpdateAmazonLinks()"><div style="margin-top:8px;display:flex;gap:6px"><a id="f-amazon-link" href="#" target="_blank" class="btn btn-amazon btn-sm" style="text-decoration:none"><i class="fab fa-amazon"></i> Ver en Amazon</a><a id="f-amazon-affiliate-link" href="#" target="_blank" class="btn btn-outline btn-sm" style="text-decoration:none">🤝 Link afiliado</a></div></div>
           <div class="form-group full"><label class="form-label">Título original (Amazon)</label><input type="text" class="form-input" id="f-title-amazon" placeholder="Título completo de Amazon..." oninput="shatoAutoDetectMode()"></div>
           <div class="form-group full"><label class="form-label">Título para Shopify / MeLi</label><input type="text" class="form-input" id="f-title-store" placeholder="Título optimizado para tu tienda..."></div>
@@ -675,8 +675,13 @@ function shatoShowNicho(nicho) {
   document.querySelectorAll('#shato-app .tab-content').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-nicho').classList.add('active');
   const n = SHATO_NICHO_MAP[nicho] || { label: nicho, emoji: '📦' };
+  const publishedCount = SHATO_PRODUCTS.filter(p => p.nicho === nicho && p.status === 'published').length;
+  const pendingCount   = SHATO_PRODUCTS.filter(p => p.nicho === nicho && p.status !== 'published').length;
   document.getElementById('nicho-title').textContent = n.emoji + ' ' + n.label;
-  document.getElementById('nicho-sub').textContent = 'Todos los productos de este nicho';
+  const subParts = [];
+  if (publishedCount > 0) subParts.push(publishedCount + ' publicado' + (publishedCount !== 1 ? 's' : ''));
+  if (pendingCount   > 0) subParts.push(pendingCount   + ' pendiente' + (pendingCount   !== 1 ? 's' : '') + ' (en Bandeja)');
+  document.getElementById('nicho-sub').textContent = subParts.length ? subParts.join(' · ') : 'Sin productos aún';
   document.getElementById('topbarTitle').textContent = n.emoji + ' ' + n.label;
   shatoRenderNicho(nicho);
 }
@@ -694,13 +699,15 @@ function shatoRenderDashboard() {
   document.getElementById('badge-pendientes').textContent = pendientes;
   document.getElementById('badge-despachos').textContent  = despachos;
   Object.keys(SHATO_NICHO_MAP).forEach(n => {
-    const count = SHATO_PRODUCTS.filter(p => p.nicho === n).length;
+    // Sidebar badge: solo productos PUBLICADOS en ese nicho
+    const count = SHATO_PRODUCTS.filter(p => p.nicho === n && p.status === 'published').length;
     const el = document.getElementById('badge-' + n);
     if (el) el.textContent = count;
   });
   const nichoSummary = document.getElementById('nicho-summary');
   nichoSummary.innerHTML = Object.entries(SHATO_NICHO_MAP).map(([key, val]) => {
-    const count = SHATO_PRODUCTS.filter(p => p.nicho === key).length;
+    // Dashboard cards: solo publicados
+    const count = SHATO_PRODUCTS.filter(p => p.nicho === key && p.status === 'published').length;
     return '<div class="nicho-card" onclick="shatoShowNicho(\'' + key + '\')">'
       + '<div class="nicho-emoji">' + val.emoji + '</div>'
       + '<div class="nicho-name">' + val.label + '</div>'
@@ -726,13 +733,24 @@ function shatoRenderPendientes() {
 }
 
 function shatoRenderNicho(nicho) {
-  const prods = SHATO_PRODUCTS.filter(p => p.nicho === nicho);
-  const grid  = document.getElementById('nicho-grid');
+  // Solo mostrar productos YA PUBLICADOS en este nicho (status === 'published')
+  // Los pendientes siempre viven en la Bandeja de entrada, nunca aquí
+  const prods    = SHATO_PRODUCTS.filter(p => p.nicho === nicho && p.status === 'published');
+  const pending  = SHATO_PRODUCTS.filter(p => p.nicho === nicho && p.status !== 'published');
+  const grid     = document.getElementById('nicho-grid');
+  // Banner informativo si hay pendientes para este nicho
+  let pendingBanner = '';
+  if (pending.length > 0) {
+    pendingBanner = '<div style="grid-column:1/-1;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.3);border-radius:10px;padding:12px 16px;font-size:13px;color:#fbbf24;display:flex;align-items:center;gap:10px;margin-bottom:4px">';
+    pendingBanner += '<i class="fas fa-clock"></i>';
+    pendingBanner += '<span>Tenés <strong>' + pending.length + ' producto' + (pending.length > 1 ? 's' : '') + ' pendiente' + (pending.length > 1 ? 's' : '') + '</strong> en este nicho — andá a <strong>Bandeja de entrada</strong> y hacé clic en "Publicar" para que aparezcan acá.</span>';
+    pendingBanner += '</div>';
+  }
   if (prods.length === 0) {
-    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;padding:60px"><i class="fas fa-box-open"></i><h3>Sin productos en este nicho</h3><p>Capturá productos de Amazon para agregarlos</p></div>';
+    grid.innerHTML = pendingBanner + '<div class="empty-state" style="grid-column:1/-1;padding:60px"><i class="fas fa-box-open"></i><h3>Sin productos publicados aún</h3><p>Capturá productos de Amazon y publicalos desde la Bandeja de entrada</p></div>';
     return;
   }
-  grid.innerHTML = prods.map(p => shatoRenderProductCard(p)).join('');
+  grid.innerHTML = pendingBanner + prods.map(p => shatoRenderProductCard(p)).join('');
 }
 
 function shatoRenderProductCard(p) {
@@ -903,14 +921,49 @@ function shatoClearForm() {
   document.getElementById('f-stock').value = '0';
   document.getElementById('f-stock-min').value = '2';
   document.getElementById('f-img-preview').style.display = 'none';
+  const galleryEl = document.getElementById('f-img-gallery'); if (galleryEl) { galleryEl.style.display = 'none'; document.getElementById('f-img-gallery-thumbs').innerHTML = ''; }
   document.getElementById('koi-intel-section').style.display = 'none';
   SHATO_INGREDIENTS = [];
   shatoRenderIngredients();
   shatoCalcPrice();
 }
 
+function shatoSelectImage(url) {
+  document.getElementById('f-img').value = url;
+  shatoUpdatePreview();
+  // Resaltar thumb seleccionado
+  const thumbs = document.querySelectorAll('#f-img-gallery-thumbs img');
+  thumbs.forEach(function(th) {
+    th.style.borderColor = (th.getAttribute('data-url') === url) ? '#6c63ff' : '#2a2a40';
+    th.style.boxShadow   = (th.getAttribute('data-url') === url) ? '0 0 0 2px rgba(108,99,255,0.5)' : 'none';
+  });
+}
+
 function shatoFillForm(p) {
   document.getElementById('f-img').value = p.image || '';
+  // ── Galería multi-imagen ──
+  const gallery = document.getElementById('f-img-gallery');
+  const thumbsEl = document.getElementById('f-img-gallery-thumbs');
+  const imgs = (p.images && p.images.length > 0) ? p.images : (p.image ? [p.image] : []);
+  if (gallery && thumbsEl && imgs.length > 0) {
+    const currentMain = p.image || imgs[0];
+    thumbsEl.innerHTML = imgs.map(function(url) {
+      const isSelected = url === currentMain;
+      return '<img src="' + url + '" data-url="' + url + '" '
+        + 'onclick="shatoSelectImage(\'' + url.replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\')" '
+        + 'title="Clic para usar como imagen principal" '
+        + 'style="width:72px;height:72px;object-fit:contain;cursor:pointer;background:#fff;padding:4px;border-radius:6px;'
+        + 'border:2px solid ' + (isSelected ? '#6c63ff' : '#2a2a40') + ';'
+        + 'box-shadow:' + (isSelected ? '0 0 0 2px rgba(108,99,255,0.5)' : 'none') + ';'
+        + 'transition:border-color .15s,box-shadow .15s" '
+        + 'onerror="this.style.display=\'none\'">';
+    }).join('');
+    gallery.style.display = 'flex';
+    gallery.style.flexDirection = 'column';
+  } else if (gallery) {
+    gallery.style.display = 'none';
+    if (thumbsEl) thumbsEl.innerHTML = '';
+  }
   document.getElementById('f-asin').value = p.asin || '';
   document.getElementById('f-title-amazon').value = p.titleAmazon || '';
   document.getElementById('f-title-store').value = p.titleStore || '';
@@ -1047,7 +1100,12 @@ function shatoPublishProduct() {
   // Preservar status del producto si ya estaba publicado; de lo contrario marcar como published ahora
   const existingProd = shatoEditingId ? SHATO_PRODUCTS.find(p => p.id === shatoEditingId) : null;
   const newStatus = existingProd && existingProd.status === 'published' ? 'published' : 'published'; // Siempre published al guardar desde modal
-  const prod = { id: shatoEditingId || 'p-' + Date.now(), status: newStatus, nicho, image:document.getElementById('f-img').value.trim(), asin, titleAmazon, titleStore:titleStore||titleAmazon, description:document.getElementById('f-desc').value.trim(), categoryAmazon:document.getElementById('f-category-amazon').value.trim(), priceAmazon, shipping, priceStore:parseFloat(priceStore.toFixed(2)), stock:parseInt(document.getElementById('f-stock').value)||0, stockMin:parseInt(document.getElementById('f-stock-min').value)||2, sold:existingProd?existingProd.sold||0:0, ingredients:[...SHATO_INGREDIENTS], createdAt:existingProd?existingProd.createdAt:new Date().toISOString(), publishedAt:new Date().toISOString(), affiliateLink:shatoBuildAffiliateLink(asin) };
+  const newMainImage = document.getElementById('f-img').value.trim();
+  // Preservar array completo de imágenes; si la imagen principal cambió, moverla al frente
+  let newImages = existingProd && existingProd.images && existingProd.images.length > 0 ? existingProd.images.slice() : (newMainImage ? [newMainImage] : []);
+  if (newMainImage && newImages.indexOf(newMainImage) === -1) newImages.unshift(newMainImage);
+  if (newMainImage && newImages[0] !== newMainImage) { newImages = newImages.filter(function(u){ return u !== newMainImage; }); newImages.unshift(newMainImage); }
+  const prod = { id: shatoEditingId || 'p-' + Date.now(), status: newStatus, nicho, image: newMainImage, images: newImages, asin, titleAmazon, titleStore:titleStore||titleAmazon, description:document.getElementById('f-desc').value.trim(), categoryAmazon:document.getElementById('f-category-amazon').value.trim(), priceAmazon, shipping, priceStore:parseFloat(priceStore.toFixed(2)), stock:parseInt(document.getElementById('f-stock').value)||0, stockMin:parseInt(document.getElementById('f-stock-min').value)||2, sold:existingProd?existingProd.sold||0:0, ingredients:[...SHATO_INGREDIENTS], createdAt:existingProd?existingProd.createdAt:new Date().toISOString(), publishedAt:new Date().toISOString(), affiliateLink:shatoBuildAffiliateLink(asin) };
   if (nicho === 'kbeauty') {
     prod.koiCategoria   = document.getElementById('f-koi-categoria').value;
     prod.koiSubcategoria = document.getElementById('f-koi-subcategoria').value;
@@ -1086,7 +1144,9 @@ function shatoQuickPublish(id) {
   if (!prod) return;
   // Si no tiene nicho asignado, intentar detectar automáticamente o pedir
   if (!prod.nicho) {
-    const nicho = prompt('¿A qué nicho pertenece este producto?\nEjemplos: kbeauty, electronica, hogar, herramientas, deportes, salud, otros', 'kbeauty');
+    // Mostrar selector visual de nicho en lugar de un prompt
+    const opciones = Object.entries(SHATO_NICHO_MAP).map(([k,v]) => v.emoji + ' ' + v.label + ' → escribí: ' + k).join('\n');
+    const nicho = prompt('¿A qué nicho pertenece este producto?\n\n' + opciones, 'mascotas');
     if (!nicho) return;
     prod.nicho = nicho.trim().toLowerCase();
   }
@@ -1336,3 +1396,4 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(shatoCheckChromeStorage, 500);
 });
 </script>
+
