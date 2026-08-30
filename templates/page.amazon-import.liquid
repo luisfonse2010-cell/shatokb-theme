@@ -1,0 +1,1145 @@
+{% comment %}
+  SHATO Import Center — Template para Shopify
+  ============================================
+  Archivo: templates/page.amazon-import.liquid
+  
+  Instrucciones de instalación:
+  1. En el Admin de Shopify → Online Store → Themes → Edit code
+  2. En "Templates" → Add a new template → page → nombre: amazon-import
+  3. Pegar este contenido completo
+  4. Crear una página en Pages → Title: "SHATO Import" → Template: page.amazon-import
+  5. La URL será: shatokb.com/pages/amazon-import (o el handle que elijas)
+  
+  IMPORTANTE: Esta página NO debe aparecer en el menú de navegación.
+  Solo vos sabés la URL. Es tu panel privado de operaciones.
+{% endcomment %}
+
+{{ 'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css' | stylesheet_tag }}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+/* ── RESET: anular estilos del tema Shopify ── */
+.page-width, .page-container, main > .container,
+.shopify-section, #MainContent, .main-content,
+.template-page .page-width { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+header, .site-header, nav, .announcement-bar,
+footer, .site-footer { display: none !important; }
+body { overflow-x: hidden; }
+
+/* ── RESET & BASE ── */
+#shato-app * { margin: 0; padding: 0; box-sizing: border-box; }
+#shato-app {
+  --bg:        #0d0d14;
+  --bg2:       #13131f;
+  --bg3:       #1a1a2e;
+  --border:    #2a2a40;
+  --accent:    #6c63ff;
+  --accent2:   #ff6584;
+  --green:     #2ade80;
+  --yellow:    #fbbf24;
+  --red:       #f43f5e;
+  --blue:      #38bdf8;
+  --text:      #eeeef5;
+  --muted:     #6b6b8a;
+  --sidebar-w: 240px;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  font-size: 14px;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+/* ── SIDEBAR ── */
+#shato-app .sidebar {
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  z-index: 100;
+  overflow-y: auto;
+}
+#shato-app .sidebar-logo { padding: 20px 16px; border-bottom: 1px solid var(--border); }
+#shato-app .sidebar-logo .brand { font-size: 11px; font-weight: 800; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; }
+#shato-app .sidebar-logo .title { font-size: 16px; font-weight: 700; color: var(--text); margin-top: 4px; }
+#shato-app .sidebar-logo .title span { color: var(--accent); }
+#shato-app .sidebar-search { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+#shato-app .sidebar-search input { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text); font-size: 12px; outline: none; }
+#shato-app .sidebar-search input::placeholder { color: var(--muted); }
+#shato-app .sidebar-search input:focus { border-color: var(--accent); }
+#shato-app .sidebar-section { padding: 8px 0; border-bottom: 1px solid var(--border); }
+#shato-app .sidebar-section-title { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; padding: 8px 16px 4px; }
+#shato-app .sidebar-item { display: flex; align-items: center; gap: 10px; padding: 9px 16px; cursor: pointer; transition: all 0.15s; color: var(--muted); font-size: 13px; font-weight: 500; border-left: 3px solid transparent; }
+#shato-app .sidebar-item:hover { background: var(--bg3); color: var(--text); }
+#shato-app .sidebar-item.active { background: var(--bg3); color: var(--accent); border-left-color: var(--accent); }
+#shato-app .sidebar-item .icon { width: 16px; text-align: center; font-size: 14px; }
+#shato-app .sidebar-badge { margin-left: auto; background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; min-width: 18px; text-align: center; }
+#shato-app .sidebar-badge.red { background: var(--red); }
+#shato-app .sidebar-badge.green { background: var(--green); color: #000; }
+#shato-app .sidebar-badge.yellow { background: var(--yellow); color: #000; }
+#shato-app .sidebar-footer { margin-top: auto; padding: 16px; border-top: 1px solid var(--border); }
+#shato-app .sidebar-footer .store-info { display: flex; align-items: center; gap: 10px; }
+#shato-app .store-avatar { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color: #fff; }
+#shato-app .store-name { font-size: 12px; font-weight: 600; }
+#shato-app .store-url { font-size: 10px; color: var(--muted); }
+
+/* ── MAIN ── */
+#shato-app .main { margin-left: var(--sidebar-w); flex: 1; min-height: 100vh; display: flex; flex-direction: column; overflow-y: auto; }
+#shato-app .topbar { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 50; }
+#shato-app .topbar-title { font-size: 16px; font-weight: 700; flex: 1; }
+#shato-app .topbar-search { display: flex; align-items: center; gap: 8px; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 8px 14px; width: 320px; }
+#shato-app .topbar-search input { background: none; border: none; outline: none; color: var(--text); font-size: 13px; width: 100%; }
+#shato-app .topbar-search input::placeholder { color: var(--muted); }
+#shato-app .topbar-search i { color: var(--muted); }
+
+/* ── BUTTONS ── */
+#shato-app .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; font-family: 'Inter', sans-serif; }
+#shato-app .btn-primary { background: var(--accent); color: #fff; }
+#shato-app .btn-primary:hover { background: #5a52e0; }
+#shato-app .btn-success { background: var(--green); color: #000; }
+#shato-app .btn-success:hover { background: #22c96d; }
+#shato-app .btn-danger { background: var(--red); color: #fff; }
+#shato-app .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+#shato-app .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+#shato-app .btn-sm { padding: 5px 10px; font-size: 12px; }
+#shato-app .btn-amazon { background: #ff9900; color: #000; }
+#shato-app .btn-amazon:hover { background: #e68a00; }
+
+#shato-app .content { padding: 24px; flex: 1; }
+#shato-app .tab-content { display: none; }
+#shato-app .tab-content.active { display: block; }
+
+/* ── STATS ── */
+#shato-app .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+#shato-app .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+#shato-app .stat-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+#shato-app .stat-value { font-size: 28px; font-weight: 800; line-height: 1; }
+#shato-app .stat-sub { font-size: 11px; color: var(--muted); margin-top: 6px; }
+#shato-app .stat-card.green .stat-value { color: var(--green); }
+#shato-app .stat-card.yellow .stat-value { color: var(--yellow); }
+#shato-app .stat-card.red .stat-value { color: var(--red); }
+#shato-app .stat-card.blue .stat-value { color: var(--blue); }
+
+/* ── SECTIONS ── */
+#shato-app .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+#shato-app .section-title { font-size: 15px; font-weight: 700; }
+#shato-app .section-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* ── PRODUCT CARDS ── */
+#shato-app .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+#shato-app .product-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color 0.15s; }
+#shato-app .product-card:hover { border-color: var(--accent); }
+#shato-app .product-card-img { width: 100%; height: 160px; object-fit: contain; background: #fff; padding: 12px; }
+#shato-app .product-card-body { padding: 14px; }
+#shato-app .product-card-asin { font-size: 10px; color: var(--muted); font-family: monospace; margin-bottom: 4px; }
+#shato-app .product-card-title { font-size: 13px; font-weight: 600; line-height: 1.4; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#shato-app .product-card-prices { display: flex; gap: 12px; margin-bottom: 10px; align-items: center; }
+#shato-app .price-amazon { font-size: 12px; color: var(--muted); }
+#shato-app .price-amazon span { color: var(--text); font-weight: 600; }
+#shato-app .price-arrow { color: var(--muted); font-size: 11px; }
+#shato-app .price-store { font-size: 13px; font-weight: 700; color: var(--green); }
+#shato-app .margin-badge { margin-left: auto; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px; font-size: 11px; font-weight: 700; color: var(--yellow); }
+#shato-app .product-card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+#shato-app .tag { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; background: var(--bg3); color: var(--muted); border: 1px solid var(--border); }
+#shato-app .tag.kbeauty { background: #1a0a1e; color: #e879f9; border-color: #6b21a8; }
+#shato-app .tag.nicho { background: #0a1628; color: var(--blue); border-color: #1e3a5f; }
+#shato-app .tag.core { background: #0a1f14; color: var(--green); border-color: #14532d; }
+#shato-app .product-card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ── DISPATCH CARDS ── */
+#shato-app .dispatch-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; border-left: 4px solid var(--red); }
+#shato-app .dispatch-card.done { border-left-color: var(--green); opacity: 0.6; }
+#shato-app .dispatch-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+#shato-app .dispatch-product { font-size: 14px; font-weight: 700; }
+#shato-app .dispatch-order { font-size: 11px; color: var(--muted); margin-top: 2px; }
+#shato-app .dispatch-time { font-size: 11px; color: var(--red); font-weight: 600; white-space: nowrap; }
+#shato-app .dispatch-info { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; background: var(--bg3); border-radius: 8px; padding: 10px 14px; margin-bottom: 10px; }
+#shato-app .dispatch-info-item .label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+#shato-app .dispatch-info-item .value { font-size: 14px; font-weight: 700; margin-top: 2px; }
+#shato-app .dispatch-actions { display: flex; gap: 8px; }
+
+/* ── MODAL ── */
+#shato-app .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; display: none; align-items: center; justify-content: center; padding: 24px; }
+#shato-app .modal-overlay.open { display: flex; }
+#shato-app .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 760px; max-height: 90vh; overflow-y: auto; }
+#shato-app .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--bg2); z-index: 10; }
+#shato-app .modal-title { font-size: 16px; font-weight: 700; }
+#shato-app .modal-close { width: 32px; height: 32px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 16px; }
+#shato-app .modal-close:hover { color: var(--text); border-color: var(--accent); }
+#shato-app .modal-body { padding: 24px; }
+#shato-app .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; position: sticky; bottom: 0; background: var(--bg2); }
+
+/* ── FORMS ── */
+#shato-app .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+#shato-app .form-group { margin-bottom: 16px; }
+#shato-app .form-group.full { grid-column: 1 / -1; }
+#shato-app .form-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; display: block; }
+#shato-app .form-input, #shato-app .form-select, #shato-app .form-textarea { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; color: var(--text); font-size: 13px; outline: none; font-family: 'Inter', sans-serif; transition: border-color 0.15s; }
+#shato-app .form-input:focus, #shato-app .form-select:focus, #shato-app .form-textarea:focus { border-color: var(--accent); }
+#shato-app .form-textarea { resize: vertical; min-height: 80px; }
+#shato-app .form-select option { background: var(--bg2); }
+
+/* ── PRICE CALC ── */
+#shato-app .price-calc { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+#shato-app .price-calc-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 12px; }
+#shato-app .price-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+#shato-app .price-row .label { color: var(--muted); }
+#shato-app .price-row .value { font-weight: 600; }
+#shato-app .price-row.total { border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px; font-size: 15px; }
+#shato-app .price-row.total .value { color: var(--green); font-size: 18px; }
+#shato-app .margin-slider { width: 100%; accent-color: var(--accent); }
+
+/* ── KOI INTEL ── */
+#shato-app .koi-intel-section { background: #0d0a1f; border: 1px solid #3b0764; border-radius: 10px; padding: 16px; margin-top: 16px; }
+#shato-app .koi-intel-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #e879f9; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+#shato-app .fit-sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+#shato-app .fit-item .fit-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+#shato-app .fit-item .fit-label span:first-child { color: var(--muted); }
+#shato-app .fit-item .fit-label span:last-child { color: var(--text); font-weight: 700; }
+#shato-app .fit-slider { width: 100%; accent-color: #e879f9; }
+#shato-app .ingredients-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+#shato-app .ingredient-tag { display: flex; align-items: center; gap: 4px; background: #1a0a2e; border: 1px solid #6b21a8; border-radius: 6px; padding: 3px 8px; font-size: 11px; color: #e879f9; }
+#shato-app .ingredient-tag .remove { cursor: pointer; color: var(--muted); font-size: 10px; }
+#shato-app .ingredient-tag .remove:hover { color: var(--red); }
+#shato-app .koi-score-bar { background: var(--bg); border-radius: 8px; height: 8px; overflow: hidden; margin-top: 6px; }
+#shato-app .koi-score-fill { height: 100%; background: linear-gradient(90deg, #6c63ff, #e879f9); border-radius: 8px; transition: width 0.3s; }
+
+/* ── TOGGLES ── */
+#shato-app .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+#shato-app .toggle-row:last-child { border-bottom: none; }
+#shato-app .toggle-label { font-size: 13px; font-weight: 500; }
+#shato-app .toggle-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+#shato-app .toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+#shato-app .toggle input { opacity: 0; width: 0; height: 0; }
+#shato-app .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 22px; cursor: pointer; transition: 0.2s; }
+#shato-app .toggle-slider:before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: 0.2s; }
+#shato-app .toggle input:checked + .toggle-slider { background: var(--accent); }
+#shato-app .toggle input:checked + .toggle-slider:before { transform: translateX(18px); }
+
+/* ── NICHOS ── */
+#shato-app .nicho-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
+#shato-app .nicho-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.15s; text-align: center; }
+#shato-app .nicho-card:hover, #shato-app .nicho-card.active { border-color: var(--accent); background: var(--bg3); }
+#shato-app .nicho-emoji { font-size: 28px; margin-bottom: 8px; }
+#shato-app .nicho-name { font-size: 13px; font-weight: 600; }
+#shato-app .nicho-count { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+/* ── DISPATCH SEARCH ── */
+#shato-app .dispatch-search-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+#shato-app .dispatch-search-input { display: flex; gap: 12px; }
+#shato-app .dispatch-search-input input { flex: 1; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; color: var(--text); font-size: 15px; outline: none; font-family: 'Inter', sans-serif; }
+#shato-app .dispatch-search-input input:focus { border-color: var(--accent); }
+#shato-app .dispatch-result { background: var(--bg2); border: 1px solid var(--green); border-radius: 12px; padding: 20px; display: none; }
+#shato-app .dispatch-result.show { display: block; }
+#shato-app .dispatch-result-header { display: flex; gap: 16px; margin-bottom: 16px; }
+#shato-app .dispatch-result-img { width: 80px; height: 80px; object-fit: contain; background: #fff; border-radius: 8px; padding: 6px; flex-shrink: 0; }
+#shato-app .dispatch-result-info { flex: 1; }
+#shato-app .dispatch-result-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+#shato-app .dispatch-result-asin { font-size: 11px; color: var(--muted); font-family: monospace; }
+#shato-app .dispatch-financials { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; background: var(--bg3); border-radius: 10px; padding: 14px; margin-bottom: 16px; }
+#shato-app .fin-item .fin-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+#shato-app .fin-item .fin-value { font-size: 18px; font-weight: 800; margin-top: 4px; }
+#shato-app .fin-item.green .fin-value { color: var(--green); }
+#shato-app .fin-item.yellow .fin-value { color: var(--yellow); }
+
+/* ── ALERTS ── */
+#shato-app .alert { border-radius: 10px; padding: 12px 16px; margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px; font-size: 13px; }
+#shato-app .alert-warning { background: #1a1200; border: 1px solid #854d0e; color: var(--yellow); }
+#shato-app .alert-success { background: #0a1f14; border: 1px solid #14532d; color: var(--green); }
+#shato-app .alert-danger { background: #1a0a0a; border: 1px solid #7f1d1d; color: var(--red); }
+#shato-app .alert-info { background: #0a1628; border: 1px solid #1e3a5f; color: var(--blue); }
+
+/* ── TABLE ── */
+#shato-app .table-wrap { overflow-x: auto; }
+#shato-app table { width: 100%; border-collapse: collapse; }
+#shato-app th { background: var(--bg3); padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); text-align: left; border-bottom: 1px solid var(--border); }
+#shato-app td { padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 13px; }
+#shato-app tr:hover td { background: var(--bg3); }
+#shato-app .stock-ok { color: var(--green); font-weight: 700; }
+#shato-app .stock-low { color: var(--yellow); font-weight: 700; }
+#shato-app .stock-out { color: var(--red); font-weight: 700; }
+
+/* ── CONFIG ── */
+#shato-app .config-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+#shato-app .config-section-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+
+/* ── EMPTY STATE ── */
+#shato-app .empty-state { text-align: center; padding: 60px 24px; color: var(--muted); }
+#shato-app .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.3; display: block; }
+#shato-app .empty-state h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+#shato-app .empty-state p { font-size: 13px; line-height: 1.6; }
+
+/* ── SCROLLBAR ── */
+#shato-app ::-webkit-scrollbar { width: 6px; height: 6px; }
+#shato-app ::-webkit-scrollbar-track { background: var(--bg); }
+#shato-app ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+#shato-app ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* ── NOTIFICATIONS ── */
+#shato-app .notif-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+#shato-app .notif { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; font-size: 13px; display: flex; align-items: center; gap: 10px; min-width: 280px; pointer-events: all; animation: shatoSlideIn 0.3s ease; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+#shato-app .notif.success { border-color: var(--green); }
+#shato-app .notif.error { border-color: var(--red); }
+#shato-app .notif.warning { border-color: var(--yellow); }
+@keyframes shatoSlideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* ── CHIP SELECTOR ── */
+#shato-app .chip-selector { display: flex; flex-wrap: wrap; gap: 6px; }
+#shato-app .chip { padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border); font-size: 12px; font-weight: 500; cursor: pointer; background: var(--bg3); color: var(--muted); transition: all 0.15s; }
+#shato-app .chip:hover { border-color: var(--accent); color: var(--text); }
+#shato-app .chip.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
+#shato-app .chip.selected.kbeauty { background: #7e22ce; border-color: #7e22ce; }
+</style>
+
+<div id="shato-app">
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="brand">SHATO</div>
+      <div class="title">Import <span>Center</span></div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" placeholder="🔍 Buscar producto o ASIN..." id="globalSearch" oninput="shatoglobalSearchFn(this.value)">
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Principal</div>
+      <div class="sidebar-item active" onclick="shatoShowTab('dashboard')">
+        <i class="icon fas fa-chart-line"></i> Dashboard
+      </div>
+      <div class="sidebar-item" onclick="shatoShowTab('pendientes')">
+        <i class="icon fas fa-inbox"></i> Pendientes
+        <span class="sidebar-badge red" id="badge-pendientes">0</span>
+      </div>
+      <div class="sidebar-item" onclick="shatoShowTab('despachos')">
+        <i class="icon fas fa-truck"></i> Despachos
+        <span class="sidebar-badge red" id="badge-despachos">0</span>
+      </div>
+      <div class="sidebar-item" onclick="shatoShowTab('inventario')">
+        <i class="icon fas fa-boxes"></i> Inventario
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Categorías</div>
+      <div class="sidebar-item" onclick="shatoShowNicho('kbeauty')"><i class="icon">🌸</i> K-Beauty <span class="sidebar-badge" id="badge-kbeauty">0</span></div>
+      <div class="sidebar-item" onclick="shatoShowNicho('electronica')"><i class="icon">💻</i> Electrónica <span class="sidebar-badge" id="badge-electronica">0</span></div>
+      <div class="sidebar-item" onclick="shatoShowNicho('hogar')"><i class="icon">🏠</i> Hogar & Cocina <span class="sidebar-badge" id="badge-hogar">0</span></div>
+      <div class="sidebar-item" onclick="shatoShowNicho('herramientas')"><i class="icon">🔧</i> Herramientas <span class="sidebar-badge" id="badge-herramientas">0</span></div>
+      <div class="sidebar-item" onclick="shatoShowNicho('deportes')"><i class="icon">⚽</i> Deportes <span class="sidebar-badge" id="badge-deportes">0</span></div>
+      <div class="sidebar-item" onclick="shatoShowNicho('bebes')"><i class="icon">👶</i> Bebés & Niños <span class="sidebar-badge" id="badge-bebes">0</span></div>
+      <div class="sidebar-item" onclick="shatoShowNicho('mascotas')"><i class="icon">🐾</i> Mascotas <span class="sidebar-badge" id="badge-mascotas">0</span></div>
+      <div class="sidebar-item" onclick="shatoShowNicho('salud')"><i class="icon">🏥</i> Salud <span class="sidebar-badge" id="badge-salud">0</span></div>
+      <div class="sidebar-item" onclick="shatoShowNicho('otros')"><i class="icon">📦</i> Otros <span class="sidebar-badge" id="badge-otros">0</span></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Sistema</div>
+      <div class="sidebar-item" onclick="shatoShowTab('config')"><i class="icon fas fa-cog"></i> Configuración</div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="store-info">
+        <div class="store-avatar">S</div>
+        <div>
+          <div class="store-name">SHATOKB</div>
+          <div class="store-url">shatokb.myshopify.com</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ══ -->
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">📊 Dashboard</div>
+      <div class="topbar-search">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Buscar por nombre, ASIN, categoría..." id="topbarSearchInput" oninput="shatoglobalSearchFn(this.value)">
+      </div>
+      <button class="btn btn-primary" onclick="shatoOpenCaptureModal()">
+        <i class="fas fa-plus"></i> Capturar producto
+      </button>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div id="tab-dashboard" class="tab-content active">
+        <div class="stats-grid">
+          <div class="stat-card blue"><div class="stat-label">Total Productos</div><div class="stat-value" id="stat-total">0</div><div class="stat-sub">En tu catálogo</div></div>
+          <div class="stat-card green"><div class="stat-label">Publicados</div><div class="stat-value" id="stat-publicados">0</div><div class="stat-sub">En Shopify + MeLi</div></div>
+          <div class="stat-card red"><div class="stat-label">Pendientes</div><div class="stat-value" id="stat-pendientes">0</div><div class="stat-sub">Por revisar y publicar</div></div>
+          <div class="stat-card yellow"><div class="stat-label">Despachos</div><div class="stat-value" id="stat-despachos">0</div><div class="stat-sub">Ventas pendientes</div></div>
+        </div>
+        <div class="section-header"><div><div class="section-title">🚨 Despachos Urgentes</div><div class="section-sub">Ventas que necesitan ser compradas y despachadas</div></div><button class="btn btn-outline btn-sm" onclick="shatoShowTab('despachos')">Ver todos</button></div>
+        <div id="dashboard-despachos"><div class="empty-state" style="padding:40px"><i class="fas fa-truck"></i><h3>Sin despachos urgentes</h3><p>Cuando tengas ventas en MeLi o Shopify aparecerán aquí</p></div></div>
+        <div class="section-header" style="margin-top:24px"><div><div class="section-title">⚠️ Alertas de Precio</div><div class="section-sub">Productos donde tu margen bajó</div></div></div>
+        <div id="dashboard-alertas"><div class="empty-state" style="padding:40px"><i class="fas fa-bell"></i><h3>Sin alertas de precio</h3><p>Cuando un precio de Amazon cambie y afecte tu margen aparecerá aquí</p></div></div>
+        <div class="section-header" style="margin-top:24px"><div><div class="section-title">🗂️ Productos por Nicho</div><div class="section-sub">Tu mini-Amazon organizado</div></div></div>
+        <div class="nicho-grid" id="nicho-summary"></div>
+      </div>
+
+      <!-- PENDIENTES -->
+      <div id="tab-pendientes" class="tab-content">
+        <div class="section-header"><div><div class="section-title">📥 Productos Pendientes</div><div class="section-sub">Capturados de Amazon — revisá y publicá antes de que lleguen a tu tienda</div></div><button class="btn btn-primary" onclick="shatoOpenCaptureModal()"><i class="fas fa-plus"></i> Capturar nuevo</button></div>
+        <div class="products-grid" id="pendientes-grid"><div class="empty-state" style="grid-column:1/-1;padding:60px"><i class="fas fa-inbox"></i><h3>No hay productos pendientes</h3><p>Usá la extensión Chrome en Amazon para capturar productos<br>o hacé click en "Capturar producto" para agregar uno manualmente</p></div></div>
+      </div>
+
+      <!-- DESPACHOS -->
+      <div id="tab-despachos" class="tab-content">
+        <div class="section-header"><div><div class="section-title">🚚 Centro de Despachos</div><div class="section-sub">Encontrá el producto en Amazon y despachá al cliente</div></div></div>
+        <div class="dispatch-search-box">
+          <div style="font-size:14px;font-weight:700;margin-bottom:12px;">🔍 Buscar producto para despachar</div>
+          <div class="dispatch-search-input">
+            <input type="text" id="dispatchSearchInput" placeholder="Escribí el nombre del producto o el ASIN..." oninput="shatoSearchDispatch(this.value)">
+            <button class="btn btn-primary" onclick="shatoSearchDispatch(document.getElementById('dispatchSearchInput').value)"><i class="fas fa-search"></i> Buscar</button>
+          </div>
+        </div>
+        <div class="dispatch-result" id="dispatch-result"></div>
+        <div class="section-header"><div class="section-title">Ventas pendientes de despacho</div></div>
+        <div id="despachos-list"><div class="empty-state" style="padding:60px"><i class="fas fa-box-open"></i><h3>Sin ventas pendientes</h3><p>Las ventas de MeLi y Shopify aparecerán aquí automáticamente</p></div></div>
+      </div>
+
+      <!-- INVENTARIO -->
+      <div id="tab-inventario" class="tab-content">
+        <div class="section-header"><div><div class="section-title">📦 Control de Inventario</div><div class="section-sub">Stock actual de todos tus productos</div></div></div>
+        <div class="table-wrap"><table id="inventario-table"><thead><tr><th>Producto</th><th>ASIN</th><th>Nicho</th><th>Precio Amazon</th><th>Tu Precio</th><th>Margen</th><th>Stock</th><th>Vendidos</th><th>Acciones</th></tr></thead><tbody id="inventario-body"><tr><td colspan="9" style="text-align:center;padding:40px;color:#6b6b8a">No hay productos en tu inventario aún</td></tr></tbody></table></div>
+      </div>
+
+      <!-- NICHO -->
+      <div id="tab-nicho" class="tab-content">
+        <div class="section-header"><div><div class="section-title" id="nicho-title">Productos</div><div class="section-sub" id="nicho-sub">Todos los productos de este nicho</div></div><button class="btn btn-primary" onclick="shatoOpenCaptureModal()"><i class="fas fa-plus"></i> Agregar producto</button></div>
+        <div class="products-grid" id="nicho-grid"></div>
+      </div>
+
+      <!-- CONFIG -->
+      <div id="tab-config" class="tab-content">
+        <div class="section-header"><div class="section-title">⚙️ Configuración del Portal</div></div>
+        <div class="config-section">
+          <div class="config-section-title"><i class="fab fa-shopify" style="color:#96bf48"></i> Shopify</div>
+          <div class="form-group"><label class="form-label">Admin API Token</label><input type="password" class="form-input" id="cfg-shopify-token" placeholder="shpat_..."></div>
+          <div class="form-group"><label class="form-label">Dominio de la tienda</label><input type="text" class="form-input" id="cfg-shopify-domain" value="shatokb.myshopify.com"></div>
+        </div>
+        <div class="config-section">
+          <div class="config-section-title"><i class="fab fa-amazon" style="color:#ff9900"></i> Amazon Associates</div>
+          <div class="form-group"><label class="form-label">Associate Tag</label><input type="text" class="form-input" id="cfg-amazon-tag" placeholder="nombre-20"></div>
+          <div class="form-group"><label class="form-label">Margen por defecto (%)</label><input type="number" class="form-input" id="cfg-default-margin" value="35"></div>
+          <div class="form-group"><label class="form-label">Alerta margen mínimo (%)</label><input type="number" class="form-input" id="cfg-min-margin" value="20"></div>
+        </div>
+        <div class="config-section">
+          <div class="config-section-title"><i class="fas fa-store" style="color:#ffe600"></i> MercadoLibre</div>
+          <div class="toggle-row"><div><div class="toggle-label">Worker conectado</div><div class="toggle-sub">shato-meli-connector.luisfonse2010.workers.dev</div></div><span style="color:#2ade80;font-weight:700;font-size:12px">✅ CONECTADO</span></div>
+          <div class="toggle-row"><div><div class="toggle-label">Usuario MeLi</div><div class="toggle-sub">USSFWELLNESSLLC — ID: 2580132362</div></div><span style="color:#2ade80;font-weight:700;font-size:12px">✅ AUTH OK</span></div>
+        </div>
+        <div class="config-section">
+          <div class="config-section-title"><i class="fas fa-eye-slash"></i> Visibilidad Multi-nicho</div>
+          <div class="toggle-row"><div><div class="toggle-label">Ocultar productos multi-nicho en shatokb.com</div><div class="toggle-sub">Solo van a MeLi</div></div><label class="toggle"><input type="checkbox" id="cfg-hide-multinichos" checked><span class="toggle-slider"></span></label></div>
+          <div class="toggle-row"><div><div class="toggle-label">Tag automático "hidden" en multi-nicho</div><div class="toggle-sub">El tema Shopify los filtra</div></div><label class="toggle"><input type="checkbox" id="cfg-auto-hidden" checked><span class="toggle-slider"></span></label></div>
+        </div>
+        <button class="btn btn-success" onclick="shatoSaveConfig()"><i class="fas fa-save"></i> Guardar configuración</button>
+      </div>
+
+    </div><!-- /content -->
+  </main>
+
+  <!-- ══ MODAL CAPTURAR ══ -->
+  <div class="modal-overlay" id="captureModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="modalTitle">📦 Nuevo Producto</div>
+        <div class="modal-close" onclick="shatoCloseModal('captureModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-info" id="mode-alert"><i class="fas fa-info-circle"></i><span id="mode-alert-text">Completá los datos del producto para detectar el modo automáticamente</span></div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">URL de imagen principal</label><input type="text" class="form-input" id="f-img" placeholder="https://..." oninput="shatoUpdatePreview()"><img id="f-img-preview" src="" style="width:100%;height:120px;object-fit:contain;background:#fff;border-radius:8px;margin-top:8px;display:none;padding:8px"></div>
+          <div class="form-group"><label class="form-label">ASIN de Amazon</label><input type="text" class="form-input" id="f-asin" placeholder="B08XYZ1234" oninput="shatoUpdateAmazonLinks()"><div style="margin-top:8px;display:flex;gap:6px"><a id="f-amazon-link" href="#" target="_blank" class="btn btn-amazon btn-sm" style="text-decoration:none"><i class="fab fa-amazon"></i> Ver en Amazon</a><a id="f-amazon-affiliate-link" href="#" target="_blank" class="btn btn-outline btn-sm" style="text-decoration:none">🤝 Link afiliado</a></div></div>
+          <div class="form-group full"><label class="form-label">Título original (Amazon)</label><input type="text" class="form-input" id="f-title-amazon" placeholder="Título completo de Amazon..." oninput="shatoAutoDetectMode()"></div>
+          <div class="form-group full"><label class="form-label">Título para Shopify / MeLi</label><input type="text" class="form-input" id="f-title-store" placeholder="Título optimizado para tu tienda..."></div>
+          <div class="form-group full"><label class="form-label">Descripción</label><textarea class="form-textarea" id="f-desc" placeholder="Descripción del producto..."></textarea></div>
+          <div class="form-group"><label class="form-label">Categoría Amazon</label><input type="text" class="form-input" id="f-category-amazon" placeholder="ej: Beauty › Skin Care › Serums" oninput="shatoAutoDetectMode()"></div>
+          <div class="form-group"><label class="form-label">Nicho en tu tienda</label><select class="form-select" id="f-nicho" onchange="shatoOnNichoChange()"><option value="">-- Seleccionar nicho --</option><option value="kbeauty">🌸 K-Beauty</option><option value="electronica">💻 Electrónica</option><option value="hogar">🏠 Hogar & Cocina</option><option value="herramientas">🔧 Herramientas</option><option value="deportes">⚽ Deportes</option><option value="bebes">👶 Bebés & Niños</option><option value="mascotas">🐾 Mascotas</option><option value="salud">🏥 Salud</option><option value="otros">📦 Otros</option></select></div>
+        </div>
+        <div class="price-calc">
+          <div class="price-calc-title">💰 Calculadora de Precio</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+            <div class="form-group" style="margin:0"><label class="form-label">Precio Amazon ($)</label><input type="number" class="form-input" id="f-price-amazon" placeholder="0.00" step="0.01" oninput="shatoCalcPrice()"></div>
+            <div class="form-group" style="margin:0"><label class="form-label">Costo envío ($)</label><input type="number" class="form-input" id="f-shipping" placeholder="0.00" step="0.01" value="0" oninput="shatoCalcPrice()"></div>
+            <div class="form-group" style="margin:0"><label class="form-label">Tu margen (%)</label><input type="number" class="form-input" id="f-margin" placeholder="35" value="35" min="1" max="300" oninput="shatoCalcPrice()"></div>
+          </div>
+          <input type="range" class="margin-slider" min="5" max="200" value="35" oninput="document.getElementById('f-margin').value=this.value;shatoCalcPrice()">
+          <div style="margin-top:12px">
+            <div class="price-row"><span class="label">Costo total</span><span class="value" id="calc-costo">$0.00</span></div>
+            <div class="price-row total"><span class="label">Tu precio en Shopify / MeLi</span><span class="value" id="calc-precio">$0.00</span></div>
+            <div class="price-row"><span class="label">Tu ganancia por venta</span><span class="value" style="color:#2ade80" id="calc-ganancia">$0.00</span></div>
+            <div class="price-row"><span class="label">Comisión afiliado</span><span class="value" style="color:#fbbf24" id="calc-comision">$0.00</span></div>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Unidades en stock</label><input type="number" class="form-input" id="f-stock" value="0" min="0"></div>
+          <div class="form-group"><label class="form-label">Alerta stock mínimo</label><input type="number" class="form-input" id="f-stock-min" value="2" min="0"></div>
+        </div>
+        <!-- KOI INTEL -->
+        <div class="koi-intel-section" id="koi-intel-section" style="display:none">
+          <div class="koi-intel-title">🤖 KOI Intel — Inteligencia de Producto</div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">Categoría K-Beauty</label><select class="form-select" id="f-koi-categoria" onchange="shatoUpdateSubcategorias()"><option value="cleanser">Cleanser</option><option value="toner">Toner</option><option value="serum" selected>Serum</option><option value="moisturizer">Moisturizer</option><option value="spf">SPF / Sunscreen</option><option value="eye">Eye Cream</option><option value="mask">Mask</option><option value="essence">Essence</option><option value="ampoule">Ampoule</option><option value="mist">Mist</option></select></div>
+            <div class="form-group"><label class="form-label">Subcategoría</label><select class="form-select" id="f-koi-subcategoria"></select></div>
+            <div class="form-group"><label class="form-label">Momento de uso</label><div class="chip-selector" id="f-momento"><div class="chip" onclick="shatoToggleChip(this,'momento')" data-val="am">☀️ AM</div><div class="chip selected" onclick="shatoToggleChip(this,'momento')" data-val="pm">🌙 PM</div><div class="chip" onclick="shatoToggleChip(this,'momento')" data-val="both">☀️🌙 Ambos</div></div></div>
+            <div class="form-group"><label class="form-label">Tier KOI</label><select class="form-select" id="f-koi-tier"><option value="CORE_MATCH">⭐ CORE MATCH</option><option value="GOOD_MATCH" selected>✅ GOOD MATCH</option><option value="SECONDARY_MATCH">📌 SECONDARY MATCH</option><option value="EXCLUDED">❌ EXCLUDED</option></select></div>
+            <div class="form-group"><label class="form-label">Archetype</label><select class="form-select" id="f-koi-archetype"><option value="Barrier Specialist">🛡️ Barrier Specialist</option><option value="Acne Specialist">🎯 Acne Specialist</option><option value="Pigmentation Specialist">✨ Pigmentation Specialist</option><option value="Aging Specialist">⏳ Aging Specialist</option><option value="Hydration Specialist">💧 Hydration Specialist</option></select></div>
+            <div class="form-group"><label class="form-label">Safety</label><select class="form-select" id="f-koi-safety"><option value="SAFE">✅ SAFE</option><option value="NO_PREGNANCY">⚠️ NO_PREGNANCY</option></select></div>
+            <div class="form-group"><label class="form-label">Phase</label><select class="form-select" id="f-koi-phase"><option value="repair">🔨 Repair</option><option value="treat" selected>💊 Treat</option><option value="optimize">⚡ Optimize</option></select></div>
+            <div class="form-group"><label class="form-label">Nivel usuario</label><select class="form-select" id="f-koi-nivel"><option value="beginner" selected>🌱 Beginner</option><option value="intermediate">🌿 Intermediate</option><option value="advanced">🌳 Advanced</option></select></div>
+            <div class="form-group"><label class="form-label">Posición rutina AM</label><input type="number" class="form-input" id="f-koi-pos-am" value="4" min="1" max="10"></div>
+            <div class="form-group"><label class="form-label">Posición rutina PM</label><input type="number" class="form-input" id="f-koi-pos-pm" value="5" min="1" max="10"></div>
+          </div>
+          <div style="margin-bottom:16px">
+            <label class="form-label">Fit por tipo de piel</label>
+            <div class="fit-sliders">
+              <div class="fit-item"><div class="fit-label"><span>Piel Seca</span><span id="fit-dry-val">80%</span></div><input type="range" class="fit-slider" id="fit-dry" min="0" max="100" value="80" oninput="document.getElementById('fit-dry-val').textContent=this.value+'%'"></div>
+              <div class="fit-item"><div class="fit-label"><span>Piel Grasa</span><span id="fit-oily-val">60%</span></div><input type="range" class="fit-slider" id="fit-oily" min="0" max="100" value="60" oninput="document.getElementById('fit-oily-val').textContent=this.value+'%'"></div>
+              <div class="fit-item"><div class="fit-label"><span>Mixta</span><span id="fit-combo-val">70%</span></div><input type="range" class="fit-slider" id="fit-combo" min="0" max="100" value="70" oninput="document.getElementById('fit-combo-val').textContent=this.value+'%'"></div>
+              <div class="fit-item"><div class="fit-label"><span>Sensible</span><span id="fit-sens-val">80%</span></div><input type="range" class="fit-slider" id="fit-sens" min="0" max="100" value="80" oninput="document.getElementById('fit-sens-val').textContent=this.value+'%'"></div>
+              <div class="fit-item"><div class="fit-label"><span>Acné</span><span id="fit-acne-val">50%</span></div><input type="range" class="fit-slider" id="fit-acne" min="0" max="100" value="50" oninput="document.getElementById('fit-acne-val').textContent=this.value+'%'"></div>
+              <div class="fit-item"><div class="fit-label"><span>Manchas</span><span id="fit-pig-val">70%</span></div><input type="range" class="fit-slider" id="fit-pig" min="0" max="100" value="70" oninput="document.getElementById('fit-pig-val').textContent=this.value+'%'"></div>
+            </div>
+          </div>
+          <div style="margin-bottom:16px">
+            <label class="form-label">Ingredientes principales</label>
+            <div style="display:flex;gap:8px;margin-bottom:8px">
+              <input type="text" class="form-input" id="ing-input" placeholder="ej: niacinamide..." style="flex:1" onkeydown="if(event.key==='Enter')shatoAddIngredient()">
+              <button class="btn btn-outline btn-sm" onclick="shatoAddIngredient()">+ Agregar</button>
+            </div>
+            <div class="chip-selector" style="margin-bottom:8px">
+              <div class="chip" onclick="shatoAddIngredientDirect('niacinamide')">Niacinamide</div>
+              <div class="chip" onclick="shatoAddIngredientDirect('hyaluronic_acid')">Hyaluronic Acid</div>
+              <div class="chip" onclick="shatoAddIngredientDirect('retinol')">Retinol</div>
+              <div class="chip" onclick="shatoAddIngredientDirect('centella_asiatica')">Centella Asiatica</div>
+              <div class="chip" onclick="shatoAddIngredientDirect('snail_mucin')">Snail Mucin</div>
+              <div class="chip" onclick="shatoAddIngredientDirect('vitamin_c')">Vitamin C</div>
+              <div class="chip" onclick="shatoAddIngredientDirect('ceramides')">Ceramides</div>
+              <div class="chip" onclick="shatoAddIngredientDirect('salicylic_acid')">Salicylic Acid</div>
+              <div class="chip" onclick="shatoAddIngredientDirect('peptides')">Peptides</div>
+              <div class="chip" onclick="shatoAddIngredientDirect('aha')">AHA</div>
+              <div class="chip" onclick="shatoAddIngredientDirect('bha')">BHA</div>
+              <div class="chip" onclick="shatoAddIngredientDirect('panthenol')">Panthenol</div>
+            </div>
+            <div class="ingredients-list" id="ingredients-list"></div>
+          </div>
+          <div>
+            <label class="form-label">Score KOI estimado</label>
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="koi-score-bar" style="flex:1"><div class="koi-score-fill" id="koi-score-fill" style="width:65%"></div></div>
+              <span id="koi-score-text" style="font-size:18px;font-weight:800;color:#e879f9">65/100</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="shatoCloseModal('captureModal')">Cancelar</button>
+        <button class="btn btn-danger btn-sm" onclick="shatoRejectProduct()" id="btn-reject" style="display:none"><i class="fas fa-times"></i> Rechazar</button>
+        <button class="btn btn-success" onclick="shatoPublishProduct()"><i class="fas fa-rocket"></i> Publicar en Shopify</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICACIONES -->
+  <div class="notif-container" id="notif-container"></div>
+
+</div><!-- /shato-app -->
+
+<script>
+'use strict';
+
+// ── CONFIG ──
+let SHATO_CONFIG = {
+  shopifyToken: '',
+  shopifyDomain: 'shatokb.myshopify.com',
+  amazonTag: '',
+  defaultMargin: 35,
+  minMargin: 20,
+  hideMultinichos: true,
+  autoHidden: true
+};
+
+let SHATO_PRODUCTS = [];
+let SHATO_DESPACHOS = [];
+let SHATO_INGREDIENTS = [];
+let shatoEditingId = null;
+
+const SHATO_NICHO_MAP = {
+  kbeauty:{ label:'K-Beauty', emoji:'🌸' }, electronica:{ label:'Electrónica', emoji:'💻' },
+  hogar:{ label:'Hogar & Cocina', emoji:'🏠' }, herramientas:{ label:'Herramientas', emoji:'🔧' },
+  deportes:{ label:'Deportes', emoji:'⚽' }, bebes:{ label:'Bebés & Niños', emoji:'👶' },
+  mascotas:{ label:'Mascotas', emoji:'🐾' }, salud:{ label:'Salud', emoji:'🏥' },
+  otros:{ label:'Otros', emoji:'📦' }
+};
+
+const SHATO_SUBCATEGORIAS = {
+  cleanser:['cleanser_foam','cleanser_oil','cleanser_balm','cleanser_gel','cleanser_micellar'],
+  toner:['toner_hydrating','toner_exfoliating','toner_brightening','toner_calming'],
+  serum:['serum_niacinamide','serum_vitamin_c','serum_retinol','serum_brightening','serum_antiaging','serum_hydrating','serum_barrier','serum_acne'],
+  moisturizer:['moisturizer_gel','moisturizer_cream','moisturizer_balm','moisturizer_oil'],
+  spf:['spf_chemical','spf_physical','spf_hybrid'],
+  eye:['eye_cream','eye_serum','eye_patch'],
+  mask:['mask_sheet','mask_sleeping','mask_clay','mask_wash_off'],
+  essence:['essence_hydrating','essence_ferment','essence_brightening'],
+  ampoule:['ampoule_concentrated','ampoule_brightening','ampoule_antiaging'],
+  mist:['mist_hydrating','mist_setting','mist_calming']
+};
+
+const SHATO_KB_KEYWORDS = ['beauty','skin care','skincare','serum','moisturizer','cleanser','toner','spf','sunscreen','essence','ampoule','korean','k-beauty','facial','face cream','eye cream','mask','exfoliant'];
+
+// ── INIT ──
+function shatoInit() {
+  shatoLoadConfig();
+  shatoLoadData();
+  shatoRenderDashboard();
+  shatoUpdateSubcategorias();
+}
+
+function shatoLoadConfig() {
+  const saved = localStorage.getItem('shato_config');
+  if (saved) SHATO_CONFIG = { ...SHATO_CONFIG, ...JSON.parse(saved) };
+  document.getElementById('cfg-shopify-token').value = SHATO_CONFIG.shopifyToken || '';
+  document.getElementById('cfg-shopify-domain').value = SHATO_CONFIG.shopifyDomain || 'shatokb.myshopify.com';
+  document.getElementById('cfg-amazon-tag').value = SHATO_CONFIG.amazonTag || '';
+  document.getElementById('cfg-default-margin').value = SHATO_CONFIG.defaultMargin || 35;
+  document.getElementById('cfg-min-margin').value = SHATO_CONFIG.minMargin || 20;
+  document.getElementById('cfg-hide-multinichos').checked = SHATO_CONFIG.hideMultinichos !== false;
+  document.getElementById('cfg-auto-hidden').checked = SHATO_CONFIG.autoHidden !== false;
+  document.getElementById('f-margin').value = SHATO_CONFIG.defaultMargin || 35;
+}
+
+function shatoSaveConfig() {
+  SHATO_CONFIG.shopifyToken  = document.getElementById('cfg-shopify-token').value.trim();
+  SHATO_CONFIG.shopifyDomain = document.getElementById('cfg-shopify-domain').value.trim();
+  SHATO_CONFIG.amazonTag     = document.getElementById('cfg-amazon-tag').value.trim();
+  SHATO_CONFIG.defaultMargin = parseInt(document.getElementById('cfg-default-margin').value) || 35;
+  SHATO_CONFIG.minMargin     = parseInt(document.getElementById('cfg-min-margin').value) || 20;
+  SHATO_CONFIG.hideMultinichos = document.getElementById('cfg-hide-multinichos').checked;
+  SHATO_CONFIG.autoHidden    = document.getElementById('cfg-auto-hidden').checked;
+  localStorage.setItem('shato_config', JSON.stringify(SHATO_CONFIG));
+  shatoShowNotif('✅ Configuración guardada', 'success');
+}
+
+function shatoLoadData() {
+  const saved = localStorage.getItem('shato_products');
+  if (saved) SHATO_PRODUCTS = JSON.parse(saved);
+  const savedD = localStorage.getItem('shato_despachos');
+  if (savedD) SHATO_DESPACHOS = JSON.parse(savedD);
+}
+
+function shatoSaveData() {
+  localStorage.setItem('shato_products', JSON.stringify(SHATO_PRODUCTS));
+  localStorage.setItem('shato_despachos', JSON.stringify(SHATO_DESPACHOS));
+}
+
+// ── TABS ──
+function shatoShowTab(tab) {
+  document.querySelectorAll('#shato-app .tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#shato-app .sidebar-item').forEach(i => i.classList.remove('active'));
+  const el = document.getElementById('tab-' + tab);
+  if (el) el.classList.add('active');
+  const titles = { dashboard:'📊 Dashboard', pendientes:'📥 Productos Pendientes', despachos:'🚚 Centro de Despachos', inventario:'📦 Control de Inventario', config:'⚙️ Configuración' };
+  document.getElementById('topbarTitle').textContent = titles[tab] || tab;
+  if (tab === 'dashboard')  shatoRenderDashboard();
+  if (tab === 'pendientes') shatoRenderPendientes();
+  if (tab === 'inventario') shatoRenderInventario();
+  if (tab === 'despachos')  shatoRenderDespachos();
+}
+
+function shatoShowNicho(nicho) {
+  document.querySelectorAll('#shato-app .tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-nicho').classList.add('active');
+  const n = SHATO_NICHO_MAP[nicho] || { label: nicho, emoji: '📦' };
+  document.getElementById('nicho-title').textContent = n.emoji + ' ' + n.label;
+  document.getElementById('nicho-sub').textContent = 'Todos los productos de este nicho';
+  document.getElementById('topbarTitle').textContent = n.emoji + ' ' + n.label;
+  shatoRenderNicho(nicho);
+}
+
+// ── RENDER ──
+function shatoRenderDashboard() {
+  const total      = SHATO_PRODUCTS.length;
+  const publicados = SHATO_PRODUCTS.filter(p => p.status === 'published').length;
+  const pendientes = SHATO_PRODUCTS.filter(p => p.status === 'pending').length;
+  const despachos  = SHATO_DESPACHOS.filter(d => d.status === 'pending').length;
+  document.getElementById('stat-total').textContent      = total;
+  document.getElementById('stat-publicados').textContent = publicados;
+  document.getElementById('stat-pendientes').textContent = pendientes;
+  document.getElementById('stat-despachos').textContent  = despachos;
+  document.getElementById('badge-pendientes').textContent = pendientes;
+  document.getElementById('badge-despachos').textContent  = despachos;
+  Object.keys(SHATO_NICHO_MAP).forEach(n => {
+    const count = SHATO_PRODUCTS.filter(p => p.nicho === n).length;
+    const el = document.getElementById('badge-' + n);
+    if (el) el.textContent = count;
+  });
+  const nichoSummary = document.getElementById('nicho-summary');
+  nichoSummary.innerHTML = Object.entries(SHATO_NICHO_MAP).map(([key, val]) => {
+    const count = SHATO_PRODUCTS.filter(p => p.nicho === key).length;
+    return '<div class="nicho-card" onclick="shatoShowNicho(\'' + key + '\')">'
+      + '<div class="nicho-emoji">' + val.emoji + '</div>'
+      + '<div class="nicho-name">' + val.label + '</div>'
+      + '<div class="nicho-count">' + count + ' producto' + (count !== 1 ? 's' : '') + '</div></div>';
+  }).join('');
+  const urgentes = SHATO_DESPACHOS.filter(d => d.status === 'pending').slice(0, 3);
+  const dashDisp = document.getElementById('dashboard-despachos');
+  if (urgentes.length === 0) {
+    dashDisp.innerHTML = '<div class="empty-state" style="padding:40px"><i class="fas fa-truck"></i><h3>Sin despachos urgentes</h3><p>Cuando tengas ventas aparecerán aquí</p></div>';
+  } else {
+    dashDisp.innerHTML = urgentes.map(d => shatoRenderDespachoCard(d)).join('');
+  }
+}
+
+function shatoRenderPendientes() {
+  const pending = SHATO_PRODUCTS.filter(p => p.status === 'pending');
+  const grid = document.getElementById('pendientes-grid');
+  if (pending.length === 0) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;padding:60px"><i class="fas fa-inbox"></i><h3>No hay productos pendientes</h3><p>Usá la extensión Chrome en Amazon para capturar productos</p></div>';
+    return;
+  }
+  grid.innerHTML = pending.map(p => shatoRenderProductCard(p)).join('');
+}
+
+function shatoRenderNicho(nicho) {
+  const prods = SHATO_PRODUCTS.filter(p => p.nicho === nicho);
+  const grid  = document.getElementById('nicho-grid');
+  if (prods.length === 0) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;padding:60px"><i class="fas fa-box-open"></i><h3>Sin productos en este nicho</h3><p>Capturá productos de Amazon para agregarlos</p></div>';
+    return;
+  }
+  grid.innerHTML = prods.map(p => shatoRenderProductCard(p)).join('');
+}
+
+function shatoRenderProductCard(p) {
+  const isKB   = p.nicho === 'kbeauty';
+  const margin = p.priceAmazon > 0 ? Math.round(((p.priceStore - p.priceAmazon) / p.priceStore) * 100) : 0;
+  const afLink = shatoBuildAffiliateLink(p.asin);
+  const statusBadge = p.status === 'published'
+    ? '<span class="tag core">✅ Publicado</span>'
+    : '<span class="tag" style="color:#fbbf24;border-color:#92400e">⏳ Pendiente</span>';
+  return '<div class="product-card">'
+    + (p.image ? '<img class="product-card-img" src="' + p.image + '" alt="" onerror="this.style.display=\'none\'">' : '')
+    + '<div class="product-card-body">'
+    + '<div class="product-card-asin">ASIN: ' + (p.asin || '—') + '</div>'
+    + '<div class="product-card-title">' + (p.titleStore || p.titleAmazon || 'Sin título') + '</div>'
+    + '<div class="product-card-prices"><div class="price-amazon">Amazon: <span>$' + (p.priceAmazon||0).toFixed(2) + '</span></div><div class="price-arrow">→</div><div class="price-store">$' + (p.priceStore||0).toFixed(2) + '</div><div class="margin-badge">' + margin + '%</div></div>'
+    + '<div class="product-card-tags">'
+    + (isKB ? '<span class="tag kbeauty">🌸 K-Beauty</span>' : '<span class="tag nicho">' + (SHATO_NICHO_MAP[p.nicho]?.emoji||'📦') + ' ' + (SHATO_NICHO_MAP[p.nicho]?.label||p.nicho) + '</span>')
+    + statusBadge
+    + (isKB && p.koiTier ? '<span class="tag core">' + p.koiTier + '</span>' : '')
+    + '</div>'
+    + '<div class="product-card-actions">'
+    + '<a href="' + afLink + '" target="_blank" class="btn btn-amazon btn-sm" style="text-decoration:none"><i class="fab fa-amazon"></i> Amazon</a>'
+    + '<button class="btn btn-outline btn-sm" onclick="shatoEditProduct(\'' + p.id + '\')"><i class="fas fa-edit"></i> Editar</button>'
+    + (p.status === 'pending' ? '<button class="btn btn-success btn-sm" onclick="shatoQuickPublish(\'' + p.id + '\')"><i class="fas fa-rocket"></i> Publicar</button>' : '')
+    + '</div></div></div>';
+}
+
+function shatoRenderInventario() {
+  const tbody = document.getElementById('inventario-body');
+  if (SHATO_PRODUCTS.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:#6b6b8a">No hay productos en tu inventario aún</td></tr>';
+    return;
+  }
+  tbody.innerHTML = SHATO_PRODUCTS.map(p => {
+    const margin = p.priceAmazon > 0 ? Math.round(((p.priceStore - p.priceAmazon) / p.priceStore) * 100) : 0;
+    const stockClass = p.stock === 0 ? 'stock-out' : (p.stock <= p.stockMin ? 'stock-low' : 'stock-ok');
+    const afLink = shatoBuildAffiliateLink(p.asin);
+    return '<tr><td><strong>' + (p.titleStore||p.titleAmazon||'—').substring(0,40) + '...</strong></td>'
+      + '<td><code style="font-size:11px">' + (p.asin||'—') + '</code></td>'
+      + '<td>' + (SHATO_NICHO_MAP[p.nicho]?.emoji||'📦') + ' ' + (SHATO_NICHO_MAP[p.nicho]?.label||p.nicho||'—') + '</td>'
+      + '<td>$' + (p.priceAmazon||0).toFixed(2) + '</td>'
+      + '<td><strong>$' + (p.priceStore||0).toFixed(2) + '</strong></td>'
+      + '<td><span style="color:' + (margin>=SHATO_CONFIG.minMargin?'#2ade80':'#f43f5e') + '">' + margin + '%</span></td>'
+      + '<td class="' + stockClass + '">' + (p.stock||0) + ' uds</td>'
+      + '<td>' + (p.sold||0) + '</td>'
+      + '<td><div style="display:flex;gap:4px"><a href="' + afLink + '" target="_blank" class="btn btn-amazon btn-sm" style="text-decoration:none;font-size:10px">🛒</a><button class="btn btn-outline btn-sm" onclick="shatoEditProduct(\'' + p.id + '\')" style="font-size:10px">✏️</button></div></td></tr>';
+  }).join('');
+}
+
+function shatoRenderDespachos() {
+  const list = document.getElementById('despachos-list');
+  if (SHATO_DESPACHOS.length === 0) {
+    list.innerHTML = '<div class="empty-state" style="padding:60px"><i class="fas fa-box-open"></i><h3>Sin ventas pendientes</h3><p>Las ventas de MeLi y Shopify aparecerán aquí automáticamente</p></div>';
+    return;
+  }
+  list.innerHTML = SHATO_DESPACHOS.map(d => shatoRenderDespachoCard(d)).join('');
+}
+
+function shatoRenderDespachoCard(d) {
+  const afLink = shatoBuildAffiliateLink(d.asin);
+  const isDone = d.status === 'done';
+  return '<div class="dispatch-card ' + (isDone ? 'done' : '') + '">'
+    + '<div class="dispatch-header"><div><div class="dispatch-product">' + (d.productTitle||'Producto') + '</div><div class="dispatch-order">Orden: ' + (d.orderId||'—') + ' · ' + (d.channel||'MeLi') + '</div></div><div class="dispatch-time">' + (isDone ? '✅ Despachado' : '🔴 Urgente') + '</div></div>'
+    + '<div class="dispatch-info"><div class="dispatch-info-item"><div class="label">Vendiste a</div><div class="value">$' + (d.salePrice||0).toFixed(2) + '</div></div><div class="dispatch-info-item"><div class="label">Costo Amazon</div><div class="value">$' + (d.amazonPrice||0).toFixed(2) + '</div></div><div class="dispatch-info-item"><div class="label">Tu ganancia</div><div class="value" style="color:#2ade80">$' + ((d.salePrice||0)-(d.amazonPrice||0)).toFixed(2) + '</div></div></div>'
+    + '<div class="dispatch-actions"><a href="' + afLink + '" target="_blank" class="btn btn-amazon" style="text-decoration:none"><i class="fab fa-amazon"></i> Comprar en Amazon</a>'
+    + (!isDone ? '<button class="btn btn-success" onclick="shatoMarkDispatched(\'' + d.id + '\')"><i class="fas fa-check"></i> Marcar despachado</button>' : '')
+    + '</div></div>';
+}
+
+function shatoSearchDispatch(query) {
+  if (!query || query.length < 2) { document.getElementById('dispatch-result').classList.remove('show'); return; }
+  const q = query.toLowerCase().trim();
+  const prod = SHATO_PRODUCTS.find(p => (p.asin && p.asin.toLowerCase() === q) || (p.titleStore && p.titleStore.toLowerCase().includes(q)) || (p.titleAmazon && p.titleAmazon.toLowerCase().includes(q)));
+  const resultEl = document.getElementById('dispatch-result');
+  if (!prod) { resultEl.classList.remove('show'); return; }
+  const margin   = prod.priceAmazon > 0 ? Math.round(((prod.priceStore - prod.priceAmazon) / prod.priceStore) * 100) : 0;
+  const afLink   = shatoBuildAffiliateLink(prod.asin);
+  const comRate  = prod.nicho === 'kbeauty' ? 0.10 : 0.03;
+  const comision = (prod.priceAmazon * comRate).toFixed(2);
+  resultEl.innerHTML = '<div class="dispatch-result-header">'
+    + (prod.image ? '<img class="dispatch-result-img" src="' + prod.image + '" alt="">' : '')
+    + '<div class="dispatch-result-info"><div class="dispatch-result-title">' + (prod.titleStore||prod.titleAmazon) + '</div><div class="dispatch-result-asin">ASIN: ' + prod.asin + '</div></div></div>'
+    + '<div class="dispatch-financials"><div class="fin-item"><div class="fin-label">Amazon</div><div class="fin-value">$' + (prod.priceAmazon||0).toFixed(2) + '</div></div><div class="fin-item green"><div class="fin-label">Tu precio</div><div class="fin-value">$' + (prod.priceStore||0).toFixed(2) + '</div></div><div class="fin-item green"><div class="fin-label">Ganancia</div><div class="fin-value">$' + ((prod.priceStore||0)-(prod.priceAmazon||0)).toFixed(2) + '</div></div><div class="fin-item yellow"><div class="fin-label">Comisión</div><div class="fin-value">$' + comision + '</div></div></div>'
+    + '<div style="display:flex;gap:10px"><a href="' + afLink + '" target="_blank" class="btn btn-amazon" style="text-decoration:none;flex:1;justify-content:center"><i class="fab fa-amazon"></i> COMPRAR EN AMAZON</a><button class="btn btn-outline" onclick="shatoAddDespachoManual(\'' + prod.id + '\')"><i class="fas fa-plus"></i> Registrar venta</button></div>';
+  resultEl.classList.add('show');
+}
+
+function shatoAddDespachoManual(productId) {
+  const prod = SHATO_PRODUCTS.find(p => p.id === productId);
+  if (!prod) return;
+  const salePrice = parseFloat(prompt('¿A qué precio vendiste?', prod.priceStore)) || prod.priceStore;
+  const orderId   = prompt('Número de orden MeLi (opcional):', '') || 'MANUAL-' + Date.now();
+  SHATO_DESPACHOS.unshift({ id:'d-'+Date.now(), productId:prod.id, asin:prod.asin, productTitle:prod.titleStore||prod.titleAmazon, amazonPrice:prod.priceAmazon, salePrice, orderId, channel:'MeLi', status:'pending', createdAt:new Date().toISOString() });
+  shatoSaveData();
+  shatoRenderDashboard();
+  shatoShowNotif('✅ Venta registrada', 'success');
+}
+
+function shatoMarkDispatched(id) {
+  const d = SHATO_DESPACHOS.find(x => x.id === id);
+  if (d) { d.status = 'done'; d.dispatchedAt = new Date().toISOString(); shatoSaveData(); shatoRenderDespachos(); shatoRenderDashboard(); shatoShowNotif('✅ Marcado como despachado', 'success'); }
+}
+
+// ── MODAL ──
+function shatoMapScraperToPortal(scraped) {
+  if (!scraped) return scraped;
+  if (scraped.titleAmazon !== undefined) return scraped;
+  let desc = '';
+  if (scraped.bullets && scraped.bullets.length > 0) desc = scraped.bullets.map(b => '• ' + b).join('\n');
+  if (scraped.description && scraped.description.length > 10) desc += (desc ? '\n\n' : '') + scraped.description;
+  let nicho = '';
+  if (scraped.importMode === 'kbeauty' || scraped.detectedKBeauty) nicho = 'kbeauty';
+  return { asin:scraped.asin||'', image:(scraped.images&&scraped.images[0])||'', images:scraped.images||[], titleAmazon:scraped.title||'', titleStore:scraped.title||'', description:desc, categoryAmazon:scraped.category||(scraped.breadcrumbs&&scraped.breadcrumbs.join(' > '))||'', priceAmazon:scraped.price||'', brand:scraped.brand||'', nicho, shipping:'0', stock:'0', stockMin:'2', _scraperData:{ breadcrumbs:scraped.breadcrumbs||[], specifications:scraped.specifications||{}, dimensions:scraped.dimensions||'', weight:scraped.weight||'', ingredients:scraped.ingredients||'', rating:scraped.rating, reviewCount:scraped.reviewCount, currency:scraped.currency||'USD', originalPrice:scraped.originalPrice, kbeautyKeywords:scraped.kbeautyKeywords||[], affiliateUrl:scraped.affiliateUrl||'', amazonTag:scraped.amazonTag||'', pageUrl:scraped.pageUrl||'' } };
+}
+
+function shatoOpenCaptureModal(prefill) {
+  shatoEditingId = null;
+  SHATO_INGREDIENTS = [];
+  document.getElementById('modalTitle').textContent = '📦 Nuevo Producto';
+  document.getElementById('btn-reject').style.display = 'none';
+  shatoClearForm();
+  const mapped = prefill ? shatoMapScraperToPortal(prefill) : null;
+  if (mapped) {
+    shatoFillForm(mapped);
+    if (mapped._scraperData && mapped._scraperData.ingredients && mapped._scraperData.ingredients.length > 5) {
+      setTimeout(() => shatoShowNotif('🧪 Ingredientes disponibles del scraper', 'info'), 600);
+    }
+    if (mapped._scraperData && mapped._scraperData.amazonTag && !SHATO_CONFIG.amazonTag) {
+      SHATO_CONFIG.amazonTag = mapped._scraperData.amazonTag;
+    }
+  }
+  document.getElementById('captureModal').classList.add('open');
+}
+
+function shatoEditProduct(id) {
+  const prod = SHATO_PRODUCTS.find(p => p.id === id);
+  if (!prod) return;
+  shatoEditingId = id;
+  SHATO_INGREDIENTS = prod.ingredients || [];
+  document.getElementById('modalTitle').textContent = '✏️ Editar Producto';
+  document.getElementById('btn-reject').style.display = 'flex';
+  shatoFillForm(prod);
+  document.getElementById('captureModal').classList.add('open');
+}
+
+function shatoCloseModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function shatoClearForm() {
+  ['f-img','f-asin','f-title-amazon','f-title-store','f-desc','f-category-amazon','f-price-amazon','f-shipping','f-stock','f-stock-min'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('f-nicho').value = '';
+  document.getElementById('f-margin').value = SHATO_CONFIG.defaultMargin || 35;
+  document.getElementById('f-shipping').value = '0';
+  document.getElementById('f-stock').value = '0';
+  document.getElementById('f-stock-min').value = '2';
+  document.getElementById('f-img-preview').style.display = 'none';
+  document.getElementById('koi-intel-section').style.display = 'none';
+  SHATO_INGREDIENTS = [];
+  shatoRenderIngredients();
+  shatoCalcPrice();
+}
+
+function shatoFillForm(p) {
+  document.getElementById('f-img').value = p.image || '';
+  document.getElementById('f-asin').value = p.asin || '';
+  document.getElementById('f-title-amazon').value = p.titleAmazon || '';
+  document.getElementById('f-title-store').value = p.titleStore || '';
+  document.getElementById('f-desc').value = p.description || '';
+  document.getElementById('f-category-amazon').value = p.categoryAmazon || '';
+  document.getElementById('f-nicho').value = p.nicho || '';
+  document.getElementById('f-price-amazon').value = p.priceAmazon || '';
+  document.getElementById('f-shipping').value = p.shipping || '0';
+  document.getElementById('f-stock').value = p.stock || '0';
+  document.getElementById('f-stock-min').value = p.stockMin || '2';
+  const cost = (parseFloat(p.priceAmazon)||0) + (parseFloat(p.shipping)||0);
+  const margin = cost > 0 ? Math.round(((p.priceStore - cost) / p.priceStore) * 100) : SHATO_CONFIG.defaultMargin;
+  document.getElementById('f-margin').value = margin;
+  shatoUpdatePreview();
+  shatoUpdateAmazonLinks();
+  shatoCalcPrice();
+  if (p.nicho === 'kbeauty') {
+    document.getElementById('koi-intel-section').style.display = 'block';
+    if (p.koiCategoria) document.getElementById('f-koi-categoria').value = p.koiCategoria;
+    shatoUpdateSubcategorias();
+    if (p.koiSubcategoria) document.getElementById('f-koi-subcategoria').value = p.koiSubcategoria;
+    if (p.koiTier) document.getElementById('f-koi-tier').value = p.koiTier;
+    if (p.koiArchetype) document.getElementById('f-koi-archetype').value = p.koiArchetype;
+    if (p.koiSafety) document.getElementById('f-koi-safety').value = p.koiSafety;
+    if (p.koiPhase) document.getElementById('f-koi-phase').value = p.koiPhase;
+    if (p.koiNivel) document.getElementById('f-koi-nivel').value = p.koiNivel;
+    if (p.koiPosAM) document.getElementById('f-koi-pos-am').value = p.koiPosAM;
+    if (p.koiPosPM) document.getElementById('f-koi-pos-pm').value = p.koiPosPM;
+  }
+  shatoRenderIngredients();
+}
+
+function shatoAutoDetectMode() {
+  const cat  = (document.getElementById('f-category-amazon').value||'').toLowerCase();
+  const title = (document.getElementById('f-title-amazon').value||'').toLowerCase();
+  const isKB = SHATO_KB_KEYWORDS.some(kw => cat.includes(kw) || title.includes(kw));
+  const nichoSel = document.getElementById('f-nicho');
+  if (isKB) { if (!nichoSel.value) nichoSel.value = 'kbeauty'; }
+  shatoOnNichoChange();
+}
+
+function shatoOnNichoChange() {
+  const nicho = document.getElementById('f-nicho').value;
+  const koiSection = document.getElementById('koi-intel-section');
+  if (nicho === 'kbeauty') {
+    koiSection.style.display = 'block';
+    document.getElementById('mode-alert').className = 'alert alert-info';
+    document.getElementById('mode-alert-text').innerHTML = '🌸 <strong>Modo K-Beauty</strong> — Completá los campos de KOI Intel';
+  } else {
+    koiSection.style.display = 'none';
+    if (nicho) { document.getElementById('mode-alert').className = 'alert alert-info'; document.getElementById('mode-alert-text').innerHTML = '🛒 <strong>Modo Multi-nicho</strong> — Se publicará en Shopify y sincronizará con MeLi'; }
+  }
+}
+
+function shatoCalcPrice() {
+  const amazon   = parseFloat(document.getElementById('f-price-amazon').value) || 0;
+  const shipping = parseFloat(document.getElementById('f-shipping').value) || 0;
+  const margin   = parseFloat(document.getElementById('f-margin').value) || 35;
+  const cost     = amazon + shipping;
+  const price    = margin > 0 ? cost / (1 - margin / 100) : cost;
+  const ganancia = price - cost;
+  const comRate  = document.getElementById('f-nicho').value === 'kbeauty' ? 0.10 : 0.03;
+  const comision = amazon * comRate;
+  document.getElementById('calc-costo').textContent    = '$' + cost.toFixed(2);
+  document.getElementById('calc-precio').textContent   = '$' + price.toFixed(2);
+  document.getElementById('calc-ganancia').textContent = '$' + ganancia.toFixed(2);
+  document.getElementById('calc-comision').textContent = '$' + comision.toFixed(2) + ' (' + Math.round(comRate * 100) + '%)';
+}
+
+function shatoBuildAffiliateLink(asin) {
+  if (!asin) return '#';
+  const tag = SHATO_CONFIG.amazonTag || '';
+  const base = 'https://www.amazon.com/dp/' + asin;
+  return tag ? base + '?tag=' + tag : base;
+}
+
+function shatoUpdateAmazonLinks() {
+  const asin = document.getElementById('f-asin').value.trim();
+  const normalLink = asin ? 'https://www.amazon.com/dp/' + asin : '#';
+  const affLink    = shatoBuildAffiliateLink(asin);
+  document.getElementById('f-amazon-link').href = normalLink;
+  document.getElementById('f-amazon-affiliate-link').href = affLink;
+}
+
+function shatoUpdatePreview() {
+  const url  = document.getElementById('f-img').value.trim();
+  const prev = document.getElementById('f-img-preview');
+  if (url) { prev.src = url; prev.style.display = 'block'; } else { prev.style.display = 'none'; }
+}
+
+function shatoUpdateSubcategorias() {
+  const cat  = document.getElementById('f-koi-categoria').value;
+  const subs = SHATO_SUBCATEGORIAS[cat] || [];
+  const sel  = document.getElementById('f-koi-subcategoria');
+  sel.innerHTML = subs.map(s => '<option value="' + s + '">' + s + '</option>').join('');
+}
+
+function shatoAddIngredient() {
+  const input = document.getElementById('ing-input');
+  const val   = input.value.trim().toLowerCase().replace(/\s+/g, '_');
+  if (val && !SHATO_INGREDIENTS.includes(val)) { SHATO_INGREDIENTS.push(val); shatoRenderIngredients(); }
+  input.value = '';
+}
+
+function shatoAddIngredientDirect(val) {
+  if (!SHATO_INGREDIENTS.includes(val)) { SHATO_INGREDIENTS.push(val); shatoRenderIngredients(); }
+}
+
+function shatoRemoveIngredient(val) { SHATO_INGREDIENTS = SHATO_INGREDIENTS.filter(i => i !== val); shatoRenderIngredients(); }
+
+function shatoRenderIngredients() {
+  const list = document.getElementById('ingredients-list');
+  list.innerHTML = SHATO_INGREDIENTS.map(i => '<div class="ingredient-tag">' + i.replace(/_/g,' ') + ' <span class="remove" onclick="shatoRemoveIngredient(\'' + i + '\')">×</span></div>').join('');
+}
+
+function shatoToggleChip(el, group) {
+  const parent = el.closest('.chip-selector');
+  parent.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function shatoPublishProduct() {
+  const nicho       = document.getElementById('f-nicho').value;
+  const titleAmazon = document.getElementById('f-title-amazon').value.trim();
+  const titleStore  = document.getElementById('f-title-store').value.trim();
+  const asin        = document.getElementById('f-asin').value.trim();
+  const priceAmazon = parseFloat(document.getElementById('f-price-amazon').value) || 0;
+  const shipping    = parseFloat(document.getElementById('f-shipping').value) || 0;
+  const margin      = parseFloat(document.getElementById('f-margin').value) || SHATO_CONFIG.defaultMargin;
+  const cost        = priceAmazon + shipping;
+  const priceStore  = margin > 0 ? cost / (1 - margin / 100) : cost;
+  if (!nicho) { shatoShowNotif('⚠️ Seleccioná un nicho', 'warning'); return; }
+  if (!titleAmazon && !titleStore) { shatoShowNotif('⚠️ Completá el título', 'warning'); return; }
+  const prod = { id: shatoEditingId || 'p-' + Date.now(), status:'pending', nicho, image:document.getElementById('f-img').value.trim(), asin, titleAmazon, titleStore:titleStore||titleAmazon, description:document.getElementById('f-desc').value.trim(), categoryAmazon:document.getElementById('f-category-amazon').value.trim(), priceAmazon, shipping, priceStore:parseFloat(priceStore.toFixed(2)), stock:parseInt(document.getElementById('f-stock').value)||0, stockMin:parseInt(document.getElementById('f-stock-min').value)||2, sold:0, ingredients:[...SHATO_INGREDIENTS], createdAt:new Date().toISOString(), affiliateLink:shatoBuildAffiliateLink(asin) };
+  if (nicho === 'kbeauty') {
+    prod.koiCategoria   = document.getElementById('f-koi-categoria').value;
+    prod.koiSubcategoria = document.getElementById('f-koi-subcategoria').value;
+    prod.koiTier        = document.getElementById('f-koi-tier').value;
+    prod.koiArchetype   = document.getElementById('f-koi-archetype').value;
+    prod.koiSafety      = document.getElementById('f-koi-safety').value;
+    prod.koiPhase       = document.getElementById('f-koi-phase').value;
+    prod.koiNivel       = document.getElementById('f-koi-nivel').value;
+    prod.koiPosAM       = parseInt(document.getElementById('f-koi-pos-am').value) || 4;
+    prod.koiPosPM       = parseInt(document.getElementById('f-koi-pos-pm').value) || 5;
+    const sel = document.querySelector('#f-momento .chip.selected');
+    prod.momento = sel ? sel.dataset.val : 'both';
+    prod.fit = { dry:parseInt(document.getElementById('fit-dry').value)/100, oily:parseInt(document.getElementById('fit-oily').value)/100, combination:parseInt(document.getElementById('fit-combo').value)/100, sensitive:parseInt(document.getElementById('fit-sens').value)/100, acne:parseInt(document.getElementById('fit-acne').value)/100, pigmentation:parseInt(document.getElementById('fit-pig').value)/100 };
+  }
+  if (shatoEditingId) { const idx = SHATO_PRODUCTS.findIndex(p => p.id === shatoEditingId); if (idx !== -1) SHATO_PRODUCTS[idx] = prod; }
+  else { SHATO_PRODUCTS.unshift(prod); }
+  shatoSaveData();
+  shatoCloseModal('captureModal');
+  shatoRenderDashboard();
+  shatoRenderPendientes();
+  if (SHATO_CONFIG.shopifyToken) { shatoPublishToShopify(prod); }
+  else { shatoShowNotif('⚠️ Guardado localmente. Configurá el token Shopify para publicar.', 'warning'); }
+}
+
+function shatoQuickPublish(id) {
+  const prod = SHATO_PRODUCTS.find(p => p.id === id);
+  if (!prod) return;
+  if (SHATO_CONFIG.shopifyToken) { shatoPublishToShopify(prod); }
+  else { shatoShowNotif('⚠️ Configurá el token Shopify primero (⚙️ Configuración)', 'warning'); }
+}
+
+function shatoRejectProduct() {
+  if (!shatoEditingId) return;
+  if (!confirm('¿Rechazar y eliminar este producto?')) return;
+  SHATO_PRODUCTS = SHATO_PRODUCTS.filter(p => p.id !== shatoEditingId);
+  shatoSaveData();
+  shatoCloseModal('captureModal');
+  shatoRenderDashboard();
+  shatoRenderPendientes();
+  shatoShowNotif('🗑️ Producto rechazado', 'warning');
+}
+
+// ── SHOPIFY API ──
+async function shatoPublishToShopify(prod) {
+  shatoShowNotif('⏳ Publicando en Shopify...', 'success');
+  const isKB   = prod.nicho === 'kbeauty';
+  const domain = SHATO_CONFIG.shopifyDomain || 'shatokb.myshopify.com';
+  const token  = SHATO_CONFIG.shopifyToken;
+  const tags   = ['nicho:' + prod.nicho, 'asin:' + prod.asin];
+  if (!isKB && SHATO_CONFIG.autoHidden) tags.push('hidden');
+  if (isKB) { tags.push('kbeauty'); if (prod.koiCategoria) tags.push('categoria:' + prod.koiCategoria); if (prod.koiTier) tags.push('tier:' + prod.koiTier); if (prod.koiArchetype) tags.push('archetype:' + prod.koiArchetype.replace(/ /g, '_')); if (prod.koiSafety) tags.push('safety:' + prod.koiSafety); if (prod.koiPhase) tags.push('phase:' + prod.koiPhase); if (prod.koiNivel) tags.push('nivel_usuario:' + prod.koiNivel); if (prod.momento) tags.push('momento:' + prod.momento); if (prod.ingredients) prod.ingredients.forEach(i => tags.push('ingrediente:' + i)); if (prod.fit) Object.entries(prod.fit).forEach(([k,v]) => { if (v >= 0.5) tags.push('fit:' + k); }); }
+  const body = { product:{ title:prod.titleStore||prod.titleAmazon, body_html:prod.description||'', vendor:isKB?'K-Beauty':'SHATO Import', product_type:prod.koiCategoria||prod.nicho||'', tags:tags.join(', '), status:'active', variants:[{ price:prod.priceStore.toFixed(2), sku:prod.asin||'', inventory_quantity:prod.stock||0, inventory_management:'shopify' }], images:prod.image?[{src:prod.image}]:[] } };
+  try {
+    const res = await fetch('https://' + domain + '/admin/api/2024-01/products.json', { method:'POST', headers:{ 'X-Shopify-Access-Token':token, 'Content-Type':'application/json' }, body:JSON.stringify(body) });
+    if (res.ok) {
+      const data = await res.json();
+      const idx = SHATO_PRODUCTS.findIndex(p => p.id === prod.id);
+      if (idx !== -1) { SHATO_PRODUCTS[idx].status = 'published'; SHATO_PRODUCTS[idx].shopifyId = data.product?.id; SHATO_PRODUCTS[idx].publishedAt = new Date().toISOString(); }
+      shatoSaveData(); shatoRenderDashboard(); shatoRenderPendientes();
+      shatoShowNotif('✅ Publicado en Shopify' + (isKB ? ' + KOI Intel guardado' : ' (oculto en tienda)'), 'success');
+    } else { shatoShowNotif('❌ Error al publicar — verificá el token API', 'error'); }
+  } catch (e) { shatoShowNotif('❌ Error de red al conectar con Shopify', 'error'); }
+}
+
+// ── SEARCH ──
+function shatoglobalSearchFn(query) {
+  if (!query || query.length < 2) return;
+  const q = query.toLowerCase();
+  const results = SHATO_PRODUCTS.filter(p => (p.titleStore&&p.titleStore.toLowerCase().includes(q))||(p.titleAmazon&&p.titleAmazon.toLowerCase().includes(q))||(p.asin&&p.asin.toLowerCase().includes(q))||(p.nicho&&p.nicho.toLowerCase().includes(q)));
+  if (results.length > 0) {
+    document.querySelectorAll('#shato-app .tab-content').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-nicho').classList.add('active');
+    document.getElementById('nicho-title').textContent = '🔍 Resultados: "' + query + '"';
+    document.getElementById('nicho-sub').textContent = results.length + ' producto(s) encontrado(s)';
+    document.getElementById('topbarTitle').textContent = '🔍 Búsqueda';
+    document.getElementById('nicho-grid').innerHTML = results.map(p => shatoRenderProductCard(p)).join('');
+  }
+}
+
+// ── NOTIFICACIONES ──
+function shatoShowNotif(msg, type) {
+  type = type || 'success';
+  const icons = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️' };
+  const container = document.getElementById('notif-container');
+  const el = document.createElement('div');
+  el.className = 'notif ' + type;
+  el.innerHTML = '<span>' + (icons[type]||'ℹ️') + '</span><span>' + msg + '</span>';
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+// ── LISTENER: extensión Chrome ──
+window.addEventListener('message', (e) => {
+  if (e.data && e.data.type === 'SHATO_AMAZON_PRODUCT') {
+    shatoOpenCaptureModal(e.data.product);
+    shatoShowNotif('📦 Producto capturado de Amazon', 'success');
+    if (e.source && e.source !== window) e.source.postMessage({ type:'SHATO_PRODUCT_CONSUMED' }, '*');
+  }
+});
+
+// ── CHROME STORAGE: leer producto pendiente ──
+function shatoCheckChromeStorage() {
+  const params = new URLSearchParams(location.search);
+  if (!params.has('shato_import')) return;
+  if (typeof chrome === 'undefined' || !chrome.storage) return;
+  chrome.storage.local.get(['shato_pending_product'], (result) => {
+    if (chrome.runtime.lastError) return;
+    const product = result.shato_pending_product;
+    if (!product) return;
+    setTimeout(() => {
+      shatoOpenCaptureModal(product);
+      shatoShowNotif('📦 Producto recibido de Amazon vía extensión', 'success');
+      chrome.runtime.sendMessage({ action: 'productConsumed' });
+    }, 800);
+  });
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  shatoInit();
+  setTimeout(shatoCheckChromeStorage, 500);
+});
+</script>
