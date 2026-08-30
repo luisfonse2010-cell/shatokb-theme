@@ -181,7 +181,7 @@ body { overflow-x: hidden; }
 #shato-app .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 #shato-app .form-group { margin-bottom: 16px; }
 #shato-app .form-group.full { grid-column: 1 / -1; }
-#shato-app .form-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; display: block; }
+#shato-app .form-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #a8a8c8; margin-bottom: 6px; display: block; }
 #shato-app .form-input, #shato-app .form-select, #shato-app .form-textarea { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; color: var(--text); font-size: 13px; outline: none; font-family: 'Inter', sans-serif; transition: border-color 0.15s; }
 #shato-app .form-input:focus, #shato-app .form-select:focus, #shato-app .form-textarea:focus { border-color: var(--accent); }
 #shato-app .form-textarea { resize: vertical; min-height: 80px; }
@@ -189,9 +189,9 @@ body { overflow-x: hidden; }
 
 /* ── PRICE CALC ── */
 #shato-app .price-calc { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
-#shato-app .price-calc-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 12px; }
+#shato-app .price-calc-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #a8a8c8; margin-bottom: 12px; }
 #shato-app .price-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
-#shato-app .price-row .label { color: var(--muted); }
+#shato-app .price-row .label { color: #a8a8c8; }
 #shato-app .price-row .value { font-weight: 600; }
 #shato-app .price-row.total { border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px; font-size: 15px; }
 #shato-app .price-row.total .value { color: var(--green); font-size: 18px; }
@@ -202,8 +202,8 @@ body { overflow-x: hidden; }
 #shato-app .koi-intel-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #e879f9; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
 #shato-app .fit-sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 #shato-app .fit-item .fit-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
-#shato-app .fit-item .fit-label span:first-child { color: var(--muted); }
-#shato-app .fit-item .fit-label span:last-child { color: var(--text); font-weight: 700; }
+#shato-app .fit-item .fit-label span:first-child { color: #c4b5fd; }
+#shato-app .fit-item .fit-label span:last-child { color: #f0e6ff; font-weight: 800; }
 #shato-app .fit-slider { width: 100%; accent-color: #e879f9; }
 #shato-app .ingredients-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 #shato-app .ingredient-tag { display: flex; align-items: center; gap: 4px; background: #1a0a2e; border: 1px solid #6b21a8; border-radius: 6px; padding: 3px 8px; font-size: 11px; color: #e879f9; }
@@ -293,8 +293,8 @@ body { overflow-x: hidden; }
 
 /* ── CHIP SELECTOR ── */
 #shato-app .chip-selector { display: flex; flex-wrap: wrap; gap: 6px; }
-#shato-app .chip { padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border); font-size: 12px; font-weight: 500; cursor: pointer; background: var(--bg3); color: var(--muted); transition: all 0.15s; }
-#shato-app .chip:hover { border-color: var(--accent); color: var(--text); }
+#shato-app .chip { padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border); font-size: 12px; font-weight: 500; cursor: pointer; background: var(--bg3); color: #c4c4e0; transition: all 0.15s; }
+#shato-app .chip:hover { border-color: var(--accent); color: #fff; }
 #shato-app .chip.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
 #shato-app .chip.selected.kbeauty { background: #7e22ce; border-color: #7e22ce; }
 </style>
@@ -1396,4 +1396,3 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(shatoCheckChromeStorage, 500);
 });
 </script>
-
