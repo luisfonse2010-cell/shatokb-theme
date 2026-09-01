@@ -1,0 +1,3674 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kabuby Scout — Portal de Importación v3</title>
+<!-- BUILD: 2026-09-01 v5.2 — Radar MeLi LIVE | FORCE 18:10 UTC -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & BASE ─────────────────────────────────────────── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  /* ── Paleta Azul Marino ─────────────────────────────────── */
+  --bg:        #0b1120;   /* azul marino profundo — fondo base */
+  --bg2:       #0f1d35;   /* azul marino medio — sidebar / cards */
+  --bg3:       #162445;   /* azul marino claro — inputs / paneles */
+  --border:    #26406a;   /* borde visible pero sutil */
+  --accent:    #6c8eff;   /* azul eléctrico — acción principal */
+  --accent2:   #ff6b8a;   /* rosa — secundario */
+  --green:     #34d399;   /* verde menta — positivo */
+  --yellow:    #fcd34d;   /* amarillo cálido — alerta */
+  --red:       #f87171;   /* rojo suave — peligro */
+  --blue:      #60c8ff;   /* celeste — info */
+  --purple:    #c084fc;   /* violeta — especial */
+  --text:      #e8f0fe;   /* blanco azulado — texto principal — MÁS LEGIBLE */
+  --text2:     #b8c8e8;   /* azul claro — texto secundario */
+  --muted:     #7a91b8;   /* azul grisáceo — placeholders / labels */
+  --sidebar-w: 256px;
+}
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+}
+
+/* ── LOGIN ──────────────────────────────────────────────── */
+#login-screen {
+  position: fixed; inset: 0; background: var(--bg);
+  display: flex; align-items: center; justify-content: center; z-index: 9999;
+}
+.login-box {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 48px 40px; width: 100%; max-width: 400px;
+  box-shadow: 0 32px 80px rgba(0,0,20,0.8);
+}
+.login-logo { text-align: center; margin-bottom: 32px; }
+.login-logo .brand { font-size: 11px; font-weight: 800; letter-spacing: 4px; color: var(--text2); text-transform: uppercase; }
+.login-logo .name { font-size: 26px; font-weight: 800; color: var(--text); margin-top: 6px; }
+.login-logo .name span { color: var(--accent); }
+.login-logo .sub { font-size: 12px; color: var(--text2); margin-top: 4px; }
+.login-field { margin-bottom: 16px; }
+.login-field label { display: block; font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.login-field input {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 16px; color: var(--text); font-size: 14px;
+  outline: none; transition: border-color 0.2s;
+}
+.login-field input:focus { border-color: var(--accent); }
+.login-btn {
+  width: 100%; background: var(--accent); color: #fff; border: none;
+  border-radius: 10px; padding: 13px; font-size: 15px; font-weight: 700;
+  cursor: pointer; margin-top: 8px; transition: background 0.2s;
+}
+.login-btn:hover { background: #5a52e0; }
+.login-error { color: var(--red); font-size: 12px; text-align: center; margin-top: 12px; display: none; }
+
+/* ── APP LAYOUT ──────────────────────────────────────────── */
+#app { display: none; min-height: 100vh; }
+
+/* ── SIDEBAR ──────────────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  z-index: 100;
+  overflow-y: auto;
+}
+.sidebar-logo {
+  padding: 20px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-logo .brand {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: var(--text2);
+  text-transform: uppercase;
+}
+.sidebar-logo .title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 4px;
+}
+.sidebar-logo .title span { color: var(--accent); }
+.sidebar-logo .domain { font-size: 10px; color: var(--text2); margin-top: 2px; }
+
+.sidebar-search {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-search input {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--text);
+  font-size: 12px;
+  outline: none;
+}
+.sidebar-search input::placeholder { color: var(--text2); }
+.sidebar-search input:focus { border-color: var(--accent); }
+
+.sidebar-section {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--text2);
+  text-transform: uppercase;
+  padding: 8px 16px 4px;
+}
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  cursor: pointer;
+  border-radius: 0;
+  transition: all 0.15s;
+  color: var(--text2);
+  font-size: 13px;
+  font-weight: 500;
+  border-left: 3px solid transparent;
+  position: relative;
+}
+.sidebar-item:hover {
+  background: rgba(108,142,255,0.1);
+  color: var(--text);
+}
+.sidebar-item.active {
+  background: rgba(108,142,255,0.15);
+  color: #a5b8ff;
+  border-left-color: var(--accent);
+}
+.sidebar-item .icon { width: 16px; text-align: center; font-size: 14px; }
+.sidebar-badge {
+  margin-left: auto;
+  background: var(--accent);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+}
+.sidebar-badge.red { background: var(--red); }
+.sidebar-badge.green { background: var(--green); color: #000; }
+.sidebar-badge.yellow { background: var(--yellow); color: #000; }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 16px;
+  border-top: 1px solid var(--border);
+}
+.store-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.store-avatar {
+  width: 32px; height: 32px;
+  background: var(--accent);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 13px; color: #fff;
+}
+.store-name { font-size: 12px; font-weight: 600; color: var(--text); }
+.store-url { font-size: 11px; color: var(--accent); font-weight: 500; }
+.logout-btn { background: none; border: none; color: var(--text2); cursor: pointer; font-size: 12px; padding: 4px 8px; border-radius: 6px; transition: color 0.2s; margin-top: 8px; width: 100%; text-align: left; }
+.logout-btn:hover { color: var(--red); }
+
+/* ── MAIN CONTENT ─────────────────────────────────────────── */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.topbar {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.topbar-title {
+  font-size: 16px;
+  font-weight: 700;
+  flex: 1;
+}
+.topbar-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 14px;
+  width: 320px;
+}
+.topbar-search input {
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-size: 13px;
+  width: 100%;
+}
+.topbar-search input::placeholder { color: var(--text2); }
+.topbar-search i { color: var(--text2); }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #5a52e0; }
+.btn-success { background: var(--green); color: #000; }
+.btn-success:hover { background: #22c96d; }
+.btn-danger { background: var(--red); color: #fff; }
+.btn-warning { background: var(--yellow); color: #000; }
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+.btn-amazon { background: #ff9900; color: #000; font-weight: 700; }
+.btn-amazon:hover { background: #e68a00; }
+.btn-meli { background: #ffe600; color: #333; font-weight: 700; }
+
+.content { padding: 24px; flex: 1; }
+
+/* ── TABS ─────────────────────────────────────────────────── */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ── CARDS / STATS ────────────────────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text2);
+  margin-bottom: 8px;
+}
+.stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+}
+.stat-sub {
+  font-size: 11px;
+  color: var(--text2);
+  margin-top: 6px;
+}
+.stat-card.green .stat-value { color: var(--green); }
+.stat-card.yellow .stat-value { color: var(--yellow); }
+.stat-card.red .stat-value { color: var(--red); }
+.stat-card.blue .stat-value { color: var(--blue); }
+.stat-card.purple .stat-value { color: var(--purple); }
+
+/* ── SECTION HEADERS ──────────────────────────────────────── */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+}
+.section-sub {
+  font-size: 12px;
+  color: var(--text2);
+  margin-top: 2px;
+}
+
+/* ── PRODUCT CARDS ────────────────────────────────────────── */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+.product-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.product-card:hover { border-color: var(--accent); }
+.product-card-img {
+  width: 100%;
+  height: 200px;
+  object-fit: contain;
+  background: #fff;
+  padding: 12px;
+  display: block;
+}
+.product-card-body { padding: 14px; }
+.product-card-asin {
+  font-size: 10px;
+  color: var(--blue);
+  font-family: monospace;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+.product-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.product-card-prices {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+  align-items: center;
+}
+.price-amazon { font-size: 12px; color: var(--text2); }
+.price-amazon span { color: var(--text); font-weight: 600; }
+.price-arrow { color: var(--text2); font-size: 11px; }
+.price-store { font-size: 13px; font-weight: 700; color: var(--green); }
+.margin-badge {
+  margin-left: auto;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--yellow);
+}
+.product-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.tag {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(36,53,87,0.8);
+  color: var(--text2);
+  border: 1px solid var(--border);
+}
+.tag.kbeauty { background: rgba(107,33,168,0.3); color: #e2a6ff; border-color: #7c3aed; }
+.tag.nicho { background: rgba(30,58,95,0.6); color: var(--blue); border-color: #2563eb; }
+.tag.core { background: rgba(20,83,45,0.4); color: var(--green); border-color: #16a34a; }
+.tag.hidden { background: rgba(127,29,29,0.3); color: var(--red); border-color: #dc2626; }
+.product-card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── DISPATCH CARDS ───────────────────────────────────────── */
+.dispatch-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  border-left: 4px solid var(--red);
+}
+.dispatch-card.done { border-left-color: var(--green); opacity: 0.6; }
+.dispatch-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.dispatch-product { font-size: 14px; font-weight: 700; }
+.dispatch-order { font-size: 11px; color: var(--text2); margin-top: 2px; }
+.dispatch-time {
+  font-size: 11px;
+  color: var(--red);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.dispatch-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  background: var(--bg3);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+}
+.dispatch-info-item .label {
+  font-size: 10px;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.dispatch-info-item .value {
+  font-size: 14px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+.dispatch-actions { display: flex; gap: 8px; }
+
+/* ── DISPATCH SEARCH ──────────────────────────────────────── */
+.dispatch-search-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.dispatch-search-input {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 0;
+}
+.dispatch-search-input input {
+  flex: 1;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: var(--text);
+  font-size: 15px;
+  outline: none;
+}
+.dispatch-search-input input:focus { border-color: var(--accent); }
+.dispatch-result {
+  background: var(--bg2);
+  border: 1px solid var(--green);
+  border-radius: 12px;
+  padding: 20px;
+  display: none;
+  margin-bottom: 20px;
+}
+.dispatch-result.show { display: block; }
+.dispatch-result-header {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.dispatch-result-img {
+  width: 80px; height: 80px;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 8px;
+  padding: 6px;
+  flex-shrink: 0;
+}
+.dispatch-result-info { flex: 1; }
+.dispatch-result-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.dispatch-result-asin { font-size: 11px; color: var(--blue); font-family: monospace; font-weight: 600; }
+.dispatch-financials {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  background: var(--bg3);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+.fin-item .fin-label { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
+.fin-item .fin-value { font-size: 18px; font-weight: 800; margin-top: 4px; }
+.fin-item.green .fin-value { color: var(--green); }
+.fin-item.yellow .fin-value { color: var(--yellow); }
+
+/* ── MODAL ────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  display: none;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 760px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: var(--bg2);
+  z-index: 10;
+}
+.modal-title { font-size: 16px; font-weight: 700; }
+.modal-close {
+  width: 32px; height: 32px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text2);
+  font-size: 16px;
+}
+.modal-close:hover { color: var(--text); border-color: var(--accent); }
+.modal-body { padding: 24px; }
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  position: sticky;
+  bottom: 0;
+  background: var(--bg2);
+}
+
+/* ── IMAGE GALLERY ────────────────────────────────────────── */
+.gallery-section { margin-bottom: 16px; }
+.gallery-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text2); margin-bottom: 8px; display: block; }
+.gallery-sub { font-size: 11px; color: var(--text2); margin-bottom: 8px; }
+.gallery-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.gallery-thumb {
+  width: 70px; height: 70px;
+  object-fit: contain; background: #fff; border-radius: 6px; padding: 4px;
+  cursor: pointer; border: 2px solid transparent; transition: border-color 0.15s;
+}
+.gallery-thumb:hover { border-color: var(--accent); }
+.gallery-thumb.selected { border-color: var(--green); }
+
+/* ── FORM ELEMENTS ────────────────────────────────────────── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { margin-bottom: 16px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text2);
+  margin-bottom: 6px;
+  display: block;
+}
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.15s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--accent);
+}
+.form-textarea { resize: vertical; min-height: 80px; }
+.form-select option { background: var(--bg2); }
+
+/* ── PRICE CALCULATOR ─────────────────────────────────────── */
+.price-calc {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.price-calc-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text2);
+  margin-bottom: 12px;
+}
+.price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.price-row .label { color: var(--text2); }
+.price-row .value { font-weight: 600; }
+.price-row.total {
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  margin-top: 4px;
+  font-size: 15px;
+}
+.price-row.total .value { color: var(--green); font-size: 18px; }
+.margin-slider { width: 100%; accent-color: var(--accent); }
+
+/* ── KOI INTEL ────────────────────────────────────────────── */
+.koi-intel-section {
+  background: rgba(59,7,100,0.25);
+  border: 1px solid #5b21b6;
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 16px;
+}
+.koi-intel-title {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #e879f9;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fit-sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.fit-item .fit-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+.fit-item .fit-label span:first-child { color: var(--text2); }
+.fit-item .fit-label span:last-child { color: var(--text); font-weight: 700; }
+.fit-slider { width: 100%; accent-color: #e879f9; }
+
+.ingredients-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.ingredient-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(107,33,168,0.25);
+  border: 1px solid #7c3aed;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  color: #e879f9;
+}
+.ingredient-tag .remove {
+  cursor: pointer;
+  color: var(--text2);
+  font-size: 10px;
+}
+.ingredient-tag .remove:hover { color: var(--red); }
+
+.koi-score-bar {
+  background: var(--bg);
+  border-radius: 8px;
+  height: 8px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.koi-score-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6c63ff, #e879f9);
+  border-radius: 8px;
+  transition: width 0.3s;
+}
+
+/* ── TOGGLE SWITCH ────────────────────────────────────────── */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.toggle-row:last-child { border-bottom: none; }
+.toggle-label { font-size: 13px; font-weight: 500; }
+.toggle-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
+.toggle {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  flex-shrink: 0;
+}
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--border);
+  border-radius: 22px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.toggle-slider:before {
+  content: '';
+  position: absolute;
+  width: 16px; height: 16px;
+  left: 3px; bottom: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: 0.2s;
+}
+.toggle input:checked + .toggle-slider { background: var(--accent); }
+.toggle input:checked + .toggle-slider:before { transform: translateX(18px); }
+
+/* ── NICHO CATEGORIES ─────────────────────────────────────── */
+.nicho-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.nicho-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+.nicho-card:hover, .nicho-card.active {
+  border-color: var(--accent);
+  background: var(--bg3);
+}
+.nicho-emoji { font-size: 28px; margin-bottom: 8px; }
+.nicho-name { font-size: 13px; font-weight: 600; }
+.nicho-count { font-size: 11px; color: var(--text2); margin-top: 4px; }
+
+/* ── ALERTS ───────────────────────────────────────────────── */
+.alert {
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+}
+.alert-warning { background: rgba(133,77,14,0.2); border: 1px solid #b45309; color: #fde68a; }
+.alert-success { background: rgba(20,83,45,0.25); border: 1px solid #16a34a; color: #86efac; }
+.alert-danger  { background: rgba(127,29,29,0.2); border: 1px solid #dc2626; color: #fca5a5; }
+.alert-info    { background: rgba(30,58,95,0.3); border: 1px solid #2563eb; color: #93c5fd; }
+
+.alert-item {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px 16px; display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px;
+}
+.alert-item.price-up  { border-left: 3px solid var(--red); }
+.alert-item.price-down { border-left: 3px solid var(--green); }
+.alert-item.oos       { border-left: 3px solid var(--yellow); }
+.alert-icon { font-size: 20px; margin-top: 2px; }
+.alert-content { flex: 1; }
+.alert-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.alert-sub   { font-size: 12px; color: var(--text2); }
+.alert-time  { font-size: 11px; color: var(--text2); white-space: nowrap; }
+
+/* ── INVENTORY TABLE ──────────────────────────────────────── */
+.table-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th {
+  background: var(--bg3);
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text2);
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(108,142,255,0.08); }
+.stock-ok  { color: var(--green); font-weight: 700; }
+.stock-low { color: var(--yellow); font-weight: 700; }
+.stock-out { color: var(--red); font-weight: 700; }
+
+/* ── BADGE ────────────────────────────────────────────────── */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+.badge-pending   { background: rgba(251,191,36,0.15); color: var(--yellow); }
+.badge-published { background: rgba(42,222,128,0.15); color: var(--green); }
+.badge-paused    { background: rgba(244,63,94,0.15); color: var(--red); }
+.badge-oos       { background: rgba(244,63,94,0.2); color: var(--red); border: 1px solid rgba(244,63,94,0.3); }
+.badge-info      { background: rgba(56,189,248,0.15); color: var(--blue); }
+
+/* ── CONFIG PAGE ──────────────────────────────────────────── */
+.config-section {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.config-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── SYSTEM CARDS ─────────────────────────────────────────── */
+.system-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+.system-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; gap: 14px; }
+.system-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.system-icon.ok   { background: rgba(42,222,128,0.15); }
+.system-icon.warn { background: rgba(251,191,36,0.15); }
+.system-icon.err  { background: rgba(244,63,94,0.15); }
+.system-label { font-size: 12px; color: var(--text2); margin-bottom: 2px; }
+.system-val   { font-size: 14px; font-weight: 700; }
+
+/* ── EMPTY STATE ──────────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--text2);
+}
+.empty-state i, .empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; display: block; }
+.empty-state h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+.empty-state p { font-size: 13px; line-height: 1.6; }
+
+/* ── COMING SOON ──────────────────────────────────────────── */
+.coming-soon {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 400px; text-align: center;
+}
+.coming-soon .emoji { font-size: 64px; margin-bottom: 24px; }
+.coming-soon h2 { font-size: 24px; font-weight: 800; margin-bottom: 12px; }
+.coming-soon p { font-size: 14px; color: var(--text2); max-width: 400px; line-height: 1.6; }
+.coming-soon .phase { display: inline-block; margin-top: 20px; background: rgba(108,99,255,0.15); color: var(--accent); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; border: 1px solid rgba(108,99,255,0.3); }
+
+/* ── LOADER ───────────────────────────────────────────────── */
+.loader { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── NOTIFICATIONS ────────────────────────────────────────── */
+.notif-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+.notif {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 280px;
+  pointer-events: all;
+  animation: slideIn 0.3s ease;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.notif.success { border-color: var(--green); }
+.notif.error   { border-color: var(--red); }
+.notif.warning { border-color: var(--yellow); }
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+
+/* ── SIDEBAR MÓDULOS ──────────────────────────────────────── */
+.sidebar-logo .system-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+  margin-top: 6px;
+  letter-spacing: 0.3px;
+}
+.sidebar-logo .system-sub {
+  font-size: 10px;
+  color: var(--text2);
+  margin-top: 2px;
+  letter-spacing: 0.5px;
+}
+.sidebar-logo .system-badge {
+  display: inline-block;
+  margin-top: 8px;
+  background: rgba(108,142,255,0.15);
+  border: 1px solid rgba(108,142,255,0.3);
+  color: var(--accent);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+/* Ítem de módulo — más llamativo que ítem normal */
+.sidebar-item.modulo {
+  margin: 3px 8px;
+  border-radius: 8px;
+  border-left: none;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.sidebar-item.modulo:hover {
+  background: rgba(108,142,255,0.12);
+  border-color: rgba(108,142,255,0.3);
+  color: var(--text);
+}
+.sidebar-item.modulo.active {
+  background: rgba(108,142,255,0.18);
+  border-color: var(--accent);
+  color: var(--accent);
+  border-left-color: var(--accent);
+}
+.modulo-icon {
+  width: 28px; height: 28px;
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.modulo-icon.green  { background: rgba(52,211,153,0.15); }
+.modulo-icon.blue   { background: rgba(96,200,255,0.15); }
+.modulo-icon.purple { background: rgba(192,132,252,0.15); }
+.modulo-icon.orange { background: rgba(251,191,36,0.15); }
+.modulo-icon.red    { background: rgba(248,113,113,0.15); }
+.modulo-icon.gray   { background: rgba(148,163,184,0.1); }
+
+.modulo-info { flex: 1; min-width: 0; }
+.modulo-name { font-size: 12px; font-weight: 700; color: var(--text); line-height: 1.2; }
+.modulo-desc { font-size: 10px; color: var(--text2); margin-top: 1px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.modulo-badge-coming {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(251,191,36,0.15);
+  color: var(--yellow);
+  border: 1px solid rgba(251,191,36,0.2);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.modulo-badge-fase {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.modulo-badge-fase.f1 { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.2); }
+.modulo-badge-fase.f2 { background: rgba(96,200,255,0.15); color: var(--blue); border: 1px solid rgba(96,200,255,0.2); }
+.modulo-badge-fase.f3 { background: rgba(192,132,252,0.15); color: var(--purple); border: 1px solid rgba(192,132,252,0.2); }
+.modulo-badge-fase.f4 { background: rgba(251,191,36,0.15); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
+.modulo-badge-fase.f5 { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+
+/* Separador de sección del sidebar */
+.sidebar-section-title.with-icon {
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* ── KABUBY SCOUT ACORDEÓN ────────────────────────────────── */
+/* Contenedor del sub-menú — anida directo bajo el botón */
+#kabuby-submenu {
+  margin: 0 8px 4px;
+  border-radius: 0 0 8px 8px;
+  background: rgba(52,211,153,0.04);
+  border: 1px solid rgba(52,211,153,0.12);
+  border-top: none;
+  overflow: hidden;
+}
+.kabuby-sub-inner {
+  padding: 4px 0 6px;
+}
+/* Sub-items del acordeón — más compactos e indentados */
+.sidebar-item.sub-item {
+  padding: 7px 12px 7px 20px;
+  font-size: 12px;
+  border-left: 3px solid transparent;
+  margin: 0;
+  border-radius: 0;
+}
+.sidebar-item.sub-item:hover {
+  background: rgba(52,211,153,0.08);
+  color: var(--text);
+  border-left-color: rgba(52,211,153,0.4);
+}
+.sidebar-item.sub-item.active {
+  background: rgba(52,211,153,0.12);
+  color: var(--green);
+  border-left-color: var(--green);
+}
+/* Sub-items de categorías — aún más compactos */
+.sidebar-item.sub-cat {
+  padding: 5px 12px 5px 20px;
+  font-size: 11px;
+}
+/* Etiqueta "Categorías" dentro del acordeón */
+.sub-categories-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 8px 20px 3px;
+}
+/* Flecha giratoria del módulo Kabuby Scout */
+.modulo-arrow {
+  transition: transform 0.25s ease;
+}
+.modulo-arrow.open {
+  transform: rotate(180deg);
+}
+/* Cuando Kabuby está activo, su módulo-btn tiene borde inferior recto */
+#nav-mod-kabuby.open-accordion {
+  border-radius: 8px 8px 0 0;
+  border-bottom-color: transparent;
+  margin-bottom: 0;
+}
+
+/* ── CHIP SELECTOR ────────────────────────────────────────── */
+.chip-selector { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  background: var(--bg3);
+  color: var(--text2);
+  transition: all 0.15s;
+}
+.chip:hover { border-color: var(--accent); color: var(--text); }
+.chip.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
+.chip.selected.kbeauty { background: #7e22ce; border-color: #7e22ce; }
+
+/* ── SCROLLBAR ────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: #2a4070; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #3a5490; }
+
+/* ── RESPONSIVE ───────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .system-grid { grid-template-columns: 1fr; }
+  .topbar-search { display: none; }
+  .form-grid { grid-template-columns: 1fr; }
+}
+
+/* ── RADAR DE TENDENCIAS ─────────────────────────────────── */
+.radar-ctab {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.radar-ctab:hover { border-color: var(--accent); color: var(--text); }
+.radar-ctab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.radar-country-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.radar-country-card:hover { border-color: var(--accent); }
+.radar-country-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg3);
+}
+.radar-country-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.radar-country-count { font-size: 11px; color: var(--muted); }
+.radar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  border-bottom: 1px solid rgba(38,64,106,0.5);
+  transition: background 0.12s;
+  cursor: pointer;
+  text-decoration: none;
+}
+.radar-item:last-child { border-bottom: none; }
+.radar-item:hover { background: var(--bg3); }
+.radar-item-rank {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  width: 20px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.radar-item-rank.top3 { color: var(--yellow); }
+.radar-item-text { font-size: 13px; color: var(--text); flex: 1; }
+.radar-item-arrow { font-size: 10px; color: var(--muted); }
+.radar-loading {
+  padding: 24px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+.radar-error {
+  padding: 16px;
+  color: var(--yellow);
+  font-size: 12px;
+  text-align: center;
+}
+.radar-single-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  border-bottom: 1px solid rgba(38,64,106,0.4);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.radar-single-item:hover { background: var(--bg3); }
+.radar-single-item:last-child { border-bottom: none; }
+.radar-single-rank {
+  font-size: 18px;
+  font-weight: 900;
+  width: 36px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.radar-single-rank.r1 { color: #ffd700; }
+.radar-single-rank.r2 { color: #c0c0c0; }
+.radar-single-rank.r3 { color: #cd7f32; }
+.radar-single-rank.rn { color: var(--muted); font-size:13px; }
+.radar-single-keyword { font-size: 14px; font-weight: 500; color: var(--text); flex: 1; }
+.radar-search-match {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg3);
+  border-radius: 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+.radar-search-flag { font-size: 16px; }
+.radar-search-pos { font-size: 11px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══════════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="brand">Kabuby</div>
+      <div class="name">Kabuby <span>Scout</span></div>
+      <div class="sub">Portal de Importación Amazon</div>
+    </div>
+    <div class="login-field">
+      <label>Contraseña</label>
+      <input type="password" id="login-pass" placeholder="••••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">
+      <i class="fas fa-sign-in-alt"></i> &nbsp;Entrar al Portal
+    </button>
+    <div class="login-error" id="login-error">❌ Contraseña incorrecta</div>
+  </div>
+</div>
+
+<!-- ══ NOTIFICATIONS ══════════════════════════════════════════ -->
+<div class="notif-container" id="notif-container"></div>
+
+<!-- ══ APP ════════════════════════════════════════════════════ -->
+<div id="app" style="display:none; min-height:100vh;">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+
+  <!-- ── LOGO SISTEMA ─────────────────────────────────────── -->
+  <div class="sidebar-logo" style="cursor:pointer" onclick="showTab('home')">
+    <div class="brand">Kabuby</div>
+    <div class="system-name">🧭 Kabuby Intelligence</div>
+    <div class="system-sub">Sistema de Inteligencia Comercial</div>
+    <div class="system-badge">v1.0 · 5 módulos</div>
+  </div>
+
+  <!-- ── MÓDULOS DEL SISTEMA ─────────────────────────────── -->
+  <div class="sidebar-section" style="padding:10px 0 6px">
+    <div class="sidebar-section-title with-icon">
+      <i class="fas fa-th-large" style="font-size:9px;opacity:0.6"></i> Módulos
+    </div>
+
+    <!-- Módulo 1: Kabuby Scout ✅ ACTIVO -->
+    <div class="sidebar-item modulo active" onclick="showModulo('kabuby-scout')" id="nav-mod-kabuby">
+      <div class="modulo-icon green">🧩</div>
+      <div class="modulo-info">
+        <div class="modulo-name">Kabuby Scout</div>
+        <div class="modulo-desc">Amazon → Shopify → MeLi</div>
+      </div>
+      <span class="modulo-badge-fase f1">F1</span>
+      <i class="fas fa-chevron-down modulo-arrow" id="arrow-kabuby" style="font-size:9px;color:var(--text2);margin-left:2px;transition:transform 0.25s"></i>
+    </div>
+
+    <!-- ── KABUBY SCOUT — sub-menú acordeón (oculto por defecto) ── -->
+    <div id="kabuby-submenu" style="display:none;overflow:hidden">
+      <div class="kabuby-sub-inner">
+        <div class="sidebar-item sub-item" onclick="showTab('dashboard')" id="nav-dashboard">
+          <i class="icon fas fa-chart-line"></i> Dashboard
+        </div>
+        <div class="sidebar-item sub-item" onclick="showTab('pendientes')" id="nav-pendientes">
+          <i class="icon fas fa-inbox"></i> Pendientes
+          <span class="sidebar-badge red" id="badge-pendientes">0</span>
+        </div>
+        <div class="sidebar-item sub-item" onclick="showTab('despachos')" id="nav-despachos">
+          <i class="icon fas fa-truck"></i> Despachos
+          <span class="sidebar-badge red" id="badge-despachos">0</span>
+        </div>
+        <div class="sidebar-item sub-item" onclick="showTab('inventario')" id="nav-inventario">
+          <i class="icon fas fa-boxes"></i> Inventario
+        </div>
+        <div class="sub-categories-label">Categorías</div>
+        <div class="sidebar-item sub-item sub-cat" onclick="showNicho('kbeauty')">
+          <i class="icon">🌸</i> <span>K-Beauty</span>
+          <span class="sidebar-badge" id="badge-kbeauty">0</span>
+        </div>
+        <div class="sidebar-item sub-item sub-cat" onclick="showNicho('electronica')">
+          <i class="icon">💻</i> <span>Electrónica</span>
+          <span class="sidebar-badge" id="badge-electronica">0</span>
+        </div>
+        <div class="sidebar-item sub-item sub-cat" onclick="showNicho('hogar')">
+          <i class="icon">🏠</i> <span>Hogar &amp; Cocina</span>
+          <span class="sidebar-badge" id="badge-hogar">0</span>
+        </div>
+        <div class="sidebar-item sub-item sub-cat" onclick="showNicho('herramientas')">
+          <i class="icon">🔧</i> <span>Herramientas</span>
+          <span class="sidebar-badge" id="badge-herramientas">0</span>
+        </div>
+        <div class="sidebar-item sub-item sub-cat" onclick="showNicho('deportes')">
+          <i class="icon">⚽</i> <span>Deportes</span>
+          <span class="sidebar-badge" id="badge-deportes">0</span>
+        </div>
+        <div class="sidebar-item sub-item sub-cat" onclick="showNicho('bebes')">
+          <i class="icon">👶</i> <span>Bebés &amp; Niños</span>
+          <span class="sidebar-badge" id="badge-bebes">0</span>
+        </div>
+        <div class="sidebar-item sub-item sub-cat" onclick="showNicho('mascotas')">
+          <i class="icon">🐾</i> <span>Mascotas</span>
+          <span class="sidebar-badge" id="badge-mascotas">0</span>
+        </div>
+        <div class="sidebar-item sub-item sub-cat" onclick="showNicho('salud')">
+          <i class="icon">🏥</i> <span>Salud</span>
+          <span class="sidebar-badge" id="badge-salud">0</span>
+        </div>
+        <div class="sidebar-item sub-item sub-cat" onclick="showNicho('otros')">
+          <i class="icon">📦</i> <span>Otros</span>
+          <span class="sidebar-badge" id="badge-otros">0</span>
+        </div>
+        <div class="sidebar-item sub-item" onclick="showTab('config')" id="nav-config" style="margin-top:2px">
+          <i class="icon fas fa-cog"></i> Configuración
+        </div>
+      </div>
+    </div>
+
+    <!-- Módulo 2: Price Monitor + OOS ⏳ Fase 2A -->
+    <div class="sidebar-item modulo" onclick="showModulo('price-monitor')" id="nav-mod-prices">
+      <div class="modulo-icon blue">📊</div>
+      <div class="modulo-info">
+        <div class="modulo-name">Price Monitor</div>
+        <div class="modulo-desc">OOS · Alertas · Telegram</div>
+      </div>
+      <span class="modulo-badge-fase f2">F2</span>
+    </div>
+
+    <!-- Módulo 3: eBay Connect ⏳ Fase 2B -->
+    <div class="sidebar-item modulo" onclick="showModulo('ebay-connect')" id="nav-mod-ebay">
+      <div class="modulo-icon blue">🛒</div>
+      <div class="modulo-info">
+        <div class="modulo-name">eBay Connect</div>
+        <div class="modulo-desc">Precios · Márgenes · Sync</div>
+      </div>
+      <span class="modulo-badge-fase f2">F2</span>
+    </div>
+
+    <!-- Módulo 4: Radar de Virales 🔮 Fase 3 -->
+    <div class="sidebar-item modulo" onclick="showModulo('radar-virales')" id="nav-mod-radar">
+      <div class="modulo-icon purple">🌡️</div>
+      <div class="modulo-info">
+        <div class="modulo-name">Radar de Virales</div>
+        <div class="modulo-desc">MeLi · Google · TikTok</div>
+      </div>
+      <span class="modulo-badge-fase f3">F3</span>
+    </div>
+
+    <!-- Módulo 5: Predicción IA 🔮 Fase 4 -->
+    <div class="sidebar-item modulo" onclick="showModulo('prediccion-ia')" id="nav-mod-ia">
+      <div class="modulo-icon orange">🔮</div>
+      <div class="modulo-info">
+        <div class="modulo-name">Predicción IA</div>
+        <div class="modulo-desc">Cross-country · Alibaba</div>
+      </div>
+      <span class="modulo-badge-fase f4">F4</span>
+    </div>
+
+    <!-- Módulo 6: SaaS Platform 🚀 Fase 5 -->
+    <div class="sidebar-item modulo" onclick="showModulo('saas-platform')" id="nav-mod-saas">
+      <div class="modulo-icon red">🚀</div>
+      <div class="modulo-info">
+        <div class="modulo-name">SaaS Platform</div>
+        <div class="modulo-desc">Multi-usuario · Dominio</div>
+      </div>
+      <span class="modulo-badge-fase f5">F5</span>
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="store-info">
+      <div class="store-avatar">K</div>
+      <div>
+        <div class="store-name">Kabuby Intelligence</div>
+        <div class="store-url">kabuby.com</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px;flex:1">
+      <!-- Breadcrumb home -->
+      <span onclick="goHome()" style="color:var(--text2);cursor:pointer;font-size:13px;opacity:0.7;transition:opacity 0.15s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" title="Inicio">🧭</span>
+      <span style="color:var(--border);font-size:12px">/</span>
+      <div class="topbar-title" id="topbarTitle">🧭 Kabuby</div>
+    </div>
+    <div class="topbar-search">
+      <i class="fas fa-search"></i>
+      <input type="text" placeholder="Buscar por nombre, ASIN, categoría..." id="topbarSearchInput" oninput="globalSearchFn(this.value)">
+    </div>
+    <button class="btn btn-primary" id="topbar-action-btn" onclick="openCaptureModal()" style="display:none">
+      <i class="fas fa-plus"></i> Capturar producto
+    </button>
+  </div>
+
+  <div class="content">
+
+    <!-- ── HOME — Pantalla principal del sistema ──────────────── -->
+    <div id="tab-home" class="tab-content active">
+      <div style="max-width:900px;margin:0 auto;padding:8px 0 40px">
+
+        <!-- Header -->
+        <div style="text-align:center;padding:40px 0 32px">
+          <div style="font-size:48px;margin-bottom:16px">🧭</div>
+          <h1 style="font-size:28px;font-weight:900;color:var(--text);margin-bottom:8px">Kabuby Intelligence</h1>
+          <p style="font-size:15px;color:var(--text2);max-width:500px;margin:0 auto;line-height:1.6">El sistema de inteligencia comercial autónomo para vendedores de Amazon → MeLi → eBay</p>
+          <div style="display:flex;justify-content:center;gap:24px;margin-top:28px;flex-wrap:wrap">
+            <div style="text-align:center">
+              <div style="font-size:24px;font-weight:800;color:var(--accent)">6</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:2px">Mercados</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:24px;font-weight:800;color:var(--green)">25+</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:2px">Fuentes de datos</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:24px;font-weight:800;color:var(--yellow)">5</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:2px">Módulos</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:24px;font-weight:800;color:var(--blue)">$0</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:2px">Infra/mes</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grid de módulos -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px">
+
+          <!-- Módulo 1: Kabuby Scout -->
+          <div onclick="showModulo('kabuby-scout')" style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;transition:all 0.2s;border-left:4px solid var(--green)" onmouseover="this.style.borderColor='var(--green)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';this.style.borderLeftColor='var(--green)'">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+              <div style="width:42px;height:42px;border-radius:10px;background:rgba(52,211,153,0.15);display:flex;align-items:center;justify-content:center;font-size:20px">🧩</div>
+              <div>
+                <div style="font-size:14px;font-weight:700;color:var(--text)">Kabuby Scout</div>
+                <div style="display:inline-block;margin-top:3px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(52,211,153,0.15);color:var(--green)">✅ ACTIVO — Fase 1</div>
+              </div>
+            </div>
+            <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px">Captura productos de Amazon con la extensión Chrome y gestiona tu bandeja de importación hacia Shopify y MeLi.</p>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(52,211,153,0.1);color:var(--green);border:1px solid rgba(52,211,153,0.2)">Chrome Extension</span>
+              <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(52,211,153,0.1);color:var(--green);border:1px solid rgba(52,211,153,0.2)">Shopify Sync</span>
+              <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(52,211,153,0.1);color:var(--green);border:1px solid rgba(52,211,153,0.2)">Price Calc</span>
+            </div>
+          </div>
+
+          <!-- Módulo 2: Price Monitor -->
+          <div onclick="showModulo('price-monitor')" style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;transition:all 0.2s;border-left:4px solid var(--blue)" onmouseover="this.style.borderColor='var(--blue)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';this.style.borderLeftColor='var(--blue)'">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+              <div style="width:42px;height:42px;border-radius:10px;background:rgba(96,200,255,0.15);display:flex;align-items:center;justify-content:center;font-size:20px">📊</div>
+              <div>
+                <div style="font-size:14px;font-weight:700;color:var(--text)">Price Monitor</div>
+                <div style="display:inline-block;margin-top:3px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(96,200,255,0.15);color:var(--blue)">⏳ Fase 2A — Próximo</div>
+              </div>
+            </div>
+            <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px">Monitoreo de precios Amazon en tiempo real, detección de Out of Stock, pausa automática en MeLi y alertas por Telegram.</p>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(96,200,255,0.1);color:var(--blue);border:1px solid rgba(96,200,255,0.2)">OOS Automático</span>
+              <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(96,200,255,0.1);color:var(--blue);border:1px solid rgba(96,200,255,0.2)">Telegram Bot</span>
+            </div>
+          </div>
+
+          <!-- Módulo 3: eBay Connect -->
+          <div onclick="showModulo('ebay-connect')" style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;transition:all 0.2s;border-left:4px solid var(--blue)" onmouseover="this.style.borderColor='var(--blue)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';this.style.borderLeftColor='var(--blue)'">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+              <div style="width:42px;height:42px;border-radius:10px;background:rgba(96,200,255,0.15);display:flex;align-items:center;justify-content:center;font-size:20px">🛒</div>
+              <div>
+                <div style="font-size:14px;font-weight:700;color:var(--text)">eBay Connect</div>
+                <div style="display:inline-block;margin-top:3px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(96,200,255,0.15);color:var(--blue)">⏳ Fase 2B — Próximo</div>
+              </div>
+            </div>
+            <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px">Conexión OAuth con eBay, precios independientes por marketplace, márgenes automáticos y tipo de cambio en tiempo real.</p>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(96,200,255,0.1);color:var(--blue);border:1px solid rgba(96,200,255,0.2)">OAuth eBay</span>
+              <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(96,200,255,0.1);color:var(--blue);border:1px solid rgba(96,200,255,0.2)">Fx Automático</span>
+            </div>
+          </div>
+
+          <!-- Módulo 4: Radar de Virales -->
+          <div onclick="showModulo('radar-virales')" style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;transition:all 0.2s;border-left:4px solid var(--purple)" onmouseover="this.style.borderColor='var(--purple)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';this.style.borderLeftColor='var(--purple)'">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+              <div style="width:42px;height:42px;border-radius:10px;background:rgba(192,132,252,0.15);display:flex;align-items:center;justify-content:center;font-size:20px">🌡️</div>
+              <div>
+                <div style="font-size:14px;font-weight:700;color:var(--text)">Radar de Virales</div>
+                <div style="display:inline-block;margin-top:3px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(192,132,252,0.15);color:var(--purple)">🔮 Fase 3 — Planeado</div>
+              </div>
+            </div>
+            <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px">Detecta productos virales en MeLi 5 países, Amazon Movers & Shakers, Google Trends y TikTok. Score de oportunidad 0-100.</p>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(192,132,252,0.1);color:var(--purple);border:1px solid rgba(192,132,252,0.2)">Score 0-100</span>
+              <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(192,132,252,0.1);color:var(--purple);border:1px solid rgba(192,132,252,0.2)">Mapa de calor</span>
+            </div>
+          </div>
+
+          <!-- Módulo 5: Predicción IA -->
+          <div onclick="showModulo('prediccion-ia')" style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;transition:all 0.2s;border-left:4px solid var(--yellow)" onmouseover="this.style.borderColor='var(--yellow)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';this.style.borderLeftColor='var(--yellow)'">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+              <div style="width:42px;height:42px;border-radius:10px;background:rgba(251,191,36,0.15);display:flex;align-items:center;justify-content:center;font-size:20px">🔮</div>
+              <div>
+                <div style="font-size:14px;font-weight:700;color:var(--text)">Predicción IA</div>
+                <div style="display:inline-block;margin-top:3px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(251,191,36,0.15);color:var(--yellow)">🔮 Fase 4 — Futuro</div>
+              </div>
+            </div>
+            <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px">Predicción cross-country, comparativa Alibaba vs Amazon, repricing dinámico y calculadora de viabilidad de importación con ROI.</p>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(251,191,36,0.1);color:var(--yellow);border:1px solid rgba(251,191,36,0.2)">Cross-country</span>
+              <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(251,191,36,0.1);color:var(--yellow);border:1px solid rgba(251,191,36,0.2)">Alibaba ROI</span>
+            </div>
+          </div>
+
+          <!-- Módulo 6: SaaS Platform -->
+          <div onclick="showModulo('saas-platform')" style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;transition:all 0.2s;border-left:4px solid var(--red)" onmouseover="this.style.borderColor='var(--red)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';this.style.borderLeftColor='var(--red)'">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+              <div style="width:42px;height:42px;border-radius:10px;background:rgba(248,113,113,0.15);display:flex;align-items:center;justify-content:center;font-size:20px">🚀</div>
+              <div>
+                <div style="font-size:14px;font-weight:700;color:var(--text)">SaaS Platform</div>
+                <div style="display:inline-block;margin-top:3px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(248,113,113,0.15);color:var(--red)">🚀 Fase 5 — Visión</div>
+              </div>
+            </div>
+            <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px">Multi-usuario, dominio propio, planes de suscripción $29/$79/$199 y app móvil PWA para vendedores de Latam.</p>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.2)">Multi-usuario</span>
+              <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.2)">PWA</span>
+            </div>
+          </div>
+
+        </div><!-- /grid módulos -->
+      </div>
+    </div><!-- /tab-home -->
+
+    <!-- ── DASHBOARD ────────────────────────────────────────── -->
+    <div id="tab-dashboard" class="tab-content">
+      <div class="stats-grid">
+        <div class="stat-card blue">
+          <div class="stat-label">Total Productos</div>
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-sub">En tu catálogo</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Publicados</div>
+          <div class="stat-value" id="stat-publicados">0</div>
+          <div class="stat-sub">En Shopify + MeLi</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">Pendientes</div>
+          <div class="stat-value" id="stat-pendientes">0</div>
+          <div class="stat-sub">Por revisar y publicar</div>
+        </div>
+        <div class="stat-card yellow">
+          <div class="stat-label">Despachos</div>
+          <div class="stat-value" id="stat-despachos">0</div>
+          <div class="stat-sub">Ventas pendientes</div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <div>
+          <div class="section-title">🚨 Despachos Urgentes</div>
+          <div class="section-sub">Ventas que necesitan ser compradas y despachadas</div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="showTab('despachos')">Ver todos</button>
+      </div>
+      <div id="dashboard-despachos">
+        <div class="empty-state" style="padding:40px">
+          <i class="fas fa-truck"></i>
+          <h3>Sin despachos urgentes</h3>
+          <p>Cuando tengas ventas en MeLi o Shopify aparecerán aquí</p>
+        </div>
+      </div>
+
+      <div class="section-header" style="margin-top:24px">
+        <div>
+          <div class="section-title">🗂️ Productos por Nicho</div>
+          <div class="section-sub">Tu mini-Amazon organizado</div>
+        </div>
+      </div>
+      <div class="nicho-grid" id="nicho-summary"></div>
+    </div>
+
+    <!-- ── PENDIENTES ────────────────────────────────────────── -->
+    <div id="tab-pendientes" class="tab-content">
+      <div class="section-header">
+        <div>
+          <div class="section-title">📥 Productos Pendientes</div>
+          <div class="section-sub">Bandeja de entrada — revisá, editá y publicá en el nicho correspondiente</div>
+        </div>
+        <button class="btn btn-primary" onclick="openCaptureModal()">
+          <i class="fas fa-plus"></i> Capturar nuevo
+        </button>
+      </div>
+      <div class="alert alert-info" style="margin-bottom:16px">
+        <i class="fas fa-info-circle"></i>
+        <span>Flujo: <strong>Amazon</strong> → "Enviar K-Beauty" → aparece aquí → hacé click en <strong>"Ver detalle"</strong> para editar → <strong>Publicar en Shopify</strong></span>
+      </div>
+      <div class="products-grid" id="pendientes-grid">
+        <div class="empty-state" style="grid-column:1/-1;padding:60px">
+          <i class="fas fa-inbox"></i>
+          <h3>No hay productos pendientes</h3>
+          <p>Usá la extensión Chrome en Amazon para capturar productos<br>o hacé click en "Capturar producto" para agregar uno manualmente</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DESPACHOS ─────────────────────────────────────────── -->
+    <div id="tab-despachos" class="tab-content">
+      <div class="section-header">
+        <div>
+          <div class="section-title">🚚 Centro de Despachos</div>
+          <div class="section-sub">Encontrá el producto en Amazon y despachá al cliente</div>
+        </div>
+      </div>
+
+      <div class="dispatch-search-box">
+        <div style="font-size:14px;font-weight:700;margin-bottom:12px;">
+          🔍 Buscar producto para despachar
+        </div>
+        <div class="dispatch-search-input">
+          <input type="text" id="dispatchSearchInput" placeholder="Escribí el nombre del producto o el ASIN..." oninput="searchDispatch(this.value)">
+          <button class="btn btn-primary" onclick="searchDispatch(document.getElementById('dispatchSearchInput').value)">
+            <i class="fas fa-search"></i> Buscar
+          </button>
+        </div>
+      </div>
+
+      <div class="dispatch-result" id="dispatch-result"></div>
+
+      <div class="section-header">
+        <div class="section-title">Ventas pendientes de despacho</div>
+      </div>
+      <div id="despachos-list">
+        <div class="empty-state" style="padding:60px">
+          <i class="fas fa-box-open"></i>
+          <h3>Sin ventas pendientes</h3>
+          <p>Las ventas de MeLi y Shopify aparecerán aquí automáticamente</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── INVENTARIO ─────────────────────────────────────────── -->
+    <div id="tab-inventario" class="tab-content">
+      <div class="section-header">
+        <div>
+          <div class="section-title">📦 Control de Inventario</div>
+          <div class="section-sub">Stock actual de todos tus productos</div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="inventario-table">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>ASIN</th>
+              <th>Nicho</th>
+              <th>Precio Amazon</th>
+              <th>Tu Precio</th>
+              <th>Margen</th>
+              <th>Stock</th>
+              <th>Vendidos</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="inventario-body">
+            <tr>
+              <td colspan="9" style="text-align:center;padding:40px;color:var(--muted)">
+                No hay productos en tu inventario aún
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── PRODUCTOS POR NICHO ───────────────────────────────── -->
+    <div id="tab-nicho" class="tab-content">
+      <div class="section-header">
+        <div>
+          <div class="section-title" id="nicho-title">Productos</div>
+          <div class="section-sub" id="nicho-sub">Todos los productos de este nicho</div>
+        </div>
+        <button class="btn btn-primary" onclick="openCaptureModal()">
+          <i class="fas fa-plus"></i> Agregar producto
+        </button>
+      </div>
+      <div class="products-grid" id="nicho-grid"></div>
+    </div>
+
+    <!-- ── CONFIGURACIÓN ──────────────────────────────────────── -->
+    <div id="tab-config" class="tab-content">
+      <div class="section-header">
+        <div class="section-title">⚙️ Configuración del Portal</div>
+      </div>
+
+      <div class="config-section">
+        <div class="config-section-title">
+          <i class="fab fa-shopify" style="color:#96bf48"></i> Shopify
+        </div>
+        <div class="form-group">
+          <label class="form-label">Admin API Token</label>
+          <input type="password" class="form-input" id="cfg-shopify-token" placeholder="shpat_...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Dominio de la tienda</label>
+          <input type="text" class="form-input" id="cfg-shopify-domain" value="shatokb.myshopify.com">
+        </div>
+      </div>
+
+      <div class="config-section">
+        <div class="config-section-title">
+          <i class="fab fa-amazon" style="color:#ff9900"></i> Amazon Associates
+        </div>
+        <div class="form-group">
+          <label class="form-label">Associate Tag (Tracking ID)</label>
+          <input type="text" class="form-input" id="cfg-amazon-tag" placeholder="nombre-20">
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">
+            Este tag se agrega automáticamente a todos los links de Amazon para generar comisión
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Margen por defecto (%)</label>
+          <input type="number" class="form-input" id="cfg-default-margin" value="35" min="1" max="200">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Alerta de margen mínimo (%)</label>
+          <input type="number" class="form-input" id="cfg-min-margin" value="20" min="1" max="100">
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">
+            Te avisamos cuando el margen baje de este porcentaje
+          </div>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <div class="config-section-title">
+          <i class="fas fa-store" style="color:#ffe600"></i> MercadoLibre
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Worker conectado</div>
+            <div class="toggle-sub">shato-meli-connector.luisfonse2010.workers.dev</div>
+          </div>
+          <span style="color:var(--green);font-weight:700;font-size:12px">✅ CONECTADO</span>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Usuario MeLi</div>
+            <div class="toggle-sub">USSFWELLNESSLLC — ID: 2580132362</div>
+          </div>
+          <span style="color:var(--green);font-weight:700;font-size:12px">✅ AUTH OK</span>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <div class="config-section-title">
+          <i class="fas fa-eye-slash"></i> Visibilidad Multi-nicho
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Ocultar productos multi-nicho en shatokb.com</div>
+            <div class="toggle-sub">Los productos se publican en Shopify pero no aparecen en la tienda — solo van a MeLi</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="cfg-hide-multinichos" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Tag automático "hidden" en multi-nicho</div>
+            <div class="toggle-sub">Agrega el tag hidden para que el tema Shopify los filtre</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="cfg-auto-hidden" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <button class="btn btn-success" onclick="saveConfig()">
+        <i class="fas fa-save"></i> Guardar configuración
+      </button>
+    </div>
+
+    <!-- ── MÓDULO: PRICE MONITOR ─────────────────────────────── -->
+    <div id="tab-price-monitor" class="tab-content">
+      <div class="coming-soon">
+        <div class="emoji">📊</div>
+        <h2>Price Monitor + OOS</h2>
+        <p>Monitoreo de precios Amazon en tiempo real, detección automática de Out of Stock, pausa de listings en MeLi y alertas instantáneas por Telegram.</p>
+        <div class="phase">⏳ Fase 2A — Próxima a construir</div>
+        <div style="margin-top:32px;display:flex;flex-direction:column;gap:10px;max-width:360px;text-align:left">
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
+            <span style="font-size:18px">📦</span>
+            <div><div style="font-weight:600;color:var(--text)">Out of Stock automático</div><div style="color:var(--text2);font-size:12px">Amazon sin stock → listings pausados en MeLi</div></div>
+          </div>
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
+            <span style="font-size:18px">💬</span>
+            <div><div style="font-weight:600;color:var(--text)">Bot Telegram</div><div style="color:var(--text2);font-size:12px">Alertas en tiempo real sin abrir el portal</div></div>
+          </div>
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
+            <span style="font-size:18px">💸</span>
+            <div><div style="font-weight:600;color:var(--text)">Alertas de precio</div><div style="color:var(--text2);font-size:12px">Amazon bajó/subió → notificación inmediata</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MÓDULO: EBAY CONNECT ───────────────────────────────── -->
+    <div id="tab-ebay-connect" class="tab-content">
+      <div class="coming-soon">
+        <div class="emoji">🛒</div>
+        <h2>eBay Connect</h2>
+        <p>Conexión OAuth con eBay, precios independientes por marketplace con márgenes automáticos y tipo de cambio USD → monedas locales actualizado cada hora.</p>
+        <div class="phase">⏳ Fase 2B — Próxima a construir</div>
+        <div style="margin-top:32px;display:flex;flex-direction:column;gap:10px;max-width:360px;text-align:left">
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
+            <span style="font-size:18px">🔐</span>
+            <div><div style="font-weight:600;color:var(--text)">OAuth eBay</div><div style="color:var(--text2);font-size:12px">Conexión segura y creación de listings</div></div>
+          </div>
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
+            <span style="font-size:18px">🏷️</span>
+            <div><div style="font-weight:600;color:var(--text)">Precios independientes</div><div style="color:var(--text2);font-size:12px">MeLi +35%, eBay +50% — cada uno con su margen</div></div>
+          </div>
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
+            <span style="font-size:18px">💱</span>
+            <div><div style="font-weight:600;color:var(--text)">Tipo de cambio automático</div><div style="color:var(--text2);font-size:12px">USD → COP, MXN, CLP, ARS, BRL cada hora</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MÓDULO: RADAR DE VIRALES ───────────────────────────── -->
+    <div id="tab-radar-virales" class="tab-content">
+      <div style="padding:0 0 40px">
+
+        <!-- Header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+          <div>
+            <h2 style="font-size:20px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px">
+              🌡️ Radar de Tendencias MeLi
+              <span style="font-size:11px;font-weight:600;background:rgba(52,211,153,0.15);color:var(--green);padding:3px 9px;border-radius:20px;border:1px solid rgba(52,211,153,0.3)">LIVE</span>
+            </h2>
+            <p style="font-size:13px;color:var(--text2);margin-top:4px">Qué busca la gente ahora mismo en 5 países — actualizado en tiempo real</p>
+          </div>
+          <button onclick="radarRefreshAll()" id="radar-refresh-btn" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background 0.2s" onmouseover="this.style.background='#5a7aee'" onmouseout="this.style.background='var(--accent)'">
+            <span id="radar-refresh-icon">🔄</span> Actualizar todo
+          </button>
+        </div>
+
+        <!-- Última actualización -->
+        <div style="font-size:12px;color:var(--muted);margin-bottom:20px" id="radar-last-update">⏰ Cargando tendencias...</div>
+
+        <!-- Tabs de países -->
+        <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap" id="radar-country-tabs">
+          <button class="radar-ctab active" data-site="MCO" onclick="radarSelectCountry(this,'MCO')">🇨🇴 Colombia</button>
+          <button class="radar-ctab" data-site="MLM" onclick="radarSelectCountry(this,'MLM')">🇲🇽 México</button>
+          <button class="radar-ctab" data-site="MLC" onclick="radarSelectCountry(this,'MLC')">🇨🇱 Chile</button>
+          <button class="radar-ctab" data-site="MLA" onclick="radarSelectCountry(this,'MLA')">🇦🇷 Argentina</button>
+          <button class="radar-ctab" data-site="MLB" onclick="radarSelectCountry(this,'MLB')">🇧🇷 Brasil</button>
+          <button class="radar-ctab" data-site="ALL" onclick="radarSelectCountry(this,'ALL')">🌎 Todos</button>
+        </div>
+
+        <!-- Grid de países (vista ALL) -->
+        <div id="radar-all-view">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px" id="radar-countries-grid">
+            <!-- Generado por JS -->
+          </div>
+        </div>
+
+        <!-- Vista single país -->
+        <div id="radar-single-view" style="display:none">
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+              <div style="font-size:15px;font-weight:700;color:var(--text)" id="radar-single-title">🇨🇴 Colombia — Top Tendencias</div>
+              <div style="font-size:12px;color:var(--muted)" id="radar-single-count"></div>
+            </div>
+            <div id="radar-single-list" style="padding:8px 0;max-height:600px;overflow-y:auto"></div>
+          </div>
+        </div>
+
+        <!-- Buscador de tendencias -->
+        <div style="margin-top:28px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px">
+          <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px">🔍 Buscar término en todos los países</div>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="radar-search-input" placeholder="ej: crema facial, auriculares, proteína..." style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:13px;outline:none;font-family:inherit" onkeydown="if(event.key==='Enter')radarSearch()">
+            <button onclick="radarSearch()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">Buscar</button>
+          </div>
+          <div id="radar-search-results" style="margin-top:12px"></div>
+        </div>
+
+        <!-- Info de fuente -->
+        <div style="margin-top:16px;padding:12px 16px;background:rgba(108,142,255,0.08);border:1px solid rgba(108,142,255,0.2);border-radius:10px;font-size:12px;color:var(--text2);display:flex;gap:8px;align-items:flex-start">
+          <span style="font-size:14px">ℹ️</span>
+          <div>Datos de <strong style="color:var(--accent)">api.mercadolibre.com/trends/{SITE_ID}</strong> — API pública oficial de MercadoLibre, sin autenticación, actualizada en tiempo real. Próximamente: Amazon Movers & Shakers + Score de oportunidad 0-100.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── MÓDULO: PREDICCIÓN IA ──────────────────────────────── -->
+    <div id="tab-prediccion-ia" class="tab-content">
+      <div class="coming-soon">
+        <div class="emoji">🔮</div>
+        <h2>Predicción IA</h2>
+        <p>El sistema aprende de tus patrones de venta. Predice cuándo una tendencia de USA llegará a Colombia. Compara costos Amazon vs Alibaba con ROI proyectado.</p>
+        <div class="phase" style="background:rgba(251,191,36,0.15);color:var(--yellow);border-color:rgba(251,191,36,0.3)">🔮 Fase 4 — Futuro</div>
+        <div style="margin-top:32px;display:flex;flex-direction:column;gap:10px;max-width:360px;text-align:left">
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
+            <span style="font-size:18px">🌐</span>
+            <div><div style="font-weight:600;color:var(--text)">Predicción cross-country</div><div style="color:var(--text2);font-size:12px">Explota en USA hoy → llega a Colombia en X días</div></div>
+          </div>
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
+            <span style="font-size:18px">🇨🇳</span>
+            <div><div style="font-weight:600;color:var(--text)">Módulo Alibaba</div><div style="color:var(--text2);font-size:12px">Amazon $13.99 vs Alibaba $2.80 — ROI 312%</div></div>
+          </div>
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
+            <span style="font-size:18px">⚡</span>
+            <div><div style="font-weight:600;color:var(--text)">Repricing dinámico</div><div style="color:var(--text2);font-size:12px">Escanea competidores cada 30 min y ajusta precio</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MÓDULO: SAAS PLATFORM ──────────────────────────────── -->
+    <div id="tab-saas-platform" class="tab-content">
+      <div class="coming-soon">
+        <div class="emoji">🚀</div>
+        <h2>SaaS Platform</h2>
+        <p>De herramienta personal a producto de software. Otros vendedores de Latam pagarían por acceder a lo que estás construyendo.</p>
+        <div class="phase" style="background:rgba(248,113,113,0.15);color:var(--red);border-color:rgba(248,113,113,0.3)">🚀 Fase 5 — Visión</div>
+        <div style="margin-top:32px;display:flex;flex-direction:column;gap:10px;max-width:360px;text-align:left">
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
+            <span style="font-size:18px">👥</span>
+            <div><div style="font-weight:600;color:var(--text)">Multi-usuario</div><div style="color:var(--text2);font-size:12px">Login propio, cuentas independientes, planes de pago</div></div>
+          </div>
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
+            <span style="font-size:18px">💰</span>
+            <div><div style="font-weight:600;color:var(--text)">Planes $29 / $79 / $199</div><div style="color:var(--text2);font-size:12px">Básico · Pro · Ultra — 2M+ vendedores en Latam</div></div>
+          </div>
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
+            <span style="font-size:18px">📱</span>
+            <div><div style="font-weight:600;color:var(--text)">App móvil PWA</div><div style="color:var(--text2);font-size:12px">Funciona como app nativa en iPhone y Android</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+</div><!-- /app -->
+
+<!-- ══ MODAL: CAPTURAR / EDITAR PRODUCTO ═════════════════════ -->
+<div class="modal-overlay" id="captureModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">📦 Nuevo Producto</div>
+      <div class="modal-close" onclick="closeModal('captureModal')">×</div>
+    </div>
+    <div class="modal-body">
+
+      <!-- Detección de modo -->
+      <div class="alert alert-info" id="mode-alert">
+        <i class="fas fa-info-circle"></i>
+        <span id="mode-alert-text">Completá los datos del producto para detectar el modo automáticamente</span>
+      </div>
+
+      <!-- Galería de imágenes -->
+      <div class="gallery-section" id="gallery-section" style="display:none">
+        <span class="gallery-label">📸 Imagen principal</span>
+        <img id="f-img-preview-main" src="" style="width:100%;height:160px;object-fit:contain;background:#fff;border-radius:8px;margin-bottom:10px;padding:8px;display:none">
+        <span class="gallery-sub">🖼️ Todas las imágenes — clic para seleccionar como principal</span>
+        <div class="gallery-grid" id="gallery-grid"></div>
+      </div>
+
+      <div class="form-grid">
+        <!-- Imagen (URL manual) -->
+        <div class="form-group">
+          <label class="form-label">URL de imagen principal</label>
+          <input type="text" class="form-input" id="f-img" placeholder="https://..." oninput="updatePreview()">
+          <img id="f-img-preview" src="" style="width:100%;height:120px;object-fit:contain;background:#fff;border-radius:8px;margin-top:8px;display:none;padding:8px">
+        </div>
+
+        <!-- ASIN -->
+        <div class="form-group">
+          <label class="form-label">ASIN de Amazon</label>
+          <input type="text" class="form-input" id="f-asin" placeholder="B08XYZ1234" oninput="updateAmazonLinks()">
+          <div style="margin-top:8px;display:flex;gap:6px">
+            <a id="f-amazon-link" href="#" target="_blank" class="btn btn-amazon btn-sm" style="text-decoration:none">
+              <i class="fab fa-amazon"></i> Ver en Amazon
+            </a>
+            <a id="f-amazon-affiliate-link" href="#" target="_blank" class="btn btn-outline btn-sm" style="text-decoration:none">
+              🤝 Link afiliado
+            </a>
+          </div>
+        </div>
+
+        <!-- Título Amazon -->
+        <div class="form-group full">
+          <label class="form-label">Título original (Amazon)</label>
+          <input type="text" class="form-input" id="f-title-amazon" placeholder="Título completo de Amazon..." oninput="autoDetectMode()">
+        </div>
+
+        <!-- Título para tienda -->
+        <div class="form-group full">
+          <label class="form-label">Título para Shopify / MeLi</label>
+          <input type="text" class="form-input" id="f-title-store" placeholder="Título optimizado para tu tienda...">
+        </div>
+
+        <!-- Descripción -->
+        <div class="form-group full">
+          <label class="form-label">Descripción</label>
+          <textarea class="form-textarea" id="f-desc" placeholder="Descripción del producto..."></textarea>
+        </div>
+
+        <!-- Categoría Amazon -->
+        <div class="form-group">
+          <label class="form-label">Categoría Amazon</label>
+          <input type="text" class="form-input" id="f-category-amazon" placeholder="ej: Beauty › Skin Care › Serums" oninput="autoDetectMode()">
+        </div>
+
+        <!-- Nicho -->
+        <div class="form-group">
+          <label class="form-label">Nicho en tu tienda</label>
+          <select class="form-select" id="f-nicho" onchange="onNichoChange()">
+            <option value="">-- Seleccionar nicho --</option>
+            <option value="kbeauty">🌸 K-Beauty</option>
+            <option value="electronica">💻 Electrónica</option>
+            <option value="hogar">🏠 Hogar &amp; Cocina</option>
+            <option value="herramientas">🔧 Herramientas</option>
+            <option value="deportes">⚽ Deportes</option>
+            <option value="bebes">👶 Bebés &amp; Niños</option>
+            <option value="mascotas">🐾 Mascotas</option>
+            <option value="salud">🏥 Salud</option>
+            <option value="otros">📦 Otros</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- CALCULADORA DE PRECIO -->
+      <div class="price-calc">
+        <div class="price-calc-title">💰 Calculadora de Precio</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Precio Amazon ($)</label>
+            <input type="number" class="form-input" id="f-price-amazon" placeholder="0.00" step="0.01" oninput="calcPrice()">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Costo envío ($)</label>
+            <input type="number" class="form-input" id="f-shipping" placeholder="0.00" step="0.01" value="0" oninput="calcPrice()">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Tu margen (%)</label>
+            <input type="number" class="form-input" id="f-margin" placeholder="35" value="35" min="1" max="300" oninput="calcPrice()">
+          </div>
+        </div>
+        <input type="range" class="margin-slider" min="5" max="200" value="35" oninput="document.getElementById('f-margin').value=this.value;calcPrice()">
+        <div style="margin-top:12px">
+          <div class="price-row">
+            <span class="label">Costo total (Amazon + envío)</span>
+            <span class="value" id="calc-costo">$0.00</span>
+          </div>
+          <div class="price-row total">
+            <span class="label">Tu precio en Shopify / MeLi</span>
+            <span class="value" id="calc-precio">$0.00</span>
+          </div>
+          <div class="price-row">
+            <span class="label">Tu ganancia por venta</span>
+            <span class="value" style="color:var(--green)" id="calc-ganancia">$0.00</span>
+          </div>
+          <div class="price-row">
+            <span class="label">Comisión afiliado (esposa)</span>
+            <span class="value" style="color:var(--yellow)" id="calc-comision">$0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inventario -->
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Unidades en stock</label>
+          <input type="number" class="form-input" id="f-stock" value="0" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Alerta stock mínimo</label>
+          <input type="number" class="form-input" id="f-stock-min" value="2" min="0">
+        </div>
+      </div>
+
+      <!-- SECCIÓN KOI INTEL (solo K-Beauty) -->
+      <div class="koi-intel-section" id="koi-intel-section" style="display:none">
+        <div class="koi-intel-title">
+          🤖 KOI Intel — Inteligencia de Producto
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Categoría K-Beauty</label>
+            <select class="form-select" id="f-koi-categoria" onchange="updateKoiSubcategoria()">
+              <option value="cleanser">Cleanser</option>
+              <option value="toner">Toner</option>
+              <option value="serum" selected>Serum</option>
+              <option value="moisturizer">Moisturizer</option>
+              <option value="spf">SPF / Sunscreen</option>
+              <option value="eye">Eye Cream</option>
+              <option value="mask">Mask</option>
+              <option value="essence">Essence</option>
+              <option value="ampoule">Ampoule</option>
+              <option value="mist">Mist</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Subcategoría</label>
+            <select class="form-select" id="f-koi-subcategoria"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Momento de uso</label>
+            <div class="chip-selector" id="f-momento">
+              <div class="chip" onclick="toggleChip(this,'momento')" data-val="am">☀️ AM</div>
+              <div class="chip selected" onclick="toggleChip(this,'momento')" data-val="pm">🌙 PM</div>
+              <div class="chip" onclick="toggleChip(this,'momento')" data-val="both">☀️🌙 Ambos</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tier KOI</label>
+            <select class="form-select" id="f-koi-tier">
+              <option value="CORE_MATCH">⭐ CORE MATCH (score 90)</option>
+              <option value="GOOD_MATCH" selected>✅ GOOD MATCH (score 65)</option>
+              <option value="SECONDARY_MATCH">📌 SECONDARY MATCH (score 45)</option>
+              <option value="EXCLUDED">❌ EXCLUDED (score 10)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Archetype</label>
+            <select class="form-select" id="f-koi-archetype">
+              <option value="Barrier Specialist">🛡️ Barrier Specialist</option>
+              <option value="Acne Specialist">🎯 Acne Specialist</option>
+              <option value="Pigmentation Specialist">✨ Pigmentation Specialist</option>
+              <option value="Aging Specialist">⏳ Aging Specialist</option>
+              <option value="Hydration Specialist">💧 Hydration Specialist</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Safety</label>
+            <select class="form-select" id="f-koi-safety">
+              <option value="SAFE">✅ SAFE</option>
+              <option value="NO_PREGNANCY">⚠️ NO_PREGNANCY</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phase</label>
+            <select class="form-select" id="f-koi-phase">
+              <option value="repair">🔨 Repair</option>
+              <option value="treat" selected>💊 Treat</option>
+              <option value="optimize">⚡ Optimize</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nivel usuario</label>
+            <select class="form-select" id="f-koi-nivel">
+              <option value="beginner" selected>🌱 Beginner</option>
+              <option value="intermediate">🌿 Intermediate</option>
+              <option value="advanced">🌳 Advanced</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Posición rutina AM</label>
+            <input type="number" class="form-input" id="f-koi-pos-am" value="4" min="1" max="10">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Posición rutina PM</label>
+            <input type="number" class="form-input" id="f-koi-pos-pm" value="5" min="1" max="10">
+          </div>
+        </div>
+
+        <!-- Fit por tipo de piel -->
+        <div style="margin-bottom:16px">
+          <label class="form-label">Fit por tipo de piel</label>
+          <div class="fit-sliders">
+            <div class="fit-item">
+              <div class="fit-label"><span>Piel Seca</span><span id="fit-dry-val">80%</span></div>
+              <input type="range" class="fit-slider" id="fit-dry" min="0" max="100" value="80" oninput="document.getElementById('fit-dry-val').textContent=this.value+'%'">
+            </div>
+            <div class="fit-item">
+              <div class="fit-label"><span>Piel Grasa</span><span id="fit-oily-val">60%</span></div>
+              <input type="range" class="fit-slider" id="fit-oily" min="0" max="100" value="60" oninput="document.getElementById('fit-oily-val').textContent=this.value+'%'">
+            </div>
+            <div class="fit-item">
+              <div class="fit-label"><span>Mixta</span><span id="fit-combo-val">70%</span></div>
+              <input type="range" class="fit-slider" id="fit-combo" min="0" max="100" value="70" oninput="document.getElementById('fit-combo-val').textContent=this.value+'%'">
+            </div>
+            <div class="fit-item">
+              <div class="fit-label"><span>Sensible</span><span id="fit-sens-val">80%</span></div>
+              <input type="range" class="fit-slider" id="fit-sens" min="0" max="100" value="80" oninput="document.getElementById('fit-sens-val').textContent=this.value+'%'">
+            </div>
+            <div class="fit-item">
+              <div class="fit-label"><span>Acné</span><span id="fit-acne-val">50%</span></div>
+              <input type="range" class="fit-slider" id="fit-acne" min="0" max="100" value="50" oninput="document.getElementById('fit-acne-val').textContent=this.value+'%'">
+            </div>
+            <div class="fit-item">
+              <div class="fit-label"><span>Manchas</span><span id="fit-pig-val">70%</span></div>
+              <input type="range" class="fit-slider" id="fit-pig" min="0" max="100" value="70" oninput="document.getElementById('fit-pig-val').textContent=this.value+'%'">
+            </div>
+          </div>
+        </div>
+
+        <!-- Ingredientes -->
+        <div style="margin-bottom:16px">
+          <label class="form-label">Ingredientes principales</label>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input type="text" class="form-input" id="ing-input" placeholder="ej: niacinamide, retinol..." style="flex:1" onkeydown="if(event.key==='Enter')addIngredient()">
+            <button class="btn btn-outline btn-sm" onclick="addIngredient()">+ Agregar</button>
+          </div>
+          <div class="chip-selector" style="margin-bottom:8px">
+            <div class="chip" onclick="addIngredientDirect('niacinamide')">Niacinamide</div>
+            <div class="chip" onclick="addIngredientDirect('hyaluronic_acid')">Hyaluronic Acid</div>
+            <div class="chip" onclick="addIngredientDirect('retinol')">Retinol</div>
+            <div class="chip" onclick="addIngredientDirect('centella_asiatica')">Centella Asiatica</div>
+            <div class="chip" onclick="addIngredientDirect('snail_mucin')">Snail Mucin</div>
+            <div class="chip" onclick="addIngredientDirect('vitamin_c')">Vitamin C</div>
+            <div class="chip" onclick="addIngredientDirect('ceramides')">Ceramides</div>
+            <div class="chip" onclick="addIngredientDirect('salicylic_acid')">Salicylic Acid</div>
+            <div class="chip" onclick="addIngredientDirect('peptides')">Peptides</div>
+            <div class="chip" onclick="addIngredientDirect('aha')">AHA</div>
+            <div class="chip" onclick="addIngredientDirect('bha')">BHA</div>
+            <div class="chip" onclick="addIngredientDirect('panthenol')">Panthenol</div>
+          </div>
+          <div class="ingredients-list" id="ingredients-list"></div>
+        </div>
+
+        <!-- KOI Score -->
+        <div>
+          <label class="form-label">Score KOI estimado</label>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="koi-score-bar" style="flex:1">
+              <div class="koi-score-fill" id="koi-score-fill" style="width:65%"></div>
+            </div>
+            <span id="koi-score-text" style="font-size:18px;font-weight:800;color:#e879f9">65/100</span>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">
+            GOOD MATCH — KOI puede recomendarlo en rutinas
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('captureModal')">Cancelar</button>
+      <button class="btn btn-danger btn-sm" onclick="rejectProduct()" id="btn-reject" style="display:none">
+        <i class="fas fa-times"></i> Rechazar
+      </button>
+      <button class="btn btn-success" onclick="publishProduct()">
+        <i class="fas fa-rocket"></i> Publicar en Shopify
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ── CONFIG ────────────────────────────────────────────────────
+const PASSWORD = 'Luisfonse2010*';
+const WORKER   = 'https://kabuby.com';
+
+let CONFIG = {
+  shopifyToken:    '',
+  shopifyDomain:   'shatokb.myshopify.com',
+  amazonTag:       '',
+  defaultMargin:   35,
+  minMargin:       20,
+  hideMultinichos: true,
+  autoHidden:      true
+};
+
+// ── DATA STORE ─────────────────────────────────────────────────
+let PRODUCTS    = [];
+let DESPACHOS   = [];
+let INGREDIENTS = [];
+let editingId   = null;
+
+const NICHO_MAP = {
+  kbeauty:      { label: 'K-Beauty',       emoji: '🌸' },
+  electronica:  { label: 'Electrónica',     emoji: '💻' },
+  hogar:        { label: 'Hogar & Cocina',  emoji: '🏠' },
+  herramientas: { label: 'Herramientas',    emoji: '🔧' },
+  deportes:     { label: 'Deportes',        emoji: '⚽' },
+  bebes:        { label: 'Bebés & Niños',   emoji: '👶' },
+  mascotas:     { label: 'Mascotas',        emoji: '🐾' },
+  salud:        { label: 'Salud',           emoji: '🏥' },
+  otros:        { label: 'Otros',           emoji: '📦' }
+};
+
+const SUBCATEGORIAS = {
+  cleanser:    ['cleanser_foam','cleanser_oil','cleanser_balm','cleanser_gel','cleanser_micellar'],
+  toner:       ['toner_hydrating','toner_exfoliating','toner_brightening','toner_calming'],
+  serum:       ['serum_niacinamide','serum_vitamin_c','serum_retinol','serum_brightening','serum_antiaging','serum_hydrating','serum_barrier','serum_acne'],
+  moisturizer: ['moisturizer_gel','moisturizer_cream','moisturizer_balm','moisturizer_oil'],
+  spf:         ['spf_chemical','spf_physical','spf_hybrid'],
+  eye:         ['eye_cream','eye_serum','eye_patch'],
+  mask:        ['mask_sheet','mask_sleeping','mask_clay','mask_wash_off'],
+  essence:     ['essence_hydrating','essence_ferment','essence_brightening'],
+  ampoule:     ['ampoule_concentrated','ampoule_brightening','ampoule_antiaging'],
+  mist:        ['mist_hydrating','mist_setting','mist_calming']
+};
+
+const KBEAUTY_KEYWORDS = ['beauty','skin care','skincare','serum','moisturizer','cleanser','toner','spf','sunscreen','essence','ampoule','korean','k-beauty','facial','face cream','eye cream','mask','exfoliant'];
+
+// ── AUTH ───────────────────────────────────────────────────────
+function doLogin() {
+  const pass = document.getElementById('login-pass').value;
+  const err  = document.getElementById('login-error');
+  if (pass === PASSWORD) {
+    err.style.display = 'none';
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    sessionStorage.setItem('shato_auth', '1');
+    initApp();
+    if (window._shatoAutoTab) {
+      setTimeout(() => showTab(window._shatoAutoTab), 300);
+      window._shatoAutoTab = null;
+    }
+  } else {
+    err.style.display = 'block';
+    document.getElementById('login-pass').value = '';
+    document.getElementById('login-pass').focus();
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem('shato_auth');
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-pass').value = '';
+}
+
+// ── LEER ?shato_data= DE LA URL ───────────────────────────────
+(function checkShatoDataParam() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has('shato_import')) return;
+    const shatoData = params.get('shato_data');
+    if (!shatoData) return;
+    const decoded = decodeURIComponent(escape(atob(shatoData)));
+    const product  = JSON.parse(decoded);
+    if (!product || (!product.asin && !product.title)) return;
+    window._shato_pending_product = product;
+    window._shatoAutoTab = 'pendientes';
+    const cleanUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+  } catch(e) {
+    console.warn('[Kabuby] Error leyendo shato_data:', e);
+  }
+})();
+
+// Auto-login si ya hay sesión
+if (sessionStorage.getItem('shato_auth')) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  // initApp se llama al cargar DOM
+}
+
+// ── INIT ───────────────────────────────────────────────────────
+function initApp() {
+  loadConfig();
+  loadData();
+  updateSubcategorias();
+  // Ocultar submenu de Kabuby por defecto — mostrar home
+  var sub   = document.getElementById('kabuby-submenu');
+  var arrow = document.getElementById('arrow-kabuby');
+  var navKabuby = document.getElementById('nav-mod-kabuby');
+  if (sub)   { sub.style.display = 'none'; }
+  if (arrow) { arrow.classList.remove('open'); }
+  if (navKabuby) { navKabuby.classList.remove('active'); navKabuby.classList.remove('open-accordion'); }
+  // Si llegó producto desde URL — ir directo a Kabuby Scout
+  if (window._shato_pending_product) {
+    const rawProd = window._shato_pending_product;
+    window._shato_pending_product = null;
+    setTimeout(() => {
+      agregarProductoAlPortal(rawProd);
+      showModulo('kabuby-scout');
+      showTab('pendientes');
+      showNotif('📦 Producto recibido — hacé click en "Ver detalle" para editarlo', 'success');
+    }, 400);
+  } else {
+    // Mostrar pantalla de inicio del sistema
+    showTab('home') || (function(){
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      var home = document.getElementById('tab-home');
+      if (home) home.classList.add('active');
+      document.getElementById('topbarTitle').textContent = '🧭 Kabuby Intelligence';
+    })();
+  }
+}
+
+// Convierte datos del scraper al formato del portal y los agrega a PRODUCTS (Pendientes)
+function agregarProductoAlPortal(rawProd) {
+  const prod = mapScraperToPortal(rawProd);
+  if (!prod) return;
+  // Evitar duplicados por ASIN
+  if (prod.asin && PRODUCTS.find(p => p.asin === prod.asin)) {
+    showNotif('⚠️ Producto ya en bandeja: ' + prod.asin, 'warning');
+    return;
+  }
+  // Construir objeto completo con defaults
+  const priceNum = parseFloat(prod.priceAmazon) || 0;
+  const margin   = CONFIG.defaultMargin || 35;
+  const cost     = priceNum;
+  const priceStore = margin > 0 ? cost / (1 - margin / 100) : cost;
+  const entry = {
+    id:             'p-' + Date.now(),
+    status:         'pending',
+    nicho:          prod.nicho || 'kbeauty',
+    image:          prod.image || (prod.images && prod.images[0]) || '',
+    images:         prod.images || (prod.image ? [prod.image] : []),
+    asin:           prod.asin || '',
+    titleAmazon:    prod.titleAmazon || prod.title || '',
+    titleStore:     prod.titleStore  || prod.titleAmazon || prod.title || '',
+    description:    prod.description || '',
+    categoryAmazon: prod.categoryAmazon || '',
+    priceAmazon:    priceNum,
+    shipping:       0,
+    priceStore:     parseFloat(priceStore.toFixed(2)),
+    stock:          0,
+    stockMin:       2,
+    sold:           0,
+    ingredients:    [],
+    createdAt:      new Date().toISOString(),
+    affiliateLink:  buildAffiliateLink(prod.asin),
+    _scraperData:   prod._scraperData || null
+  };
+  PRODUCTS.unshift(entry);
+  saveData();
+  renderDashboard();
+  renderPendientes();
+}
+
+// ── CONFIG ─────────────────────────────────────────────────────
+function loadConfig() {
+  const saved = localStorage.getItem('shato_config');
+  if (saved) CONFIG = { ...CONFIG, ...JSON.parse(saved) };
+  document.getElementById('cfg-shopify-token').value    = CONFIG.shopifyToken || '';
+  document.getElementById('cfg-shopify-domain').value   = CONFIG.shopifyDomain || 'shatokb.myshopify.com';
+  document.getElementById('cfg-amazon-tag').value       = CONFIG.amazonTag || '';
+  document.getElementById('cfg-default-margin').value   = CONFIG.defaultMargin || 35;
+  document.getElementById('cfg-min-margin').value       = CONFIG.minMargin || 20;
+  document.getElementById('cfg-hide-multinichos').checked = CONFIG.hideMultinichos !== false;
+  document.getElementById('cfg-auto-hidden').checked    = CONFIG.autoHidden !== false;
+  document.getElementById('f-margin').value             = CONFIG.defaultMargin || 35;
+}
+
+function saveConfig() {
+  CONFIG.shopifyToken    = document.getElementById('cfg-shopify-token').value.trim();
+  CONFIG.shopifyDomain   = document.getElementById('cfg-shopify-domain').value.trim();
+  CONFIG.amazonTag       = document.getElementById('cfg-amazon-tag').value.trim();
+  CONFIG.defaultMargin   = parseInt(document.getElementById('cfg-default-margin').value) || 35;
+  CONFIG.minMargin       = parseInt(document.getElementById('cfg-min-margin').value) || 20;
+  CONFIG.hideMultinichos = document.getElementById('cfg-hide-multinichos').checked;
+  CONFIG.autoHidden      = document.getElementById('cfg-auto-hidden').checked;
+  localStorage.setItem('shato_config', JSON.stringify(CONFIG));
+  showNotif('✅ Configuración guardada', 'success');
+}
+
+// ── DATA ───────────────────────────────────────────────────────
+function loadData() {
+  const saved  = localStorage.getItem('shato_products');
+  const savedD = localStorage.getItem('shato_despachos');
+  if (saved)  PRODUCTS  = JSON.parse(saved);
+  if (savedD) DESPACHOS = JSON.parse(savedD);
+}
+
+function saveData() {
+  localStorage.setItem('shato_products',  JSON.stringify(PRODUCTS));
+  localStorage.setItem('shato_despachos', JSON.stringify(DESPACHOS));
+}
+
+// ── TABS ────────────────────────────────────────────────────────
+// showModulo() → definida abajo (línea ~2634) con lógica completa + hook Radar
+
+function showTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  // mantener activo el módulo Kabuby Scout en sidebar
+  document.querySelectorAll('.sidebar-item:not(.modulo)').forEach(i => i.classList.remove('active'));
+  const el  = document.getElementById('tab-'  + tab);
+  const nav = document.getElementById('nav-' + tab);
+  if (el)  el.classList.add('active');
+  if (nav) nav.classList.add('active');
+  // asegurarse que el módulo kabuby esté activo en sidebar
+  var modKabuby = document.getElementById('nav-mod-kabuby');
+  if (modKabuby) modKabuby.classList.add('active');
+  // mostrar submenu acordeón y flecha
+  var sub   = document.getElementById('kabuby-submenu');
+  var arrow = document.getElementById('arrow-kabuby');
+  var navKabuby = document.getElementById('nav-mod-kabuby');
+  if (sub)   { sub.style.display = 'block'; }
+  if (arrow) { arrow.classList.add('open'); }
+  if (navKabuby) { navKabuby.classList.add('open-accordion'); }
+  const titles = {
+    home:       '🧭 Kabuby Intelligence',
+    dashboard:  '🧩 Kabuby Scout — Dashboard',
+    pendientes: '🧩 Kabuby Scout — Pendientes',
+    despachos:  '🧩 Kabuby Scout — Despachos',
+    inventario: '🧩 Kabuby Scout — Inventario',
+    config:     '🧩 Kabuby Scout — Configuración'
+  };
+  document.getElementById('topbarTitle').textContent = titles[tab] || tab;
+  // botón capturar — solo visible dentro de Kabuby Scout
+  var btn = document.getElementById('topbar-action-btn');
+  var kabubyTabs = ['dashboard','pendientes','despachos','inventario','config'];
+  if (btn) btn.style.display = kabubyTabs.includes(tab) ? 'inline-flex' : 'none';
+  if (tab === 'dashboard')  renderDashboard();
+  if (tab === 'pendientes') renderPendientes();
+  if (tab === 'inventario') renderInventario();
+  if (tab === 'despachos')  renderDespachos();
+}
+
+function goHome() {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  var home = document.getElementById('tab-home');
+  if (home) home.classList.add('active');
+  document.getElementById('topbarTitle').textContent = '🧭 Kabuby Intelligence';
+  var btn = document.getElementById('topbar-action-btn');
+  if (btn) btn.style.display = 'none';
+  var sub   = document.getElementById('kabuby-submenu');
+  var arrow = document.getElementById('arrow-kabuby');
+  var navKabuby = document.getElementById('nav-mod-kabuby');
+  if (sub)   { sub.style.display = 'none'; }
+  if (arrow) { arrow.classList.remove('open'); }
+  if (navKabuby) { navKabuby.classList.remove('open-accordion'); }
+}
+
+// ── SHOW MODULO (módulos del sidebar) ─────────────────────────
+function showModulo(modulo) {
+  var sub      = document.getElementById('kabuby-submenu');
+  var arrow    = document.getElementById('arrow-kabuby');
+  var navKabuby = document.getElementById('nav-mod-kabuby');
+
+  if (modulo === 'kabuby-scout') {
+    var isOpen = sub && sub.style.display === 'block';
+    if (isOpen) {
+      if (sub)       { sub.style.display = 'none'; }
+      if (arrow)     { arrow.classList.remove('open'); }
+      if (navKabuby) { navKabuby.classList.remove('open-accordion', 'active'); }
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      var home = document.getElementById('tab-home');
+      if (home) home.classList.add('active');
+      document.getElementById('topbarTitle').textContent = '🧭 Kabuby Intelligence';
+      var btn2 = document.getElementById('topbar-action-btn');
+      if (btn2) btn2.style.display = 'none';
+    } else {
+      if (sub)       { sub.style.display = 'block'; }
+      if (arrow)     { arrow.classList.add('open'); }
+      if (navKabuby) { navKabuby.classList.add('open-accordion'); }
+      showTab('dashboard');
+    }
+    return;
+  }
+
+  // Para todos los demás módulos: cerrar accordion Kabuby Scout
+  if (sub)       { sub.style.display = 'none'; }
+  if (arrow)     { arrow.classList.remove('open'); }
+  if (navKabuby) { navKabuby.classList.remove('open-accordion', 'active'); }
+
+  // Desactivar todos los módulos y tabs
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item.modulo').forEach(m => m.classList.remove('active'));
+
+  // Activar el módulo correcto
+  var tabId = 'tab-' + modulo;
+  var navId = 'nav-mod-' + modulo.replace(/-/g, '').replace('radar', 'radar').replace('virales', '');
+
+  var tabEl = document.getElementById(tabId);
+  if (tabEl) tabEl.classList.add('active');
+
+  // Mapeo manual de nav IDs
+  var navMap = {
+    'price-monitor':  'nav-mod-prices',
+    'ebay-connect':   'nav-mod-ebay',
+    'radar-virales':  'nav-mod-radar',
+    'prediccion-ia':  'nav-mod-ia',
+    'saas-platform':  'nav-mod-saas'
+  };
+  var navEl = document.getElementById(navMap[modulo]);
+  if (navEl) navEl.classList.add('active');
+
+  // Títulos del topbar
+  var moduleTitles = {
+    'price-monitor': '📊 Price Monitor',
+    'ebay-connect':  '🛒 eBay Connect',
+    'radar-virales': '🌡️ Radar de Tendencias MeLi',
+    'prediccion-ia': '🔮 Predicción IA',
+    'saas-platform': '🚀 SaaS Platform'
+  };
+  document.getElementById('topbarTitle').textContent = moduleTitles[modulo] || modulo;
+  var btn = document.getElementById('topbar-action-btn');
+  if (btn) btn.style.display = 'none';
+
+  // Hook especial: inicializar Radar cuando se activa
+  if (modulo === 'radar-virales') {
+    setTimeout(initRadarModule, 50);
+  }
+}
+
+function showNicho(nicho) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  document.getElementById('tab-nicho').classList.add('active');
+  const n = NICHO_MAP[nicho] || { label: nicho, emoji: '📦' };
+  document.getElementById('nicho-title').textContent = n.emoji + ' ' + n.label;
+  document.getElementById('nicho-sub').textContent   = 'Todos los productos de este nicho';
+  document.getElementById('topbarTitle').textContent = n.emoji + ' ' + n.label;
+  renderNicho(nicho);
+}
+
+function globalSearchFn(query) {
+  const gs = document.getElementById('globalSearch');
+  const ts = document.getElementById('topbarSearchInput');
+  if (gs && gs !== document.activeElement) gs.value = query;
+  if (ts && ts !== document.activeElement) ts.value = query;
+  if (!query || query.length < 2) return;
+  const q = query.toLowerCase();
+  const results = PRODUCTS.filter(p =>
+    (p.titleStore  && p.titleStore.toLowerCase().includes(q)) ||
+    (p.titleAmazon && p.titleAmazon.toLowerCase().includes(q)) ||
+    (p.asin        && p.asin.toLowerCase().includes(q)) ||
+    (p.nicho       && p.nicho.toLowerCase().includes(q))
+  );
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-nicho').classList.add('active');
+  document.getElementById('nicho-title').textContent = '🔍 Resultados: "' + query + '"';
+  document.getElementById('nicho-sub').textContent   = results.length + ' producto(s) encontrado(s)';
+  document.getElementById('topbarTitle').textContent = '🔍 Búsqueda';
+  document.getElementById('nicho-grid').innerHTML    = results.length
+    ? results.map(p => renderProductCard(p)).join('')
+    : '<div class="empty-state" style="grid-column:1/-1"><i class="fas fa-search"></i><h3>Sin resultados</h3><p>No se encontraron productos para "' + query + '"</p></div>';
+}
+
+// ── RENDER DASHBOARD ───────────────────────────────────────────
+function renderDashboard() {
+  const total      = PRODUCTS.length;
+  const publicados = PRODUCTS.filter(p => p.status === 'published').length;
+  const pendientes = PRODUCTS.filter(p => p.status === 'pending').length;
+  const despachos  = DESPACHOS.filter(d => d.status === 'pending').length;
+
+  document.getElementById('stat-total').textContent      = total;
+  document.getElementById('stat-publicados').textContent = publicados;
+  document.getElementById('stat-pendientes').textContent = pendientes;
+  document.getElementById('stat-despachos').textContent  = despachos;
+  document.getElementById('badge-pendientes').textContent = pendientes;
+  document.getElementById('badge-despachos').textContent  = despachos;
+
+  Object.keys(NICHO_MAP).forEach(n => {
+    const count = PRODUCTS.filter(p => p.nicho === n).length;
+    const el = document.getElementById('badge-' + n);
+    if (el) el.textContent = count;
+  });
+
+  const nichoSummary = document.getElementById('nicho-summary');
+  if (nichoSummary) {
+    nichoSummary.innerHTML = Object.entries(NICHO_MAP).map(([key, val]) => {
+      const count = PRODUCTS.filter(p => p.nicho === key).length;
+      return '<div class="nicho-card" onclick="showNicho(\'' + key + '\')">' +
+        '<div class="nicho-emoji">' + val.emoji + '</div>' +
+        '<div class="nicho-name">' + val.label + '</div>' +
+        '<div class="nicho-count">' + count + ' producto' + (count !== 1 ? 's' : '') + '</div></div>';
+    }).join('');
+  }
+
+  const urgentes = DESPACHOS.filter(d => d.status === 'pending').slice(0, 3);
+  const dashDisp = document.getElementById('dashboard-despachos');
+  if (dashDisp) {
+    if (urgentes.length === 0) {
+      dashDisp.innerHTML = '<div class="empty-state" style="padding:40px"><i class="fas fa-truck"></i><h3>Sin despachos urgentes</h3><p>Cuando tengas ventas aparecerán aquí</p></div>';
+    } else {
+      dashDisp.innerHTML = urgentes.map(d => renderDespachoCard(d)).join('');
+    }
+  }
+}
+
+// ── IMAGE PROXY ─────────────────────────────────────────────────
+function imgProxy(url) {
+  if (!url) return '';
+  // Ya proxied
+  if (url.includes('images.weserv.nl')) return url;
+  // Amazon images — aplicar proxy
+  if (url.includes('amazon.com') || url.includes('ssl-images-amazon') || url.includes('m.media-amazon')) {
+    return 'https://images.weserv.nl/?url=' + encodeURIComponent(url) + '&w=300&h=300&fit=contain&bg=white';
+  }
+  return url;
+}
+
+// ── RENDER PRODUCT CARD ────────────────────────────────────────
+function renderProductCard(p) {
+  const isKB     = p.nicho === 'kbeauty';
+  const margin   = p.priceAmazon > 0 ? Math.round(((p.priceStore - p.priceAmazon) / p.priceStore) * 100) : 0;
+  const afLink   = buildAffiliateLink(p.asin);
+  const imgSrc   = p.image || (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : '');
+  const imgUrl   = imgProxy(imgSrc);
+  const statusBadge = p.status === 'published'
+    ? '<span class="tag core">✅ Publicado</span>'
+    : '<span class="tag" style="color:var(--yellow);border-color:#92400e">⏳ Pendiente</span>';
+
+  return '<div class="product-card" onclick="editProduct(\'' + p.id + '\')" style="cursor:pointer">' +
+    (imgUrl
+      ? '<img class="product-card-img" src="' + imgUrl + '" alt="" onerror="this.style.display=\'none\'">'
+      : '<div style="width:100%;height:200px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:48px;">📦</div>') +
+    '<div class="product-card-body">' +
+      '<div class="product-card-asin">ASIN: ' + (p.asin || '—') + '</div>' +
+      '<div class="product-card-title">' + (p.titleStore || p.titleAmazon || 'Sin título') + '</div>' +
+      '<div class="product-card-prices">' +
+        '<div class="price-amazon">Amazon: <span>$' + (p.priceAmazon || 0).toFixed(2) + '</span></div>' +
+        '<div class="price-arrow">→</div>' +
+        '<div class="price-store">$' + (p.priceStore || 0).toFixed(2) + '</div>' +
+        '<div class="margin-badge">' + margin + '%</div>' +
+      '</div>' +
+      '<div class="product-card-tags">' +
+        (isKB
+          ? '<span class="tag kbeauty">🌸 K-Beauty</span>'
+          : '<span class="tag nicho">' + (NICHO_MAP[p.nicho] ? NICHO_MAP[p.nicho].emoji + ' ' + NICHO_MAP[p.nicho].label : '📦 ' + (p.nicho || 'Otros')) + '</span>') +
+        statusBadge +
+        (isKB && p.koiTier ? '<span class="tag core">' + p.koiTier + '</span>' : '') +
+      '</div>' +
+      '<div class="product-card-actions" onclick="event.stopPropagation()">' +
+        '<a href="' + afLink + '" target="_blank" class="btn btn-amazon btn-sm" style="text-decoration:none">' +
+          '<i class="fab fa-amazon"></i> Amazon</a>' +
+        '<button class="btn btn-outline btn-sm" onclick="editProduct(\'' + p.id + '\')">' +
+          '<i class="fas fa-edit"></i> Ver detalle</button>' +
+        (p.status === 'pending'
+          ? '<button class="btn btn-success btn-sm" onclick="quickPublish(\'' + p.id + '\')"><i class="fas fa-rocket"></i> Publicar</button>'
+          : '') +
+      '</div>' +
+    '</div></div>';
+}
+
+// ── RENDER PENDIENTES ──────────────────────────────────────────
+function renderPendientes() {
+  const pending = PRODUCTS.filter(p => p.status === 'pending');
+  const grid    = document.getElementById('pendientes-grid');
+  if (!grid) return;
+  if (pending.length === 0) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;padding:60px"><i class="fas fa-inbox"></i><h3>No hay productos pendientes</h3><p>Usá la extensión Chrome en Amazon para capturar productos</p></div>';
+    return;
+  }
+  grid.innerHTML = pending.map(p => renderProductCard(p)).join('');
+}
+
+// ── RENDER NICHO ───────────────────────────────────────────────
+function renderNicho(nicho) {
+  const prods = PRODUCTS.filter(p => p.nicho === nicho);
+  const grid  = document.getElementById('nicho-grid');
+  if (!grid) return;
+  if (prods.length === 0) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;padding:60px"><i class="fas fa-box-open"></i><h3>Sin productos en este nicho</h3><p>Capturá productos de Amazon para agregarlos</p></div>';
+    return;
+  }
+  grid.innerHTML = prods.map(p => renderProductCard(p)).join('');
+}
+
+// ── RENDER INVENTARIO ──────────────────────────────────────────
+function renderInventario() {
+  const tbody = document.getElementById('inventario-body');
+  if (!tbody) return;
+  if (PRODUCTS.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--muted)">No hay productos en tu inventario aún</td></tr>';
+    return;
+  }
+  tbody.innerHTML = PRODUCTS.map(p => {
+    const margin = p.priceAmazon > 0 ? Math.round(((p.priceStore - p.priceAmazon) / p.priceStore) * 100) : 0;
+    const sc     = p.stock === 0 ? 'stock-out' : (p.stock <= p.stockMin ? 'stock-low' : 'stock-ok');
+    const afLink = buildAffiliateLink(p.asin);
+    return '<tr>' +
+      '<td><strong>' + ((p.titleStore || p.titleAmazon || '—').substring(0,40)) + '...</strong></td>' +
+      '<td><code style="font-size:11px">' + (p.asin || '—') + '</code></td>' +
+      '<td>' + (NICHO_MAP[p.nicho] ? NICHO_MAP[p.nicho].emoji + ' ' + NICHO_MAP[p.nicho].label : '—') + '</td>' +
+      '<td>$' + (p.priceAmazon || 0).toFixed(2) + '</td>' +
+      '<td><strong>$' + (p.priceStore || 0).toFixed(2) + '</strong></td>' +
+      '<td><span style="color:' + (margin >= CONFIG.minMargin ? 'var(--green)' : 'var(--red)') + '">' + margin + '%</span></td>' +
+      '<td class="' + sc + '">' + (p.stock || 0) + ' uds</td>' +
+      '<td>' + (p.sold || 0) + '</td>' +
+      '<td><div style="display:flex;gap:4px">' +
+        '<a href="' + afLink + '" target="_blank" class="btn btn-amazon btn-sm" style="text-decoration:none;font-size:10px">🛒</a>' +
+        '<button class="btn btn-outline btn-sm" onclick="editProduct(\'' + p.id + '\')" style="font-size:10px">✏️ Editar</button>' +
+      '</div></td></tr>';
+  }).join('');
+}
+
+// ── RENDER DESPACHOS ───────────────────────────────────────────
+function renderDespachos() {
+  const list = document.getElementById('despachos-list');
+  if (!list) return;
+  if (DESPACHOS.length === 0) {
+    list.innerHTML = '<div class="empty-state" style="padding:60px"><i class="fas fa-box-open"></i><h3>Sin ventas pendientes</h3><p>Las ventas de MeLi y Shopify aparecerán aquí automáticamente</p></div>';
+    return;
+  }
+  list.innerHTML = DESPACHOS.map(d => renderDespachoCard(d)).join('');
+}
+
+function renderDespachoCard(d) {
+  const afLink = buildAffiliateLink(d.asin);
+  const isDone = d.status === 'done';
+  return '<div class="dispatch-card ' + (isDone ? 'done' : '') + '">' +
+    '<div class="dispatch-header"><div>' +
+      '<div class="dispatch-product">' + (d.productTitle || 'Producto') + '</div>' +
+      '<div class="dispatch-order">Orden: ' + (d.orderId || '—') + ' · ' + (d.channel || 'MeLi') + '</div>' +
+    '</div><div class="dispatch-time">' + (isDone ? '✅ Despachado' : '🔴 Urgente') + '</div></div>' +
+    '<div class="dispatch-info">' +
+      '<div class="dispatch-info-item"><div class="label">Vendiste a</div><div class="value">$' + (d.salePrice || 0).toFixed(2) + '</div></div>' +
+      '<div class="dispatch-info-item"><div class="label">Costo Amazon</div><div class="value">$' + (d.amazonPrice || 0).toFixed(2) + '</div></div>' +
+      '<div class="dispatch-info-item"><div class="label">Tu ganancia</div><div class="value" style="color:var(--green)">$' + ((d.salePrice || 0) - (d.amazonPrice || 0)).toFixed(2) + '</div></div>' +
+    '</div>' +
+    '<div class="dispatch-actions">' +
+      '<a href="' + afLink + '" target="_blank" class="btn btn-amazon" style="text-decoration:none"><i class="fab fa-amazon"></i> Comprar en Amazon</a>' +
+      (!isDone ? '<button class="btn btn-success" onclick="markDispatched(\'' + d.id + '\')"><i class="fas fa-check"></i> Marcar despachado</button>' : '') +
+    '</div></div>';
+}
+
+// ── DISPATCH SEARCH ────────────────────────────────────────────
+function searchDispatch(query) {
+  if (!query || query.length < 2) {
+    document.getElementById('dispatch-result').classList.remove('show');
+    return;
+  }
+  const q    = query.toLowerCase().trim();
+  const prod = PRODUCTS.find(p =>
+    (p.asin && p.asin.toLowerCase() === q) ||
+    (p.titleStore && p.titleStore.toLowerCase().includes(q)) ||
+    (p.titleAmazon && p.titleAmazon.toLowerCase().includes(q))
+  );
+  const resultEl = document.getElementById('dispatch-result');
+  if (!prod) { resultEl.classList.remove('show'); return; }
+
+  const margin   = prod.priceAmazon > 0 ? Math.round(((prod.priceStore - prod.priceAmazon) / prod.priceStore) * 100) : 0;
+  const afLink   = buildAffiliateLink(prod.asin);
+  const comRate  = prod.nicho === 'kbeauty' ? 0.10 : 0.03;
+  const comision = (prod.priceAmazon * comRate).toFixed(2);
+  const imgUrl   = imgProxy(prod.image || '');
+
+  resultEl.innerHTML =
+    '<div class="dispatch-result-header">' +
+      (imgUrl ? '<img class="dispatch-result-img" src="' + imgUrl + '" alt="">' : '') +
+      '<div class="dispatch-result-info">' +
+        '<div class="dispatch-result-title">' + (prod.titleStore || prod.titleAmazon) + '</div>' +
+        '<div class="dispatch-result-asin">ASIN: ' + prod.asin + '</div>' +
+        '<div style="margin-top:6px">' + (NICHO_MAP[prod.nicho] ? NICHO_MAP[prod.nicho].emoji + ' ' + NICHO_MAP[prod.nicho].label : prod.nicho) + '</div>' +
+      '</div></div>' +
+    '<div class="dispatch-financials">' +
+      '<div class="fin-item"><div class="fin-label">Amazon</div><div class="fin-value">$' + (prod.priceAmazon || 0).toFixed(2) + '</div></div>' +
+      '<div class="fin-item green"><div class="fin-label">Tu precio</div><div class="fin-value">$' + (prod.priceStore || 0).toFixed(2) + '</div></div>' +
+      '<div class="fin-item green"><div class="fin-label">Ganancia</div><div class="fin-value">$' + ((prod.priceStore || 0) - (prod.priceAmazon || 0)).toFixed(2) + '</div></div>' +
+      '<div class="fin-item yellow"><div class="fin-label">Comisión esposa</div><div class="fin-value">$' + comision + '</div></div>' +
+    '</div>' +
+    '<div style="display:flex;gap:10px">' +
+      '<a href="' + afLink + '" target="_blank" class="btn btn-amazon" style="text-decoration:none;flex:1;justify-content:center"><i class="fab fa-amazon"></i> COMPRAR EN AMAZON — link afiliado</a>' +
+      '<button class="btn btn-outline" onclick="addDespachoManual(\'' + prod.id + '\')"><i class="fas fa-plus"></i> Registrar venta</button>' +
+    '</div>';
+  resultEl.classList.add('show');
+}
+
+function addDespachoManual(productId) {
+  const prod = PRODUCTS.find(p => p.id === productId);
+  if (!prod) return;
+  const salePrice = parseFloat(prompt('¿A qué precio vendiste?', prod.priceStore)) || prod.priceStore;
+  const orderId   = prompt('Número de orden MeLi (opcional):', '') || 'MANUAL-' + Date.now();
+  const despacho  = {
+    id: 'd-' + Date.now(), productId: prod.id, asin: prod.asin,
+    productTitle: prod.titleStore || prod.titleAmazon,
+    amazonPrice: prod.priceAmazon, salePrice, orderId,
+    channel: 'MeLi', status: 'pending', createdAt: new Date().toISOString()
+  };
+  DESPACHOS.unshift(despacho);
+  saveData();
+  renderDashboard();
+  showNotif('✅ Venta registrada — comprá en Amazon y despachá', 'success');
+}
+
+function markDispatched(id) {
+  const d = DESPACHOS.find(x => x.id === id);
+  if (d) {
+    d.status = 'done'; d.dispatchedAt = new Date().toISOString();
+    const prod = PRODUCTS.find(p => p.id === d.productId);
+    if (prod) { prod.sold = (prod.sold || 0) + 1; }
+    saveData(); renderDespachos(); renderDashboard();
+    showNotif('✅ Marcado como despachado', 'success');
+  }
+}
+
+// ── MAPEAR DATOS DEL SCRAPER AL FORMATO DEL PORTAL ────────────
+function mapScraperToPortal(scraped) {
+  if (!scraped) return scraped;
+  if (scraped.titleAmazon !== undefined) return scraped;
+
+  let desc = '';
+  if (scraped.bullets && scraped.bullets.length > 0) {
+    desc = scraped.bullets.map(b => '• ' + b).join('\n');
+  }
+  if (scraped.description && scraped.description.length > 10) {
+    desc += (desc ? '\n\n' : '') + scraped.description;
+  }
+
+  let nicho = '';
+  if (scraped.importMode === 'kbeauty' || scraped.detectedKBeauty) {
+    nicho = 'kbeauty';
+  }
+
+  return {
+    asin:           scraped.asin           || '',
+    image:          (scraped.images && scraped.images[0]) || scraped.image || '',
+    images:         scraped.images         || (scraped.image ? [scraped.image] : []),
+    titleAmazon:    scraped.title          || scraped.titleAmazon || '',
+    titleStore:     scraped.title          || scraped.titleAmazon || '',
+    description:    desc || scraped.description || '',
+    categoryAmazon: scraped.category       || (scraped.breadcrumbs && scraped.breadcrumbs.join(' > ')) || '',
+    priceAmazon:    scraped.price          || scraped.priceAmazon || '',
+    brand:          scraped.brand          || '',
+    nicho:          nicho,
+    shipping:       '0', stock: '0', stockMin: '2',
+    _scraperData: {
+      breadcrumbs:    scraped.breadcrumbs    || [],
+      specifications: scraped.specifications || {},
+      dimensions:     scraped.dimensions     || '',
+      weight:         scraped.weight         || '',
+      ingredients:    scraped.ingredients    || '',
+      rating:         scraped.rating,
+      reviewCount:    scraped.reviewCount,
+      currency:       scraped.currency       || 'USD',
+      originalPrice:  scraped.originalPrice,
+      kbeautyKeywords: scraped.kbeautyKeywords || [],
+      affiliateUrl:   scraped.affiliateUrl   || '',
+      amazonTag:      scraped.amazonTag      || '',
+      pageUrl:        scraped.pageUrl        || ''
+    }
+  };
+}
+
+// ── OPEN CAPTURE MODAL ─────────────────────────────────────────
+function openCaptureModal(prefill) {
+  editingId   = null;
+  INGREDIENTS = [];
+  document.getElementById('modalTitle').textContent  = '📦 Nuevo Producto';
+  document.getElementById('btn-reject').style.display = 'none';
+  clearForm();
+
+  const mapped = prefill ? mapScraperToPortal(prefill) : null;
+  if (mapped) {
+    fillForm(mapped);
+    // Galería de imágenes
+    const imgs = mapped.images || (mapped.image ? [mapped.image] : []);
+    if (imgs.length > 1) {
+      buildGallery(imgs, mapped.image || imgs[0]);
+    }
+    if (mapped._scraperData && mapped._scraperData.ingredients && mapped._scraperData.ingredients.length > 5) {
+      setTimeout(() => showNotif('🧪 Ingredientes disponibles del scraper — revisa KOI Intel', 'info'), 600);
+    }
+    if (mapped._scraperData && mapped._scraperData.amazonTag && !CONFIG.amazonTag) {
+      CONFIG.amazonTag = mapped._scraperData.amazonTag;
+    }
+  }
+  document.getElementById('captureModal').classList.add('open');
+}
+
+function buildGallery(images, selectedUrl) {
+  const section = document.getElementById('gallery-section');
+  const grid    = document.getElementById('gallery-grid');
+  const mainImg = document.getElementById('f-img-preview-main');
+  if (!section || !grid) return;
+
+  section.style.display = 'block';
+  const proxied = imgProxy(selectedUrl || images[0]);
+  mainImg.src = proxied;
+  mainImg.style.display = 'block';
+
+  grid.innerHTML = images.map((url, idx) => {
+    const pUrl = imgProxy(url);
+    return '<img class="gallery-thumb' + (url === (selectedUrl || images[0]) ? ' selected' : '') + '" src="' + pUrl + '" alt="" ' +
+      'onclick="selectGalleryImage(this, \'' + url.replace(/'/g, "\\'") + '\')" ' +
+      'onerror="this.style.display=\'none\'">';
+  }).join('');
+}
+
+function selectGalleryImage(el, url) {
+  document.querySelectorAll('.gallery-thumb').forEach(t => t.classList.remove('selected'));
+  el.classList.add('selected');
+  const proxied = imgProxy(url);
+  document.getElementById('f-img').value = url;
+  document.getElementById('f-img-preview-main').src = proxied;
+  document.getElementById('f-img-preview').src = proxied;
+  document.getElementById('f-img-preview').style.display = 'block';
+}
+
+function editProduct(id) {
+  const prod = PRODUCTS.find(p => p.id === id);
+  if (!prod) return;
+  editingId   = id;
+  INGREDIENTS = prod.ingredients || [];
+  document.getElementById('modalTitle').textContent  = '✏️ Editar Producto';
+  document.getElementById('btn-reject').style.display = 'flex';
+  clearForm();
+  fillForm(prod);
+  // Galería si hay múltiples imágenes
+  const imgs = prod.images || (prod.image ? [prod.image] : []);
+  if (imgs.length > 1) buildGallery(imgs, prod.image);
+  document.getElementById('captureModal').classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// ── CLEAR FORM ──────────────────────────────────────────────────
+function clearForm() {
+  ['f-img','f-asin','f-title-amazon','f-title-store','f-desc','f-category-amazon',
+   'f-price-amazon','f-shipping','f-stock','f-stock-min'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('f-nicho').value  = '';
+  document.getElementById('f-margin').value = CONFIG.defaultMargin || 35;
+  document.getElementById('f-shipping').value  = '0';
+  document.getElementById('f-stock').value     = '0';
+  document.getElementById('f-stock-min').value = '2';
+  const prevMain = document.getElementById('f-img-preview-main');
+  const prev     = document.getElementById('f-img-preview');
+  if (prevMain) { prevMain.src = ''; prevMain.style.display = 'none'; }
+  if (prev)     { prev.style.display = 'none'; }
+  const galSec = document.getElementById('gallery-section');
+  if (galSec) galSec.style.display = 'none';
+  document.getElementById('koi-intel-section').style.display = 'none';
+  INGREDIENTS = [];
+  renderIngredients();
+  calcPrice();
+}
+
+// ── FILL FORM ───────────────────────────────────────────────────
+function fillForm(p) {
+  document.getElementById('f-img').value            = p.image || '';
+  document.getElementById('f-asin').value           = p.asin  || '';
+  document.getElementById('f-title-amazon').value   = p.titleAmazon || '';
+  document.getElementById('f-title-store').value    = p.titleStore  || '';
+  document.getElementById('f-desc').value           = p.description || '';
+  document.getElementById('f-category-amazon').value = p.categoryAmazon || '';
+  document.getElementById('f-nicho').value          = p.nicho || '';
+  document.getElementById('f-price-amazon').value   = p.priceAmazon || '';
+  document.getElementById('f-shipping').value       = p.shipping || '0';
+  document.getElementById('f-stock').value          = p.stock    || '0';
+  document.getElementById('f-stock-min').value      = p.stockMin || '2';
+
+  const cost   = (parseFloat(p.priceAmazon) || 0) + (parseFloat(p.shipping) || 0);
+  const margin = cost > 0 && p.priceStore ? Math.round(((p.priceStore - cost) / p.priceStore) * 100) : CONFIG.defaultMargin;
+  document.getElementById('f-margin').value = margin;
+
+  updatePreview();
+  updateAmazonLinks();
+  calcPrice();
+
+  if (p.nicho === 'kbeauty') {
+    document.getElementById('koi-intel-section').style.display = 'block';
+    if (p.koiCategoria)    { document.getElementById('f-koi-categoria').value = p.koiCategoria; updateSubcategorias(); }
+    if (p.koiSubcategoria) document.getElementById('f-koi-subcategoria').value = p.koiSubcategoria;
+    if (p.koiTier)         document.getElementById('f-koi-tier').value      = p.koiTier;
+    if (p.koiArchetype)    document.getElementById('f-koi-archetype').value  = p.koiArchetype;
+    if (p.koiSafety)       document.getElementById('f-koi-safety').value     = p.koiSafety;
+    if (p.koiPhase)        document.getElementById('f-koi-phase').value      = p.koiPhase;
+    if (p.koiNivel)        document.getElementById('f-koi-nivel').value      = p.koiNivel;
+    if (p.koiPosAM)        document.getElementById('f-koi-pos-am').value     = p.koiPosAM;
+    if (p.koiPosPM)        document.getElementById('f-koi-pos-pm').value     = p.koiPosPM;
+    if (p.fit) {
+      const map = { dry: p.fit.dry, oily: p.fit.oily, combo: p.fit.combination, sens: p.fit.sensitive, acne: p.fit.acne, pig: p.fit.pigmentation };
+      Object.entries(map).forEach(([k, v]) => {
+        const el  = document.getElementById('fit-' + k);
+        const val = document.getElementById('fit-' + k + '-val');
+        if (el) { el.value = Math.round((v || 0) * 100); }
+        if (val) val.textContent = (Math.round((v || 0) * 100)) + '%';
+      });
+    }
+  }
+  if (p.ingredients) { INGREDIENTS = [...p.ingredients]; }
+  renderIngredients();
+  autoDetectMode();
+}
+
+// ── AUTO DETECT MODE ───────────────────────────────────────────
+function autoDetectMode() {
+  const cat   = (document.getElementById('f-category-amazon').value || '').toLowerCase();
+  const title = (document.getElementById('f-title-amazon').value   || '').toLowerCase();
+  const isKB  = KBEAUTY_KEYWORDS.some(kw => cat.includes(kw) || title.includes(kw));
+  const modeAlert = document.getElementById('mode-alert');
+  const alertText = document.getElementById('mode-alert-text');
+  const nichoSel  = document.getElementById('f-nicho');
+  if (isKB) {
+    modeAlert.className = 'alert alert-info';
+    alertText.innerHTML = '🌸 <strong>Modo K-Beauty detectado</strong> — Se activarán los campos de KOI Intel';
+    if (!nichoSel.value) nichoSel.value = 'kbeauty';
+  } else if (cat || title) {
+    modeAlert.className = 'alert alert-info';
+    alertText.innerHTML = '🛒 <strong>Modo Multi-nicho detectado</strong> — Seleccioná el nicho correcto';
+  }
+  onNichoChange();
+}
+
+function onNichoChange() {
+  const nicho = document.getElementById('f-nicho').value;
+  const koiSection = document.getElementById('koi-intel-section');
+  if (nicho === 'kbeauty') {
+    koiSection.style.display = 'block';
+    document.getElementById('mode-alert').className = 'alert alert-info';
+    document.getElementById('mode-alert-text').innerHTML = '🌸 <strong>Modo K-Beauty</strong> — Completá los campos de KOI Intel para que aparezca en las rutinas';
+  } else {
+    koiSection.style.display = 'none';
+    if (nicho) {
+      document.getElementById('mode-alert').className = 'alert alert-info';
+      document.getElementById('mode-alert-text').innerHTML = '🛒 <strong>Modo Multi-nicho</strong> — Se publicará en Shopify (oculto) y se sincronizará con MeLi';
+    }
+  }
+}
+
+// ── PRICE CALC ─────────────────────────────────────────────────
+function calcPrice() {
+  const amazon   = parseFloat(document.getElementById('f-price-amazon').value) || 0;
+  const shipping = parseFloat(document.getElementById('f-shipping').value) || 0;
+  const margin   = parseFloat(document.getElementById('f-margin').value) || 35;
+  const cost     = amazon + shipping;
+  const price    = margin > 0 ? cost / (1 - margin / 100) : cost;
+  const ganancia = price - cost;
+  const comRate  = document.getElementById('f-nicho').value === 'kbeauty' ? 0.10 : 0.03;
+  const comision = amazon * comRate;
+  document.getElementById('calc-costo').textContent    = '$' + cost.toFixed(2);
+  document.getElementById('calc-precio').textContent   = '$' + price.toFixed(2);
+  document.getElementById('calc-ganancia').textContent = '$' + ganancia.toFixed(2);
+  document.getElementById('calc-comision').textContent = '$' + comision.toFixed(2) + ' (' + Math.round(comRate * 100) + '%)';
+}
+
+// ── AMAZON LINKS ───────────────────────────────────────────────
+function buildAffiliateLink(asin) {
+  if (!asin) return '#';
+  const tag  = CONFIG.amazonTag || '';
+  const base = 'https://www.amazon.com/dp/' + asin;
+  return tag ? base + '?tag=' + tag : base;
+}
+
+function updateAmazonLinks() {
+  const asin     = document.getElementById('f-asin').value.trim();
+  const normal   = asin ? 'https://www.amazon.com/dp/' + asin : '#';
+  const affLink  = buildAffiliateLink(asin);
+  document.getElementById('f-amazon-link').href           = normal;
+  document.getElementById('f-amazon-affiliate-link').href = affLink;
+}
+
+function updatePreview() {
+  const url  = document.getElementById('f-img').value.trim();
+  const prev = document.getElementById('f-img-preview');
+  if (url) { prev.src = imgProxy(url); prev.style.display = 'block'; }
+  else { prev.style.display = 'none'; }
+}
+
+// ── SUBCATEGORIAS ──────────────────────────────────────────────
+function updateSubcategorias() {
+  const cat  = document.getElementById('f-koi-categoria').value;
+  const subs = SUBCATEGORIAS[cat] || [];
+  const sel  = document.getElementById('f-koi-subcategoria');
+  sel.innerHTML = subs.map(s => '<option value="' + s + '">' + s + '</option>').join('');
+}
+function updateKoiSubcategoria() { updateSubcategorias(); }
+
+// ── INGREDIENTS ────────────────────────────────────────────────
+function addIngredient() {
+  const input = document.getElementById('ing-input');
+  const val   = input.value.trim().toLowerCase().replace(/\s+/g, '_');
+  if (val && !INGREDIENTS.includes(val)) { INGREDIENTS.push(val); renderIngredients(); }
+  input.value = '';
+}
+function addIngredientDirect(val) {
+  if (!INGREDIENTS.includes(val)) { INGREDIENTS.push(val); renderIngredients(); }
+}
+function removeIngredient(val) {
+  INGREDIENTS = INGREDIENTS.filter(i => i !== val);
+  renderIngredients();
+}
+function renderIngredients() {
+  const list = document.getElementById('ingredients-list');
+  list.innerHTML = INGREDIENTS.map(i =>
+    '<div class="ingredient-tag">' + i.replace(/_/g, ' ') + ' <span class="remove" onclick="removeIngredient(\'' + i + '\')">×</span></div>'
+  ).join('');
+}
+
+// ── CHIP SELECTOR ──────────────────────────────────────────────
+function toggleChip(el, group) {
+  const parent = el.closest('.chip-selector');
+  parent.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// ── PUBLISH PRODUCT ────────────────────────────────────────────
+function publishProduct() {
+  const nicho       = document.getElementById('f-nicho').value;
+  const titleAmazon = document.getElementById('f-title-amazon').value.trim();
+  const titleStore  = document.getElementById('f-title-store').value.trim();
+  const asin        = document.getElementById('f-asin').value.trim();
+  const priceAmazon = parseFloat(document.getElementById('f-price-amazon').value) || 0;
+  const shipping    = parseFloat(document.getElementById('f-shipping').value) || 0;
+  const margin      = parseFloat(document.getElementById('f-margin').value) || CONFIG.defaultMargin;
+  const cost        = priceAmazon + shipping;
+  const priceStore  = margin > 0 ? cost / (1 - margin / 100) : cost;
+
+  if (!nicho)                    { showNotif('⚠️ Seleccioná un nicho', 'warning'); return; }
+  if (!titleAmazon && !titleStore) { showNotif('⚠️ Completá el título', 'warning'); return; }
+
+  const prod = {
+    id:             editingId || 'p-' + Date.now(),
+    status:         'pending',
+    nicho,
+    image:          document.getElementById('f-img').value.trim(),
+    asin,
+    titleAmazon,
+    titleStore:     titleStore || titleAmazon,
+    description:    document.getElementById('f-desc').value.trim(),
+    categoryAmazon: document.getElementById('f-category-amazon').value.trim(),
+    priceAmazon,
+    shipping,
+    priceStore:     parseFloat(priceStore.toFixed(2)),
+    stock:          parseInt(document.getElementById('f-stock').value) || 0,
+    stockMin:       parseInt(document.getElementById('f-stock-min').value) || 2,
+    sold:           0,
+    ingredients:    [...INGREDIENTS],
+    createdAt:      new Date().toISOString(),
+    affiliateLink:  buildAffiliateLink(asin)
+  };
+
+  if (nicho === 'kbeauty') {
+    prod.koiCategoria    = document.getElementById('f-koi-categoria').value;
+    prod.koiSubcategoria = document.getElementById('f-koi-subcategoria').value;
+    prod.koiTier         = document.getElementById('f-koi-tier').value;
+    prod.koiArchetype    = document.getElementById('f-koi-archetype').value;
+    prod.koiSafety       = document.getElementById('f-koi-safety').value;
+    prod.koiPhase        = document.getElementById('f-koi-phase').value;
+    prod.koiNivel        = document.getElementById('f-koi-nivel').value;
+    prod.koiPosAM        = parseInt(document.getElementById('f-koi-pos-am').value) || 4;
+    prod.koiPosPM        = parseInt(document.getElementById('f-koi-pos-pm').value) || 5;
+    const sel = document.querySelector('#f-momento .chip.selected');
+    prod.momento = sel ? sel.dataset.val : 'both';
+    prod.fit = {
+      dry:         parseInt(document.getElementById('fit-dry').value)   / 100,
+      oily:        parseInt(document.getElementById('fit-oily').value)  / 100,
+      combination: parseInt(document.getElementById('fit-combo').value) / 100,
+      sensitive:   parseInt(document.getElementById('fit-sens').value)  / 100,
+      acne:        parseInt(document.getElementById('fit-acne').value)  / 100,
+      pigmentation:parseInt(document.getElementById('fit-pig').value)   / 100
+    };
+  }
+
+  if (editingId) {
+    const idx = PRODUCTS.findIndex(p => p.id === editingId);
+    if (idx !== -1) PRODUCTS[idx] = prod;
+  } else {
+    PRODUCTS.unshift(prod);
+  }
+
+  saveData();
+  closeModal('captureModal');
+  renderDashboard();
+  renderPendientes();
+
+  if (CONFIG.shopifyToken) {
+    publishToShopify(prod);
+  } else {
+    showNotif('⚠️ Guardado localmente. Configurá el token Shopify para publicar.', 'warning');
+  }
+}
+
+function quickPublish(id) {
+  const prod = PRODUCTS.find(p => p.id === id);
+  if (!prod) return;
+  if (CONFIG.shopifyToken) { publishToShopify(prod); }
+  else { showNotif('⚠️ Configurá el token Shopify primero', 'warning'); }
+}
+
+function rejectProduct() {
+  if (!editingId) return;
+  if (!confirm('¿Rechazar y eliminar este producto?')) return;
+  PRODUCTS = PRODUCTS.filter(p => p.id !== editingId);
+  saveData(); closeModal('captureModal'); renderDashboard(); renderPendientes();
+  showNotif('🗑️ Producto rechazado', 'warning');
+}
+
+// ── SHOPIFY API ────────────────────────────────────────────────
+async function publishToShopify(prod) {
+  showNotif('⏳ Publicando en Shopify...', 'success');
+  const isKB   = prod.nicho === 'kbeauty';
+  const domain = CONFIG.shopifyDomain || 'shatokb.myshopify.com';
+  const token  = CONFIG.shopifyToken;
+
+  const tags = ['nicho:' + prod.nicho, 'asin:' + prod.asin];
+  if (!isKB && CONFIG.autoHidden) tags.push('hidden');
+  if (isKB) {
+    tags.push('kbeauty');
+    if (prod.koiCategoria)    tags.push('categoria:' + prod.koiCategoria);
+    if (prod.koiSubcategoria) tags.push('subcategoria:' + prod.koiSubcategoria);
+    if (prod.koiTier)         tags.push('tier:' + prod.koiTier);
+    if (prod.koiArchetype)    tags.push('archetype:' + prod.koiArchetype.replace(/ /g, '_'));
+    if (prod.koiSafety)       tags.push('safety:' + prod.koiSafety);
+    if (prod.koiPhase)        tags.push('phase:' + prod.koiPhase);
+    if (prod.koiNivel)        tags.push('nivel_usuario:' + prod.koiNivel);
+    if (prod.momento)         tags.push('momento:' + prod.momento);
+    if (prod.ingredients)     prod.ingredients.forEach(i => tags.push('ingrediente:' + i));
+    if (prod.fit) { Object.entries(prod.fit).forEach(([k, v]) => { if (v >= 0.5) tags.push('fit:' + k); }); }
+  }
+
+  const images = prod.image ? [{ src: prod.image }] : [];
+  const body   = {
+    product: {
+      title: prod.titleStore || prod.titleAmazon,
+      body_html: prod.description || '',
+      vendor: isKB ? 'K-Beauty' : 'Kabuby Import',
+      product_type: prod.koiCategoria || prod.nicho || '',
+      tags: tags.join(', '),
+      status: 'active',
+      variants: [{ price: prod.priceStore.toFixed(2), sku: prod.asin || '', inventory_quantity: prod.stock || 0, inventory_management: 'shopify' }],
+      images
+    }
+  };
+
+  try {
+    const res = await fetch('https://' + domain + '/admin/api/2024-01/products.json', {
+      method: 'POST',
+      headers: { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const idx  = PRODUCTS.findIndex(p => p.id === prod.id);
+      if (idx !== -1) {
+        PRODUCTS[idx].status      = 'published';
+        PRODUCTS[idx].shopifyId   = data.product?.id;
+        PRODUCTS[idx].publishedAt = new Date().toISOString();
+      }
+      saveData(); renderDashboard(); renderPendientes();
+      showNotif('✅ Publicado en Shopify' + (isKB ? ' + KOI Intel guardado' : ' (oculto en tienda)'), 'success');
+    } else {
+      showNotif('❌ Error al publicar en Shopify — verificá el token', 'error');
+    }
+  } catch(e) {
+    showNotif('❌ Error de red — ¿tenés el token correcto?', 'error');
+  }
+}
+
+// ── NOTIFICATIONS ──────────────────────────────────────────────
+function showNotif(msg, type) {
+  type = type || 'success';
+  const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+  const container = document.getElementById('notif-container');
+  const el = document.createElement('div');
+  el.className = 'notif ' + type;
+  el.innerHTML = '<span>' + (icons[type] || 'ℹ️') + '</span><span>' + msg + '</span>';
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+// alias para compatibilidad
+var notify = showNotif;
+
+// ── LISTENER: mensajes postMessage de la extensión Chrome ──────
+window.addEventListener('message', function(e) {
+  if (e.data && e.data.type === 'SHATO_AMAZON_PRODUCT') {
+    const d = e.data.product;
+    if (!d) return;
+    if (sessionStorage.getItem('shato_auth')) {
+      // Agregar a Pendientes, NO abrir modal — el usuario hace click en "Ver detalle"
+      agregarProductoAlPortal(d);
+      showNotif('📦 Producto recibido — hacé click en "Ver detalle" para editarlo', 'success');
+      showTab('pendientes');
+    } else {
+      // Guardar para mostrar tras login
+      window._shato_pending_product = d;
+      window._shatoAutoTab = 'pendientes';
+      showNotif('📦 Producto recibido — iniciá sesión para editarlo', 'warning');
+    }
+    if (e.source && e.source !== window) {
+      e.source.postMessage({ type: 'SHATO_PRODUCT_RECEIVED', ok: true }, '*');
+    }
+  }
+});
+
+// CustomEvent fallback
+window.addEventListener('SHATO_CAPTURE', function(e) {
+  if (e.detail) { openCaptureModal(e.detail); showNotif('📦 Producto capturado de Amazon', 'success'); }
+});
+
+// ── CHROME STORAGE: leer producto pendiente ────────────────────
+function checkChromeStoragePendingProduct() {
+  const params = new URLSearchParams(location.search);
+  if (!params.has('shato_import')) return;
+  if (typeof chrome === 'undefined' || !chrome.storage) return;
+  chrome.storage.local.get(['shato_pending_product'], function(result) {
+    if (chrome.runtime.lastError) return;
+    const product = result.shato_pending_product;
+    if (!product) return;
+    setTimeout(function() {
+      // Agregar a Pendientes, NO abrir modal — el usuario hace click en "Ver detalle"
+      agregarProductoAlPortal(product);
+      showTab('pendientes');
+      showNotif('📦 Producto recibido — hacé click en "Ver detalle" para editarlo', 'success');
+      chrome.runtime.sendMessage({ action: 'productConsumed' });
+    }, 800);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── RADAR DE TENDENCIAS MELI ───────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+
+const RADAR_COUNTRIES = [
+  { id: 'MCO', name: 'Colombia',  flag: '🇨🇴' },
+  { id: 'MLM', name: 'México',    flag: '🇲🇽' },
+  { id: 'MLC', name: 'Chile',     flag: '🇨🇱' },
+  { id: 'MLA', name: 'Argentina', flag: '🇦🇷' },
+  { id: 'MLB', name: 'Brasil',    flag: '🇧🇷' }
+];
+
+// Cache en memoria con TTL de 5 minutos
+const radarCache = {};
+const RADAR_TTL = 5 * 60 * 1000;
+
+let radarActiveSite = 'MCO';
+
+async function radarFetchTrends(siteId) {
+  const now = Date.now();
+  if (radarCache[siteId] && (now - radarCache[siteId].ts) < RADAR_TTL) {
+    return radarCache[siteId].data;
+  }
+  // Proxy CORS: usamos allorigins para evitar el bloqueo CORS en el browser
+  const url = 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://api.mercadolibre.com/trends/' + siteId);
+  const res = await fetch(url);
+  const json = await res.json();
+  const data = JSON.parse(json.contents);
+  radarCache[siteId] = { ts: now, data };
+  return data;
+}
+
+function radarRankClass(i) {
+  if (i === 0) return 'r1';
+  if (i === 1) return 'r2';
+  if (i === 2) return 'r3';
+  return 'rn';
+}
+
+function radarRankText(i) {
+  if (i === 0) return '🥇';
+  if (i === 1) return '🥈';
+  if (i === 2) return '🥉';
+  return '#' + (i + 1);
+}
+
+function radarMeliSearchUrl(siteId, keyword) {
+  const bases = {
+    MCO: 'https://listado.mercadolibre.com.co/',
+    MLM: 'https://listado.mercadolibre.com.mx/',
+    MLC: 'https://listado.mercadoshops.cl/',
+    MLA: 'https://listado.mercadolibre.com.ar/',
+    MLB: 'https://lista.mercadolivre.com.br/'
+  };
+  const base = bases[siteId] || 'https://listado.mercadolibre.com.co/';
+  return base + encodeURIComponent(keyword).replace(/%20/g, '-');
+}
+
+// Renderizar tarjeta de país (vista ALL)
+function radarRenderCountryCard(country, trends) {
+  const top10 = trends.slice(0, 10);
+  const items = top10.map((t, i) => {
+    const cls = i < 3 ? 'top3' : '';
+    return '<a class="radar-item" href="' + radarMeliSearchUrl(country.id, t.keyword) + '" target="_blank" title="Ver en MeLi">' +
+      '<span class="radar-item-rank ' + cls + '">#' + (i + 1) + '</span>' +
+      '<span class="radar-item-text">' + t.keyword + '</span>' +
+      '<span class="radar-item-arrow">→</span>' +
+      '</a>';
+  }).join('');
+
+  return '<div class="radar-country-card">' +
+    '<div class="radar-country-header">' +
+      '<span class="radar-country-name">' + country.flag + ' ' + country.name + '</span>' +
+      '<span class="radar-country-count">' + trends.length + ' tendencias</span>' +
+    '</div>' +
+    '<div>' + items + '</div>' +
+    '</div>';
+}
+
+// Renderizar lista completa (vista single)
+function radarRenderSingleList(country, trends) {
+  const list = document.getElementById('radar-single-list');
+  const title = document.getElementById('radar-single-title');
+  const count = document.getElementById('radar-single-count');
+  title.textContent = country.flag + ' ' + country.name + ' — Top Tendencias';
+  count.textContent = trends.length + ' búsquedas trending';
+  list.innerHTML = trends.map((t, i) => {
+    return '<a class="radar-single-item" href="' + radarMeliSearchUrl(country.id, t.keyword) + '" target="_blank">' +
+      '<span class="radar-single-rank ' + radarRankClass(i) + '">' + radarRankText(i) + '</span>' +
+      '<span class="radar-single-keyword">' + t.keyword + '</span>' +
+      '<span style="font-size:10px;color:var(--muted)">ver en MeLi →</span>' +
+      '</a>';
+  }).join('');
+}
+
+async function radarLoadCountry(country, cardEl) {
+  try {
+    const trends = await radarFetchTrends(country.id);
+    cardEl.innerHTML = radarRenderCountryCard(country, trends);
+  } catch (e) {
+    cardEl.innerHTML = '<div class="radar-country-card"><div class="radar-country-header"><span class="radar-country-name">' + country.flag + ' ' + country.name + '</span></div><div class="radar-error">⚠️ No se pudo cargar — verificar conexión</div></div>';
+  }
+}
+
+async function radarLoadSingle(country) {
+  const list = document.getElementById('radar-single-list');
+  const title = document.getElementById('radar-single-title');
+  title.textContent = country.flag + ' ' + country.name + ' — cargando...';
+  list.innerHTML = '<div class="radar-loading">⏳ Cargando tendencias de ' + country.name + '...</div>';
+  try {
+    const trends = await radarFetchTrends(country.id);
+    radarRenderSingleList(country, trends);
+  } catch (e) {
+    list.innerHTML = '<div class="radar-error">⚠️ No se pudieron cargar las tendencias. Intentá nuevamente.</div>';
+  }
+}
+
+async function radarRefreshAll() {
+  const btn = document.getElementById('radar-refresh-btn');
+  const icon = document.getElementById('radar-refresh-icon');
+  icon.textContent = '⏳';
+  btn.disabled = true;
+
+  // Limpiar cache
+  RADAR_COUNTRIES.forEach(c => delete radarCache[c.id]);
+
+  if (radarActiveSite === 'ALL') {
+    await radarInitAllView();
+  } else {
+    const country = RADAR_COUNTRIES.find(c => c.id === radarActiveSite);
+    if (country) await radarLoadSingle(country);
+  }
+
+  icon.textContent = '🔄';
+  btn.disabled = false;
+  document.getElementById('radar-last-update').textContent =
+    '⏰ Última actualización: ' + new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}) + ' — datos oficiales de MercadoLibre';
+}
+
+async function radarInitAllView() {
+  const grid = document.getElementById('radar-countries-grid');
+  grid.innerHTML = '';
+  const promises = RADAR_COUNTRIES.map(country => {
+    const div = document.createElement('div');
+    div.innerHTML = '<div class="radar-country-card"><div class="radar-country-header"><span class="radar-country-name">' + country.flag + ' ' + country.name + '</span></div><div class="radar-loading">⏳ Cargando...</div></div>';
+    grid.appendChild(div);
+    return radarLoadCountry(country, div);
+  });
+  await Promise.allSettled(promises);
+}
+
+function radarSelectCountry(btn, siteId) {
+  // Actualizar tabs
+  document.querySelectorAll('.radar-ctab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  radarActiveSite = siteId;
+
+  const allView    = document.getElementById('radar-all-view');
+  const singleView = document.getElementById('radar-single-view');
+
+  if (siteId === 'ALL') {
+    allView.style.display = 'block';
+    singleView.style.display = 'none';
+    radarInitAllView();
+  } else {
+    allView.style.display = 'none';
+    singleView.style.display = 'block';
+    const country = RADAR_COUNTRIES.find(c => c.id === siteId);
+    if (country) radarLoadSingle(country);
+  }
+}
+
+function radarSearch() {
+  const q = document.getElementById('radar-search-input').value.trim().toLowerCase();
+  const resultsEl = document.getElementById('radar-search-results');
+  if (!q) { resultsEl.innerHTML = ''; return; }
+
+  const matches = [];
+  RADAR_COUNTRIES.forEach(country => {
+    const cache = radarCache[country.id];
+    if (cache && cache.data) {
+      cache.data.forEach((t, i) => {
+        if (t.keyword.toLowerCase().includes(q)) {
+          matches.push({ country, keyword: t.keyword, pos: i + 1 });
+        }
+      });
+    }
+  });
+
+  if (matches.length === 0) {
+    resultsEl.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px 0">No se encontró "<strong style=\'color:var(--text)\'>' + q + '</strong>" en ningún país. Asegúrate de haber cargado las tendencias primero.</div>';
+    return;
+  }
+
+  resultsEl.innerHTML = '<div style="font-size:12px;color:var(--text2);margin-bottom:8px">Encontrado en ' + matches.length + ' posición(es):</div>' +
+    matches.map(m =>
+      '<a class="radar-search-match" href="' + radarMeliSearchUrl(m.country.id, m.keyword) + '" target="_blank" style="text-decoration:none;color:var(--text)">' +
+        '<span class="radar-search-flag">' + m.country.flag + '</span>' +
+        '<div style="flex:1"><div style="font-weight:600">' + m.keyword + '</div><div class="radar-search-pos">' + m.country.name + ' — posición #' + m.pos + '</div></div>' +
+        '<span style="font-size:11px;color:var(--accent)">ver en MeLi →</span>' +
+      '</a>'
+    ).join('');
+}
+
+// Inicializar radar cuando se activa el módulo
+function initRadarModule() {
+  radarActiveSite = 'MCO';
+  // Resetear tabs visuales
+  document.querySelectorAll('.radar-ctab').forEach((b, i) => {
+    b.classList.toggle('active', i === 0);
+  });
+  // Mostrar vista ALL con Colombia seleccionada
+  document.getElementById('radar-all-view').style.display = 'none';
+  document.getElementById('radar-single-view').style.display = 'block';
+  const colombia = RADAR_COUNTRIES[0];
+  radarLoadSingle(colombia).then(() => {
+    document.getElementById('radar-last-update').textContent =
+      '⏰ Última actualización: ' + new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}) + ' — datos oficiales de MercadoLibre';
+  });
+}
+
+// ── INIT DOM LOADED ────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  // Auto-auth si viene de URL con ?preview=1 (solo para screenshots)
+  if (window.location.search.includes('preview=1')) {
+    sessionStorage.setItem('shato_auth', '1');
+  }
+  if (sessionStorage.getItem('shato_auth')) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    initApp();
+    if (window._shatoAutoTab) {
+      setTimeout(function() { showTab(window._shatoAutoTab); window._shatoAutoTab = null; }, 300);
+    }
+  }
+  setTimeout(checkChromeStoragePendingProduct, 500);
+});
+</script>
+</body>
+</html>
