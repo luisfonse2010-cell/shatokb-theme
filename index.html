@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
-<!-- BUILD: 2026-09-01 v5.2 — Radar MeLi LIVE | FORCE 18:10 UTC -->
+<!-- BUILD: 2026-09-01 v5.3 — Radar MeLi LIVE | multi-proxy fallback -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -3455,13 +3455,37 @@ async function radarFetchTrends(siteId) {
   if (radarCache[siteId] && (now - radarCache[siteId].ts) < RADAR_TTL) {
     return radarCache[siteId].data;
   }
-  // Proxy CORS: usamos allorigins para evitar el bloqueo CORS en el browser
-  const url = 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://api.mercadolibre.com/trends/' + siteId);
-  const res = await fetch(url);
-  const json = await res.json();
-  const data = JSON.parse(json.contents);
-  radarCache[siteId] = { ts: now, data };
-  return data;
+  const meliUrl = 'https://api.mercadolibre.com/trends/' + siteId;
+  // Lista de proxies CORS — se prueban en orden hasta que uno responda
+  const proxies = [
+    u => 'https://api.allorigins.win/get?url=' + encodeURIComponent(u),
+    u => 'https://corsproxy.io/?' + encodeURIComponent(u),
+    u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
+    u => 'https://thingproxy.freeboard.io/fetch/' + u,
+  ];
+  let lastErr = null;
+  for (const proxyFn of proxies) {
+    try {
+      const proxyUrl = proxyFn(meliUrl);
+      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
+      if (!res.ok) continue;
+      const text = await res.text();
+      // allorigins devuelve { contents: "..." }, los demás devuelven JSON directo
+      let data;
+      try {
+        const outer = JSON.parse(text);
+        data = outer.contents ? JSON.parse(outer.contents) : outer;
+      } catch(e) {
+        data = JSON.parse(text);
+      }
+      if (!Array.isArray(data)) continue;
+      radarCache[siteId] = { ts: now, data };
+      return data;
+    } catch(e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error('Todos los proxies fallaron para ' + siteId);
 }
 
 function radarRankClass(i) {
