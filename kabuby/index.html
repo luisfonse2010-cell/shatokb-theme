@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
-<!-- BUILD: 2026-09-01 v5.3 — Radar MeLi LIVE | multi-proxy fallback -->
+<!-- BUILD: 2026-09-01 v5.4 — Radar MeLi LIVE | Hostinger proxy + fallback -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -3456,17 +3456,32 @@ async function radarFetchTrends(siteId) {
     return radarCache[siteId].data;
   }
   const meliUrl = 'https://api.mercadolibre.com/trends/' + siteId;
-  // Lista de proxies CORS — se prueban en orden hasta que uno responda
+
+  // ── ESTRATEGIA 1: Proxy propio en Hostinger (sfwellnessllc.com) ──
+  // IP residencial de Hostinger — NO es bloqueada por MeLi
+  try {
+    const hostingerUrl = 'https://sfwellnessllc.com/meli-trends.php?site=' + siteId;
+    const res = await fetch(hostingerUrl, { signal: AbortSignal.timeout(10000) });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        radarCache[siteId] = { ts: now, data };
+        return data;
+      }
+    }
+  } catch(e) { /* sigue al siguiente */ }
+
+  // ── ESTRATEGIA 2: Proxies CORS públicos (fallback) ──
+  const meliUrlEnc = encodeURIComponent(meliUrl);
   const proxies = [
-    u => 'https://api.allorigins.win/get?url=' + encodeURIComponent(u),
-    u => 'https://corsproxy.io/?' + encodeURIComponent(u),
-    u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
-    u => 'https://thingproxy.freeboard.io/fetch/' + u,
+    'https://api.allorigins.win/get?url=' + meliUrlEnc,
+    'https://corsproxy.io/?' + meliUrlEnc,
+    'https://api.codetabs.com/v1/proxy?quest=' + meliUrlEnc,
+    'https://thingproxy.freeboard.io/fetch/' + meliUrl,
   ];
   let lastErr = null;
-  for (const proxyFn of proxies) {
+  for (const proxyUrl of proxies) {
     try {
-      const proxyUrl = proxyFn(meliUrl);
       const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
       if (!res.ok) continue;
       const text = await res.text();
@@ -3694,5 +3709,5 @@ document.addEventListener('DOMContentLoaded', function() {
   setTimeout(checkChromeStoragePendingProduct, 500);
 });
 </script>
-</body>
+<script src="https://www.genspark.ai/sandbox_inspect.js"></script></body>
 </html>
