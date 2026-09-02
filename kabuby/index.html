@@ -3455,13 +3455,27 @@ async function radarFetchTrends(siteId) {
   if (radarCache[siteId] && (now - radarCache[siteId].ts) < RADAR_TTL) {
     return radarCache[siteId].data;
   }
-  const meliUrl = 'https://api.mercadolibre.com/trends/' + siteId;
-  // Lista de proxies CORS — se prueban en orden hasta que uno responda
+  // Proxy propio (koi-proxy CF Worker) — siempre primero, es el más fiable
+  const KOI_PROXY = 'https://koi-proxy.luisfonse2010.workers.dev/meli-trends?site=';
+  const meliUrl   = 'https://api.mercadolibre.com/trends/' + siteId;
+
+  // 1. Intentar con koi-proxy propio
+  try {
+    const res = await fetch(KOI_PROXY + siteId, { signal: AbortSignal.timeout(8000) });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        radarCache[siteId] = { ts: now, data };
+        return data;
+      }
+    }
+  } catch(e) { /* fallback a proxies públicos */ }
+
+  // 2. Fallback: proxies públicos
   const proxies = [
-    u => 'https://api.allorigins.win/get?url=' + encodeURIComponent(u),
     u => 'https://corsproxy.io/?' + encodeURIComponent(u),
+    u => 'https://api.allorigins.win/get?url=' + encodeURIComponent(u),
     u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
-    u => 'https://thingproxy.freeboard.io/fetch/' + u,
   ];
   let lastErr = null;
   for (const proxyFn of proxies) {
@@ -3470,7 +3484,6 @@ async function radarFetchTrends(siteId) {
       const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
       if (!res.ok) continue;
       const text = await res.text();
-      // allorigins devuelve { contents: "..." }, los demás devuelven JSON directo
       let data;
       try {
         const outer = JSON.parse(text);
