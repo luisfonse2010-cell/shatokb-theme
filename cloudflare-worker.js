@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * SHATOKB · KOI — Cloudflare Worker  (v2.2 — Fix email cards: inferirMomento SPF→AM, limpiarPaso, buildProductCard)
+ * SHATOKB · KOI — Cloudflare Worker  (v2.3 — /meli-search proxy endpoint con CORS para Radar multi-nicho)
  * Archivo: cloudflare-worker.js
  *
  * ⚠️  DEPLOY INSTRUCTIONS:
@@ -1561,43 +1561,172 @@ ABSOLUTE RULES — violation means the analysis is worthless:
     // Uso: GET /meli-trends?site=MCO  (MCO, MLM, MLC, MLA, MLB)
     const meliMatch = url.pathname.match(/^\/meli-trends(\/([A-Za-z]{3}))?$/);
     if (meliMatch || url.pathname === '/meli-trends') {
-      // Aceptar site como path param (/meli-trends/MCO) o query (?site=MCO)
-      const siteId = (meliMatch && meliMatch[2]) || url.searchParams.get('site') || '';
+      const siteId = ((meliMatch && meliMatch[2]) || url.searchParams.get('site') || '').toUpperCase();
       const VALID_SITES = ['MCO','MLM','MLC','MLA','MLB'];
-      if (!VALID_SITES.includes(siteId.toUpperCase())) {
+      if (!VALID_SITES.includes(siteId)) {
         return new Response(
           JSON.stringify({ error: 'Parámetro site inválido. Usa: MCO, MLM, MLC, MLA, MLB', usage: '/meli-trends?site=MCO' }),
           { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
         );
       }
+
+      // Múltiples endpoints de MeLi — intentar en orden hasta que uno responda
+      const meliEndpoints = [
+        `https://api.mercadolibre.com/trends/${siteId}`,
+        `https://api.mercadolibre.com/sites/${siteId}/trends`,
+        `https://api.mercadolibre.com/trends/${siteId}?limit=50`,
+      ];
+
+      // Rotar User-Agents para evitar rate-limiting
+      const userAgents = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+        'curl/8.5.0',
+      ];
+
+      let lastErr = 'no attempt';
+      for (let i = 0; i < meliEndpoints.length; i++) {
+        try {
+          const meliResp = await fetch(meliEndpoints[i], {
+            headers: {
+              'User-Agent': userAgents[i % userAgents.length],
+              'Accept': 'application/json, */*',
+              'Accept-Language': 'es-CO,es;q=0.9,en;q=0.8',
+              'Cache-Control': 'no-cache',
+            },
+            cf: { cacheTtl: 300, cacheEverything: true }
+          });
+
+          if (!meliResp.ok) {
+            lastErr = `endpoint[${i}] HTTP ${meliResp.status}`;
+            continue;
+          }
+
+          const data = await meliResp.json();
+
+          // Normalizar respuesta: MeLi a veces devuelve [{keyword}] o [{value}] o un objeto con array
+          let normalized = data;
+          if (!Array.isArray(data)) {
+            if (data && Array.isArray(data.keywords))     normalized = data.keywords.map(k => ({ keyword: k }));
+            else if (data && Array.isArray(data.trends))  normalized = data.trends;
+            else if (data && Array.isArray(data.results)) normalized = data.results;
+          }
+          // Asegurar que cada item tiene la propiedad keyword
+          if (Array.isArray(normalized) && normalized.length > 0) {
+            normalized = normalized.map(item =>
+              typeof item === 'string' ? { keyword: item } : (item.keyword ? item : { keyword: item.value || item.name || JSON.stringify(item) })
+            );
+          }
+
+          if (!Array.isArray(normalized) || normalized.length === 0) {
+            lastErr = `endpoint[${i}] array vacío`;
+            continue;
+          }
+
+          return new Response(JSON.stringify(normalized), {
+            status: 200,
+            headers: {
+              ...CORS_HEADERS,
+              'Content-Type': 'application/json',
+              'Cache-Control': 'public, max-age=300',
+              'X-Proxy': 'koi-proxy/meli-trends',
+              'X-Endpoint': String(i),
+              'X-Site': siteId,
+            }
+          });
+        } catch (err) {
+          lastErr = `endpoint[${i}] throw: ${err.message}`;
+        }
+      }
+
+      // Todos los endpoints fallaron
+      return new Response(
+        JSON.stringify({ error: `Todos los endpoints de MeLi fallaron. Último error: ${lastErr}`, site: siteId }),
+        { status: 502, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // ── Endpoint /meli-search — Proxy para api.mercadolibre.com/sites/{SITE}/search ──
+    // MeLi bloquea CORS desde el browser. Este endpoint hace el fetch server-side
+    // y devuelve los datos de búsqueda con cabeceras CORS correctas.
+    // Uso: GET /meli-search?site=MCO&q=crema+facial&limit=10
+    if (url.pathname === '/meli-search') {
+      const siteId = (url.searchParams.get('site') || 'MCO').toUpperCase();
+      const q      = (url.searchParams.get('q') || '').trim();
+      const limit  = Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 50);
+      const VALID_SITES = ['MCO','MLM','MLC','MLA','MLB'];
+
+      if (!VALID_SITES.includes(siteId) || !q) {
+        return new Response(
+          JSON.stringify({ error: 'Parámetros inválidos. Usa: /meli-search?site=MCO&q=crema+facial&limit=10' }),
+          { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
+        );
+      }
+
       try {
-        const meliResp = await fetch(`https://api.mercadolibre.com/trends/${siteId.toUpperCase()}`, {
+        const meliUrl = `https://api.mercadolibre.com/sites/${siteId}/search?q=${encodeURIComponent(q)}&limit=${limit}`;
+        const meliResp = await fetch(meliUrl, {
           headers: {
-            'User-Agent': 'Mozilla/5.0 (compatible; KabubyBot/1.0)',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
             'Accept': 'application/json',
+            'Accept-Language': 'es-CO,es;q=0.9',
           },
-          cf: { cacheTtl: 300, cacheEverything: true }
+          cf: { cacheTtl: 180, cacheEverything: true }
         });
+
         if (!meliResp.ok) {
           return new Response(
-            JSON.stringify({ error: `MeLi API error: ${meliResp.status}`, site: siteId }),
+            JSON.stringify({ error: `MeLi Search HTTP ${meliResp.status}`, site: siteId, q }),
             { status: meliResp.status, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
           );
         }
+
         const data = await meliResp.json();
-        return new Response(JSON.stringify(data), {
+
+        // Extraer datos relevantes: total de resultados y precio promedio
+        const results = Array.isArray(data.results) ? data.results : [];
+        const paging  = data.paging || {};
+        const available = paging.total || results.length;
+
+        // Calcular precio mediano de los primeros resultados
+        const prices = results
+          .map(r => r.price)
+          .filter(p => typeof p === 'number' && p > 0)
+          .sort((a, b) => a - b);
+        const medianPrice = prices.length > 0
+          ? prices[Math.floor(prices.length / 2)]
+          : 0;
+
+        const payload = {
+          keyword:   q,
+          site:      siteId,
+          available: available,
+          price:     medianPrice,
+          currency:  results[0]?.currency_id || '',
+          sample:    results.slice(0, 3).map(r => ({
+            id:       r.id,
+            title:    r.title,
+            price:    r.price,
+            sold_qty: r.sold_quantity || 0,
+            url:      r.permalink || '',
+          })),
+        };
+
+        return new Response(JSON.stringify(payload), {
           status: 200,
           headers: {
             ...CORS_HEADERS,
             'Content-Type': 'application/json',
-            'Cache-Control': 'public, max-age=300',
-            'X-Proxy': 'koi-proxy/meli-trends',
+            'Cache-Control': 'public, max-age=180',
+            'X-Proxy':  'koi-proxy/meli-search',
+            'X-Site':   siteId,
+            'X-Query':  q,
           }
         });
       } catch (err) {
         return new Response(
-          JSON.stringify({ error: `Proxy fetch failed: ${err.message}`, site: siteId }),
-          { status: 500, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
+          JSON.stringify({ error: `meli-search proxy error: ${err.message}`, site: siteId, q }),
+          { status: 502, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
         );
       }
     }
