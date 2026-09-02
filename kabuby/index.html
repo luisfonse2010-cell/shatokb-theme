@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
-<!-- BUILD: 2026-09-02 v5.4 — Radar LIVE + localStorage cache + proxy fix -->
+<!-- BUILD: 2026-09-02 v5.7 — Radar multi-nicho + worker /meli-search proxy + fix CORS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -1919,7 +1919,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
         <!-- Info de fuente -->
         <div style="margin-top:16px;padding:12px 16px;background:rgba(108,142,255,0.08);border:1px solid rgba(108,142,255,0.2);border-radius:10px;font-size:12px;color:var(--text2);display:flex;gap:8px;align-items:flex-start">
           <span style="font-size:14px">ℹ️</span>
-          <div>Datos de <strong style="color:var(--accent)">api.mercadolibre.com/trends/{SITE_ID}</strong> — API pública oficial de MercadoLibre, sin autenticación, actualizada en tiempo real. Próximamente: Amazon Movers & Shakers + Score de oportunidad 0-100.</div>
+          <div>Datos de <strong style="color:var(--accent)">api.mercadolibre.com/sites/{SITE}/search</strong> — API pública de MeLi, ordenados por volumen de resultados como proxy de demanda real. Cache 5 min en localStorage. <span id="radar-nicho-info" style="color:var(--green)">Nicho activo: 💄 Belleza</span></div>
         </div>
 
       </div>
@@ -3455,6 +3455,7 @@ function radarCacheLoad() {
     if (!raw) return {};
     const obj = JSON.parse(raw);
     const now = Date.now();
+    // Descartar entradas vencidas al cargar
     Object.keys(obj).forEach(k => { if (now - obj[k].ts >= RADAR_TTL) delete obj[k]; });
     return obj;
   } catch(e) { return {}; }
@@ -3469,64 +3470,415 @@ let radarActiveSite = (function() {
   try { return JSON.parse(localStorage.getItem(RADAR_STATE_KEY) || '{}').site || 'MCO'; } catch(e) { return 'MCO'; }
 })();
 
-// Datos de demostración por país — se usan si TODOS los proxies fallan
-const RADAR_DEMO = {
-  MCO: ['crema facial','suero vitamina c','protector solar','base de maquillaje','aceite de argán','mascarilla facial','sombras de ojos','labial mate','sérum antiedad','limpiador facial'],
-  MLM: ['crema hidratante','vitamina c serum','bloqueador solar','polvo compacto','aceite rosa mosqueta','mascarilla purificante','paleta de sombras','lipstick mate','colageno','agua micelar'],
-  MLC: ['crema anti-edad','vitamina c','protector solar facial','base liquida','aceite facial','mascarilla arcilla','maquillaje ojos','labial rojo','acido hialuronico','tónico facial'],
-  MLA: ['crema facial','serum vitamina c','protector solar','base maquillaje','aceite rosa mosqueta','mascarilla facial','paleta sombras','labial mate','colageno bebible','desmaquillante'],
-  MLB: ['creme facial','vitamina c sérum','protetor solar','base liquida','óleo de argan','máscara facial','paleta de sombra','batom fosco','colágeno','água micelar']
+let radarActiveNicho = (function() {
+  try { return JSON.parse(localStorage.getItem(RADAR_STATE_KEY) || '{}').nicho || 'belleza'; } catch(e) { return 'belleza'; }
+})();
+
+// ══════════════════════════════════════════════════════════════
+// RADAR — Nueva estrategia: MeLi Search API (pública, sin auth)
+// /trends/{site} está bloqueado → usamos búsquedas reales por
+// categorías calientes por NICHO para construir un ranking propio.
+// ══════════════════════════════════════════════════════════════
+
+// Meta-data de nichos (para UI)
+const RADAR_NICHOS = {
+  belleza:  { label: 'Belleza',   emoji: '💄' },
+  hogar:    { label: 'Hogar',     emoji: '🏠' },
+  tech:     { label: 'Tech',      emoji: '📱' },
+  fitness:  { label: 'Fitness',   emoji: '💪' },
+  mascotas: { label: 'Mascotas',  emoji: '🐾' },
+  bebe:     { label: 'Bebé',      emoji: '👶' },
+  cocina:   { label: 'Cocina',    emoji: '🍳' },
+  moda:     { label: 'Moda',      emoji: '👗' },
 };
 
-async function radarFetchTrends(siteId) {
-  const now = Date.now();
-  // ── HIT DE CACHE (memoria o localStorage restaurado) ────────
-  if (radarCache[siteId] && (now - radarCache[siteId].ts) < RADAR_TTL) {
-    return radarCache[siteId].data;
-  }
+// ──────────────────────────────────────────────────────────────
+// RADAR_NICHOS_DATA — Términos de búsqueda por nicho + país
+// Estructura: { nicho: { SITE_ID: [ {q: 'término'}, ... ] } }
+// ──────────────────────────────────────────────────────────────
+const RADAR_NICHOS_DATA = {
 
-  const meliUrl = 'https://api.mercadolibre.com/trends/' + siteId;
+  belleza: {
+    MCO: [
+      {q:'crema facial'},{q:'suero vitamina c'},{q:'protector solar'},{q:'mascarilla facial'},
+      {q:'acido hialuronico'},{q:'retinol crema'},{q:'colageno'},{q:'labial mate'},
+      {q:'base de maquillaje'},{q:'tonico facial'},{q:'serum niacinamida'},{q:'limpiador facial'},
+    ],
+    MLM: [
+      {q:'crema hidratante'},{q:'suero vitamina c'},{q:'bloqueador solar'},{q:'mascarilla arcilla'},
+      {q:'acido hialuronico'},{q:'retinol serum'},{q:'colageno bebible'},{q:'labial rojo'},
+      {q:'base liquida'},{q:'agua micelar'},{q:'niacinamida serum'},{q:'desmaquillante'},
+    ],
+    MLC: [
+      {q:'crema antienvejecimiento'},{q:'vitamina c serum'},{q:'protector solar facial'},{q:'mascarilla hidratante'},
+      {q:'acido hialuronico serum'},{q:'retinol contorno ojos'},{q:'colageno marino'},{q:'labial voluminizador'},
+      {q:'base cobertura total'},{q:'tonico piel seca'},{q:'exfoliante facial'},{q:'aceite de argan'},
+    ],
+    MLA: [
+      {q:'crema facial hidratante'},{q:'serum vitamina c'},{q:'protector solar fps50'},{q:'mascarilla facial arcilla'},
+      {q:'acido hialuronico crema'},{q:'retinol antiedad'},{q:'colageno hidrolizado'},{q:'labial mate duradero'},
+      {q:'base maquillaje cobertura'},{q:'agua micelar desmaquillante'},{q:'exfoliante quimico'},{q:'aceite rosa mosqueta'},
+    ],
+    MLB: [
+      {q:'creme facial hidratante'},{q:'serum vitamina c'},{q:'protetor solar facial'},{q:'mascara facial argila'},
+      {q:'acido hialuronico'},{q:'retinol creme'},{q:'colageno hidrolisado'},{q:'batom fosco'},
+      {q:'base liquida'},{q:'agua micelar'},{q:'esfoliante facial'},{q:'oleo de argan'},
+    ],
+  },
 
-  // ── LISTA DE ESTRATEGIAS en orden de preferencia ────────────
-  const strategies = [
-    // 1. Proxy propio CF Worker (multi-endpoint interno)
-    () => fetch('https://koi-proxy.luisfonse2010.workers.dev/meli-trends?site=' + siteId,
-                { signal: AbortSignal.timeout(10000) }).then(r => r.ok ? r.json() : null),
-    // 2. PHP proxy Hostinger
-    () => fetch('https://sfwellnessllc.com/meli-trends.php?site=' + siteId + '&_nc=' + Date.now(),
-                { signal: AbortSignal.timeout(10000) }).then(r => r.ok ? r.json() : null),
-    // 3. corsproxy.io
-    () => fetch('https://corsproxy.io/?' + encodeURIComponent(meliUrl),
-                { signal: AbortSignal.timeout(9000) }).then(r => r.ok ? r.json() : null),
-    // 4. allorigins
-    () => fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(meliUrl),
-                { signal: AbortSignal.timeout(9000) })
-          .then(r => r.ok ? r.json() : null)
-          .then(j => j && j.contents ? JSON.parse(j.contents) : null),
-    // 5. codetabs
-    () => fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(meliUrl),
-                { signal: AbortSignal.timeout(9000) }).then(r => r.ok ? r.json() : null),
-    // 6. thingproxy
-    () => fetch('https://thingproxy.freeboard.io/fetch/' + meliUrl,
-                { signal: AbortSignal.timeout(9000) }).then(r => r.ok ? r.json() : null),
-  ];
+  hogar: {
+    MCO: [
+      {q:'organizador cajones'},{q:'lampara led'},{q:'aspiradora portatil'},{q:'cojines decorativos'},
+      {q:'cortinas blackout'},{q:'almohada memory foam'},{q:'alfombra sala'},{q:'set vajilla'},
+      {q:'repisa flotante'},{q:'humidificador ultrasónico'},{q:'ventilador torre'},{q:'portavelas decorativos'},
+    ],
+    MLM: [
+      {q:'lampara led escritorio'},{q:'organizador closet'},{q:'aspiradora inalambrica'},{q:'cojin decorativo'},
+      {q:'cortinas opacas'},{q:'almohada ergonomica'},{q:'tapete sala'},{q:'vajilla ceramica'},
+      {q:'estante flotante'},{q:'purificador aire'},{q:'ventilador usb'},{q:'difusor aromas'},
+    ],
+    MLC: [
+      {q:'organizador ropa'},{q:'lampara escritorio'},{q:'aspiradora robot'},{q:'cojines sofa'},
+      {q:'cortinas lino'},{q:'almohada latex'},{q:'alfombra habitacion'},{q:'set platos'},
+      {q:'repisa pared'},{q:'humidificador'},{q:'calefactor'},{q:'difusor esencias'},
+    ],
+    MLA: [
+      {q:'organizador banos'},{q:'lampara led techo'},{q:'aspiradora ciclonica'},{q:'almohadon deco'},
+      {q:'cortina bano'},{q:'almohada memory foam'},{q:'alfombra living'},{q:'vajilla porcelana'},
+      {q:'estante pared'},{q:'calefactor electrico'},{q:'ventilador'},{q:'portavelas'},
+    ],
+    MLB: [
+      {q:'organizador gaveta'},{q:'luminaria led'},{q:'aspirador portatil'},{q:'almofada decorativa'},
+      {q:'cortina blackout'},{q:'travesseiro memory foam'},{q:'tapete sala'},{q:'jogo de pratos'},
+      {q:'prateleira parede'},{q:'umidificador'},{q:'ventilador'},{q:'porta velas'},
+    ],
+  },
 
-  for (const stratFn of strategies) {
-    try {
-      const data = await stratFn();
-      if (Array.isArray(data) && data.length > 0) {
-        radarCache[siteId] = { ts: now, data };
-        radarCacheSave(radarCache);
-        return data;
+  tech: {
+    MCO: [
+      {q:'audifonos bluetooth'},{q:'smartwatch'},{q:'power bank'},{q:'funda iphone'},
+      {q:'teclado mecanico'},{q:'soporte celular auto'},{q:'camara web 1080p'},{q:'led rgb escritorio'},
+      {q:'cable tipo c'},{q:'memory card'},{q:'parlante portatil'},{q:'mouse inalambrico'},
+    ],
+    MLM: [
+      {q:'audifonos inalambricos'},{q:'reloj inteligente'},{q:'cargador portatil'},{q:'funda samsung'},
+      {q:'teclado gamer'},{q:'soporte celular'},{q:'webcam hd'},{q:'tira led'},{q:'cable usb c'},
+      {q:'memoria microsd'},{q:'bocina bluetooth'},{q:'mouse gaming'},
+    ],
+    MLC: [
+      {q:'audifonos bluetooth'},{q:'smartwatch'},{q:'bateria portatil'},{q:'case iphone'},
+      {q:'teclado mecanico'},{q:'soporte auto celular'},{q:'camara web'},{q:'luces led rgb'},
+      {q:'cable lightning'},{q:'tarjeta microsd'},{q:'parlante bluetooth'},{q:'mouse inalambrico'},
+    ],
+    MLA: [
+      {q:'auriculares bluetooth'},{q:'smartwatch'},{q:'cargador portatil'},{q:'funda celular'},
+      {q:'teclado mecanico'},{q:'soporte celular'},{q:'camara web'},{q:'tira led'},
+      {q:'cable tipo c'},{q:'memoria sd'},{q:'parlante portatil'},{q:'mouse inalambrico'},
+    ],
+    MLB: [
+      {q:'fone bluetooth'},{q:'smartwatch'},{q:'carregador portatil'},{q:'capinha iphone'},
+      {q:'teclado mecanico'},{q:'suporte celular carro'},{q:'webcam full hd'},{q:'fita led'},
+      {q:'cabo tipo c'},{q:'cartao memoria'},{q:'caixa de som'},{q:'mouse sem fio'},
+    ],
+  },
+
+  fitness: {
+    MCO: [
+      {q:'banda elastica'},{q:'mancuerna'},{q:'colchoneta yoga'},{q:'proteina whey'},
+      {q:'ropa deportiva mujer'},{q:'guantes gym'},{q:'cuerda saltar'},{q:'rodillo espuma'},
+      {q:'cinturon lumbar'},{q:'termo acero inoxidable'},{q:'licra deportiva'},{q:'creatina monohidrato'},
+    ],
+    MLM: [
+      {q:'liga elastica ejercicio'},{q:'mancuernas par'},{q:'tapete yoga'},{q:'proteina whey'},
+      {q:'ropa deportiva'},{q:'guantes box'},{q:'cuerda velocidad'},{q:'foam roller'},
+      {q:'faja lumbar'},{q:'termo deportivo'},{q:'legging deportivo'},{q:'creatina'},
+    ],
+    MLC: [
+      {q:'banda elastica fitness'},{q:'pesa'},{q:'esterilla yoga'},{q:'proteina whey'},
+      {q:'ropa deportiva mujer'},{q:'guantes gimnasio'},{q:'cuerda saltar'},{q:'rodillo masaje'},
+      {q:'faja espalda'},{q:'botella deportiva'},{q:'calza deportiva'},{q:'suplemento deporte'},
+    ],
+    MLA: [
+      {q:'banda elastica'},{q:'mancuerna'},{q:'colchoneta yoga'},{q:'proteina'},
+      {q:'ropa deportiva'},{q:'guantes gym'},{q:'soga saltar'},{q:'foam roller'},
+      {q:'faja lumbar'},{q:'botella acero'},{q:'calza deportiva'},{q:'creatina'},
+    ],
+    MLB: [
+      {q:'faixa elastica'},{q:'haltere'},{q:'tapete yoga'},{q:'whey protein'},
+      {q:'roupas fitness'},{q:'luva musculacao'},{q:'corda pular'},{q:'rolo massagem'},
+      {q:'cinta lombar'},{q:'garrafa termica'},{q:'legging academia'},{q:'creatina'},
+    ],
+  },
+
+  mascotas: {
+    MCO: [
+      {q:'collar antiparasitos perro'},{q:'comedero automatico'},{q:'arena gato'},{q:'cama perro'},
+      {q:'juguete perro'},{q:'correa retractil'},{q:'rascador gato'},{q:'snack perro'},
+      {q:'transportadora mascotas'},{q:'shampoo perro'},{q:'antiparasitario interno'},{q:'pipeta antipulgas'},
+    ],
+    MLM: [
+      {q:'collar antipulgas'},{q:'dispensador comida automatico'},{q:'arena sanitaria'},{q:'cama mascota'},
+      {q:'juguete gato'},{q:'correa perro'},{q:'rascador gato'},{q:'premio perro'},
+      {q:'transportin perro'},{q:'shampoo mascotas'},{q:'desparasitante perro'},{q:'antipulgas gotas'},
+    ],
+    MLC: [
+      {q:'collar antipulgas perro'},{q:'comedero automatico'},{q:'arena gato'},{q:'cama perro gato'},
+      {q:'juguete gato'},{q:'correa extensible'},{q:'rascador gato grande'},{q:'snack perro'},
+      {q:'transportador mascotas'},{q:'shampoo perro'},{q:'antiparasitario'},{q:'pipeta antipulgas'},
+    ],
+    MLA: [
+      {q:'collar antipulgas'},{q:'dispensador comida'},{q:'arena para gatos'},{q:'cama perro'},
+      {q:'juguete perro'},{q:'correa retractil'},{q:'rascador gato'},{q:'premio perro'},
+      {q:'transporte mascotas'},{q:'shampoo mascotas'},{q:'desparasitante'},{q:'antipulgas'},
+    ],
+    MLB: [
+      {q:'coleira antipulga'},{q:'comedouro automatico'},{q:'areia gato'},{q:'cama cachorro'},
+      {q:'brinquedo gato'},{q:'guia retratil'},{q:'arranhador gato'},{q:'petisco cachorro'},
+      {q:'bolsa transporte pet'},{q:'shampoo cachorro'},{q:'vermifugo'},{q:'antipulga'},
+    ],
+  },
+
+  bebe: {
+    MCO: [
+      {q:'pañal desechable'},{q:'biberón anticolico'},{q:'silla bebe'},{q:'coche bebe'},
+      {q:'monitor bebe'},{q:'humidificador bebe'},{q:'juguete sensorial'},{q:'sabana cuna'},
+      {q:'crema pañal'},{q:'leche formula'},{q:'extractor leche materna'},{q:'bolso maternal'},
+    ],
+    MLM: [
+      {q:'panal bebe'},{q:'biberon anticólico'},{q:'silla alta bebe'},{q:'carriola'},
+      {q:'monitor bebe'},{q:'humidificador'},{q:'juguete bebe'},{q:'sabana cuna'},
+      {q:'crema pañal'},{q:'formula leche'},{q:'tiralechas'},{q:'bolso mama'},
+    ],
+    MLC: [
+      {q:'panal bebe'},{q:'mamila anticolico'},{q:'silla bebe alta'},{q:'coche paseo'},
+      {q:'camara bebe'},{q:'humidificador'},{q:'juguete estimulacion'},{q:'ropa bebe'},
+      {q:'crema cola bebe'},{q:'leche formula'},{q:'sacaleches'},{q:'bolso maternal'},
+    ],
+    MLA: [
+      {q:'panal'},{q:'mamaderas'},{q:'silla bebe'},{q:'coche bebe'},
+      {q:'monitor bebe'},{q:'humidificador'},{q:'juguete bebe'},{q:'ropa bebe'},
+      {q:'crema pomada bebe'},{q:'formula infantil'},{q:'sacaleches'},{q:'bolso cambiador'},
+    ],
+    MLB: [
+      {q:'fralda descartavel'},{q:'mamadeira anticólica'},{q:'cadeirinha bebe'},{q:'carrinho bebe'},
+      {q:'babá eletrônica'},{q:'umidificador bebe'},{q:'brinquedo sensorial'},{q:'roupa bebe'},
+      {q:'creme assadura'},{q:'formula infantil'},{q:'bomba tira leite'},{q:'bolsa maternidade'},
+    ],
+  },
+
+  cocina: {
+    MCO: [
+      {q:'freidora aire'},{q:'licuadora portatil'},{q:'olla express'},{q:'sarten antiadherente'},
+      {q:'cuchillo chef'},{q:'tabla cortar'},{q:'set especias'},{q:'dispensador agua'},
+      {q:'procesador alimentos'},{q:'cafetera'},{q:'envases hermeticos'},{q:'bascula cocina'},
+    ],
+    MLM: [
+      {q:'freidora sin aceite'},{q:'licuadora vaso'},{q:'olla electrica'},{q:'sarten ceramica'},
+      {q:'cuchillo cocina'},{q:'tabla picar'},{q:'especias'},{q:'dispensador agua fria'},
+      {q:'procesador cocina'},{q:'cafetera expreso'},{q:'contenedor vidrio'},{q:'bascula digital'},
+    ],
+    MLC: [
+      {q:'freidora aire'},{q:'juguera'},{q:'olla a presion'},{q:'sarten antiadherente'},
+      {q:'set cuchillos'},{q:'tabla cocina'},{q:'especias condimentos'},{q:'dispensador agua'},
+      {q:'procesador alimentos'},{q:'cafetera'},{q:'tupper hermetico'},{q:'pesa cocina'},
+    ],
+    MLA: [
+      {q:'freidora aire'},{q:'licuadora'},{q:'olla a presion'},{q:'sarten antiadherente'},
+      {q:'cuchillo cocina'},{q:'tabla picar'},{q:'condimentos'},{q:'dispensador agua'},
+      {q:'procesadora alimentos'},{q:'cafetera express'},{q:'tupper'},{q:'balanza cocina'},
+    ],
+    MLB: [
+      {q:'air fryer'},{q:'liquidificador'},{q:'panela pressao'},{q:'frigideira antiaderente'},
+      {q:'faca chef'},{q:'tabua corte'},{q:'temperos'},{q:'filtro agua'},{q:'processador'},
+      {q:'cafeteira'},{q:'pote hermetico'},{q:'balanca cozinha'},
+    ],
+  },
+
+  moda: {
+    MCO: [
+      {q:'vestido casual mujer'},{q:'zapatillas chunky'},{q:'jean mom'},{q:'blusa crop'},
+      {q:'bolso cuero mujer'},{q:'falda midi'},{q:'corset'},{q:'conjunto deportivo'},
+      {q:'gafas sol polarizadas'},{q:'sombrero paja'},{q:'cinturon cuero'},{q:'camisa lino'},
+    ],
+    MLM: [
+      {q:'vestido mujer casual'},{q:'tenis plataforma'},{q:'pantalon mom jeans'},{q:'blusa crop top'},
+      {q:'bolsa piel mujer'},{q:'falda plisada'},{q:'corset bustier'},{q:'conjunto gym'},
+      {q:'lentes sol'},{q:'sombrero'},{q:'cinturon'},{q:'camisa manga larga'},
+    ],
+    MLC: [
+      {q:'vestido casual'},{q:'zapatillas plataforma'},{q:'jeans mom'},{q:'blusa crop top'},
+      {q:'cartera cuero'},{q:'falda midi'},{q:'corset'},{q:'buzo deportivo'},
+      {q:'gafas sol'},{q:'sombrero verano'},{q:'cinturon'},{q:'camisa lino'},
+    ],
+    MLA: [
+      {q:'vestido casual mujer'},{q:'zapatillas'},{q:'jean mom'},{q:'remera crop'},
+      {q:'cartera mujer'},{q:'falda midi'},{q:'corset'},{q:'conjunto deportivo'},
+      {q:'lentes sol'},{q:'sombrero paja'},{q:'cinto cuero'},{q:'camisa'},
+    ],
+    MLB: [
+      {q:'vestido casual'},{q:'tenis chunky'},{q:'calca mom jeans'},{q:'cropped feminino'},
+      {q:'bolsa couro'},{q:'saia midi'},{q:'corset'},{q:'conjunto fitness'},
+      {q:'oculos sol'},{q:'chapeu paja'},{q:'cinto'},{q:'camisa linho'},
+    ],
+  },
+
+};
+
+// Función helper: obtiene términos del nicho activo para un site
+function radarGetTerms(siteId, nicho) {
+  const nichoData = RADAR_NICHOS_DATA[nicho] || RADAR_NICHOS_DATA.belleza;
+  return nichoData[siteId] || nichoData.MCO || [];
+}
+
+// Clave de cache incluye nicho (evita colisiones entre nichos)
+function radarCacheKey(siteId, nicho) {
+  return siteId + '_' + nicho;
+}
+
+// Categorías de búsqueda por país (compatibilidad — ahora delega a RADAR_NICHOS_DATA)
+const RADAR_CATEGORIES = {
+  MCO: [ // Colombia
+    { q: 'crema facial',        cat: 'MCO1246' },
+    { q: 'suero vitamina c',    cat: 'MCO1246' },
+    { q: 'protector solar',     cat: 'MCO1246' },
+    { q: 'mascarilla facial',   cat: 'MCO1246' },
+    { q: 'acido hialuronico',   cat: 'MCO1246' },
+    { q: 'retinol crema',       cat: 'MCO1246' },
+    { q: 'colageno',            cat: 'MCO1246' },
+    { q: 'labial mate',         cat: 'MCO1246' },
+    { q: 'base de maquillaje',  cat: 'MCO1246' },
+    { q: 'tónico facial',       cat: 'MCO1246' },
+    { q: 'serum niacinamida',   cat: 'MCO1246' },
+    { q: 'limpiador facial',    cat: 'MCO1246' },
+  ],
+  MLM: [ // México
+    { q: 'crema hidratante',    cat: 'MLM1246' },
+    { q: 'suero vitamina c',    cat: 'MLM1246' },
+    { q: 'bloqueador solar',    cat: 'MLM1246' },
+    { q: 'mascarilla arcilla',  cat: 'MLM1246' },
+    { q: 'acido hialuronico',   cat: 'MLM1246' },
+    { q: 'retinol serum',       cat: 'MLM1246' },
+    { q: 'colageno bebible',    cat: 'MLM1246' },
+    { q: 'labial rojo',         cat: 'MLM1246' },
+    { q: 'base liquida',        cat: 'MLM1246' },
+    { q: 'agua micelar',        cat: 'MLM1246' },
+    { q: 'niacinamida serum',   cat: 'MLM1246' },
+    { q: 'desmaquillante',      cat: 'MLM1246' },
+  ],
+  MLC: [ // Chile
+    { q: 'crema antienvejecimiento', cat: 'MLC1246' },
+    { q: 'vitamina c serum',         cat: 'MLC1246' },
+    { q: 'protector solar facial',   cat: 'MLC1246' },
+    { q: 'mascarilla hidratante',    cat: 'MLC1246' },
+    { q: 'acido hialuronico serum',  cat: 'MLC1246' },
+    { q: 'retinol contorno ojos',    cat: 'MLC1246' },
+    { q: 'colageno marino',          cat: 'MLC1246' },
+    { q: 'labial voluminizador',     cat: 'MLC1246' },
+    { q: 'base cobertura total',     cat: 'MLC1246' },
+    { q: 'tónico piel seca',         cat: 'MLC1246' },
+    { q: 'exfoliante facial',        cat: 'MLC1246' },
+    { q: 'aceite de argán',          cat: 'MLC1246' },
+  ],
+  MLA: [ // Argentina
+    { q: 'crema facial hidratante',  cat: 'MLA1246' },
+    { q: 'serum vitamina c',         cat: 'MLA1246' },
+    { q: 'protector solar fps50',    cat: 'MLA1246' },
+    { q: 'mascarilla facial arcilla',cat: 'MLA1246' },
+    { q: 'acido hialuronico crema',  cat: 'MLA1246' },
+    { q: 'retinol antiedad',         cat: 'MLA1246' },
+    { q: 'colageno hidrolizado',     cat: 'MLA1246' },
+    { q: 'labial mate duradero',     cat: 'MLA1246' },
+    { q: 'base maquillaje cobertura',cat: 'MLA1246' },
+    { q: 'agua micelar desmaquillante', cat: 'MLA1246' },
+    { q: 'exfoliante quimico',       cat: 'MLA1246' },
+    { q: 'aceite rosa mosqueta',     cat: 'MLA1246' },
+  ],
+  MLB: [ // Brasil
+    { q: 'creme facial hidratante',  cat: 'MLB1246' },
+    { q: 'sérum vitamina c',         cat: 'MLB1246' },
+    { q: 'protetor solar facial',    cat: 'MLB1246' },
+    { q: 'máscara facial argila',    cat: 'MLB1246' },
+    { q: 'ácido hialurônico',        cat: 'MLB1246' },
+    { q: 'retinol creme',            cat: 'MLB1246' },
+    { q: 'colágeno hidrolisado',     cat: 'MLB1246' },
+    { q: 'batom fosco',              cat: 'MLB1246' },
+    { q: 'base líquida',             cat: 'MLB1246' },
+    { q: 'água micelar',             cat: 'MLB1246' },
+    { q: 'esfoliante facial',        cat: 'MLB1246' },
+    { q: 'óleo de argan',            cat: 'MLB1246' },
+  ],
+};
+
+// Busca en MeLi Search API a través del Worker proxy para evitar CORS
+// → devuelve {keyword, available, price} o null si falla
+async function radarSearchTerm(siteId, term) {
+  // Intentar primero vía Worker proxy (CORS seguro desde kabuby.com)
+  const MELI_WORKER = 'https://koi-proxy.luisfonse2010.workers.dev';
+  try {
+    const proxyUrl = `${MELI_WORKER}/meli-search?site=${siteId}&q=${encodeURIComponent(term)}&limit=10`;
+    const r = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
+    if (r.ok) {
+      const j = await r.json();
+      if (j && typeof j.available === 'number') {
+        return { keyword: term, available: j.available, price: j.price || 0 };
       }
-    } catch(e) { /* siguiente estrategia */ }
+    }
+  } catch(e) { /* silencioso — intenta directo a continuación */ }
+
+  // Fallback: llamada directa (funciona si MeLi tiene CORS habilitado para este origen)
+  try {
+    const directUrl = `https://api.mercadolibre.com/sites/${siteId}/search?q=${encodeURIComponent(term)}&limit=3&sort=relevance`;
+    const r2 = await fetch(directUrl, { signal: AbortSignal.timeout(6000) });
+    if (!r2.ok) return null;
+    const j2 = await r2.json();
+    if (!j2.results || j2.results.length === 0) return null;
+    const top = j2.results[0];
+    return { keyword: term, available: j2.paging ? j2.paging.total : 0, price: top.price || 0 };
+  } catch(e2) { return null; }
+}
+
+async function radarFetchTrends(siteId, nicho) {
+  nicho = nicho || radarActiveNicho || 'belleza';
+  const cKey = radarCacheKey(siteId, nicho);
+  const now = Date.now();
+
+  // ── HIT DE CACHE (incluye nicho en la clave) ─────────────────
+  if (radarCache[cKey] && (now - radarCache[cKey].ts) < RADAR_TTL) {
+    return radarCache[cKey].data;
   }
 
-  // ── FALLBACK FINAL: datos demo — NO se guardan en localStorage
-  const demoKws  = RADAR_DEMO[siteId] || RADAR_DEMO.MCO;
-  const demoData = demoKws.map(keyword => ({ keyword }));
-  // Solo en memoria con TTL cortísimo — NO llamamos radarCacheSave()
-  radarCache[siteId] = { ts: now - RADAR_TTL + 30 * 1000, data: demoData, isDemo: true };
+  // Obtener términos del nicho actual
+  const terms = radarGetTerms(siteId, nicho);
+
+  // Buscar todos los términos en paralelo (MeLi Search es pública con CORS)
+  const results = await Promise.allSettled(
+    terms.map(t => radarSearchTerm(siteId, t.q))
+  );
+
+  // Filtrar los que respondieron y ordenar por disponibilidad (proxy de demanda)
+  const valid = results
+    .filter(r => r.status === 'fulfilled' && r.value !== null)
+    .map(r => r.value)
+    .sort((a, b) => (b.available || 0) - (a.available || 0));
+
+  if (valid.length >= 3) {
+    // ✅ Tenemos datos reales de MeLi Search
+    const data = valid.map(v => ({
+      keyword:   v.keyword,
+      available: v.available,
+      price:     v.price || 0,
+    }));
+    radarCache[cKey] = { ts: now, data, source: 'meli-search', nicho };
+    radarCacheSave(radarCache);
+    return data;
+  }
+
+  // ── FALLBACK: términos del RADAR_NICHOS_DATA como curados ──
+  // Se guarda con TTL completo en localStorage para que PERSISTA al refrescar
+  const fallbackTerms = radarGetTerms(siteId, nicho);
+  const demoData = fallbackTerms.map(t => ({ keyword: t.q }));
+  radarCache[cKey] = { ts: now, data: demoData, isDemo: true, nicho };
+  radarCacheSave(radarCache); // ✅ persiste en localStorage
   return demoData;
 }
 
@@ -3567,7 +3919,9 @@ function radarRenderCountryCard(country, trends, isDemo) {
       '<span class="radar-item-arrow">→</span>' +
       '</a>';
   }).join('');
+
   const demoTag = isDemo ? '<span style="font-size:9px;background:rgba(251,191,36,0.15);color:#fcd34d;border:1px solid rgba(251,191,36,0.3);padding:2px 6px;border-radius:4px;margin-left:6px">demo</span>' : '';
+
   return '<div class="radar-country-card">' +
     '<div class="radar-country-header">' +
       '<span class="radar-country-name">' + country.flag + ' ' + country.name + demoTag + '</span>' +
@@ -3582,23 +3936,31 @@ function radarRenderSingleList(country, trends, isDemo) {
   const list  = document.getElementById('radar-single-list');
   const title = document.getElementById('radar-single-title');
   const count = document.getElementById('radar-single-count');
-  title.textContent = country.flag + ' ' + country.name + ' — Top Tendencias';
-  count.textContent = trends.length + ' búsquedas' + (isDemo ? ' (datos de ejemplo — sin conexión a MeLi)' : ' trending');
+  const nichoMeta = RADAR_NICHOS[radarActiveNicho] || { label: 'Tendencias', emoji: '📊' };
+  title.textContent = country.flag + ' ' + country.name + ' — ' + nichoMeta.emoji + ' ' + nichoMeta.label;
+  count.textContent = isDemo
+    ? trends.length + ' términos curados (MeLi sin conexión)'
+    : trends.length + ' términos — ordenados por volumen de resultados reales en MeLi';
+
   list.innerHTML = trends.map((t, i) => {
+    const avail = t.available ? '<span style="font-size:10px;color:var(--muted);margin-left:auto">' + t.available.toLocaleString() + ' resultados</span>' : '';
     return '<a class="radar-single-item" href="' + radarMeliSearchUrl(country.id, t.keyword) + '" target="_blank">' +
       '<span class="radar-single-rank ' + radarRankClass(i) + '">' + radarRankText(i) + '</span>' +
       '<span class="radar-single-keyword">' + t.keyword + '</span>' +
-      '<span style="font-size:10px;color:var(--muted)">ver en MeLi →</span>' +
+      avail +
+      '<span style="font-size:10px;color:var(--accent);margin-left:8px;white-space:nowrap">ver →</span>' +
       '</a>';
   }).join('');
+
   if (isDemo) {
-    list.innerHTML += '<div style="margin:12px 16px 8px;padding:8px 12px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:8px;font-size:11px;color:#fcd34d">⚠️ Proxy sin conexión — mostrando términos de ejemplo. Hacé clic en <strong>Actualizar todo</strong> para reintentar.</div>';
+    list.innerHTML += '<div style="margin:12px 16px 8px;padding:8px 12px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:8px;font-size:11px;color:#fcd34d">⚠️ MeLi Search no respondió — mostrando términos curados. Hacé clic en <strong>Actualizar todo</strong> para reintentar.</div>';
   }
 }
 
 async function radarLoadCountry(country, cardEl) {
-  const trends = await radarFetchTrends(country.id);
-  const isDemo = radarCache[country.id] && radarCache[country.id].isDemo;
+  const trends = await radarFetchTrends(country.id, radarActiveNicho);
+  const cKey = radarCacheKey(country.id, radarActiveNicho);
+  const isDemo = radarCache[cKey] && radarCache[cKey].isDemo;
   cardEl.innerHTML = radarRenderCountryCard(country, trends, isDemo);
 }
 
@@ -3606,10 +3968,12 @@ async function radarLoadSingle(country) {
   const list  = document.getElementById('radar-single-list');
   const title = document.getElementById('radar-single-title');
   const count = document.getElementById('radar-single-count');
+  const nichoMeta = RADAR_NICHOS[radarActiveNicho] || { label: 'Tendencias', emoji: '📊' };
   title.textContent = country.flag + ' ' + country.name + ' — cargando...';
-  list.innerHTML = '<div class="radar-loading">⏳ Cargando tendencias de ' + country.name + '...</div>';
-  const trends = await radarFetchTrends(country.id);
-  const isDemo = radarCache[country.id] && radarCache[country.id].isDemo;
+  list.innerHTML = '<div class="radar-loading">⏳ Consultando MeLi Search API para ' + nichoMeta.emoji + ' ' + nichoMeta.label + ' en ' + country.name + '...</div>';
+  const trends = await radarFetchTrends(country.id, radarActiveNicho);
+  const cKey = radarCacheKey(country.id, radarActiveNicho);
+  const isDemo = radarCache[cKey] && radarCache[cKey].isDemo;
   radarRenderSingleList(country, trends, isDemo);
 }
 
@@ -3619,8 +3983,8 @@ async function radarRefreshAll() {
   icon.textContent = '⏳';
   btn.disabled = true;
 
-  // Limpiar cache (memoria + localStorage)
-  RADAR_COUNTRIES.forEach(c => delete radarCache[c.id]);
+  // Limpiar cache del nicho activo (memoria + localStorage)
+  RADAR_COUNTRIES.forEach(c => delete radarCache[radarCacheKey(c.id, radarActiveNicho)]);
   radarCacheSave(radarCache);
 
   if (radarActiveSite === 'ALL') {
@@ -3632,10 +3996,12 @@ async function radarRefreshAll() {
 
   icon.textContent = '🔄';
   btn.disabled = false;
-  const isDemo = radarActiveSite !== 'ALL' && radarCache[radarActiveSite] && radarCache[radarActiveSite].isDemo;
+  const cKeyRefresh = radarCacheKey(radarActiveSite, radarActiveNicho);
+  const isDemo = radarActiveSite !== 'ALL' && radarCache[cKeyRefresh] && radarCache[cKeyRefresh].isDemo;
+  const nichoMeta = RADAR_NICHOS[radarActiveNicho] || { label: 'Tendencias', emoji: '📊' };
   document.getElementById('radar-last-update').textContent = isDemo
-    ? '⚠️ Sin conexión al proxy — mostrando datos de ejemplo. Verificá tu conexión.'
-    : '⏰ Última actualización: ' + new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}) + ' — datos oficiales de MercadoLibre';
+    ? '⚠️ MeLi Search no respondió — mostrando términos curados. Clic en "Actualizar todo" para reintentar.'
+    : '⏰ Última actualización: ' + new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}) + ' — datos reales de MeLi · ' + nichoMeta.emoji + ' ' + nichoMeta.label;
 }
 
 async function radarInitAllView() {
@@ -3655,8 +4021,12 @@ function radarSelectCountry(btn, siteId) {
   document.querySelectorAll('.radar-ctab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   radarActiveSite = siteId;
-  // Persistir país seleccionado para restaurar tras recarga
-  try { localStorage.setItem(RADAR_STATE_KEY, JSON.stringify({ site: siteId })); } catch(e) {}
+  // Persistir país + nicho para restaurar tras recarga
+  try {
+    const saved = JSON.parse(localStorage.getItem(RADAR_STATE_KEY) || '{}');
+    saved.site = siteId;
+    localStorage.setItem(RADAR_STATE_KEY, JSON.stringify(saved));
+  } catch(e) {}
 
   const allView    = document.getElementById('radar-all-view');
   const singleView = document.getElementById('radar-single-view');
@@ -3680,14 +4050,20 @@ function radarSearch() {
 
   const matches = [];
   RADAR_COUNTRIES.forEach(country => {
-    const cache = radarCache[country.id];
-    if (cache && cache.data) {
-      cache.data.forEach((t, i) => {
-        if (t.keyword.toLowerCase().includes(q)) {
-          matches.push({ country, keyword: t.keyword, pos: i + 1 });
-        }
-      });
-    }
+    // Busca en todos los nichos cacheados para este país
+    Object.keys(radarCache).forEach(cKey => {
+      if (!cKey.startsWith(country.id + '_')) return;
+      const cache = radarCache[cKey];
+      if (cache && cache.data) {
+        cache.data.forEach((t, i) => {
+          if (t.keyword.toLowerCase().includes(q)) {
+            const nichoId = cKey.replace(country.id + '_', '');
+            const nichoMeta = RADAR_NICHOS[nichoId] || { emoji: '📊', label: nichoId };
+            matches.push({ country, keyword: t.keyword, pos: i + 1, nicho: nichoMeta });
+          }
+        });
+      }
+    });
   });
 
   if (matches.length === 0) {
@@ -3695,31 +4071,67 @@ function radarSearch() {
     return;
   }
 
-  resultsEl.innerHTML = '<div style="font-size:12px;color:var(--text2);margin-bottom:8px">Encontrado en ' + matches.length + ' posición(es):</div>' +
+  resultsEl.innerHTML = '<div style="font-size:12px;color:var(--text2);margin-bottom:8px">Encontrado en ' + matches.length + ' posición(es) en todos los nichos:</div>' +
     matches.map(m =>
       '<a class="radar-search-match" href="' + radarMeliSearchUrl(m.country.id, m.keyword) + '" target="_blank" style="text-decoration:none;color:var(--text)">' +
         '<span class="radar-search-flag">' + m.country.flag + '</span>' +
-        '<div style="flex:1"><div style="font-weight:600">' + m.keyword + '</div><div class="radar-search-pos">' + m.country.name + ' — posición #' + m.pos + '</div></div>' +
+        '<div style="flex:1"><div style="font-weight:600">' + m.keyword + '</div><div class="radar-search-pos">' + m.country.name + ' · ' + m.nicho.emoji + ' ' + m.nicho.label + ' — posición #' + m.pos + '</div></div>' +
         '<span style="font-size:11px;color:var(--accent)">ver en MeLi →</span>' +
       '</a>'
     ).join('');
 }
 
-// Inicializar radar cuando se activa el módulo
-function initRadarModule() {
-  // Restaurar país guardado (o Colombia por defecto)
+// Función para cambiar nicho activo
+function radarSelectNicho(btn, nicho) {
+  document.querySelectorAll('.radar-nicho-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  radarActiveNicho = nicho;
+  // Persistir nicho
   try {
     const saved = JSON.parse(localStorage.getItem(RADAR_STATE_KEY) || '{}');
-    radarActiveSite = saved.site || 'MCO';
-  } catch(e) { radarActiveSite = 'MCO'; }
+    saved.nicho = nicho;
+    localStorage.setItem(RADAR_STATE_KEY, JSON.stringify(saved));
+  } catch(e) {}
+  // Actualizar indicador de nicho
+  const nichoMeta = RADAR_NICHOS[nicho] || { label: nicho, emoji: '📊' };
+  const infoEl = document.getElementById('radar-nicho-info');
+  if (infoEl) infoEl.textContent = 'Nicho activo: ' + nichoMeta.emoji + ' ' + nichoMeta.label;
+  // Recargar el view activo con el nuevo nicho
+  if (radarActiveSite === 'ALL') {
+    radarInitAllView();
+  } else {
+    const country = RADAR_COUNTRIES.find(c => c.id === radarActiveSite) || RADAR_COUNTRIES[0];
+    if (country) radarLoadSingle(country);
+  }
+}
 
-  // Sincronizar tabs visuales con el país guardado
+// Inicializar radar cuando se activa el módulo
+function initRadarModule() {
+  // Restaurar país y nicho guardados
+  try {
+    const saved = JSON.parse(localStorage.getItem(RADAR_STATE_KEY) || '{}');
+    radarActiveSite  = saved.site  || 'MCO';
+    radarActiveNicho = saved.nicho || 'belleza';
+  } catch(e) { radarActiveSite = 'MCO'; radarActiveNicho = 'belleza'; }
+
+  // Sincronizar tabs de país
   document.querySelectorAll('.radar-ctab').forEach(b => {
     b.classList.toggle('active', b.dataset.site === radarActiveSite);
   });
 
-  // Si hay datos en cache, mostrarlos YA (sin esperar red)
-  const cached = radarCache[radarActiveSite];
+  // Sincronizar tabs de nicho
+  document.querySelectorAll('.radar-nicho-tab').forEach(b => {
+    b.classList.toggle('active', b.dataset.nicho === radarActiveNicho);
+  });
+
+  // Actualizar indicador de nicho
+  const nichoMeta = RADAR_NICHOS[radarActiveNicho] || { label: 'Belleza', emoji: '💄' };
+  const infoEl = document.getElementById('radar-nicho-info');
+  if (infoEl) infoEl.textContent = 'Nicho activo: ' + nichoMeta.emoji + ' ' + nichoMeta.label;
+
+  // Verificar cache con clave nicho incluida
+  const cKey = radarCacheKey(radarActiveSite, radarActiveNicho);
+  const cached = radarCache[cKey];
   const now    = Date.now();
   const hasValidCache = cached && (now - cached.ts) < RADAR_TTL;
 
@@ -3734,19 +4146,19 @@ function initRadarModule() {
 
     if (hasValidCache) {
       // ✅ Mostrar datos del cache INMEDIATAMENTE (sin spinner)
-      const isDemo = cached.isDemo;
-      radarRenderSingleList(country, cached.data, isDemo);
+      radarRenderSingleList(country, cached.data, cached.isDemo);
       const mins = Math.round((now - cached.ts) / 60000);
-      document.getElementById('radar-last-update').textContent = isDemo
-        ? '⚠️ Sin conexión al proxy — datos de ejemplo. Clic en "Actualizar todo" para reintentar.'
-        : '⏰ Cache de hace ' + mins + ' min — datos de MercadoLibre (se actualiza automáticamente)';
+      document.getElementById('radar-last-update').textContent = cached.isDemo
+        ? '⚠️ MeLi sin conexión — datos curados. Clic en "Actualizar todo" para reintentar.'
+        : '⏰ Cache de hace ' + mins + ' min · ' + nichoMeta.emoji + ' ' + nichoMeta.label + ' (se actualiza automáticamente cada 5 min)';
     } else {
       // No hay cache válido — cargar de red
       radarLoadSingle(country).then(() => {
-        const isDemo2 = radarCache[country.id] && radarCache[country.id].isDemo;
+        const cKey2 = radarCacheKey(country.id, radarActiveNicho);
+        const isDemo2 = radarCache[cKey2] && radarCache[cKey2].isDemo;
         document.getElementById('radar-last-update').textContent = isDemo2
-          ? '⚠️ Sin conexión al proxy — datos de ejemplo. Clic en "Actualizar todo" para reintentar.'
-          : '⏰ Última actualización: ' + new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}) + ' — datos oficiales de MercadoLibre';
+          ? '⚠️ MeLi sin conexión — datos curados. Clic en "Actualizar todo" para reintentar.'
+          : '⏰ Actualizado: ' + new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}) + ' · ' + nichoMeta.emoji + ' ' + nichoMeta.label + ' · datos reales de MeLi';
       });
     }
   }
@@ -3769,5 +4181,5 @@ document.addEventListener('DOMContentLoaded', function() {
   setTimeout(checkChromeStoragePendingProduct, 500);
 });
 </script>
-<script src="https://www.genspark.ai/sandbox_inspect.js"></script></body>
+</body>
 </html>
