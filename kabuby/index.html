@@ -3489,16 +3489,24 @@ async function radarFetchTrends(siteId) {
 
   // ── LISTA DE ESTRATEGIAS en orden de preferencia ────────────
   const strategies = [
+    // 1. Proxy propio CF Worker (multi-endpoint interno)
     () => fetch('https://koi-proxy.luisfonse2010.workers.dev/meli-trends?site=' + siteId,
-                { signal: AbortSignal.timeout(8000) }).then(r => r.ok ? r.json() : null),
+                { signal: AbortSignal.timeout(10000) }).then(r => r.ok ? r.json() : null),
+    // 2. PHP proxy Hostinger
+    () => fetch('https://sfwellnessllc.com/meli-trends.php?site=' + siteId + '&_nc=' + Date.now(),
+                { signal: AbortSignal.timeout(10000) }).then(r => r.ok ? r.json() : null),
+    // 3. corsproxy.io
     () => fetch('https://corsproxy.io/?' + encodeURIComponent(meliUrl),
                 { signal: AbortSignal.timeout(9000) }).then(r => r.ok ? r.json() : null),
+    // 4. allorigins
     () => fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(meliUrl),
                 { signal: AbortSignal.timeout(9000) })
           .then(r => r.ok ? r.json() : null)
           .then(j => j && j.contents ? JSON.parse(j.contents) : null),
+    // 5. codetabs
     () => fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(meliUrl),
                 { signal: AbortSignal.timeout(9000) }).then(r => r.ok ? r.json() : null),
+    // 6. thingproxy
     () => fetch('https://thingproxy.freeboard.io/fetch/' + meliUrl,
                 { signal: AbortSignal.timeout(9000) }).then(r => r.ok ? r.json() : null),
   ];
@@ -3514,11 +3522,11 @@ async function radarFetchTrends(siteId) {
     } catch(e) { /* siguiente estrategia */ }
   }
 
-  // ── FALLBACK FINAL: datos demo ──────────────────────────────
+  // ── FALLBACK FINAL: datos demo — NO se guardan en localStorage
   const demoKws  = RADAR_DEMO[siteId] || RADAR_DEMO.MCO;
   const demoData = demoKws.map(keyword => ({ keyword }));
-  radarCache[siteId] = { ts: now - RADAR_TTL + 2 * 60 * 1000, data: demoData, isDemo: true };
-  radarCacheSave(radarCache);
+  // Solo en memoria con TTL cortísimo — NO llamamos radarCacheSave()
+  radarCache[siteId] = { ts: now - RADAR_TTL + 30 * 1000, data: demoData, isDemo: true };
   return demoData;
 }
 
