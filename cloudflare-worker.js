@@ -18,8 +18,6 @@
  *
  * ============================================================
  */
-/* ── Last deploy: 2026-08-27T21:28:23.207Z */
-
 
 /* ── System Prompt — KOI v2.1 · Multilingual Intelligence ──── */
 const KOI_SYSTEM_PROMPT = `
@@ -1554,6 +1552,53 @@ ABSOLUTE RULES — violation means the analysis is worthless:
         console.error('[Shopify Proxy] Error:', err.message);
         return new Response(JSON.stringify({ error: `Proxy fetch failed: ${err.message}` }),
           { status: 500, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
+      }
+    }
+
+    // ── Endpoint /meli-trends — Proxy para api.mercadolibre.com/trends ──
+    // MeLi bloquea CORS desde el browser. Este endpoint hace el fetch
+    // server-side y devuelve los datos con cabeceras CORS correctas.
+    // Uso: GET /meli-trends?site=MCO  (MCO, MLM, MLC, MLA, MLB)
+    const meliMatch = url.pathname.match(/^\/meli-trends(\/([A-Za-z]{3}))?$/);
+    if (meliMatch || url.pathname === '/meli-trends') {
+      // Aceptar site como path param (/meli-trends/MCO) o query (?site=MCO)
+      const siteId = (meliMatch && meliMatch[2]) || url.searchParams.get('site') || '';
+      const VALID_SITES = ['MCO','MLM','MLC','MLA','MLB'];
+      if (!VALID_SITES.includes(siteId.toUpperCase())) {
+        return new Response(
+          JSON.stringify({ error: 'Parámetro site inválido. Usa: MCO, MLM, MLC, MLA, MLB', usage: '/meli-trends?site=MCO' }),
+          { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
+        );
+      }
+      try {
+        const meliResp = await fetch(`https://api.mercadolibre.com/trends/${siteId.toUpperCase()}`, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (compatible; KabubyBot/1.0)',
+            'Accept': 'application/json',
+          },
+          cf: { cacheTtl: 300, cacheEverything: true }
+        });
+        if (!meliResp.ok) {
+          return new Response(
+            JSON.stringify({ error: `MeLi API error: ${meliResp.status}`, site: siteId }),
+            { status: meliResp.status, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
+          );
+        }
+        const data = await meliResp.json();
+        return new Response(JSON.stringify(data), {
+          status: 200,
+          headers: {
+            ...CORS_HEADERS,
+            'Content-Type': 'application/json',
+            'Cache-Control': 'public, max-age=300',
+            'X-Proxy': 'koi-proxy/meli-trends',
+          }
+        });
+      } catch (err) {
+        return new Response(
+          JSON.stringify({ error: `Proxy fetch failed: ${err.message}`, site: siteId }),
+          { status: 500, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
+        );
       }
     }
 
