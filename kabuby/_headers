@@ -2,9 +2,11 @@
   Cache-Control: no-cache, no-store, must-revalidate
   Pragma: no-cache
   Expires: 0
-
-/kabuby/
-  Cache-Control: no-cache, no-store, must-revalidate
+  X-Build: v5.9
+  X-Cache-Bust: 1788353621156
+  X-Deploy-TS: 2026-09-02 12:53:41 UTC
 
 /kabuby/index.html
   Cache-Control: no-cache, no-store, must-revalidate
+  X-Build: v5.9
+  X-Cache-Bust: 1788353621156
