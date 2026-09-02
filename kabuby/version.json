@@ -2,7 +2,7 @@
   "version": "5.9.7",
   "build": "2026-09-02",
   "badge": "LIVE",
-  "bust": "1788376247494-AUTO-FIX",
-  "updated": "2026-09-02T19:10:51.949Z",
-  "note": "AUTO-FIX desde Genspark Hosted"
+  "bust": "1788376668270-ATOMIC",
+  "updated": "2026-09-02T19:17:50.638Z",
+  "note": "ATOMIC push — index.html + version.json en un commit"
 }
