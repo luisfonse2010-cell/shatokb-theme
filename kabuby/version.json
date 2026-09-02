@@ -1,0 +1,23 @@
+{
+  "build": "v5.7",
+  "date": "2026-09-02",
+  "features": [
+    "radar-multi-nicho",
+    "localStorage-cache-fix",
+    "demo-persiste-refresh",
+    "8-nichos-mercado",
+    "worker-meli-search-proxy",
+    "fix-cors-definitivo"
+  ],
+  "radar": {
+    "nichos": ["belleza","hogar","tech","fitness","mascotas","bebe","cocina","moda"],
+    "paises": ["MCO","MLM","MLC","MLA","MLB"],
+    "ttl_ms": 300000,
+    "cache_key": "kabuby_radar_cache",
+    "proxy": "https://koi-proxy.luisfonse2010.workers.dev/meli-search"
+  },
+  "worker": {
+    "url": "https://koi-proxy.luisfonse2010.workers.dev",
+    "endpoints": ["/chat", "/vision", "/report", "/meli-trends", "/meli-search", "/shopify-products"]
+  }
+}
