@@ -2,7 +2,7 @@
   "version": "5.9.7",
   "build": "2026-09-02",
   "badge": "LIVE",
-  "bust": "1788376668270-ATOMIC",
-  "updated": "2026-09-02T19:17:50.638Z",
-  "note": "ATOMIC push — index.html + version.json en un commit"
+  "bust": "1788377770396-FORCE",
+  "updated": "2026-09-02T19:36:11.933Z",
+  "note": "FORCE-REDEPLOY — blob diferente para invalidar CF Pages"
 }
