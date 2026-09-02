@@ -3444,14 +3444,34 @@ const RADAR_COUNTRIES = [
   { id: 'MLB', name: 'Brasil',    flag: '🇧🇷' }
 ];
 
-// Cache en memoria con TTL de 5 minutos
-const radarCache = {};
-const RADAR_TTL = 5 * 60 * 1000;
+// Cache con TTL — persiste en localStorage para sobrevivir recargas
+const RADAR_TTL        = 5 * 60 * 1000;   // 5 min
+const RADAR_LS_KEY     = 'kabuby_radar_cache';
+const RADAR_STATE_KEY  = 'kabuby_radar_state';
 
-let radarActiveSite = 'MCO';
+function radarCacheLoad() {
+  try {
+    const raw = localStorage.getItem(RADAR_LS_KEY);
+    if (!raw) return {};
+    const obj = JSON.parse(raw);
+    const now = Date.now();
+    Object.keys(obj).forEach(k => { if (now - obj[k].ts >= RADAR_TTL) delete obj[k]; });
+    return obj;
+  } catch(e) { return {}; }
+}
+function radarCacheSave(cache) {
+  try { localStorage.setItem(RADAR_LS_KEY, JSON.stringify(cache)); } catch(e) {}
+}
+
+const radarCache = radarCacheLoad();
+
+let radarActiveSite = (function() {
+  try { return JSON.parse(localStorage.getItem(RADAR_STATE_KEY) || '{}').site || 'MCO'; } catch(e) { return 'MCO'; }
+})();
 
 async function radarFetchTrends(siteId) {
   const now = Date.now();
+  // Hit de cache (memoria o localStorage restaurado)
   if (radarCache[siteId] && (now - radarCache[siteId].ts) < RADAR_TTL) {
     return radarCache[siteId].data;
   }
@@ -3466,6 +3486,7 @@ async function radarFetchTrends(siteId) {
       const data = await res.json();
       if (Array.isArray(data)) {
         radarCache[siteId] = { ts: now, data };
+        radarCacheSave(radarCache);
         return data;
       }
     }
@@ -3493,6 +3514,7 @@ async function radarFetchTrends(siteId) {
       }
       if (!Array.isArray(data)) continue;
       radarCache[siteId] = { ts: now, data };
+      radarCacheSave(radarCache);
       return data;
     } catch(e) {
       lastErr = e;
@@ -3592,8 +3614,9 @@ async function radarRefreshAll() {
   icon.textContent = '⏳';
   btn.disabled = true;
 
-  // Limpiar cache
+  // Limpiar cache (memoria + localStorage)
   RADAR_COUNTRIES.forEach(c => delete radarCache[c.id]);
+  radarCacheSave(radarCache);
 
   if (radarActiveSite === 'ALL') {
     await radarInitAllView();
@@ -3625,6 +3648,8 @@ function radarSelectCountry(btn, siteId) {
   document.querySelectorAll('.radar-ctab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   radarActiveSite = siteId;
+  // Persistir país seleccionado para restaurar tras recarga
+  try { localStorage.setItem(RADAR_STATE_KEY, JSON.stringify({ site: siteId })); } catch(e) {}
 
   const allView    = document.getElementById('radar-all-view');
   const singleView = document.getElementById('radar-single-view');
@@ -3675,19 +3700,45 @@ function radarSearch() {
 
 // Inicializar radar cuando se activa el módulo
 function initRadarModule() {
-  radarActiveSite = 'MCO';
-  // Resetear tabs visuales
-  document.querySelectorAll('.radar-ctab').forEach((b, i) => {
-    b.classList.toggle('active', i === 0);
+  // Restaurar país guardado (o Colombia por defecto)
+  try {
+    const saved = JSON.parse(localStorage.getItem(RADAR_STATE_KEY) || '{}');
+    radarActiveSite = saved.site || 'MCO';
+  } catch(e) { radarActiveSite = 'MCO'; }
+
+  // Sincronizar tabs visuales con el país guardado
+  document.querySelectorAll('.radar-ctab').forEach(b => {
+    b.classList.toggle('active', b.dataset.site === radarActiveSite);
   });
-  // Mostrar vista ALL con Colombia seleccionada
-  document.getElementById('radar-all-view').style.display = 'none';
-  document.getElementById('radar-single-view').style.display = 'block';
-  const colombia = RADAR_COUNTRIES[0];
-  radarLoadSingle(colombia).then(() => {
-    document.getElementById('radar-last-update').textContent =
-      '⏰ Última actualización: ' + new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}) + ' — datos oficiales de MercadoLibre';
-  });
+
+  // Si hay datos en cache, mostrarlos YA (sin esperar red)
+  const cached = radarCache[radarActiveSite];
+  const now    = Date.now();
+  const hasValidCache = cached && (now - cached.ts) < RADAR_TTL;
+
+  if (radarActiveSite === 'ALL') {
+    document.getElementById('radar-all-view').style.display    = 'block';
+    document.getElementById('radar-single-view').style.display = 'none';
+    radarInitAllView();
+  } else {
+    document.getElementById('radar-all-view').style.display    = 'none';
+    document.getElementById('radar-single-view').style.display = 'block';
+    const country = RADAR_COUNTRIES.find(c => c.id === radarActiveSite) || RADAR_COUNTRIES[0];
+
+    if (hasValidCache) {
+      // ✅ Mostrar datos del cache INMEDIATAMENTE (sin spinner)
+      radarRenderSingleList(country, cached.data);
+      const mins = Math.round((now - cached.ts) / 60000);
+      document.getElementById('radar-last-update').textContent =
+        '⏰ Cache de hace ' + mins + ' min — datos de MercadoLibre (se actualiza automáticamente)';
+    } else {
+      // No hay cache válido — cargar de red
+      radarLoadSingle(country).then(() => {
+        document.getElementById('radar-last-update').textContent =
+          '⏰ Última actualización: ' + new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}) + ' — datos oficiales de MercadoLibre';
+      });
+    }
+  }
 }
 
 // ── INIT DOM LOADED ────────────────────────────────────────────
