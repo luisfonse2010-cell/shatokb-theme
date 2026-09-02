@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
-<!-- BUILD: 2026-09-02 v5.9.2 — CF-edge-cache-bust LIVE badge fix -->
-<!-- CF-CACHE-BUST: 1756999999999 -->
+<!-- BUILD: 2026-09-02 v5.9.3 — Radar direct MeLi CORS fix, cache 30min -->
+<!-- CF-CACHE-BUST: 1757000000001 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -3446,7 +3446,7 @@ const RADAR_COUNTRIES = [
 ];
 
 // Cache con TTL — persiste en localStorage para sobrevivir recargas
-const RADAR_TTL        = 5 * 60 * 1000;   // 5 min
+const RADAR_TTL        = 30 * 60 * 1000;  // 30 min — persiste al refrescar
 const RADAR_LS_KEY     = 'kabuby_radar_cache';
 const RADAR_STATE_KEY  = 'kabuby_radar_state';
 
@@ -3810,32 +3810,23 @@ const RADAR_CATEGORIES = {
   ],
 };
 
-// Busca en MeLi Search API a través del Worker proxy para evitar CORS
-// → devuelve {keyword, available, price} o null si falla
+// ── Busca en MeLi directamente (CORS habilitado para browsers) ──────────────
+// MeLi api.mercadolibre.com/sites/{site}/search tiene CORS abierto para browsers.
+// El Worker proxy fallaba porque MeLi bloquea IPs de datacenters CF.
+// Solución: llamar directo desde el browser, sin proxy.
 async function radarSearchTerm(siteId, term) {
-  // Intentar primero vía Worker proxy (CORS seguro desde kabuby.com)
-  const MELI_WORKER = 'https://koi-proxy.luisfonse2010.workers.dev';
+  // Llamada directa a MeLi — funciona desde browsers (CORS abierto)
   try {
-    const proxyUrl = `${MELI_WORKER}/meli-search?site=${siteId}&q=${encodeURIComponent(term)}&limit=10`;
-    const r = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
-    if (r.ok) {
-      const j = await r.json();
-      if (j && typeof j.available === 'number') {
-        return { keyword: term, available: j.available, price: j.price || 0 };
-      }
-    }
-  } catch(e) { /* silencioso — intenta directo a continuación */ }
-
-  // Fallback: llamada directa (funciona si MeLi tiene CORS habilitado para este origen)
-  try {
-    const directUrl = `https://api.mercadolibre.com/sites/${siteId}/search?q=${encodeURIComponent(term)}&limit=3&sort=relevance`;
-    const r2 = await fetch(directUrl, { signal: AbortSignal.timeout(6000) });
-    if (!r2.ok) return null;
-    const j2 = await r2.json();
-    if (!j2.results || j2.results.length === 0) return null;
-    const top = j2.results[0];
-    return { keyword: term, available: j2.paging ? j2.paging.total : 0, price: top.price || 0 };
-  } catch(e2) { return null; }
+    const url = `https://api.mercadolibre.com/sites/${siteId}/search?q=${encodeURIComponent(term)}&limit=5`;
+    const r = await fetch(url, { signal: AbortSignal.timeout(10000) });
+    if (!r.ok) return null;
+    const j = await r.json();
+    if (!j || !Array.isArray(j.results)) return null;
+    const total = (j.paging && j.paging.total) ? j.paging.total : j.results.length;
+    const prices = j.results.map(x => x.price).filter(p => p > 0).sort((a,b) => a-b);
+    const price = prices.length ? prices[Math.floor(prices.length/2)] : 0;
+    return { keyword: term, available: total, price };
+  } catch(e) { return null; }
 }
 
 async function radarFetchTrends(siteId, nicho) {
@@ -3843,44 +3834,46 @@ async function radarFetchTrends(siteId, nicho) {
   const cKey = radarCacheKey(siteId, nicho);
   const now = Date.now();
 
-  // ── HIT DE CACHE (incluye nicho en la clave) ─────────────────
+  // ── CACHE HIT — 30 min, persiste al refrescar ────────────────
   if (radarCache[cKey] && (now - radarCache[cKey].ts) < RADAR_TTL) {
     return radarCache[cKey].data;
   }
 
-  // Obtener términos del nicho actual
   const terms = radarGetTerms(siteId, nicho);
 
-  // Buscar todos los términos en paralelo (MeLi Search es pública con CORS)
+  // Buscar los primeros 8 términos en paralelo (rápido, no saturar)
+  const batch = terms.slice(0, 8);
   const results = await Promise.allSettled(
-    terms.map(t => radarSearchTerm(siteId, t.q))
+    batch.map(t => radarSearchTerm(siteId, t.q))
   );
 
-  // Filtrar los que respondieron y ordenar por disponibilidad (proxy de demanda)
   const valid = results
     .filter(r => r.status === 'fulfilled' && r.value !== null)
     .map(r => r.value)
     .sort((a, b) => (b.available || 0) - (a.available || 0));
 
-  if (valid.length >= 3) {
-    // ✅ Tenemos datos reales de MeLi Search
-    const data = valid.map(v => ({
+  if (valid.length >= 1) {
+    // ✅ Al menos 1 término respondió — datos reales de MeLi
+    // Completar los que fallaron con los términos restantes como curados
+    const validKeywords = new Set(valid.map(v => v.keyword));
+    const extras = terms
+      .filter(t => !validKeywords.has(t.q))
+      .map(t => ({ keyword: t.q, available: 0, price: 0 }));
+    const data = [...valid, ...extras].slice(0, 12).map(v => ({
       keyword:   v.keyword,
-      available: v.available,
+      available: v.available || 0,
       price:     v.price || 0,
     }));
-    radarCache[cKey] = { ts: now, data, source: 'meli-search', nicho };
+    radarCache[cKey] = { ts: now, data, source: 'meli-direct', nicho };
     radarCacheSave(radarCache);
     return data;
   }
 
-  // ── FALLBACK: términos del RADAR_NICHOS_DATA como curados ──
-  // Se guarda con TTL completo en localStorage para que PERSISTA al refrescar
-  const fallbackTerms = radarGetTerms(siteId, nicho);
-  const demoData = fallbackTerms.map(t => ({ keyword: t.q }));
-  radarCache[cKey] = { ts: now, data: demoData, isDemo: true, nicho };
-  radarCacheSave(radarCache); // ✅ persiste en localStorage
-  return demoData;
+  // ── FALLBACK CURADO: MeLi no respondió (sin conexión) ────────
+  const fallbackData = terms.map(t => ({ keyword: t.q, available: 0, price: 0 }));
+  radarCache[cKey] = { ts: now, data: fallbackData, isDemo: true, nicho };
+  radarCacheSave(radarCache);
+  return fallbackData;
 }
 
 function radarRankClass(i) {
