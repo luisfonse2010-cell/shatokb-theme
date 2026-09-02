@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
-<!-- BUILD: 2026-09-01 v5.3 — Radar MeLi LIVE | multi-proxy fallback -->
+<!-- BUILD: 2026-09-02 v5.4 — Radar LIVE + localStorage cache + proxy fix -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -3469,58 +3469,57 @@ let radarActiveSite = (function() {
   try { return JSON.parse(localStorage.getItem(RADAR_STATE_KEY) || '{}').site || 'MCO'; } catch(e) { return 'MCO'; }
 })();
 
+// Datos de demostración por país — se usan si TODOS los proxies fallan
+const RADAR_DEMO = {
+  MCO: ['crema facial','suero vitamina c','protector solar','base de maquillaje','aceite de argán','mascarilla facial','sombras de ojos','labial mate','sérum antiedad','limpiador facial'],
+  MLM: ['crema hidratante','vitamina c serum','bloqueador solar','polvo compacto','aceite rosa mosqueta','mascarilla purificante','paleta de sombras','lipstick mate','colageno','agua micelar'],
+  MLC: ['crema anti-edad','vitamina c','protector solar facial','base liquida','aceite facial','mascarilla arcilla','maquillaje ojos','labial rojo','acido hialuronico','tónico facial'],
+  MLA: ['crema facial','serum vitamina c','protector solar','base maquillaje','aceite rosa mosqueta','mascarilla facial','paleta sombras','labial mate','colageno bebible','desmaquillante'],
+  MLB: ['creme facial','vitamina c sérum','protetor solar','base liquida','óleo de argan','máscara facial','paleta de sombra','batom fosco','colágeno','água micelar']
+};
+
 async function radarFetchTrends(siteId) {
   const now = Date.now();
-  // Hit de cache (memoria o localStorage restaurado)
+  // ── HIT DE CACHE (memoria o localStorage restaurado) ────────
   if (radarCache[siteId] && (now - radarCache[siteId].ts) < RADAR_TTL) {
     return radarCache[siteId].data;
   }
-  // Proxy propio (koi-proxy CF Worker) — siempre primero, es el más fiable
-  const KOI_PROXY = 'https://koi-proxy.luisfonse2010.workers.dev/meli-trends?site=';
-  const meliUrl   = 'https://api.mercadolibre.com/trends/' + siteId;
 
-  // 1. Intentar con koi-proxy propio
-  try {
-    const res = await fetch(KOI_PROXY + siteId, { signal: AbortSignal.timeout(8000) });
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data)) {
+  const meliUrl = 'https://api.mercadolibre.com/trends/' + siteId;
+
+  // ── LISTA DE ESTRATEGIAS en orden de preferencia ────────────
+  const strategies = [
+    () => fetch('https://koi-proxy.luisfonse2010.workers.dev/meli-trends?site=' + siteId,
+                { signal: AbortSignal.timeout(8000) }).then(r => r.ok ? r.json() : null),
+    () => fetch('https://corsproxy.io/?' + encodeURIComponent(meliUrl),
+                { signal: AbortSignal.timeout(9000) }).then(r => r.ok ? r.json() : null),
+    () => fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(meliUrl),
+                { signal: AbortSignal.timeout(9000) })
+          .then(r => r.ok ? r.json() : null)
+          .then(j => j && j.contents ? JSON.parse(j.contents) : null),
+    () => fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(meliUrl),
+                { signal: AbortSignal.timeout(9000) }).then(r => r.ok ? r.json() : null),
+    () => fetch('https://thingproxy.freeboard.io/fetch/' + meliUrl,
+                { signal: AbortSignal.timeout(9000) }).then(r => r.ok ? r.json() : null),
+  ];
+
+  for (const stratFn of strategies) {
+    try {
+      const data = await stratFn();
+      if (Array.isArray(data) && data.length > 0) {
         radarCache[siteId] = { ts: now, data };
         radarCacheSave(radarCache);
         return data;
       }
-    }
-  } catch(e) { /* fallback a proxies públicos */ }
-
-  // 2. Fallback: proxies públicos
-  const proxies = [
-    u => 'https://corsproxy.io/?' + encodeURIComponent(u),
-    u => 'https://api.allorigins.win/get?url=' + encodeURIComponent(u),
-    u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
-  ];
-  let lastErr = null;
-  for (const proxyFn of proxies) {
-    try {
-      const proxyUrl = proxyFn(meliUrl);
-      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
-      if (!res.ok) continue;
-      const text = await res.text();
-      let data;
-      try {
-        const outer = JSON.parse(text);
-        data = outer.contents ? JSON.parse(outer.contents) : outer;
-      } catch(e) {
-        data = JSON.parse(text);
-      }
-      if (!Array.isArray(data)) continue;
-      radarCache[siteId] = { ts: now, data };
-      radarCacheSave(radarCache);
-      return data;
-    } catch(e) {
-      lastErr = e;
-    }
+    } catch(e) { /* siguiente estrategia */ }
   }
-  throw lastErr || new Error('Todos los proxies fallaron para ' + siteId);
+
+  // ── FALLBACK FINAL: datos demo ──────────────────────────────
+  const demoKws  = RADAR_DEMO[siteId] || RADAR_DEMO.MCO;
+  const demoData = demoKws.map(keyword => ({ keyword }));
+  radarCache[siteId] = { ts: now - RADAR_TTL + 2 * 60 * 1000, data: demoData, isDemo: true };
+  radarCacheSave(radarCache);
+  return demoData;
 }
 
 function radarRankClass(i) {
@@ -3550,7 +3549,7 @@ function radarMeliSearchUrl(siteId, keyword) {
 }
 
 // Renderizar tarjeta de país (vista ALL)
-function radarRenderCountryCard(country, trends) {
+function radarRenderCountryCard(country, trends, isDemo) {
   const top10 = trends.slice(0, 10);
   const items = top10.map((t, i) => {
     const cls = i < 3 ? 'top3' : '';
@@ -3560,10 +3559,10 @@ function radarRenderCountryCard(country, trends) {
       '<span class="radar-item-arrow">→</span>' +
       '</a>';
   }).join('');
-
+  const demoTag = isDemo ? '<span style="font-size:9px;background:rgba(251,191,36,0.15);color:#fcd34d;border:1px solid rgba(251,191,36,0.3);padding:2px 6px;border-radius:4px;margin-left:6px">demo</span>' : '';
   return '<div class="radar-country-card">' +
     '<div class="radar-country-header">' +
-      '<span class="radar-country-name">' + country.flag + ' ' + country.name + '</span>' +
+      '<span class="radar-country-name">' + country.flag + ' ' + country.name + demoTag + '</span>' +
       '<span class="radar-country-count">' + trends.length + ' tendencias</span>' +
     '</div>' +
     '<div>' + items + '</div>' +
@@ -3571,12 +3570,12 @@ function radarRenderCountryCard(country, trends) {
 }
 
 // Renderizar lista completa (vista single)
-function radarRenderSingleList(country, trends) {
-  const list = document.getElementById('radar-single-list');
+function radarRenderSingleList(country, trends, isDemo) {
+  const list  = document.getElementById('radar-single-list');
   const title = document.getElementById('radar-single-title');
   const count = document.getElementById('radar-single-count');
   title.textContent = country.flag + ' ' + country.name + ' — Top Tendencias';
-  count.textContent = trends.length + ' búsquedas trending';
+  count.textContent = trends.length + ' búsquedas' + (isDemo ? ' (datos de ejemplo — sin conexión a MeLi)' : ' trending');
   list.innerHTML = trends.map((t, i) => {
     return '<a class="radar-single-item" href="' + radarMeliSearchUrl(country.id, t.keyword) + '" target="_blank">' +
       '<span class="radar-single-rank ' + radarRankClass(i) + '">' + radarRankText(i) + '</span>' +
@@ -3584,28 +3583,26 @@ function radarRenderSingleList(country, trends) {
       '<span style="font-size:10px;color:var(--muted)">ver en MeLi →</span>' +
       '</a>';
   }).join('');
+  if (isDemo) {
+    list.innerHTML += '<div style="margin:12px 16px 8px;padding:8px 12px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:8px;font-size:11px;color:#fcd34d">⚠️ Proxy sin conexión — mostrando términos de ejemplo. Hacé clic en <strong>Actualizar todo</strong> para reintentar.</div>';
+  }
 }
 
 async function radarLoadCountry(country, cardEl) {
-  try {
-    const trends = await radarFetchTrends(country.id);
-    cardEl.innerHTML = radarRenderCountryCard(country, trends);
-  } catch (e) {
-    cardEl.innerHTML = '<div class="radar-country-card"><div class="radar-country-header"><span class="radar-country-name">' + country.flag + ' ' + country.name + '</span></div><div class="radar-error">⚠️ No se pudo cargar — verificar conexión</div></div>';
-  }
+  const trends = await radarFetchTrends(country.id);
+  const isDemo = radarCache[country.id] && radarCache[country.id].isDemo;
+  cardEl.innerHTML = radarRenderCountryCard(country, trends, isDemo);
 }
 
 async function radarLoadSingle(country) {
-  const list = document.getElementById('radar-single-list');
+  const list  = document.getElementById('radar-single-list');
   const title = document.getElementById('radar-single-title');
+  const count = document.getElementById('radar-single-count');
   title.textContent = country.flag + ' ' + country.name + ' — cargando...';
   list.innerHTML = '<div class="radar-loading">⏳ Cargando tendencias de ' + country.name + '...</div>';
-  try {
-    const trends = await radarFetchTrends(country.id);
-    radarRenderSingleList(country, trends);
-  } catch (e) {
-    list.innerHTML = '<div class="radar-error">⚠️ No se pudieron cargar las tendencias. Intentá nuevamente.</div>';
-  }
+  const trends = await radarFetchTrends(country.id);
+  const isDemo = radarCache[country.id] && radarCache[country.id].isDemo;
+  radarRenderSingleList(country, trends, isDemo);
 }
 
 async function radarRefreshAll() {
@@ -3627,8 +3624,10 @@ async function radarRefreshAll() {
 
   icon.textContent = '🔄';
   btn.disabled = false;
-  document.getElementById('radar-last-update').textContent =
-    '⏰ Última actualización: ' + new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}) + ' — datos oficiales de MercadoLibre';
+  const isDemo = radarActiveSite !== 'ALL' && radarCache[radarActiveSite] && radarCache[radarActiveSite].isDemo;
+  document.getElementById('radar-last-update').textContent = isDemo
+    ? '⚠️ Sin conexión al proxy — mostrando datos de ejemplo. Verificá tu conexión.'
+    : '⏰ Última actualización: ' + new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}) + ' — datos oficiales de MercadoLibre';
 }
 
 async function radarInitAllView() {
@@ -3727,15 +3726,19 @@ function initRadarModule() {
 
     if (hasValidCache) {
       // ✅ Mostrar datos del cache INMEDIATAMENTE (sin spinner)
-      radarRenderSingleList(country, cached.data);
+      const isDemo = cached.isDemo;
+      radarRenderSingleList(country, cached.data, isDemo);
       const mins = Math.round((now - cached.ts) / 60000);
-      document.getElementById('radar-last-update').textContent =
-        '⏰ Cache de hace ' + mins + ' min — datos de MercadoLibre (se actualiza automáticamente)';
+      document.getElementById('radar-last-update').textContent = isDemo
+        ? '⚠️ Sin conexión al proxy — datos de ejemplo. Clic en "Actualizar todo" para reintentar.'
+        : '⏰ Cache de hace ' + mins + ' min — datos de MercadoLibre (se actualiza automáticamente)';
     } else {
       // No hay cache válido — cargar de red
       radarLoadSingle(country).then(() => {
-        document.getElementById('radar-last-update').textContent =
-          '⏰ Última actualización: ' + new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}) + ' — datos oficiales de MercadoLibre';
+        const isDemo2 = radarCache[country.id] && radarCache[country.id].isDemo;
+        document.getElementById('radar-last-update').textContent = isDemo2
+          ? '⚠️ Sin conexión al proxy — datos de ejemplo. Clic en "Actualizar todo" para reintentar.'
+          : '⏰ Última actualización: ' + new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}) + ' — datos oficiales de MercadoLibre';
       });
     }
   }
