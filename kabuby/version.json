@@ -1,8 +1,16 @@
 {
-  "version": "5.9.7",
-  "build": "2026-09-02",
+  "version": "7.1.0",
   "badge": "LIVE",
-  "bust": "1788377770396-FORCE",
-  "updated": "2026-09-02T19:36:11.933Z",
-  "note": "FORCE-REDEPLOY — blob diferente para invalidar CF Pages"
+  "build": "2026-09-02 v7.1.0 — Signal Engine 5 fuentes + Watchlist + Heatmap",
+  "bust": "1788383210045-v710-CF-PUSH",
+  "features": [
+    "signal-engine-5-sources",
+    "watchlist",
+    "heatmap",
+    "tiktok",
+    "google-trends",
+    "amazon-bsr",
+    "reddit"
+  ],
+  "ts": 1788383210045
 }

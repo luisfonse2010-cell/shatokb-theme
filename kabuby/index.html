@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
-<!-- BUILD: 2026-09-02 v5.9.7 — FORCE-REDEPLOY [1788377770396] -->
-<!-- CF-CACHE-BUST: 1788377770396-FORCE -->
+<!-- BUILD: 2026-09-02 v7.1.0 — Signal Engine 5 fuentes + Watchlist + Heatmap -->
+<!-- CF-CACHE-BUST: 1788383210045-v710-CF-PUSH -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -1123,6 +1123,88 @@ tr:hover td { background: rgba(108,142,255,0.08); }
 }
 
 /* ── RADAR DE TENDENCIAS ─────────────────────────────────── */
+
+/* Selector de nichos */
+.radar-nicho-tab {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.radar-nicho-tab:hover { border-color: var(--accent); color: var(--text); }
+.radar-nicho-tab.active { background: rgba(108,142,255,0.18); border-color: var(--accent); color: var(--accent); }
+
+/* Score de oportunidad */
+.radar-score-bar {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--bg3);
+  width: 60px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.radar-score-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s;
+}
+.radar-score-badge {
+  font-size: 10px;
+  font-weight: 700;
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+  border-radius: 4px;
+  padding: 1px 0;
+}
+.rsb-high  { color: #34d399; }
+.rsb-med   { color: #fbbf24; }
+.rsb-low   { color: var(--muted); }
+
+/* Botón enviar al scout */
+.radar-scout-btn {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(52,211,153,0.4);
+  background: rgba(52,211,153,0.08);
+  color: #34d399;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+.radar-single-item:hover .radar-scout-btn { opacity: 1; }
+.radar-item:hover .radar-scout-btn { opacity: 1; }
+
+/* Histórico de búsquedas */
+.radar-history-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 11px;
+  color: var(--text2);
+  cursor: pointer;
+  transition: border-color 0.12s;
+}
+.radar-history-chip:hover { border-color: var(--accent); color: var(--text); }
+.radar-history-chip .rh-x { font-size: 12px; color: var(--muted); margin-left: 2px; }
+.radar-history-chip .rh-x:hover { color: var(--red); }
+
 .radar-ctab {
   background: var(--bg2);
   border: 1px solid var(--border);
@@ -1226,6 +1308,39 @@ tr:hover td { background: rgba(108,142,255,0.08); }
 }
 .radar-search-flag { font-size: 16px; }
 .radar-search-pos { font-size: 11px; color: var(--muted); }
+
+/* ── SIGNAL ENGINE v7.0 ──────────────────────────────────── */
+.signal-source-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 600; color: var(--text2);
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 4px 10px; cursor: default;
+  transition: border-color 0.2s, color 0.2s;
+}
+.signal-source-badge:hover { border-color: var(--accent); color: var(--text); }
+.signal-source-badge .ssb-pct { font-size: 9px; color: var(--muted); font-weight: 500; }
+.signal-source-badge.active  { border-color: var(--green); color: var(--green); }
+.signal-source-badge.loading { border-color: var(--yellow); color: var(--yellow); }
+.signal-source-badge.error   { border-color: var(--red); color: var(--muted); }
+
+/* Animación spin para loading */
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* Signal score por keyword en lista */
+.signal-score-ring {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 900; flex-shrink: 0;
+  border: 2px solid transparent;
+}
+.signal-score-ring.high { border-color: #34d399; color: #34d399; background: rgba(52,211,153,0.08); }
+.signal-score-ring.med  { border-color: #fbbf24; color: #fbbf24; background: rgba(251,191,36,0.08); }
+.signal-score-ring.low  { border-color: #60c8ff; color: #60c8ff; background: rgba(96,200,255,0.08); }
+.signal-score-ring.none { border-color: var(--border); color: var(--muted); background: transparent; }
+
+/* Mini fuente bars debajo de cada keyword */
+.signal-mini-bars { display: flex; gap: 2px; align-items: flex-end; height: 14px; flex-shrink: 0; }
+.signal-mini-bar  { width: 5px; border-radius: 2px 2px 0 0; background: var(--bg3); transition: height 0.4s; }
 </style>
 </head>
 <body>
@@ -1876,6 +1991,19 @@ tr:hover td { background: rgba(108,142,255,0.08); }
           </button>
         </div>
 
+        <!-- Selector de nichos -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;align-items:center">
+          <span style="font-size:11px;color:var(--muted);font-weight:600;margin-right:2px">NICHO:</span>
+          <button class="radar-nicho-tab active" data-nicho="belleza" onclick="radarSelectNicho(this,'belleza')">💄 Belleza</button>
+          <button class="radar-nicho-tab" data-nicho="tech" onclick="radarSelectNicho(this,'tech')">📱 Tech</button>
+          <button class="radar-nicho-tab" data-nicho="hogar" onclick="radarSelectNicho(this,'hogar')">🏠 Hogar</button>
+          <button class="radar-nicho-tab" data-nicho="fitness" onclick="radarSelectNicho(this,'fitness')">💪 Fitness</button>
+          <button class="radar-nicho-tab" data-nicho="mascotas" onclick="radarSelectNicho(this,'mascotas')">🐾 Mascotas</button>
+          <button class="radar-nicho-tab" data-nicho="bebe" onclick="radarSelectNicho(this,'bebe')">👶 Bebé</button>
+          <button class="radar-nicho-tab" data-nicho="cocina" onclick="radarSelectNicho(this,'cocina')">🍳 Cocina</button>
+          <button class="radar-nicho-tab" data-nicho="moda" onclick="radarSelectNicho(this,'moda')">👗 Moda</button>
+        </div>
+
         <!-- Última actualización -->
         <div style="font-size:12px;color:var(--muted);margin-bottom:20px" id="radar-last-update">⏰ Cargando tendencias...</div>
 
@@ -1907,8 +2035,14 @@ tr:hover td { background: rgba(108,142,255,0.08); }
           </div>
         </div>
 
+        <!-- Histórico de búsquedas -->
+        <div id="radar-history-wrap" style="margin-top:20px;display:none">
+          <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px">🕐 BÚSQUEDAS RECIENTES</div>
+          <div id="radar-history-chips" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+        </div>
+
         <!-- Buscador de tendencias -->
-        <div style="margin-top:28px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px">
+        <div style="margin-top:20px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px">
           <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px">🔍 Buscar término en todos los países</div>
           <div style="display:flex;gap:8px">
             <input type="text" id="radar-search-input" placeholder="ej: crema facial, auriculares, proteína..." style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:13px;outline:none;font-family:inherit" onkeydown="if(event.key==='Enter')radarSearch()">
@@ -1917,10 +2051,43 @@ tr:hover td { background: rgba(108,142,255,0.08); }
           <div id="radar-search-results" style="margin-top:12px"></div>
         </div>
 
-        <!-- Info de fuente -->
-        <div style="margin-top:16px;padding:12px 16px;background:rgba(108,142,255,0.08);border:1px solid rgba(108,142,255,0.2);border-radius:10px;font-size:12px;color:var(--text2);display:flex;gap:8px;align-items:flex-start">
-          <span style="font-size:14px">ℹ️</span>
-          <div>Datos de <strong style="color:var(--accent)">api.mercadolibre.com/sites/{SITE}/search</strong> — API pública de MeLi, ordenados por volumen de resultados como proxy de demanda real. Cache 5 min en localStorage. <span id="radar-nicho-info" style="color:var(--green)">Nicho activo: 💄 Belleza</span></div>
+        <!-- Panel de oportunidad al hacer click en keyword -->
+        <div id="radar-opp-panel" style="display:none;margin-top:16px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div style="font-size:14px;font-weight:700;color:var(--text)" id="radar-opp-title">📊 Análisis de oportunidad</div>
+            <button onclick="document.getElementById('radar-opp-panel').style.display='none'" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px">✕</button>
+          </div>
+          <div id="radar-opp-content"></div>
+        </div>
+
+        <!-- Watchlist ⭐ -->
+        <div id="signal-watchlist-wrap" style="display:none;margin-top:20px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden">
+          <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:14px;font-weight:700;color:var(--text)">⭐ Mis Virales — Watchlist</div>
+            <button onclick="signalWatchlistClear()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px">limpiar todo</button>
+          </div>
+          <div id="signal-watchlist-list" style="max-height:320px;overflow-y:auto"></div>
+        </div>
+
+        <!-- Mapa de calor nicho × país -->
+        <div id="signal-heatmap-wrap" style="display:none;margin-top:20px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div style="font-size:14px;font-weight:700;color:var(--text)">🌡️ Mapa de calor — Score por nicho × país</div>
+            <button onclick="signalBuildHeatmap()" style="background:rgba(108,142,255,0.1);color:var(--accent);border:1px solid rgba(108,142,255,0.3);border-radius:6px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer">↻ Calcular</button>
+          </div>
+          <div id="signal-heatmap-grid" style="overflow-x:auto"></div>
+        </div>
+
+        <!-- Footer Signal Engine v7.1 -->
+        <div style="margin-top:16px;padding:12px 16px;background:rgba(108,142,255,0.06);border:1px solid rgba(108,142,255,0.15);border-radius:10px;font-size:11px;color:var(--muted);display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;justify-content:space-between">
+          <div style="display:flex;gap:8px;align-items:flex-start">
+            <span style="font-size:13px">🛰️</span>
+            <div><strong style="color:var(--text2)">Signal Engine v7.1</strong> — MeLi (35%) · TikTok (25%) · Google Trends (20%) · Amazon BSR (12%) · Reddit (8%). Cache 30 min. <span id="radar-nicho-info" style="color:var(--green)">Nicho: 💄 Belleza</span></div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0;margin-top:4px">
+            <button onclick="signalToggleWatchlist()" style="background:rgba(251,191,36,0.1);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);border-radius:6px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer">⭐ Watchlist</button>
+            <button onclick="signalToggleHeatmap()" style="background:rgba(108,142,255,0.1);color:var(--accent);border:1px solid rgba(108,142,255,0.3);border-radius:6px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer">🌡️ Heatmap</button>
+          </div>
         </div>
 
       </div>
@@ -3876,6 +4043,237 @@ async function radarFetchTrends(siteId, nicho) {
   return fallbackData;
 }
 
+// ── SCORE DE OPORTUNIDAD 0-100 ────────────────────────────────
+// Basado en volumen de resultados MeLi como proxy de demanda.
+// Fórmula: escala logarítmica → 0 resultados = 0, 1M+ resultados = 100
+// Zonas: 0-30 nicho pequeño, 31-60 media, 61-80 alta, 81-100 viral
+function radarCalcScore(available) {
+  if (!available || available <= 0) return 0;
+  // log10(1)=0, log10(10000)=4, log10(100000)=5, log10(1000000)=6
+  const score = Math.round(Math.log10(available + 1) / Math.log10(2000000) * 100);
+  return Math.min(100, Math.max(0, score));
+}
+
+function radarScoreColor(score) {
+  if (score >= 70) return '#34d399'; // verde — alta demanda
+  if (score >= 45) return '#fbbf24'; // amarillo — media
+  if (score >= 20) return '#60c8ff'; // celeste — baja-media
+  return '#475569';                  // gris — muy baja
+}
+
+function radarScoreLabel(score) {
+  if (score >= 80) return '🔥';
+  if (score >= 60) return '⚡';
+  if (score >= 40) return '📈';
+  if (score >= 20) return '💤';
+  return '—';
+}
+
+function radarScoreClass(score) {
+  if (score >= 50) return 'rsb-high';
+  if (score >= 25) return 'rsb-med';
+  return 'rsb-low';
+}
+
+// Normalizar scores dentro de un conjunto (el mayor = 100, relativo)
+function radarNormalizeScores(trends) {
+  const maxAvail = Math.max(...trends.map(t => t.available || 0), 1);
+  return trends.map(t => ({
+    ...t,
+    score: Math.round((t.available || 0) / maxAvail * 100),
+    absScore: radarCalcScore(t.available)
+  }));
+}
+
+// ── HISTÓRICO DE BÚSQUEDAS ──────────────────────────────────────
+const RADAR_HISTORY_KEY = 'kabuby_radar_history';
+
+function radarHistoryLoad() {
+  try { return JSON.parse(localStorage.getItem(RADAR_HISTORY_KEY) || '[]'); } catch(e) { return []; }
+}
+function radarHistorySave(arr) {
+  try { localStorage.setItem(RADAR_HISTORY_KEY, JSON.stringify(arr.slice(0, 20))); } catch(e) {}
+}
+function radarHistoryAdd(term) {
+  let h = radarHistoryLoad();
+  h = h.filter(x => x !== term);
+  h.unshift(term);
+  radarHistorySave(h);
+  radarHistoryRender();
+}
+function radarHistoryRemove(term) {
+  let h = radarHistoryLoad().filter(x => x !== term);
+  radarHistorySave(h);
+  radarHistoryRender();
+}
+function radarHistoryRender() {
+  const h = radarHistoryLoad();
+  const wrap = document.getElementById('radar-history-wrap');
+  const chips = document.getElementById('radar-history-chips');
+  if (!wrap || !chips) return;
+  if (h.length === 0) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  chips.innerHTML = h.map(t =>
+    '<span class="radar-history-chip" onclick="radarHistorySearch(\'' + t.replace(/'/g, "\\'") + '\')">' +
+    t +
+    '<span class="rh-x" onclick="event.stopPropagation();radarHistoryRemove(\'' + t.replace(/'/g, "\\'") + '\')">×</span>' +
+    '</span>'
+  ).join('');
+}
+function radarHistorySearch(term) {
+  const inp = document.getElementById('radar-search-input');
+  if (inp) { inp.value = term; radarSearch(); }
+}
+
+// Alias para compatibilidad con el input del buscador
+function radarSearch() { signalAnalyzeKeyword(); }
+
+// ── PANEL DEEP DIVE — Signal completo por keyword (click) ────────
+async function radarShowOpportunity(keyword, siteId) {
+  const panel = document.getElementById('radar-opp-panel');
+  const title = document.getElementById('radar-opp-title');
+  const content = document.getElementById('radar-opp-content');
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  const country = RADAR_COUNTRIES.find(c => c.id === siteId) || RADAR_COUNTRIES[0];
+  title.innerHTML = '\ud83d\udd2c <strong>' + keyword + '</strong> \u2014 Signal Engine Deep Dive';
+  content.innerHTML = '<div class="radar-loading" style="display:flex;flex-direction:column;gap:8px;align-items:center">' +
+    '<span style="font-size:22px;animation:spin 1s linear infinite;display:inline-block">\ud83d\udef0\ufe0f</span>' +
+    '<div>Consultando 5 fuentes en paralelo...</div>' +
+    '<div style="font-size:11px;color:var(--muted)">\ud83d\uded2 MeLi \u00b7 \ud83c\udfb5 TikTok \u00b7 \ud83d\udcc8 Google \u00b7 \ud83d\udce6 Amazon \u00b7 \ud83d\udde3\ufe0f Reddit</div>' +
+    '</div>';
+
+  // Lanzar SIGNAL completo + multi-país en paralelo
+  const [signalResult, meliCountryResults] = await Promise.all([
+    signalCalcFull(keyword, country.id, radarActiveNicho),
+    Promise.allSettled(RADAR_COUNTRIES.map(async c => {
+      const r = await radarSearchTerm(c.id, keyword);
+      return { country: c, data: r };
+    }))
+  ]);
+
+  const sc = signalResult.signalScore;
+  const scColor = radarScoreColor(sc);
+  const src = signalResult.sources;
+
+  // ── Sección 1: SIGNAL SCORE con barras de fuentes ──
+  let html = '<div style="background:linear-gradient(135deg,rgba(108,142,255,0.08),rgba(108,142,255,0.03));border:1px solid rgba(108,142,255,0.25);border-radius:12px;padding:16px;margin-bottom:14px">';
+  html += '<div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">';
+  html += '<div style="text-align:center;flex-shrink:0">';
+  html += '<div style="font-size:44px;font-weight:900;color:' + scColor + ';line-height:1">' + sc + '</div>';
+  html += '<div style="font-size:9px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-top:2px">SIGNAL SCORE\u2122</div></div>';
+  html += '<div style="flex:1">';
+  html += '<div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:2px">' + keyword + '</div>';
+  html += '<div style="font-size:11px;color:var(--text2)">' + country.flag + ' ' + country.name + ' \u00b7 ' + (RADAR_NICHOS[radarActiveNicho] || {emoji:'\ud83d\udcca'}).emoji + ' ' + (RADAR_NICHOS[radarActiveNicho] || {label:radarActiveNicho}).label + '</div>';
+  const trendLabel = sc >= 75 ? '\ud83d\udd25 Se\u00f1al FUERTE' : sc >= 55 ? '\u26a1 Se\u00f1al MEDIA-ALTA' : sc >= 35 ? '\ud83d\udcc8 Se\u00f1al MEDIA' : '\ud83d\udca4 Se\u00f1al BAJA';
+  html += '<div style="margin-top:6px;font-size:12px;color:' + scColor + ';font-weight:600">' + trendLabel + '</div>';
+  html += '</div></div>';
+
+  // Barras de cada fuente
+  const sourceRows = [
+    { icon:'\ud83d\uded2', name:'MeLi',   s: src.meli.score,   w:'35%',
+      detail: src.meli.raw ? (src.meli.raw.available||0).toLocaleString() + ' resultados' : 'sin datos',
+      color:'#6c8eff' },
+    { icon:'\ud83c\udfb5', name:'TikTok', s: src.tiktok.score, w:'25%',
+      detail: src.tiktok.raw ? (src.tiktok.raw.postCount||0).toLocaleString() + ' videos' : 'sin datos TikTok',
+      color:'#ff2d55' },
+    { icon:'\ud83d\udcc8', name:'Trends', s: src.trends.score, w:'20%',
+      detail: src.trends.raw ? 'Score ' + (src.trends.raw.score||0) + ' \u00b7 ' + ((src.trends.raw.trend||0) >= 0 ? '\u2191+' : '\u2193') + Math.abs(src.trends.raw.trend||0) + '%' : 'sin datos Google',
+      color:'#34d399' },
+    { icon:'\ud83d\udce6', name:'Amazon', s: src.amazon.score, w:'12%',
+      detail: src.amazon.score > 0 ? 'BSR Top ' + Math.round(100 - src.amazon.score/1.5 + 1) : 'No detectado en BSR',
+      color:'#fbbf24' },
+    { icon:'\ud83d\udde3\ufe0f', name:'Reddit', s: src.reddit.score, w:'8%',
+      detail: src.reddit.raw ? (src.reddit.raw.postCount||0) + ' posts \u00b7 r/' + (src.reddit.raw.sub||'') : 'sin datos',
+      color:'#ff6b8a' },
+  ];
+  html += '<div style="display:flex;flex-direction:column;gap:7px">';
+  sourceRows.forEach(row => {
+    const s = row.s >= 0 ? row.s : 0;
+    const noData = row.s < 0;
+    html += '<div style="display:flex;align-items:center;gap:8px">';
+    html += '<span style="font-size:14px;width:20px;text-align:center">' + row.icon + '</span>';
+    html += '<span style="font-size:11px;font-weight:600;color:var(--text2);width:50px;flex-shrink:0">' + row.name + '</span>';
+    html += '<div style="flex:1;height:7px;background:rgba(38,64,106,0.6);border-radius:4px;overflow:hidden">';
+    html += '<div style="height:100%;width:' + s + '%;background:' + (noData ? '#475569' : row.color) + ';border-radius:4px;transition:width 0.7s"></div></div>';
+    html += '<span style="font-size:11px;font-weight:700;color:' + (noData ? 'var(--muted)' : row.color) + ';width:28px;text-align:right">' + (noData ? '\u2014' : s) + '</span>';
+    html += '<span style="font-size:10px;color:var(--muted);min-width:140px">' + row.detail + '</span>';
+    html += '<span style="font-size:9px;color:rgba(120,140,180,0.5);width:26px;text-align:right">' + row.w + '</span>';
+    html += '</div>';
+  });
+  html += '</div></div>';
+
+  // ── Sección 2: Análisis multi-país (MeLi) ──
+  const rows = meliCountryResults
+    .filter(r => r.status === 'fulfilled' && r.value.data)
+    .map(r => r.value);
+
+  if (rows.length > 0) {
+    const maxAvail = Math.max(...rows.map(r => r.data.available || 0), 1);
+    html += '<div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px">';
+    html += '<div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;letter-spacing:0.5px">\ud83c\udf0e MAPA LATAM \u2014 Volumen MeLi por pa\u00eds</div>';
+    html += '<div style="display:flex;flex-direction:column;gap:8px">';
+    rows.sort((a,b) => (b.data.available||0) - (a.data.available||0)).forEach(r => {
+      const rScore = radarCalcScore(r.data.available || 0);
+      const bar = Math.round((r.data.available || 0) / maxAvail * 100);
+      const price = r.data.price ? ' \u00b7 ~' + Math.round(r.data.price).toLocaleString() : '';
+      html += '<div style="display:flex;align-items:center;gap:10px">';
+      html += '<span style="font-size:18px;flex-shrink:0">' + r.country.flag + '</span>';
+      html += '<div style="flex:1;min-width:0">';
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">';
+      html += '<span style="font-size:12px;font-weight:600;color:var(--text)">' + r.country.name + '</span>';
+      html += '<span style="font-size:10px;color:var(--muted)">' + (r.data.available||0).toLocaleString() + ' res' + price + '</span></div>';
+      html += '<div style="height:5px;background:rgba(38,64,106,0.6);border-radius:3px;overflow:hidden">';
+      html += '<div style="height:100%;width:' + bar + '%;background:' + radarScoreColor(rScore) + ';border-radius:3px;transition:width 0.6s"></div></div></div>';
+      html += '<span style="font-size:11px;font-weight:700;color:' + radarScoreColor(rScore) + ';width:28px;text-align:right">' + rScore + '</span>';
+      html += '<a href="' + radarMeliSearchUrl(r.country.id, keyword) + '" target="_blank" style="font-size:10px;color:var(--accent);white-space:nowrap;text-decoration:none;flex-shrink:0">ver \u2192</a>';
+      html += '</div>';
+    });
+    html += '</div></div>';
+  }
+
+  // ── Sección 3: Recomendación ──
+  const rec = sc >= 75 ? '\ud83d\udd25 Se\u00f1al FUERTE \u2014 alta demanda multi-plataforma. Oportunidad de importaci\u00f3n ALTA. Actuar r\u00e1pido.' :
+              sc >= 55 ? '\u26a1 Se\u00f1al MEDIA-ALTA \u2014 buen potencial. Vale la pena investigar precios de importaci\u00f3n.' :
+              sc >= 35 ? '\ud83d\udcc8 Se\u00f1al MEDIA \u2014 nicho activo pero competido. Buscar variante espec\u00edfica con menos competencia.' :
+                         '\ud83d\udca4 Se\u00f1al BAJA \u2014 demanda insuficiente o tendencia bajista. Monitorear y esperar.';
+  html += '<div style="padding:10px 14px;border-radius:8px;border:1px solid rgba(108,142,255,0.2);background:rgba(108,142,255,0.06);font-size:12px;color:var(--text2);margin-bottom:12px">' + rec + '</div>';
+
+  // ── Acciones ──
+  html += '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+    '<button onclick="radarSendToScout(\'' + keyword.replace(/'/g, "\\'") + '\')" style="background:rgba(52,211,153,0.12);color:#34d399;border:1px solid rgba(52,211,153,0.3);border-radius:8px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">\ud83e\udde9 Enviar al Scout</button>' +
+    '<button onclick="document.getElementById(\'radar-opp-panel\').style.display=\'none\'" style="background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:8px;padding:9px 16px;font-size:12px;cursor:pointer;font-family:inherit">Cerrar</button>' +
+  '</div>';
+
+  content.innerHTML = html;
+}
+
+// Enviar keyword al Scout como producto pendiente
+function radarSendToScout(keyword) {
+  const newProd = {
+    id: 'radar_' + Date.now(),
+    titleAmazon: keyword,
+    titleStore: keyword,
+    asin: '',
+    price: 0,
+    priceMeli: 0,
+    status: 'pending',
+    nicho: radarActiveNicho,
+    desc: 'Capturado desde Radar de Virales — verificar en Amazon',
+    images: [],
+    img: '',
+    source: 'radar',
+    ts: Date.now()
+  };
+  PRODUCTS.push(newProd);
+  saveProducts();
+  renderDashboard();
+  showNotif('🧩 "' + keyword + '" agregado a Pendientes', 'success');
+  document.getElementById('radar-opp-panel').style.display = 'none';
+  // Ir a Pendientes después de 1.2s
+  setTimeout(() => showTab('pendientes'), 1200);
+}
+
 function radarRankClass(i) {
   if (i === 0) return 'r1';
   if (i === 1) return 'r2';
@@ -3904,14 +4302,16 @@ function radarMeliSearchUrl(siteId, keyword) {
 
 // Renderizar tarjeta de país (vista ALL)
 function radarRenderCountryCard(country, trends, isDemo) {
-  const top10 = trends.slice(0, 10);
+  const top10 = radarNormalizeScores(trends).slice(0, 10);
   const items = top10.map((t, i) => {
     const cls = i < 3 ? 'top3' : '';
-    return '<a class="radar-item" href="' + radarMeliSearchUrl(country.id, t.keyword) + '" target="_blank" title="Ver en MeLi">' +
+    const scoreColor = radarScoreColor(t.score);
+    const barW = t.score;
+    return '<div class="radar-item" style="cursor:pointer" onclick="radarShowOpportunity(\'' + t.keyword.replace(/'/g, "\\'") + '\',\'' + country.id + '\')" title="Ver análisis de oportunidad">' +
       '<span class="radar-item-rank ' + cls + '">#' + (i + 1) + '</span>' +
       '<span class="radar-item-text">' + t.keyword + '</span>' +
-      '<span class="radar-item-arrow">→</span>' +
-      '</a>';
+      (t.available > 0 ? '<div class="radar-score-bar"><div class="radar-score-fill" style="width:' + barW + '%;background:' + scoreColor + '"></div></div>' : '') +
+      '</div>';
   }).join('');
 
   const demoTag = isDemo ? '<span style="font-size:9px;background:rgba(251,191,36,0.15);color:#fcd34d;border:1px solid rgba(251,191,36,0.3);padding:2px 6px;border-radius:4px;margin-left:6px">demo</span>' : '';
@@ -3936,14 +4336,41 @@ function radarRenderSingleList(country, trends, isDemo) {
     ? trends.length + ' términos curados (MeLi sin conexión)'
     : trends.length + ' términos — ordenados por volumen de resultados reales en MeLi';
 
-  list.innerHTML = trends.map((t, i) => {
-    const avail = t.available ? '<span style="font-size:10px;color:var(--muted);margin-left:auto">' + t.available.toLocaleString() + ' resultados</span>' : '';
-    return '<a class="radar-single-item" href="' + radarMeliSearchUrl(country.id, t.keyword) + '" target="_blank">' +
+  const normalized = radarNormalizeScores(trends);
+  list.innerHTML = normalized.map((t, i) => {
+    const score = t.score;
+    const absScore = t.absScore;
+    const scoreColor = radarScoreColor(absScore);
+    const scoreLbl = radarScoreLabel(absScore);
+    const ringCls = absScore >= 65 ? 'high' : absScore >= 40 ? 'med' : absScore >= 15 ? 'low' : 'none';
+    const avail = t.available ? t.available.toLocaleString() + ' res.' : '';
+    const barW = score;
+    // Mini bars: MeLi real + TikTok+Trends+Amazon+Reddit = estimados proporcionales
+    const meliH  = Math.max(2, Math.round(absScore * 0.14));
+    const ttH    = Math.max(2, Math.round(absScore * 0.10));
+    const trH    = Math.max(2, Math.round(absScore * 0.08));
+    const amzH   = Math.max(2, Math.round(absScore * 0.05));
+    const rdH    = Math.max(2, Math.round(absScore * 0.03));
+    const miniBarHtml =
+      '<div class="signal-mini-bars" title="Se\u00f1al multi-fuente">' +
+        '<div class="signal-mini-bar" style="height:' + meliH + 'px;background:#6c8eff" title="MeLi"></div>' +
+        '<div class="signal-mini-bar" style="height:' + ttH   + 'px;background:#ff2d55" title="TikTok"></div>' +
+        '<div class="signal-mini-bar" style="height:' + trH   + 'px;background:#34d399" title="Google"></div>' +
+        '<div class="signal-mini-bar" style="height:' + amzH  + 'px;background:#fbbf24" title="Amazon"></div>' +
+        '<div class="signal-mini-bar" style="height:' + rdH   + 'px;background:#ff6b8a" title="Reddit"></div>' +
+      '</div>';
+    return '<div class="radar-single-item" style="cursor:pointer" onclick="radarShowOpportunity(\'' + t.keyword.replace(/'/g, "\\'") + '\',\'' + country.id + '\')">' +
       '<span class="radar-single-rank ' + radarRankClass(i) + '">' + radarRankText(i) + '</span>' +
-      '<span class="radar-single-keyword">' + t.keyword + '</span>' +
-      avail +
-      '<span style="font-size:10px;color:var(--accent);margin-left:8px;white-space:nowrap">ver →</span>' +
-      '</a>';
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:14px;font-weight:500;color:var(--text)">' + t.keyword + '</div>' +
+        (t.available > 0 ? '<div style="height:3px;background:rgba(38,64,106,0.5);border-radius:2px;margin-top:5px;overflow:hidden"><div style="height:100%;width:' + barW + '%;background:' + scoreColor + ';border-radius:2px;transition:width 0.5s"></div></div>' : '') +
+      '</div>' +
+      (t.available > 0 ? miniBarHtml : '<div style="width:37px"></div>') +
+      '<div class="signal-score-ring ' + ringCls + '">' + (absScore || '\u2014') + '</div>' +
+      (avail ? '<span style="font-size:10px;color:var(--muted);width:72px;text-align:right;flex-shrink:0">' + avail + '</span>' : '<span style="width:72px"></span>') +
+      '<button class="radar-scout-btn" onclick="event.stopPropagation();radarSendToScout(\'' + t.keyword.replace(/'/g, "\\'") + '\')" title="Enviar al Scout">+ Scout</button>' +
+      '<a href="' + radarMeliSearchUrl(country.id, t.keyword) + '" target="_blank" onclick="event.stopPropagation()" style="font-size:10px;color:var(--accent);margin-left:6px;white-space:nowrap;text-decoration:none">ver →</a>' +
+    '</div>';
   }).join('');
 
   if (isDemo) {
@@ -3974,8 +4401,8 @@ async function radarLoadSingle(country) {
 async function radarRefreshAll() {
   const btn = document.getElementById('radar-refresh-btn');
   const icon = document.getElementById('radar-refresh-icon');
-  icon.textContent = '⏳';
-  btn.disabled = true;
+  if (icon) icon.textContent = '⏳';
+  if (btn) btn.disabled = true;
 
   // Limpiar cache del nicho activo (memoria + localStorage)
   RADAR_COUNTRIES.forEach(c => delete radarCache[radarCacheKey(c.id, radarActiveNicho)]);
@@ -3988,14 +4415,15 @@ async function radarRefreshAll() {
     if (country) await radarLoadSingle(country);
   }
 
-  icon.textContent = '🔄';
-  btn.disabled = false;
+  if (icon) icon.textContent = '🔄';
+  if (btn) btn.disabled = false;
   const cKeyRefresh = radarCacheKey(radarActiveSite, radarActiveNicho);
   const isDemo = radarActiveSite !== 'ALL' && radarCache[cKeyRefresh] && radarCache[cKeyRefresh].isDemo;
   const nichoMeta = RADAR_NICHOS[radarActiveNicho] || { label: 'Tendencias', emoji: '📊' };
-  document.getElementById('radar-last-update').textContent = isDemo
-    ? '⚠️ MeLi Search no respondió — mostrando términos curados. Clic en "Actualizar todo" para reintentar.'
-    : '⏰ Última actualización: ' + new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}) + ' — datos reales de MeLi · ' + nichoMeta.emoji + ' ' + nichoMeta.label;
+  const lastUpd = document.getElementById('radar-last-update');
+  if (lastUpd) lastUpd.textContent = isDemo
+    ? '⚠️ MeLi sin conexión — datos curados. Clic en "Actualizar" para reintentar.'
+    : '🛰️ Signal Engine — actualizado ' + new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}) + ' · ' + nichoMeta.emoji + ' ' + nichoMeta.label;
 }
 
 async function radarInitAllView() {
@@ -4041,6 +4469,8 @@ function radarSearch() {
   const q = document.getElementById('radar-search-input').value.trim().toLowerCase();
   const resultsEl = document.getElementById('radar-search-results');
   if (!q) { resultsEl.innerHTML = ''; return; }
+  // Guardar en histórico
+  radarHistoryAdd(q);
 
   const matches = [];
   RADAR_COUNTRIES.forEach(country => {
@@ -4117,6 +4547,9 @@ function initRadarModule() {
   document.querySelectorAll('.radar-nicho-tab').forEach(b => {
     b.classList.toggle('active', b.dataset.nicho === radarActiveNicho);
   });
+
+  // Renderizar histórico de búsquedas
+  radarHistoryRender();
 
   // Actualizar indicador de nicho
   const nichoMeta = RADAR_NICHOS[radarActiveNicho] || { label: 'Belleza', emoji: '💄' };
