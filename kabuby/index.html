@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
-<!-- BUILD: 2026-09-02 v7.1.0 — Signal Engine 5 fuentes + Watchlist + Heatmap -->
-<!-- CF-CACHE-BUST: 1788383288314-v710-CF-PUSH -->
+<!-- BUILD: 2026-09-02 v7.1.1 — Signal Engine COMPLETO: TikTok+Trends+Amazon+Reddit+Watchlist+Heatmap -->
+<!-- CF-CACHE-BUST: 1788392761119-v711-SIGNAL-COMPLETE
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -4125,6 +4125,482 @@ function radarHistorySearch(term) {
   if (inp) { inp.value = term; radarSearch(); }
 }
 
+// ══════════════════════════════════════════════════════════════════
+// 🛰️ SIGNAL ENGINE™ — 5 FUENTES MULTI-PLATAFORMA
+// MeLi(35%) + TikTok(25%) + Google Trends(20%) + Amazon BSR(12%) + Reddit(8%)
+// ══════════════════════════════════════════════════════════════════
+
+const SIGNAL_WEIGHTS = { meli: 0.35, tiktok: 0.25, trends: 0.20, amazon: 0.12, reddit: 0.08 };
+
+// ── FUENTE 2: TikTok (25%) ──────────────────────────────────────
+const SIGNAL_TIKTOK_CACHE = {};
+async function signalTikTok(term) {
+  const tag = term.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '');
+  if (SIGNAL_TIKTOK_CACHE[tag]) return SIGNAL_TIKTOK_CACHE[tag];
+  const apis = [
+    'https://countik.com/api/hashtag/info?name=' + tag,
+    'https://tokcount.com/api/?hashtag=' + tag,
+  ];
+  for (const url of apis) {
+    try {
+      const r = await fetch(url, { signal: AbortSignal.timeout(6000) });
+      if (!r.ok) continue;
+      const j = await r.json();
+      const count = j.postCount || j.post_count || j.count || j.stats?.videoCount || 0;
+      if (count > 0) {
+        const result = { postCount: count, tag };
+        SIGNAL_TIKTOK_CACHE[tag] = result;
+        return result;
+      }
+    } catch(e) { /* intenta siguiente */ }
+  }
+  return null;
+}
+function signalTikTokScore(data) {
+  if (!data || !data.postCount) return -1;
+  return Math.min(100, Math.round(Math.log10(data.postCount + 1) / Math.log10(100000000) * 100));
+}
+
+// ── FUENTE 3: Google Trends (20%) ──────────────────────────────
+const SIGNAL_TRENDS_CACHE = {};
+async function signalGoogleTrends(term, geo) {
+  const key = term + '_' + (geo || 'CO');
+  if (SIGNAL_TRENDS_CACHE[key]) return SIGNAL_TRENDS_CACHE[key];
+  try {
+    // Paso 1: obtener token del explore
+    const exploreUrl = 'https://trends.google.com/trends/api/explore?hl=es&tz=-300&req=' +
+      encodeURIComponent(JSON.stringify({ comparisonItem:[{ keyword: term, geo: geo || 'CO', time: 'today 3-m' }], category:0, property:'' }));
+    const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(exploreUrl);
+    const r1 = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
+    if (!r1.ok) return null;
+    const d1 = await r1.json();
+    const raw1 = (d1.contents || '').replace(/^[^{]*/, ''); // quita ")]}'\n"
+    const parsed1 = JSON.parse(raw1);
+    const token = parsed1.widgets?.find(w => w.id === 'TIMESERIES')?.token;
+    if (!token) return null;
+    // Paso 2: obtener datos de la serie temporal
+    const timeUrl = 'https://trends.google.com/trends/api/widgetdata/multiline?hl=es&tz=-300&req=' +
+      encodeURIComponent(JSON.stringify({ time: 'today 3-m', resolution: 'WEEK', locale: 'es', comparisonItem:[{ geo:{country:geo||'CO'}, complexKeywordsRestriction:{keyword:[{type:'BROAD',value:term}]} }], requestOptions:{property:'',backend:'IZG',category:0} })) +
+      '&token=' + encodeURIComponent(token) + '&tz=-300';
+    const proxyUrl2 = 'https://api.allorigins.win/get?url=' + encodeURIComponent(timeUrl);
+    const r2 = await fetch(proxyUrl2, { signal: AbortSignal.timeout(8000) });
+    if (!r2.ok) return null;
+    const d2 = await r2.json();
+    const raw2 = (d2.contents || '').replace(/^[^{]*/, '');
+    const parsed2 = JSON.parse(raw2);
+    const vals = parsed2.default?.timelineData?.map(p => p.value?.[0] ?? 0) || [];
+    if (vals.length < 4) return null;
+    const avg = Math.round(vals.reduce((a,b)=>a+b,0) / vals.length);
+    const half = Math.floor(vals.length / 2);
+    const firstHalf  = vals.slice(0, half).reduce((a,b)=>a+b,0) / half;
+    const secondHalf = vals.slice(half).reduce((a,b)=>a+b,0) / (vals.length - half);
+    const trend = firstHalf > 0 ? Math.round((secondHalf - firstHalf) / firstHalf * 100) : 0;
+    const result = { score: avg, avg, trend, vals };
+    SIGNAL_TRENDS_CACHE[key] = result;
+    return result;
+  } catch(e) { return null; }
+}
+function signalGoogleTrendsScore(data) {
+  if (!data || data.score === undefined) return -1;
+  return Math.min(100, Math.max(0, data.score));
+}
+
+// ── FUENTE 4: Amazon BSR (12%) ──────────────────────────────────
+const AMAZON_BSR_FEEDS = {
+  belleza: 'https://www.amazon.com/gp/rss/bestsellers/beauty',
+  tecnologia: 'https://www.amazon.com/gp/rss/bestsellers/electronics',
+  hogar: 'https://www.amazon.com/gp/rss/bestsellers/home-garden',
+  moda: 'https://www.amazon.com/gp/rss/bestsellers/apparel',
+  deporte: 'https://www.amazon.com/gp/rss/bestsellers/sporting-goods',
+  mascotas: 'https://www.amazon.com/gp/rss/bestsellers/pet-supplies',
+  bebes: 'https://www.amazon.com/gp/rss/bestsellers/baby',
+  cocina: 'https://www.amazon.com/gp/rss/bestsellers/kitchen',
+};
+const SIGNAL_AMAZON_CACHE = {};
+async function signalAmazonBSR(nicho) {
+  if (SIGNAL_AMAZON_CACHE[nicho]) return SIGNAL_AMAZON_CACHE[nicho];
+  const feedUrl = AMAZON_BSR_FEEDS[nicho] || AMAZON_BSR_FEEDS.belleza;
+  try {
+    const url = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feedUrl) + '&count=50';
+    const r = await fetch(url, { signal: AbortSignal.timeout(7000) });
+    if (!r.ok) return [];
+    const j = await r.json();
+    if (j.status !== 'ok' || !j.items) return [];
+    const items = j.items.map((item, i) => ({
+      title: (item.title || '').toLowerCase(),
+      rank: i + 1,
+      link: item.link || ''
+    }));
+    SIGNAL_AMAZON_CACHE[nicho] = items;
+    return items;
+  } catch(e) { return []; }
+}
+function signalAmazonScore(term, bsrItems) {
+  if (!bsrItems || bsrItems.length === 0) return -1;
+  const words = term.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .split(/\s+/).filter(w => w.length > 2);
+  if (words.length === 0) return -1;
+  let bestRank = null;
+  for (const item of bsrItems) {
+    const titleNorm = item.title.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const matches = words.filter(w => titleNorm.includes(w));
+    if (matches.length >= Math.ceil(words.length * 0.5)) {
+      if (bestRank === null || item.rank < bestRank) bestRank = item.rank;
+    }
+  }
+  if (bestRank === null) return 0;
+  // rank 1 → 100, rank 50 → 25, interpolación lineal
+  return Math.max(0, Math.round(100 - (bestRank - 1) * (75 / 49)));
+}
+
+// ── FUENTE 5: Reddit (8%) ───────────────────────────────────────
+const REDDIT_SUBS = {
+  belleza: ['SkincareAddiction','beauty','MakeupAddiction'],
+  tecnologia: ['gadgets','technology','tech'],
+  hogar: ['HomeImprovement','DIY','HomeDecor'],
+  moda: ['femalefashionadvice','malefashionadvice','streetwear'],
+  deporte: ['fitness','running','sports'],
+  mascotas: ['dogs','cats','pets'],
+  bebes: ['beyondthebump','predaddit','Parenting'],
+  cocina: ['Cooking','recipes','food'],
+};
+const SIGNAL_REDDIT_CACHE = {};
+async function signalReddit(term, nicho) {
+  const key = term + '_' + nicho;
+  if (SIGNAL_REDDIT_CACHE[key]) return SIGNAL_REDDIT_CACHE[key];
+  const subs = REDDIT_SUBS[nicho] || REDDIT_SUBS.belleza;
+  let bestResult = null;
+  for (const sub of subs.slice(0, 2)) { // máx 2 subs para velocidad
+    try {
+      const url = 'https://www.reddit.com/r/' + sub + '/search.json?q=' +
+        encodeURIComponent(term) + '&sort=hot&limit=25&t=week&restrict_sr=1';
+      const r = await fetch(url, {
+        headers: { 'User-Agent': 'KabubySignalEngine/7.1' },
+        signal: AbortSignal.timeout(6000)
+      });
+      if (!r.ok) continue;
+      const j = await r.json();
+      const posts = j.data?.children || [];
+      const postCount = posts.length;
+      const totalUpvotes = posts.reduce((acc, p) => acc + (p.data?.ups || 0), 0);
+      if (!bestResult || postCount > bestResult.postCount) {
+        bestResult = { postCount, totalUpvotes, sub };
+      }
+    } catch(e) { /* intenta siguiente sub */ }
+  }
+  if (bestResult) SIGNAL_REDDIT_CACHE[key] = bestResult;
+  return bestResult;
+}
+function signalRedditScore(data) {
+  if (!data) return -1;
+  return Math.min(100, Math.round(data.postCount * 3 + data.totalUpvotes / 100));
+}
+
+// ── SIGNAL SCORE™ FUSIÓN ────────────────────────────────────────
+function signalFuseScores(meliScore, tiktokScore, trendsScore, amazonScore, redditScore) {
+  const raw = { meli: meliScore, tiktok: tiktokScore, trends: trendsScore, amazon: amazonScore, reddit: redditScore };
+  const active = Object.entries(raw).filter(([,v]) => v >= 0);
+  if (active.length === 0) return 0;
+  const totalWeight = active.reduce((s, [k]) => s + SIGNAL_WEIGHTS[k], 0);
+  const fused = active.reduce((s, [k, v]) => s + v * (SIGNAL_WEIGHTS[k] / totalWeight), 0);
+  return Math.round(Math.min(100, Math.max(0, fused)));
+}
+
+async function signalCalcFull(keyword, siteId, nicho) {
+  const geo = { MCO:'CO', MLM:'MX', MLC:'CL', MLA:'AR', MLB:'BR' }[siteId] || 'CO';
+  // Lanzar las 5 fuentes en paralelo
+  const [meliData, tiktokData, trendsData, bsrItems, redditData] = await Promise.allSettled([
+    radarSearchTerm(siteId, keyword),
+    signalTikTok(keyword),
+    signalGoogleTrends(keyword, geo),
+    signalAmazonBSR(nicho),
+    signalReddit(keyword, nicho),
+  ]);
+  const meli   = meliData.status   === 'fulfilled' ? meliData.value   : null;
+  const tiktok = tiktokData.status === 'fulfilled' ? tiktokData.value : null;
+  const trends = trendsData.status === 'fulfilled' ? trendsData.value : null;
+  const bsr    = bsrItems.status   === 'fulfilled' ? bsrItems.value   : [];
+  const reddit = redditData.status === 'fulfilled' ? redditData.value : null;
+
+  const meliScore   = meli   ? radarCalcScore(meli.available || 0) : -1;
+  const tiktokScore = signalTikTokScore(tiktok);
+  const trendsScore = signalGoogleTrendsScore(trends);
+  const amazonScore = signalAmazonScore(keyword, bsr);
+  const redditScore = signalRedditScore(reddit);
+  const signalScore = signalFuseScores(meliScore, tiktokScore, trendsScore, amazonScore, redditScore);
+
+  return {
+    keyword, siteId, nicho, signalScore,
+    sources: {
+      meli:   { score: meliScore,   raw: meli },
+      tiktok: { score: tiktokScore, raw: tiktok },
+      trends: { score: trendsScore, raw: trends },
+      amazon: { score: amazonScore, raw: bsr },
+      reddit: { score: redditScore, raw: reddit },
+    }
+  };
+}
+
+// ── SIGNAL ANALYZE KEYWORD — buscador libre ──────────────────────
+async function signalAnalyzeKeyword() {
+  const inp = document.getElementById('radar-search-input');
+  const resultsEl = document.getElementById('radar-search-results');
+  if (!inp || !resultsEl) return;
+  const q = inp.value.trim();
+  if (!q) { resultsEl.innerHTML = ''; return; }
+
+  radarHistoryAdd(q);
+
+  // Mostrar loading
+  resultsEl.innerHTML = '<div style="color:var(--text2);font-size:12px;padding:12px 0;display:flex;align-items:center;gap:10px">' +
+    '<span style="font-size:18px;animation:spin 1s linear infinite;display:inline-block">🛰️</span>' +
+    '<span>Consultando 5 fuentes en paralelo para "<strong style=\'color:var(--text)\'>' + q + '</strong>"…</span></div>';
+
+  // Busca en cache MeLi local (rápido) y también en Signal completo
+  const localMatches = [];
+  RADAR_COUNTRIES.forEach(country => {
+    Object.keys(radarCache).forEach(cKey => {
+      if (!cKey.startsWith(country.id + '_')) return;
+      const cache = radarCache[cKey];
+      if (cache && cache.data) {
+        cache.data.forEach((t, i) => {
+          if (t.keyword.toLowerCase().includes(q.toLowerCase())) {
+            const nichoId = cKey.replace(country.id + '_', '');
+            const nichoMeta = RADAR_NICHOS[nichoId] || { emoji: '📊', label: nichoId };
+            localMatches.push({ country, keyword: t.keyword, pos: i + 1, nicho: nichoMeta, score: radarCalcScore(t.available) });
+          }
+        });
+      }
+    });
+  });
+
+  // Lanzar Signal Engine para el país activo
+  const activeSite   = radarActiveSite === 'ALL' ? 'MCO' : radarActiveSite;
+  const activeCountry = RADAR_COUNTRIES.find(c => c.id === activeSite) || RADAR_COUNTRIES[0];
+  const signalResult = await signalCalcFull(q, activeSite, radarActiveNicho);
+
+  const sc = signalResult.signalScore;
+  const scColor = radarScoreColor(sc);
+  const src = signalResult.sources;
+
+  let html = '';
+
+  // Sección Signal Score
+  html += '<div style="background:linear-gradient(135deg,rgba(108,142,255,0.1),rgba(108,142,255,0.03));border:1px solid rgba(108,142,255,0.3);border-radius:10px;padding:14px;margin-bottom:12px">';
+  html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">';
+  html += '<div style="text-align:center;flex-shrink:0"><div style="font-size:38px;font-weight:900;color:' + scColor + ';line-height:1">' + sc + '</div>' +
+          '<div style="font-size:8px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-top:1px">SIGNAL SCORE™</div></div>';
+  html += '<div><div style="font-size:14px;font-weight:800;color:var(--text)">' + q + '</div>';
+  html += '<div style="font-size:11px;color:var(--text2)">' + activeCountry.flag + ' ' + activeCountry.name + ' · ' + (RADAR_NICHOS[radarActiveNicho]||{emoji:'📊'}).emoji + ' ' + (RADAR_NICHOS[radarActiveNicho]||{label:radarActiveNicho}).label + '</div>';
+  const lbl = sc>=75?'🔥 Señal FUERTE':sc>=55?'⚡ MEDIA-ALTA':sc>=35?'📈 MEDIA':'💤 BAJA';
+  html += '<div style="font-size:12px;color:' + scColor + ';font-weight:600;margin-top:3px">' + lbl + '</div></div>';
+  html += '<div style="margin-left:auto;display:flex;gap:6px">';
+  html += '<button onclick="radarShowOpportunity(\'' + q.replace(/'/g,"\\'") + '\',\'' + activeSite + '\')" ' +
+          'style="background:rgba(108,142,255,0.15);color:var(--accent);border:1px solid rgba(108,142,255,0.35);border-radius:7px;padding:7px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">🔍 Deep Dive</button>';
+  html += '<button onclick="signalWLAdd(\'' + q.replace(/'/g,"\\'") + '\',' + sc + ',\'' + radarActiveNicho + '\')" ' +
+          'style="background:rgba(251,191,36,0.1);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);border-radius:7px;padding:7px 10px;font-size:11px;cursor:pointer;font-family:inherit">⭐</button>';
+  html += '</div></div>';
+
+  // Mini barras de fuentes
+  const fRows = [
+    { icon:'🛒', name:'MeLi',   s:src.meli.score,   c:'#6c8eff', w:'35%', d: src.meli.raw ? (src.meli.raw.available||0).toLocaleString()+' resultados':'sin datos' },
+    { icon:'🎵', name:'TikTok', s:src.tiktok.score, c:'#ff2d55', w:'25%', d: src.tiktok.raw ? (src.tiktok.raw.postCount||0).toLocaleString()+' videos':'sin datos TikTok' },
+    { icon:'📈', name:'Trends', s:src.trends.score, c:'#34d399', w:'20%', d: src.trends.raw ? 'avg '+src.trends.raw.avg+' tendencia '+(src.trends.raw.trend>=0?'↑+':'')+src.trends.raw.trend+'%':'sin datos Google' },
+    { icon:'📦', name:'Amazon', s:src.amazon.score, c:'#fbbf24', w:'12%', d: src.amazon.score>0 ? 'Top BSR detectado':'No en BSR' },
+    { icon:'💬', name:'Reddit', s:src.reddit.score, c:'#ff6b8a', w:'8%',  d: src.reddit.raw ? src.reddit.raw.postCount+' posts r/'+src.reddit.raw.sub:'sin datos' },
+  ];
+  html += '<div style="display:flex;flex-direction:column;gap:5px">';
+  fRows.forEach(row => {
+    const s = row.s >= 0 ? row.s : 0;
+    const nd = row.s < 0;
+    html += '<div style="display:flex;align-items:center;gap:7px">';
+    html += '<span style="font-size:12px;width:18px;text-align:center">' + row.icon + '</span>';
+    html += '<span style="font-size:10px;font-weight:600;color:var(--text2);width:44px;flex-shrink:0">' + row.name + '</span>';
+    html += '<div style="flex:1;height:5px;background:rgba(38,64,106,0.6);border-radius:3px;overflow:hidden">';
+    html += '<div style="height:100%;width:' + s + '%;background:' + (nd?'#475569':row.c) + ';border-radius:3px"></div></div>';
+    html += '<span style="font-size:10px;font-weight:700;color:' + (nd?'var(--muted)':row.c) + ';width:24px;text-align:right">' + (nd?'—':s) + '</span>';
+    html += '<span style="font-size:9px;color:var(--muted);min-width:100px">' + row.d + '</span>';
+    html += '<span style="font-size:8px;color:rgba(120,140,180,0.4);width:22px">' + row.w + '</span>';
+    html += '</div>';
+  });
+  html += '</div></div>';
+
+  // Resultados locales de cache MeLi (si hay)
+  if (localMatches.length > 0) {
+    html += '<div style="font-size:11px;color:var(--text2);margin-bottom:6px">📋 Encontrado en ' + localMatches.length + ' posición(es) en tendencias cargadas:</div>';
+    html += localMatches.slice(0,8).map(m =>
+      '<a class="radar-search-match" href="' + radarMeliSearchUrl(m.country.id, m.keyword) + '" target="_blank" style="text-decoration:none;color:var(--text)">' +
+        '<span class="radar-search-flag">' + m.country.flag + '</span>' +
+        '<div style="flex:1"><div style="font-weight:600">' + m.keyword + '</div><div class="radar-search-pos">' + m.country.name + ' · ' + m.nicho.emoji + ' ' + m.nicho.label + ' — posición #' + m.pos + '</div></div>' +
+        '<span style="font-size:11px;color:var(--accent)">' + m.score + ' pts</span>' +
+      '</a>'
+    ).join('');
+  }
+
+  resultsEl.innerHTML = html;
+}
+
+// ── WATCHLIST ⭐ ─────────────────────────────────────────────────
+const SIGNAL_WL_KEY = 'kabuby_signal_watchlist';
+
+function signalWLLoad() {
+  try { return JSON.parse(localStorage.getItem(SIGNAL_WL_KEY) || '[]'); } catch(e) { return []; }
+}
+function signalWLSave(arr) {
+  try { localStorage.setItem(SIGNAL_WL_KEY, JSON.stringify(arr.slice(0, 50))); } catch(e) {}
+}
+function signalWLHas(keyword) {
+  return signalWLLoad().some(x => x.keyword === keyword);
+}
+function signalWLAdd(keyword, score, nicho) {
+  const list = signalWLLoad().filter(x => x.keyword !== keyword);
+  list.unshift({ keyword, score, nicho, ts: Date.now() });
+  signalWLSave(list);
+  signalWLRender();
+  showNotif('⭐ "' + keyword + '" añadido a Watchlist', 'success');
+}
+function signalWLRemove(keyword) {
+  signalWLSave(signalWLLoad().filter(x => x.keyword !== keyword));
+  signalWLRender();
+}
+function signalWatchlistClear() {
+  if (!confirm('¿Limpiar toda la Watchlist?')) return;
+  signalWLSave([]);
+  signalWLRender();
+}
+function signalToggleWatchlist() {
+  const wl = document.getElementById('signal-watchlist-wrap');
+  const hm = document.getElementById('signal-heatmap-wrap');
+  if (!wl) return;
+  const open = wl.style.display !== 'none';
+  wl.style.display = open ? 'none' : 'block';
+  if (!open) { if (hm) hm.style.display = 'none'; signalWLRender(); }
+}
+function signalToggleHeatmap() {
+  const hm = document.getElementById('signal-heatmap-wrap');
+  const wl = document.getElementById('signal-watchlist-wrap');
+  if (!hm) return;
+  const open = hm.style.display !== 'none';
+  hm.style.display = open ? 'none' : 'block';
+  if (!open) { if (wl) wl.style.display = 'none'; signalBuildHeatmap(); }
+}
+function signalWLRender() {
+  const el = document.getElementById('signal-watchlist-list');
+  if (!el) return;
+  const list = signalWLLoad();
+  if (list.length === 0) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:16px;text-align:center">Sin keywords en watchlist aún.<br>Usa ⭐ en cualquier resultado para añadir.</div>';
+    return;
+  }
+  el.innerHTML = list.map(item => {
+    const ago = Math.round((Date.now() - item.ts) / 60000);
+    const agoStr = ago < 60 ? ago + 'min' : Math.round(ago/60) + 'h';
+    const c = radarScoreColor(item.score || 0);
+    const nichMeta = RADAR_NICHOS[item.nicho] || { emoji:'📊', label: item.nicho || '' };
+    return '<div class="wl-item">' +
+      '<div style="font-size:22px;font-weight:900;color:' + c + ';width:40px;text-align:center;flex-shrink:0">' + (item.score||0) + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + item.keyword + '</div>' +
+        '<div style="font-size:10px;color:var(--muted)">' + nichMeta.emoji + ' ' + nichMeta.label + ' · hace ' + agoStr + '</div>' +
+      '</div>' +
+      '<button onclick="signalWLAnalyze(\'' + item.keyword.replace(/'/g,"\\'") + '\')" style="background:rgba(108,142,255,0.12);color:var(--accent);border:1px solid rgba(108,142,255,0.3);border-radius:6px;padding:4px 10px;font-size:10px;cursor:pointer;font-family:inherit">🔍 Analizar</button>' +
+      '<button onclick="signalWLRemove(\'' + item.keyword.replace(/'/g,"\\'") + '\')" style="background:rgba(248,113,113,0.1);color:#f87171;border:1px solid rgba(248,113,113,0.3);border-radius:6px;padding:4px 8px;font-size:10px;cursor:pointer;font-family:inherit;margin-left:4px">✕</button>' +
+    '</div>';
+  }).join('');
+}
+function signalWLAnalyze(keyword) {
+  const inp = document.getElementById('radar-search-input');
+  const wl  = document.getElementById('signal-watchlist-wrap');
+  if (inp) { inp.value = keyword; }
+  if (wl)  wl.style.display = 'none';
+  signalAnalyzeKeyword();
+}
+
+// ── HEATMAP 🌡️ ──────────────────────────────────────────────────
+async function signalBuildHeatmap() {
+  const el = document.getElementById('signal-heatmap-grid');
+  if (!el) return;
+  el.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:16px;text-align:center">🌡️ Calculando heatmap desde cache MeLi…</div>';
+
+  const nichos  = Object.keys(RADAR_NICHOS);
+  const paises  = RADAR_COUNTRIES;
+
+  // Recopilar scores: primero del cache en memoria, si no hay calcular con MeLi
+  const matrix = {};
+  for (const nicho of nichos) {
+    matrix[nicho] = {};
+    for (const pais of paises) {
+      const cKey = radarCacheKey(pais.id, nicho);
+      const cached = radarCache[cKey];
+      if (cached && cached.data && cached.data.length > 0) {
+        // Usar el score promedio de los top-10 del cache
+        const scores = cached.data.slice(0,10).map(t => radarCalcScore(t.available||0));
+        matrix[nicho][pais.id] = Math.round(scores.reduce((a,b)=>a+b,0) / scores.length);
+      } else {
+        matrix[nicho][pais.id] = null; // sin datos todavía
+      }
+    }
+  }
+
+  // Renderizar tabla
+  let html = '<table class="hm-table">';
+  html += '<thead><tr><th style="text-align:left;padding:6px 8px;font-size:10px;color:var(--muted);font-weight:600">Nicho</th>';
+  paises.forEach(p => {
+    html += '<th style="text-align:center;padding:6px 4px;font-size:13px">' + p.flag + '</th>';
+  });
+  html += '</tr></thead><tbody>';
+
+  nichos.forEach(nicho => {
+    const nm = RADAR_NICHOS[nicho] || { emoji:'📊', label: nicho };
+    html += '<tr>';
+    html += '<td style="padding:6px 8px;font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap">' + nm.emoji + ' ' + nm.label + '</td>';
+    paises.forEach(pais => {
+      const score = matrix[nicho][pais.id];
+      let cls, txt;
+      if (score === null) {
+        cls = 'hm-cell-none'; txt = '·';
+      } else if (score >= 80) {
+        cls = 'hm-cell-high'; txt = '🔥';
+      } else if (score >= 60) {
+        cls = 'hm-cell-high'; txt = '⚡';
+      } else if (score >= 40) {
+        cls = 'hm-cell-med'; txt = '📈';
+      } else if (score >= 20) {
+        cls = 'hm-cell-low'; txt = score;
+      } else {
+        cls = 'hm-cell-none'; txt = score !== null ? score : '·';
+      }
+      html += '<td class="' + cls + '" onclick="radarSelectNichoFromHeatmap(\'' + nicho + '\',\'' + pais.id + '\')" title="' + nm.label + ' en ' + pais.name + ': ' + (score!==null?score+'pts':'sin datos') + '">' + txt + '</td>';
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  const filledCount = Object.values(matrix).flatMap(m => Object.values(m)).filter(v => v !== null).length;
+  const totalCount  = nichos.length * paises.length;
+  html += '<div style="font-size:10px;color:var(--muted);margin-top:8px;text-align:center">' +
+          filledCount + '/' + totalCount + ' celdas con datos · Clic en una celda para explorar ese nicho × país</div>';
+
+  el.innerHTML = html;
+}
+
+function radarSelectNichoFromHeatmap(nicho, siteId) {
+  // Cerrar heatmap
+  const hm = document.getElementById('signal-heatmap-wrap');
+  if (hm) hm.style.display = 'none';
+  // Seleccionar nicho en tabs
+  document.querySelectorAll('.radar-nicho-tab').forEach(b => {
+    if (b.dataset.nicho === nicho) { b.click(); }
+  });
+  // Seleccionar país en tabs
+  document.querySelectorAll('.radar-ctab').forEach(b => {
+    if (b.dataset.site === siteId) { b.click(); }
+  });
+}
+
 // Alias para compatibilidad con el input del buscador
 function radarSearch() { signalAnalyzeKeyword(); }
 
@@ -4463,46 +4939,6 @@ function radarSelectCountry(btn, siteId) {
     const country = RADAR_COUNTRIES.find(c => c.id === siteId);
     if (country) radarLoadSingle(country);
   }
-}
-
-function radarSearch() {
-  const q = document.getElementById('radar-search-input').value.trim().toLowerCase();
-  const resultsEl = document.getElementById('radar-search-results');
-  if (!q) { resultsEl.innerHTML = ''; return; }
-  // Guardar en histórico
-  radarHistoryAdd(q);
-
-  const matches = [];
-  RADAR_COUNTRIES.forEach(country => {
-    // Busca en todos los nichos cacheados para este país
-    Object.keys(radarCache).forEach(cKey => {
-      if (!cKey.startsWith(country.id + '_')) return;
-      const cache = radarCache[cKey];
-      if (cache && cache.data) {
-        cache.data.forEach((t, i) => {
-          if (t.keyword.toLowerCase().includes(q)) {
-            const nichoId = cKey.replace(country.id + '_', '');
-            const nichoMeta = RADAR_NICHOS[nichoId] || { emoji: '📊', label: nichoId };
-            matches.push({ country, keyword: t.keyword, pos: i + 1, nicho: nichoMeta });
-          }
-        });
-      }
-    });
-  });
-
-  if (matches.length === 0) {
-    resultsEl.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px 0">No se encontró "<strong style=\'color:var(--text)\'>' + q + '</strong>" en ningún país. Asegúrate de haber cargado las tendencias primero.</div>';
-    return;
-  }
-
-  resultsEl.innerHTML = '<div style="font-size:12px;color:var(--text2);margin-bottom:8px">Encontrado en ' + matches.length + ' posición(es) en todos los nichos:</div>' +
-    matches.map(m =>
-      '<a class="radar-search-match" href="' + radarMeliSearchUrl(m.country.id, m.keyword) + '" target="_blank" style="text-decoration:none;color:var(--text)">' +
-        '<span class="radar-search-flag">' + m.country.flag + '</span>' +
-        '<div style="flex:1"><div style="font-weight:600">' + m.keyword + '</div><div class="radar-search-pos">' + m.country.name + ' · ' + m.nicho.emoji + ' ' + m.nicho.label + ' — posición #' + m.pos + '</div></div>' +
-        '<span style="font-size:11px;color:var(--accent)">ver en MeLi →</span>' +
-      '</a>'
-    ).join('');
 }
 
 // Función para cambiar nicho activo
