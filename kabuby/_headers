@@ -2,11 +2,22 @@
   Cache-Control: no-cache, no-store, must-revalidate
   Pragma: no-cache
   Expires: 0
-  X-Build: v5.9
-  X-Cache-Bust: 1788353621156
-  X-Deploy-TS: 2026-09-02 12:53:41 UTC
+  Surrogate-Control: no-store
+  CDN-Cache-Control: no-store
+  Cloudflare-CDN-Cache-Control: no-store
+
+/kabuby/
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Expires: 0
+  Surrogate-Control: no-store
+  CDN-Cache-Control: no-store
+  Cloudflare-CDN-Cache-Control: no-store
 
 /kabuby/index.html
   Cache-Control: no-cache, no-store, must-revalidate
-  X-Build: v5.9
-  X-Cache-Bust: 1788353621156
+  Pragma: no-cache
+  Expires: 0
+  Surrogate-Control: no-store
+  CDN-Cache-Control: no-store
+  Cloudflare-CDN-Cache-Control: no-store
