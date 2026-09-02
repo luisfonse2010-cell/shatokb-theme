@@ -3,29 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kabuby Scout â Portal de ImportaciÃ³n v3</title>
-<!-- BUILD: 2026-09-01 v5.3 â Radar MeLi LIVE | multi-proxy fallback -->
+<title>Kabuby Scout Ã¢ÂÂ Portal de ImportaciÃÂ³n v3</title>
+<!-- BUILD: 2026-09-01 v5.3 Ã¢ÂÂ Radar MeLi LIVE | multi-proxy fallback -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* ââ RESET & BASE âââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ RESET & BASE Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
-  /* ââ Paleta Azul Marino âââââââââââââââââââââââââââââââââââ */
-  --bg:        #0b1120;   /* azul marino profundo â fondo base */
-  --bg2:       #0f1d35;   /* azul marino medio â sidebar / cards */
-  --bg3:       #162445;   /* azul marino claro â inputs / paneles */
+  /* Ã¢ÂÂÃ¢ÂÂ Paleta Azul Marino Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
+  --bg:        #0b1120;   /* azul marino profundo Ã¢ÂÂ fondo base */
+  --bg2:       #0f1d35;   /* azul marino medio Ã¢ÂÂ sidebar / cards */
+  --bg3:       #162445;   /* azul marino claro Ã¢ÂÂ inputs / paneles */
   --border:    #26406a;   /* borde visible pero sutil */
-  --accent:    #6c8eff;   /* azul elÃ©ctrico â acciÃ³n principal */
-  --accent2:   #ff6b8a;   /* rosa â secundario */
-  --green:     #34d399;   /* verde menta â positivo */
-  --yellow:    #fcd34d;   /* amarillo cÃ¡lido â alerta */
-  --red:       #f87171;   /* rojo suave â peligro */
-  --blue:      #60c8ff;   /* celeste â info */
-  --purple:    #c084fc;   /* violeta â especial */
-  --text:      #e8f0fe;   /* blanco azulado â texto principal â MÃS LEGIBLE */
-  --text2:     #b8c8e8;   /* azul claro â texto secundario */
-  --muted:     #7a91b8;   /* azul grisÃ¡ceo â placeholders / labels */
+  --accent:    #6c8eff;   /* azul elÃÂ©ctrico Ã¢ÂÂ acciÃÂ³n principal */
+  --accent2:   #ff6b8a;   /* rosa Ã¢ÂÂ secundario */
+  --green:     #34d399;   /* verde menta Ã¢ÂÂ positivo */
+  --yellow:    #fcd34d;   /* amarillo cÃÂ¡lido Ã¢ÂÂ alerta */
+  --red:       #f87171;   /* rojo suave Ã¢ÂÂ peligro */
+  --blue:      #60c8ff;   /* celeste Ã¢ÂÂ info */
+  --purple:    #c084fc;   /* violeta Ã¢ÂÂ especial */
+  --text:      #e8f0fe;   /* blanco azulado Ã¢ÂÂ texto principal Ã¢ÂÂ MÃÂS LEGIBLE */
+  --text2:     #b8c8e8;   /* azul claro Ã¢ÂÂ texto secundario */
+  --muted:     #7a91b8;   /* azul grisÃÂ¡ceo Ã¢ÂÂ placeholders / labels */
   --sidebar-w: 256px;
 }
 body {
@@ -36,7 +36,7 @@ body {
   font-size: 14px;
 }
 
-/* ââ LOGIN ââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ LOGIN Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 #login-screen {
   position: fixed; inset: 0; background: var(--bg);
   display: flex; align-items: center; justify-content: center; z-index: 9999;
@@ -67,10 +67,10 @@ body {
 .login-btn:hover { background: #5a52e0; }
 .login-error { color: var(--red); font-size: 12px; text-align: center; margin-top: 12px; display: none; }
 
-/* ââ APP LAYOUT ââââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ APP LAYOUT Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 #app { display: none; min-height: 100vh; }
 
-/* ââ SIDEBAR ââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ SIDEBAR Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .sidebar {
   width: var(--sidebar-w);
   min-height: 100vh;
@@ -193,7 +193,7 @@ body {
 .logout-btn { background: none; border: none; color: var(--text2); cursor: pointer; font-size: 12px; padding: 4px 8px; border-radius: 6px; transition: color 0.2s; margin-top: 8px; width: 100%; text-align: left; }
 .logout-btn:hover { color: var(--red); }
 
-/* ââ MAIN CONTENT âââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ MAIN CONTENT Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .main {
   margin-left: var(--sidebar-w);
   flex: 1;
@@ -268,11 +268,11 @@ body {
 
 .content { padding: 24px; flex: 1; }
 
-/* ââ TABS âââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ TABS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 
-/* ââ CARDS / STATS ââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ CARDS / STATS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -309,7 +309,7 @@ body {
 .stat-card.blue .stat-value { color: var(--blue); }
 .stat-card.purple .stat-value { color: var(--purple); }
 
-/* ââ SECTION HEADERS ââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ SECTION HEADERS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .section-header {
   display: flex;
   align-items: center;
@@ -326,7 +326,7 @@ body {
   margin-top: 2px;
 }
 
-/* ââ PRODUCT CARDS ââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ PRODUCT CARDS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -411,7 +411,7 @@ body {
   flex-wrap: wrap;
 }
 
-/* ââ DISPATCH CARDS âââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ DISPATCH CARDS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .dispatch-card {
   background: var(--bg2);
   border: 1px solid var(--border);
@@ -457,7 +457,7 @@ body {
 }
 .dispatch-actions { display: flex; gap: 8px; }
 
-/* ââ DISPATCH SEARCH ââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ DISPATCH SEARCH Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .dispatch-search-box {
   background: var(--bg2);
   border: 1px solid var(--border);
@@ -520,7 +520,7 @@ body {
 .fin-item.green .fin-value { color: var(--green); }
 .fin-item.yellow .fin-value { color: var(--yellow); }
 
-/* ââ MODAL ââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ MODAL Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -576,7 +576,7 @@ body {
   background: var(--bg2);
 }
 
-/* ââ IMAGE GALLERY ââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ IMAGE GALLERY Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .gallery-section { margin-bottom: 16px; }
 .gallery-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text2); margin-bottom: 8px; display: block; }
 .gallery-sub { font-size: 11px; color: var(--text2); margin-bottom: 8px; }
@@ -589,7 +589,7 @@ body {
 .gallery-thumb:hover { border-color: var(--accent); }
 .gallery-thumb.selected { border-color: var(--green); }
 
-/* ââ FORM ELEMENTS ââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ FORM ELEMENTS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .form-group { margin-bottom: 16px; }
 .form-group.full { grid-column: 1 / -1; }
@@ -620,7 +620,7 @@ body {
 .form-textarea { resize: vertical; min-height: 80px; }
 .form-select option { background: var(--bg2); }
 
-/* ââ PRICE CALCULATOR âââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ PRICE CALCULATOR Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .price-calc {
   background: var(--bg3);
   border: 1px solid var(--border);
@@ -654,7 +654,7 @@ body {
 .price-row.total .value { color: var(--green); font-size: 18px; }
 .margin-slider { width: 100%; accent-color: var(--accent); }
 
-/* ââ KOI INTEL ââââââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ KOI INTEL Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .koi-intel-section {
   background: rgba(59,7,100,0.25);
   border: 1px solid #5b21b6;
@@ -722,7 +722,7 @@ body {
   transition: width 0.3s;
 }
 
-/* ââ TOGGLE SWITCH ââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ TOGGLE SWITCH Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .toggle-row {
   display: flex;
   align-items: center;
@@ -760,7 +760,7 @@ body {
 .toggle input:checked + .toggle-slider { background: var(--accent); }
 .toggle input:checked + .toggle-slider:before { transform: translateX(18px); }
 
-/* ââ NICHO CATEGORIES âââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ NICHO CATEGORIES Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .nicho-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -784,7 +784,7 @@ body {
 .nicho-name { font-size: 13px; font-weight: 600; }
 .nicho-count { font-size: 11px; color: var(--text2); margin-top: 4px; }
 
-/* ââ ALERTS âââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ ALERTS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .alert {
   border-radius: 10px;
   padding: 12px 16px;
@@ -812,7 +812,7 @@ body {
 .alert-sub   { font-size: 12px; color: var(--text2); }
 .alert-time  { font-size: 11px; color: var(--text2); white-space: nowrap; }
 
-/* ââ INVENTORY TABLE ââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ INVENTORY TABLE Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .table-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; }
 th {
@@ -837,7 +837,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
 .stock-low { color: var(--yellow); font-weight: 700; }
 .stock-out { color: var(--red); font-weight: 700; }
 
-/* ââ BADGE ââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ BADGE Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
 .badge-pending   { background: rgba(251,191,36,0.15); color: var(--yellow); }
 .badge-published { background: rgba(42,222,128,0.15); color: var(--green); }
@@ -845,7 +845,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
 .badge-oos       { background: rgba(244,63,94,0.2); color: var(--red); border: 1px solid rgba(244,63,94,0.3); }
 .badge-info      { background: rgba(56,189,248,0.15); color: var(--blue); }
 
-/* ââ CONFIG PAGE ââââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ CONFIG PAGE Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .config-section {
   background: var(--bg2);
   border: 1px solid var(--border);
@@ -864,7 +864,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
   gap: 8px;
 }
 
-/* ââ SYSTEM CARDS âââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ SYSTEM CARDS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .system-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
 .system-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; gap: 14px; }
 .system-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
@@ -874,7 +874,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
 .system-label { font-size: 12px; color: var(--text2); margin-bottom: 2px; }
 .system-val   { font-size: 14px; font-weight: 700; }
 
-/* ââ EMPTY STATE ââââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ EMPTY STATE Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .empty-state {
   text-align: center;
   padding: 60px 24px;
@@ -884,7 +884,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
 .empty-state h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
 .empty-state p { font-size: 13px; line-height: 1.6; }
 
-/* ââ COMING SOON ââââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ COMING SOON Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .coming-soon {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   min-height: 400px; text-align: center;
@@ -894,11 +894,11 @@ tr:hover td { background: rgba(108,142,255,0.08); }
 .coming-soon p { font-size: 14px; color: var(--text2); max-width: 400px; line-height: 1.6; }
 .coming-soon .phase { display: inline-block; margin-top: 20px; background: rgba(108,99,255,0.15); color: var(--accent); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; border: 1px solid rgba(108,99,255,0.3); }
 
-/* ââ LOADER âââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ LOADER Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .loader { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ââ NOTIFICATIONS ââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ NOTIFICATIONS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .notif-container {
   position: fixed;
   top: 20px;
@@ -931,7 +931,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
   to   { transform: translateX(0); opacity: 1; }
 }
 
-/* ââ SIDEBAR MÃDULOS ââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ SIDEBAR MÃÂDULOS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .sidebar-logo .system-name {
   font-size: 15px;
   font-weight: 800;
@@ -959,7 +959,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
   border-radius: 20px;
 }
 
-/* Ãtem de mÃ³dulo â mÃ¡s llamativo que Ã­tem normal */
+/* ÃÂtem de mÃÂ³dulo Ã¢ÂÂ mÃÂ¡s llamativo que ÃÂ­tem normal */
 .sidebar-item.modulo {
   margin: 3px 8px;
   border-radius: 8px;
@@ -1022,13 +1022,13 @@ tr:hover td { background: rgba(108,142,255,0.08); }
 .modulo-badge-fase.f4 { background: rgba(251,191,36,0.15); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
 .modulo-badge-fase.f5 { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
 
-/* Separador de secciÃ³n del sidebar */
+/* Separador de secciÃÂ³n del sidebar */
 .sidebar-section-title.with-icon {
   display: flex; align-items: center; gap: 6px;
 }
 
-/* ââ KABUBY SCOUT ACORDEÃN ââââââââââââââââââââââââââââââââââ */
-/* Contenedor del sub-menÃº â anida directo bajo el botÃ³n */
+/* Ã¢ÂÂÃ¢ÂÂ KABUBY SCOUT ACORDEÃÂN Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
+/* Contenedor del sub-menÃÂº Ã¢ÂÂ anida directo bajo el botÃÂ³n */
 #kabuby-submenu {
   margin: 0 8px 4px;
   border-radius: 0 0 8px 8px;
@@ -1040,7 +1040,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
 .kabuby-sub-inner {
   padding: 4px 0 6px;
 }
-/* Sub-items del acordeÃ³n â mÃ¡s compactos e indentados */
+/* Sub-items del acordeÃÂ³n Ã¢ÂÂ mÃÂ¡s compactos e indentados */
 .sidebar-item.sub-item {
   padding: 7px 12px 7px 20px;
   font-size: 12px;
@@ -1058,12 +1058,12 @@ tr:hover td { background: rgba(108,142,255,0.08); }
   color: var(--green);
   border-left-color: var(--green);
 }
-/* Sub-items de categorÃ­as â aÃºn mÃ¡s compactos */
+/* Sub-items de categorÃÂ­as Ã¢ÂÂ aÃÂºn mÃÂ¡s compactos */
 .sidebar-item.sub-cat {
   padding: 5px 12px 5px 20px;
   font-size: 11px;
 }
-/* Etiqueta "CategorÃ­as" dentro del acordeÃ³n */
+/* Etiqueta "CategorÃÂ­as" dentro del acordeÃÂ³n */
 .sub-categories-label {
   font-size: 9px;
   font-weight: 700;
@@ -1072,21 +1072,21 @@ tr:hover td { background: rgba(108,142,255,0.08); }
   color: var(--muted);
   padding: 8px 20px 3px;
 }
-/* Flecha giratoria del mÃ³dulo Kabuby Scout */
+/* Flecha giratoria del mÃÂ³dulo Kabuby Scout */
 .modulo-arrow {
   transition: transform 0.25s ease;
 }
 .modulo-arrow.open {
   transform: rotate(180deg);
 }
-/* Cuando Kabuby estÃ¡ activo, su mÃ³dulo-btn tiene borde inferior recto */
+/* Cuando Kabuby estÃÂ¡ activo, su mÃÂ³dulo-btn tiene borde inferior recto */
 #nav-mod-kabuby.open-accordion {
   border-radius: 8px 8px 0 0;
   border-bottom-color: transparent;
   margin-bottom: 0;
 }
 
-/* ââ CHIP SELECTOR ââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ CHIP SELECTOR Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .chip-selector { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip {
   padding: 4px 10px;
@@ -1103,14 +1103,14 @@ tr:hover td { background: rgba(108,142,255,0.08); }
 .chip.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
 .chip.selected.kbeauty { background: #7e22ce; border-color: #7e22ce; }
 
-/* ââ SCROLLBAR ââââââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ SCROLLBAR Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb { background: #2a4070; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #3a5490; }
 
-/* ââ RESPONSIVE âââââââââââââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ RESPONSIVE Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 @media (max-width: 768px) {
   .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
   .sidebar.open { transform: translateX(0); }
@@ -1121,7 +1121,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
   .form-grid { grid-template-columns: 1fr; }
 }
 
-/* ââ RADAR DE TENDENCIAS âââââââââââââââââââââââââââââââââââ */
+/* Ã¢ÂÂÃ¢ÂÂ RADAR DE TENDENCIAS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ */
 .radar-ctab {
   background: var(--bg2);
   border: 1px solid var(--border);
@@ -1229,60 +1229,60 @@ tr:hover td { background: rgba(108,142,255,0.08); }
 </head>
 <body>
 
-<!-- ââ LOGIN ââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- Ã¢ÂÂÃ¢ÂÂ LOGIN Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
 <div id="login-screen">
   <div class="login-box">
     <div class="login-logo">
       <div class="brand">Kabuby</div>
       <div class="name">Kabuby <span>Scout</span></div>
-      <div class="sub">Portal de ImportaciÃ³n Amazon</div>
+      <div class="sub">Portal de ImportaciÃÂ³n Amazon</div>
     </div>
     <div class="login-field">
-      <label>ContraseÃ±a</label>
-      <input type="password" id="login-pass" placeholder="â¢â¢â¢â¢â¢â¢â¢â¢â¢â¢" onkeydown="if(event.key==='Enter')doLogin()">
+      <label>ContraseÃÂ±a</label>
+      <input type="password" id="login-pass" placeholder="Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <button class="login-btn" onclick="doLogin()">
       <i class="fas fa-sign-in-alt"></i> &nbsp;Entrar al Portal
     </button>
-    <div class="login-error" id="login-error">â ContraseÃ±a incorrecta</div>
+    <div class="login-error" id="login-error">Ã¢ÂÂ ContraseÃÂ±a incorrecta</div>
   </div>
 </div>
 
-<!-- ââ NOTIFICATIONS ââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- Ã¢ÂÂÃ¢ÂÂ NOTIFICATIONS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
 <div class="notif-container" id="notif-container"></div>
 
-<!-- ââ APP ââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- Ã¢ÂÂÃ¢ÂÂ APP Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
 <div id="app" style="display:none; min-height:100vh;">
 
 <!-- SIDEBAR -->
 <aside class="sidebar">
 
-  <!-- ââ LOGO SISTEMA âââââââââââââââââââââââââââââââââââââââ -->
+  <!-- Ã¢ÂÂÃ¢ÂÂ LOGO SISTEMA Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
   <div class="sidebar-logo" style="cursor:pointer" onclick="showTab('home')">
     <div class="brand">Kabuby</div>
-    <div class="system-name">ð§­ Kabuby Intelligence</div>
+    <div class="system-name">Ã°ÂÂ§Â­ Kabuby Intelligence</div>
     <div class="system-sub">Sistema de Inteligencia Comercial</div>
-    <div class="system-badge">v1.0 Â· 5 mÃ³dulos</div>
+    <div class="system-badge">v1.0 ÃÂ· 5 mÃÂ³dulos</div>
   </div>
 
-  <!-- ââ MÃDULOS DEL SISTEMA âââââââââââââââââââââââââââââââ -->
+  <!-- Ã¢ÂÂÃ¢ÂÂ MÃÂDULOS DEL SISTEMA Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
   <div class="sidebar-section" style="padding:10px 0 6px">
     <div class="sidebar-section-title with-icon">
-      <i class="fas fa-th-large" style="font-size:9px;opacity:0.6"></i> MÃ³dulos
+      <i class="fas fa-th-large" style="font-size:9px;opacity:0.6"></i> MÃÂ³dulos
     </div>
 
-    <!-- MÃ³dulo 1: Kabuby Scout â ACTIVO -->
+    <!-- MÃÂ³dulo 1: Kabuby Scout Ã¢ÂÂ ACTIVO -->
     <div class="sidebar-item modulo active" onclick="showModulo('kabuby-scout')" id="nav-mod-kabuby">
-      <div class="modulo-icon green">ð§©</div>
+      <div class="modulo-icon green">Ã°ÂÂ§Â©</div>
       <div class="modulo-info">
         <div class="modulo-name">Kabuby Scout</div>
-        <div class="modulo-desc">Amazon â Shopify â MeLi</div>
+        <div class="modulo-desc">Amazon Ã¢ÂÂ Shopify Ã¢ÂÂ MeLi</div>
       </div>
       <span class="modulo-badge-fase f1">F1</span>
       <i class="fas fa-chevron-down modulo-arrow" id="arrow-kabuby" style="font-size:9px;color:var(--text2);margin-left:2px;transition:transform 0.25s"></i>
     </div>
 
-    <!-- ââ KABUBY SCOUT â sub-menÃº acordeÃ³n (oculto por defecto) ââ -->
+    <!-- Ã¢ÂÂÃ¢ÂÂ KABUBY SCOUT Ã¢ÂÂ sub-menÃÂº acordeÃÂ³n (oculto por defecto) Ã¢ÂÂÃ¢ÂÂ -->
     <div id="kabuby-submenu" style="display:none;overflow:hidden">
       <div class="kabuby-sub-inner">
         <div class="sidebar-item sub-item" onclick="showTab('dashboard')" id="nav-dashboard">
@@ -1299,95 +1299,95 @@ tr:hover td { background: rgba(108,142,255,0.08); }
         <div class="sidebar-item sub-item" onclick="showTab('inventario')" id="nav-inventario">
           <i class="icon fas fa-boxes"></i> Inventario
         </div>
-        <div class="sub-categories-label">CategorÃ­as</div>
+        <div class="sub-categories-label">CategorÃÂ­as</div>
         <div class="sidebar-item sub-item sub-cat" onclick="showNicho('kbeauty')">
-          <i class="icon">ð¸</i> <span>K-Beauty</span>
+          <i class="icon">Ã°ÂÂÂ¸</i> <span>K-Beauty</span>
           <span class="sidebar-badge" id="badge-kbeauty">0</span>
         </div>
         <div class="sidebar-item sub-item sub-cat" onclick="showNicho('electronica')">
-          <i class="icon">ð»</i> <span>ElectrÃ³nica</span>
+          <i class="icon">Ã°ÂÂÂ»</i> <span>ElectrÃÂ³nica</span>
           <span class="sidebar-badge" id="badge-electronica">0</span>
         </div>
         <div class="sidebar-item sub-item sub-cat" onclick="showNicho('hogar')">
-          <i class="icon">ð </i> <span>Hogar &amp; Cocina</span>
+          <i class="icon">Ã°ÂÂÂ </i> <span>Hogar &amp; Cocina</span>
           <span class="sidebar-badge" id="badge-hogar">0</span>
         </div>
         <div class="sidebar-item sub-item sub-cat" onclick="showNicho('herramientas')">
-          <i class="icon">ð§</i> <span>Herramientas</span>
+          <i class="icon">Ã°ÂÂÂ§</i> <span>Herramientas</span>
           <span class="sidebar-badge" id="badge-herramientas">0</span>
         </div>
         <div class="sidebar-item sub-item sub-cat" onclick="showNicho('deportes')">
-          <i class="icon">â½</i> <span>Deportes</span>
+          <i class="icon">Ã¢ÂÂ½</i> <span>Deportes</span>
           <span class="sidebar-badge" id="badge-deportes">0</span>
         </div>
         <div class="sidebar-item sub-item sub-cat" onclick="showNicho('bebes')">
-          <i class="icon">ð¶</i> <span>BebÃ©s &amp; NiÃ±os</span>
+          <i class="icon">Ã°ÂÂÂ¶</i> <span>BebÃÂ©s &amp; NiÃÂ±os</span>
           <span class="sidebar-badge" id="badge-bebes">0</span>
         </div>
         <div class="sidebar-item sub-item sub-cat" onclick="showNicho('mascotas')">
-          <i class="icon">ð¾</i> <span>Mascotas</span>
+          <i class="icon">Ã°ÂÂÂ¾</i> <span>Mascotas</span>
           <span class="sidebar-badge" id="badge-mascotas">0</span>
         </div>
         <div class="sidebar-item sub-item sub-cat" onclick="showNicho('salud')">
-          <i class="icon">ð¥</i> <span>Salud</span>
+          <i class="icon">Ã°ÂÂÂ¥</i> <span>Salud</span>
           <span class="sidebar-badge" id="badge-salud">0</span>
         </div>
         <div class="sidebar-item sub-item sub-cat" onclick="showNicho('otros')">
-          <i class="icon">ð¦</i> <span>Otros</span>
+          <i class="icon">Ã°ÂÂÂ¦</i> <span>Otros</span>
           <span class="sidebar-badge" id="badge-otros">0</span>
         </div>
         <div class="sidebar-item sub-item" onclick="showTab('config')" id="nav-config" style="margin-top:2px">
-          <i class="icon fas fa-cog"></i> ConfiguraciÃ³n
+          <i class="icon fas fa-cog"></i> ConfiguraciÃÂ³n
         </div>
       </div>
     </div>
 
-    <!-- MÃ³dulo 2: Price Monitor + OOS â³ Fase 2A -->
+    <!-- MÃÂ³dulo 2: Price Monitor + OOS Ã¢ÂÂ³ Fase 2A -->
     <div class="sidebar-item modulo" onclick="showModulo('price-monitor')" id="nav-mod-prices">
-      <div class="modulo-icon blue">ð</div>
+      <div class="modulo-icon blue">Ã°ÂÂÂ</div>
       <div class="modulo-info">
         <div class="modulo-name">Price Monitor</div>
-        <div class="modulo-desc">OOS Â· Alertas Â· Telegram</div>
+        <div class="modulo-desc">OOS ÃÂ· Alertas ÃÂ· Telegram</div>
       </div>
       <span class="modulo-badge-fase f2">F2</span>
     </div>
 
-    <!-- MÃ³dulo 3: eBay Connect â³ Fase 2B -->
+    <!-- MÃÂ³dulo 3: eBay Connect Ã¢ÂÂ³ Fase 2B -->
     <div class="sidebar-item modulo" onclick="showModulo('ebay-connect')" id="nav-mod-ebay">
-      <div class="modulo-icon blue">ð</div>
+      <div class="modulo-icon blue">Ã°ÂÂÂ</div>
       <div class="modulo-info">
         <div class="modulo-name">eBay Connect</div>
-        <div class="modulo-desc">Precios Â· MÃ¡rgenes Â· Sync</div>
+        <div class="modulo-desc">Precios ÃÂ· MÃÂ¡rgenes ÃÂ· Sync</div>
       </div>
       <span class="modulo-badge-fase f2">F2</span>
     </div>
 
-    <!-- MÃ³dulo 4: Radar de Virales ð® Fase 3 -->
+    <!-- MÃÂ³dulo 4: Radar de Virales Ã°ÂÂÂ® Fase 3 -->
     <div class="sidebar-item modulo" onclick="showModulo('radar-virales')" id="nav-mod-radar">
-      <div class="modulo-icon purple">ð¡ï¸</div>
+      <div class="modulo-icon purple">Ã°ÂÂÂ¡Ã¯Â¸Â</div>
       <div class="modulo-info">
         <div class="modulo-name">Radar de Virales</div>
-        <div class="modulo-desc">MeLi Â· Google Â· TikTok</div>
+        <div class="modulo-desc">MeLi ÃÂ· Google ÃÂ· TikTok</div>
       </div>
       <span class="modulo-badge-fase f3">F3</span>
     </div>
 
-    <!-- MÃ³dulo 5: PredicciÃ³n IA ð® Fase 4 -->
+    <!-- MÃÂ³dulo 5: PredicciÃÂ³n IA Ã°ÂÂÂ® Fase 4 -->
     <div class="sidebar-item modulo" onclick="showModulo('prediccion-ia')" id="nav-mod-ia">
-      <div class="modulo-icon orange">ð®</div>
+      <div class="modulo-icon orange">Ã°ÂÂÂ®</div>
       <div class="modulo-info">
-        <div class="modulo-name">PredicciÃ³n IA</div>
-        <div class="modulo-desc">Cross-country Â· Alibaba</div>
+        <div class="modulo-name">PredicciÃÂ³n IA</div>
+        <div class="modulo-desc">Cross-country ÃÂ· Alibaba</div>
       </div>
       <span class="modulo-badge-fase f4">F4</span>
     </div>
 
-    <!-- MÃ³dulo 6: SaaS Platform ð Fase 5 -->
+    <!-- MÃÂ³dulo 6: SaaS Platform Ã°ÂÂÂ Fase 5 -->
     <div class="sidebar-item modulo" onclick="showModulo('saas-platform')" id="nav-mod-saas">
-      <div class="modulo-icon red">ð</div>
+      <div class="modulo-icon red">Ã°ÂÂÂ</div>
       <div class="modulo-info">
         <div class="modulo-name">SaaS Platform</div>
-        <div class="modulo-desc">Multi-usuario Â· Dominio</div>
+        <div class="modulo-desc">Multi-usuario ÃÂ· Dominio</div>
       </div>
       <span class="modulo-badge-fase f5">F5</span>
     </div>
@@ -1401,7 +1401,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
         <div class="store-url">kabuby.com</div>
       </div>
     </div>
-    <button class="logout-btn" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Cerrar sesiÃ³n</button>
+    <button class="logout-btn" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Cerrar sesiÃÂ³n</button>
   </div>
 </aside>
 
@@ -1410,13 +1410,13 @@ tr:hover td { background: rgba(108,142,255,0.08); }
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:10px;flex:1">
       <!-- Breadcrumb home -->
-      <span onclick="goHome()" style="color:var(--text2);cursor:pointer;font-size:13px;opacity:0.7;transition:opacity 0.15s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" title="Inicio">ð§­</span>
+      <span onclick="goHome()" style="color:var(--text2);cursor:pointer;font-size:13px;opacity:0.7;transition:opacity 0.15s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" title="Inicio">Ã°ÂÂ§Â­</span>
       <span style="color:var(--border);font-size:12px">/</span>
-      <div class="topbar-title" id="topbarTitle">ð§­ Kabuby</div>
+      <div class="topbar-title" id="topbarTitle">Ã°ÂÂ§Â­ Kabuby</div>
     </div>
     <div class="topbar-search">
       <i class="fas fa-search"></i>
-      <input type="text" placeholder="Buscar por nombre, ASIN, categorÃ­a..." id="topbarSearchInput" oninput="globalSearchFn(this.value)">
+      <input type="text" placeholder="Buscar por nombre, ASIN, categorÃÂ­a..." id="topbarSearchInput" oninput="globalSearchFn(this.value)">
     </div>
     <button class="btn btn-primary" id="topbar-action-btn" onclick="openCaptureModal()" style="display:none">
       <i class="fas fa-plus"></i> Capturar producto
@@ -1425,15 +1425,15 @@ tr:hover td { background: rgba(108,142,255,0.08); }
 
   <div class="content">
 
-    <!-- ââ HOME â Pantalla principal del sistema ââââââââââââââââ -->
+    <!-- Ã¢ÂÂÃ¢ÂÂ HOME Ã¢ÂÂ Pantalla principal del sistema Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
     <div id="tab-home" class="tab-content active">
       <div style="max-width:900px;margin:0 auto;padding:8px 0 40px">
 
         <!-- Header -->
         <div style="text-align:center;padding:40px 0 32px">
-          <div style="font-size:48px;margin-bottom:16px">ð§­</div>
+          <div style="font-size:48px;margin-bottom:16px">Ã°ÂÂ§Â­</div>
           <h1 style="font-size:28px;font-weight:900;color:var(--text);margin-bottom:8px">Kabuby Intelligence</h1>
-          <p style="font-size:15px;color:var(--text2);max-width:500px;margin:0 auto;line-height:1.6">El sistema de inteligencia comercial autÃ³nomo para vendedores de Amazon â MeLi â eBay</p>
+          <p style="font-size:15px;color:var(--text2);max-width:500px;margin:0 auto;line-height:1.6">El sistema de inteligencia comercial autÃÂ³nomo para vendedores de Amazon Ã¢ÂÂ MeLi Ã¢ÂÂ eBay</p>
           <div style="display:flex;justify-content:center;gap:24px;margin-top:28px;flex-wrap:wrap">
             <div style="text-align:center">
               <div style="font-size:24px;font-weight:800;color:var(--accent)">6</div>
@@ -1445,7 +1445,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
             </div>
             <div style="text-align:center">
               <div style="font-size:24px;font-weight:800;color:var(--yellow)">5</div>
-              <div style="font-size:11px;color:var(--text2);margin-top:2px">MÃ³dulos</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:2px">MÃÂ³dulos</div>
             </div>
             <div style="text-align:center">
               <div style="font-size:24px;font-weight:800;color:var(--blue)">$0</div>
@@ -1454,19 +1454,19 @@ tr:hover td { background: rgba(108,142,255,0.08); }
           </div>
         </div>
 
-        <!-- Grid de mÃ³dulos -->
+        <!-- Grid de mÃÂ³dulos -->
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px">
 
-          <!-- MÃ³dulo 1: Kabuby Scout -->
+          <!-- MÃÂ³dulo 1: Kabuby Scout -->
           <div onclick="showModulo('kabuby-scout')" style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;transition:all 0.2s;border-left:4px solid var(--green)" onmouseover="this.style.borderColor='var(--green)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';this.style.borderLeftColor='var(--green)'">
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-              <div style="width:42px;height:42px;border-radius:10px;background:rgba(52,211,153,0.15);display:flex;align-items:center;justify-content:center;font-size:20px">ð§©</div>
+              <div style="width:42px;height:42px;border-radius:10px;background:rgba(52,211,153,0.15);display:flex;align-items:center;justify-content:center;font-size:20px">Ã°ÂÂ§Â©</div>
               <div>
                 <div style="font-size:14px;font-weight:700;color:var(--text)">Kabuby Scout</div>
-                <div style="display:inline-block;margin-top:3px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(52,211,153,0.15);color:var(--green)">â ACTIVO â Fase 1</div>
+                <div style="display:inline-block;margin-top:3px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(52,211,153,0.15);color:var(--green)">Ã¢ÂÂ ACTIVO Ã¢ÂÂ Fase 1</div>
               </div>
             </div>
-            <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px">Captura productos de Amazon con la extensiÃ³n Chrome y gestiona tu bandeja de importaciÃ³n hacia Shopify y MeLi.</p>
+            <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px">Captura productos de Amazon con la extensiÃÂ³n Chrome y gestiona tu bandeja de importaciÃÂ³n hacia Shopify y MeLi.</p>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
               <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(52,211,153,0.1);color:var(--green);border:1px solid rgba(52,211,153,0.2)">Chrome Extension</span>
               <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(52,211,153,0.1);color:var(--green);border:1px solid rgba(52,211,153,0.2)">Shopify Sync</span>
@@ -1474,97 +1474,97 @@ tr:hover td { background: rgba(108,142,255,0.08); }
             </div>
           </div>
 
-          <!-- MÃ³dulo 2: Price Monitor -->
+          <!-- MÃÂ³dulo 2: Price Monitor -->
           <div onclick="showModulo('price-monitor')" style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;transition:all 0.2s;border-left:4px solid var(--blue)" onmouseover="this.style.borderColor='var(--blue)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';this.style.borderLeftColor='var(--blue)'">
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-              <div style="width:42px;height:42px;border-radius:10px;background:rgba(96,200,255,0.15);display:flex;align-items:center;justify-content:center;font-size:20px">ð</div>
+              <div style="width:42px;height:42px;border-radius:10px;background:rgba(96,200,255,0.15);display:flex;align-items:center;justify-content:center;font-size:20px">Ã°ÂÂÂ</div>
               <div>
                 <div style="font-size:14px;font-weight:700;color:var(--text)">Price Monitor</div>
-                <div style="display:inline-block;margin-top:3px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(96,200,255,0.15);color:var(--blue)">â³ Fase 2A â PrÃ³ximo</div>
+                <div style="display:inline-block;margin-top:3px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(96,200,255,0.15);color:var(--blue)">Ã¢ÂÂ³ Fase 2A Ã¢ÂÂ PrÃÂ³ximo</div>
               </div>
             </div>
-            <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px">Monitoreo de precios Amazon en tiempo real, detecciÃ³n de Out of Stock, pausa automÃ¡tica en MeLi y alertas por Telegram.</p>
+            <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px">Monitoreo de precios Amazon en tiempo real, detecciÃÂ³n de Out of Stock, pausa automÃÂ¡tica en MeLi y alertas por Telegram.</p>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
-              <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(96,200,255,0.1);color:var(--blue);border:1px solid rgba(96,200,255,0.2)">OOS AutomÃ¡tico</span>
+              <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(96,200,255,0.1);color:var(--blue);border:1px solid rgba(96,200,255,0.2)">OOS AutomÃÂ¡tico</span>
               <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(96,200,255,0.1);color:var(--blue);border:1px solid rgba(96,200,255,0.2)">Telegram Bot</span>
             </div>
           </div>
 
-          <!-- MÃ³dulo 3: eBay Connect -->
+          <!-- MÃÂ³dulo 3: eBay Connect -->
           <div onclick="showModulo('ebay-connect')" style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;transition:all 0.2s;border-left:4px solid var(--blue)" onmouseover="this.style.borderColor='var(--blue)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';this.style.borderLeftColor='var(--blue)'">
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-              <div style="width:42px;height:42px;border-radius:10px;background:rgba(96,200,255,0.15);display:flex;align-items:center;justify-content:center;font-size:20px">ð</div>
+              <div style="width:42px;height:42px;border-radius:10px;background:rgba(96,200,255,0.15);display:flex;align-items:center;justify-content:center;font-size:20px">Ã°ÂÂÂ</div>
               <div>
                 <div style="font-size:14px;font-weight:700;color:var(--text)">eBay Connect</div>
-                <div style="display:inline-block;margin-top:3px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(96,200,255,0.15);color:var(--blue)">â³ Fase 2B â PrÃ³ximo</div>
+                <div style="display:inline-block;margin-top:3px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(96,200,255,0.15);color:var(--blue)">Ã¢ÂÂ³ Fase 2B Ã¢ÂÂ PrÃÂ³ximo</div>
               </div>
             </div>
-            <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px">ConexiÃ³n OAuth con eBay, precios independientes por marketplace, mÃ¡rgenes automÃ¡ticos y tipo de cambio en tiempo real.</p>
+            <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px">ConexiÃÂ³n OAuth con eBay, precios independientes por marketplace, mÃÂ¡rgenes automÃÂ¡ticos y tipo de cambio en tiempo real.</p>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
               <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(96,200,255,0.1);color:var(--blue);border:1px solid rgba(96,200,255,0.2)">OAuth eBay</span>
-              <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(96,200,255,0.1);color:var(--blue);border:1px solid rgba(96,200,255,0.2)">Fx AutomÃ¡tico</span>
+              <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(96,200,255,0.1);color:var(--blue);border:1px solid rgba(96,200,255,0.2)">Fx AutomÃÂ¡tico</span>
             </div>
           </div>
 
-          <!-- MÃ³dulo 4: Radar de Virales -->
+          <!-- MÃÂ³dulo 4: Radar de Virales -->
           <div onclick="showModulo('radar-virales')" style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;transition:all 0.2s;border-left:4px solid var(--purple)" onmouseover="this.style.borderColor='var(--purple)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';this.style.borderLeftColor='var(--purple)'">
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-              <div style="width:42px;height:42px;border-radius:10px;background:rgba(192,132,252,0.15);display:flex;align-items:center;justify-content:center;font-size:20px">ð¡ï¸</div>
+              <div style="width:42px;height:42px;border-radius:10px;background:rgba(192,132,252,0.15);display:flex;align-items:center;justify-content:center;font-size:20px">Ã°ÂÂÂ¡Ã¯Â¸Â</div>
               <div>
                 <div style="font-size:14px;font-weight:700;color:var(--text)">Radar de Virales</div>
-                <div style="display:inline-block;margin-top:3px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(192,132,252,0.15);color:var(--purple)">ð® Fase 3 â Planeado</div>
+                <div style="display:inline-block;margin-top:3px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(192,132,252,0.15);color:var(--purple)">Ã°ÂÂÂ® Fase 3 Ã¢ÂÂ Planeado</div>
               </div>
             </div>
-            <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px">Detecta productos virales en MeLi 5 paÃ­ses, Amazon Movers & Shakers, Google Trends y TikTok. Score de oportunidad 0-100.</p>
+            <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px">Detecta productos virales en MeLi 5 paÃÂ­ses, Amazon Movers & Shakers, Google Trends y TikTok. Score de oportunidad 0-100.</p>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
               <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(192,132,252,0.1);color:var(--purple);border:1px solid rgba(192,132,252,0.2)">Score 0-100</span>
               <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(192,132,252,0.1);color:var(--purple);border:1px solid rgba(192,132,252,0.2)">Mapa de calor</span>
             </div>
           </div>
 
-          <!-- MÃ³dulo 5: PredicciÃ³n IA -->
+          <!-- MÃÂ³dulo 5: PredicciÃÂ³n IA -->
           <div onclick="showModulo('prediccion-ia')" style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;transition:all 0.2s;border-left:4px solid var(--yellow)" onmouseover="this.style.borderColor='var(--yellow)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';this.style.borderLeftColor='var(--yellow)'">
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-              <div style="width:42px;height:42px;border-radius:10px;background:rgba(251,191,36,0.15);display:flex;align-items:center;justify-content:center;font-size:20px">ð®</div>
+              <div style="width:42px;height:42px;border-radius:10px;background:rgba(251,191,36,0.15);display:flex;align-items:center;justify-content:center;font-size:20px">Ã°ÂÂÂ®</div>
               <div>
-                <div style="font-size:14px;font-weight:700;color:var(--text)">PredicciÃ³n IA</div>
-                <div style="display:inline-block;margin-top:3px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(251,191,36,0.15);color:var(--yellow)">ð® Fase 4 â Futuro</div>
+                <div style="font-size:14px;font-weight:700;color:var(--text)">PredicciÃÂ³n IA</div>
+                <div style="display:inline-block;margin-top:3px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(251,191,36,0.15);color:var(--yellow)">Ã°ÂÂÂ® Fase 4 Ã¢ÂÂ Futuro</div>
               </div>
             </div>
-            <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px">PredicciÃ³n cross-country, comparativa Alibaba vs Amazon, repricing dinÃ¡mico y calculadora de viabilidad de importaciÃ³n con ROI.</p>
+            <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px">PredicciÃÂ³n cross-country, comparativa Alibaba vs Amazon, repricing dinÃÂ¡mico y calculadora de viabilidad de importaciÃÂ³n con ROI.</p>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
               <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(251,191,36,0.1);color:var(--yellow);border:1px solid rgba(251,191,36,0.2)">Cross-country</span>
               <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(251,191,36,0.1);color:var(--yellow);border:1px solid rgba(251,191,36,0.2)">Alibaba ROI</span>
             </div>
           </div>
 
-          <!-- MÃ³dulo 6: SaaS Platform -->
+          <!-- MÃÂ³dulo 6: SaaS Platform -->
           <div onclick="showModulo('saas-platform')" style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;transition:all 0.2s;border-left:4px solid var(--red)" onmouseover="this.style.borderColor='var(--red)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';this.style.borderLeftColor='var(--red)'">
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-              <div style="width:42px;height:42px;border-radius:10px;background:rgba(248,113,113,0.15);display:flex;align-items:center;justify-content:center;font-size:20px">ð</div>
+              <div style="width:42px;height:42px;border-radius:10px;background:rgba(248,113,113,0.15);display:flex;align-items:center;justify-content:center;font-size:20px">Ã°ÂÂÂ</div>
               <div>
                 <div style="font-size:14px;font-weight:700;color:var(--text)">SaaS Platform</div>
-                <div style="display:inline-block;margin-top:3px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(248,113,113,0.15);color:var(--red)">ð Fase 5 â VisiÃ³n</div>
+                <div style="display:inline-block;margin-top:3px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(248,113,113,0.15);color:var(--red)">Ã°ÂÂÂ Fase 5 Ã¢ÂÂ VisiÃÂ³n</div>
               </div>
             </div>
-            <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px">Multi-usuario, dominio propio, planes de suscripciÃ³n $29/$79/$199 y app mÃ³vil PWA para vendedores de Latam.</p>
+            <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px">Multi-usuario, dominio propio, planes de suscripciÃÂ³n $29/$79/$199 y app mÃÂ³vil PWA para vendedores de Latam.</p>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
               <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.2)">Multi-usuario</span>
               <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.2)">PWA</span>
             </div>
           </div>
 
-        </div><!-- /grid mÃ³dulos -->
+        </div><!-- /grid mÃÂ³dulos -->
       </div>
     </div><!-- /tab-home -->
 
-    <!-- ââ DASHBOARD ââââââââââââââââââââââââââââââââââââââââââ -->
+    <!-- Ã¢ÂÂÃ¢ÂÂ DASHBOARD Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
     <div id="tab-dashboard" class="tab-content">
       <div class="stats-grid">
         <div class="stat-card blue">
           <div class="stat-label">Total Productos</div>
           <div class="stat-value" id="stat-total">0</div>
-          <div class="stat-sub">En tu catÃ¡logo</div>
+          <div class="stat-sub">En tu catÃÂ¡logo</div>
         </div>
         <div class="stat-card green">
           <div class="stat-label">Publicados</div>
@@ -1585,7 +1585,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
 
       <div class="section-header">
         <div>
-          <div class="section-title">ð¨ Despachos Urgentes</div>
+          <div class="section-title">Ã°ÂÂÂ¨ Despachos Urgentes</div>
           <div class="section-sub">Ventas que necesitan ser compradas y despachadas</div>
         </div>
         <button class="btn btn-outline btn-sm" onclick="showTab('despachos')">Ver todos</button>
@@ -1594,25 +1594,25 @@ tr:hover td { background: rgba(108,142,255,0.08); }
         <div class="empty-state" style="padding:40px">
           <i class="fas fa-truck"></i>
           <h3>Sin despachos urgentes</h3>
-          <p>Cuando tengas ventas en MeLi o Shopify aparecerÃ¡n aquÃ­</p>
+          <p>Cuando tengas ventas en MeLi o Shopify aparecerÃÂ¡n aquÃÂ­</p>
         </div>
       </div>
 
       <div class="section-header" style="margin-top:24px">
         <div>
-          <div class="section-title">ðï¸ Productos por Nicho</div>
+          <div class="section-title">Ã°ÂÂÂÃ¯Â¸Â Productos por Nicho</div>
           <div class="section-sub">Tu mini-Amazon organizado</div>
         </div>
       </div>
       <div class="nicho-grid" id="nicho-summary"></div>
     </div>
 
-    <!-- ââ PENDIENTES ââââââââââââââââââââââââââââââââââââââââââ -->
+    <!-- Ã¢ÂÂÃ¢ÂÂ PENDIENTES Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
     <div id="tab-pendientes" class="tab-content">
       <div class="section-header">
         <div>
-          <div class="section-title">ð¥ Productos Pendientes</div>
-          <div class="section-sub">Bandeja de entrada â revisÃ¡, editÃ¡ y publicÃ¡ en el nicho correspondiente</div>
+          <div class="section-title">Ã°ÂÂÂ¥ Productos Pendientes</div>
+          <div class="section-sub">Bandeja de entrada Ã¢ÂÂ revisÃÂ¡, editÃÂ¡ y publicÃÂ¡ en el nicho correspondiente</div>
         </div>
         <button class="btn btn-primary" onclick="openCaptureModal()">
           <i class="fas fa-plus"></i> Capturar nuevo
@@ -1620,32 +1620,32 @@ tr:hover td { background: rgba(108,142,255,0.08); }
       </div>
       <div class="alert alert-info" style="margin-bottom:16px">
         <i class="fas fa-info-circle"></i>
-        <span>Flujo: <strong>Amazon</strong> â "Enviar K-Beauty" â aparece aquÃ­ â hacÃ© click en <strong>"Ver detalle"</strong> para editar â <strong>Publicar en Shopify</strong></span>
+        <span>Flujo: <strong>Amazon</strong> Ã¢ÂÂ "Enviar K-Beauty" Ã¢ÂÂ aparece aquÃÂ­ Ã¢ÂÂ hacÃÂ© click en <strong>"Ver detalle"</strong> para editar Ã¢ÂÂ <strong>Publicar en Shopify</strong></span>
       </div>
       <div class="products-grid" id="pendientes-grid">
         <div class="empty-state" style="grid-column:1/-1;padding:60px">
           <i class="fas fa-inbox"></i>
           <h3>No hay productos pendientes</h3>
-          <p>UsÃ¡ la extensiÃ³n Chrome en Amazon para capturar productos<br>o hacÃ© click en "Capturar producto" para agregar uno manualmente</p>
+          <p>UsÃÂ¡ la extensiÃÂ³n Chrome en Amazon para capturar productos<br>o hacÃÂ© click en "Capturar producto" para agregar uno manualmente</p>
         </div>
       </div>
     </div>
 
-    <!-- ââ DESPACHOS âââââââââââââââââââââââââââââââââââââââââââ -->
+    <!-- Ã¢ÂÂÃ¢ÂÂ DESPACHOS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
     <div id="tab-despachos" class="tab-content">
       <div class="section-header">
         <div>
-          <div class="section-title">ð Centro de Despachos</div>
-          <div class="section-sub">EncontrÃ¡ el producto en Amazon y despachÃ¡ al cliente</div>
+          <div class="section-title">Ã°ÂÂÂ Centro de Despachos</div>
+          <div class="section-sub">EncontrÃÂ¡ el producto en Amazon y despachÃÂ¡ al cliente</div>
         </div>
       </div>
 
       <div class="dispatch-search-box">
         <div style="font-size:14px;font-weight:700;margin-bottom:12px;">
-          ð Buscar producto para despachar
+          Ã°ÂÂÂ Buscar producto para despachar
         </div>
         <div class="dispatch-search-input">
-          <input type="text" id="dispatchSearchInput" placeholder="EscribÃ­ el nombre del producto o el ASIN..." oninput="searchDispatch(this.value)">
+          <input type="text" id="dispatchSearchInput" placeholder="EscribÃÂ­ el nombre del producto o el ASIN..." oninput="searchDispatch(this.value)">
           <button class="btn btn-primary" onclick="searchDispatch(document.getElementById('dispatchSearchInput').value)">
             <i class="fas fa-search"></i> Buscar
           </button>
@@ -1661,16 +1661,16 @@ tr:hover td { background: rgba(108,142,255,0.08); }
         <div class="empty-state" style="padding:60px">
           <i class="fas fa-box-open"></i>
           <h3>Sin ventas pendientes</h3>
-          <p>Las ventas de MeLi y Shopify aparecerÃ¡n aquÃ­ automÃ¡ticamente</p>
+          <p>Las ventas de MeLi y Shopify aparecerÃÂ¡n aquÃÂ­ automÃÂ¡ticamente</p>
         </div>
       </div>
     </div>
 
-    <!-- ââ INVENTARIO âââââââââââââââââââââââââââââââââââââââââââ -->
+    <!-- Ã¢ÂÂÃ¢ÂÂ INVENTARIO Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
     <div id="tab-inventario" class="tab-content">
       <div class="section-header">
         <div>
-          <div class="section-title">ð¦ Control de Inventario</div>
+          <div class="section-title">Ã°ÂÂÂ¦ Control de Inventario</div>
           <div class="section-sub">Stock actual de todos tus productos</div>
         </div>
       </div>
@@ -1692,7 +1692,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
           <tbody id="inventario-body">
             <tr>
               <td colspan="9" style="text-align:center;padding:40px;color:var(--muted)">
-                No hay productos en tu inventario aÃºn
+                No hay productos en tu inventario aÃÂºn
               </td>
             </tr>
           </tbody>
@@ -1700,7 +1700,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
       </div>
     </div>
 
-    <!-- ââ PRODUCTOS POR NICHO âââââââââââââââââââââââââââââââââ -->
+    <!-- Ã¢ÂÂÃ¢ÂÂ PRODUCTOS POR NICHO Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
     <div id="tab-nicho" class="tab-content">
       <div class="section-header">
         <div>
@@ -1714,10 +1714,10 @@ tr:hover td { background: rgba(108,142,255,0.08); }
       <div class="products-grid" id="nicho-grid"></div>
     </div>
 
-    <!-- ââ CONFIGURACIÃN ââââââââââââââââââââââââââââââââââââââââ -->
+    <!-- Ã¢ÂÂÃ¢ÂÂ CONFIGURACIÃÂN Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
     <div id="tab-config" class="tab-content">
       <div class="section-header">
-        <div class="section-title">âï¸ ConfiguraciÃ³n del Portal</div>
+        <div class="section-title">Ã¢ÂÂÃ¯Â¸Â ConfiguraciÃÂ³n del Portal</div>
       </div>
 
       <div class="config-section">
@@ -1742,7 +1742,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
           <label class="form-label">Associate Tag (Tracking ID)</label>
           <input type="text" class="form-input" id="cfg-amazon-tag" placeholder="nombre-20">
           <div style="font-size:11px;color:var(--muted);margin-top:4px">
-            Este tag se agrega automÃ¡ticamente a todos los links de Amazon para generar comisiÃ³n
+            Este tag se agrega automÃÂ¡ticamente a todos los links de Amazon para generar comisiÃÂ³n
           </div>
         </div>
         <div class="form-group">
@@ -1750,7 +1750,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
           <input type="number" class="form-input" id="cfg-default-margin" value="35" min="1" max="200">
         </div>
         <div class="form-group">
-          <label class="form-label">Alerta de margen mÃ­nimo (%)</label>
+          <label class="form-label">Alerta de margen mÃÂ­nimo (%)</label>
           <input type="number" class="form-input" id="cfg-min-margin" value="20" min="1" max="100">
           <div style="font-size:11px;color:var(--muted);margin-top:4px">
             Te avisamos cuando el margen baje de este porcentaje
@@ -1767,14 +1767,14 @@ tr:hover td { background: rgba(108,142,255,0.08); }
             <div class="toggle-label">Worker conectado</div>
             <div class="toggle-sub">shato-meli-connector.luisfonse2010.workers.dev</div>
           </div>
-          <span style="color:var(--green);font-weight:700;font-size:12px">â CONECTADO</span>
+          <span style="color:var(--green);font-weight:700;font-size:12px">Ã¢ÂÂ CONECTADO</span>
         </div>
         <div class="toggle-row">
           <div>
             <div class="toggle-label">Usuario MeLi</div>
-            <div class="toggle-sub">USSFWELLNESSLLC â ID: 2580132362</div>
+            <div class="toggle-sub">USSFWELLNESSLLC Ã¢ÂÂ ID: 2580132362</div>
           </div>
-          <span style="color:var(--green);font-weight:700;font-size:12px">â AUTH OK</span>
+          <span style="color:var(--green);font-weight:700;font-size:12px">Ã¢ÂÂ AUTH OK</span>
         </div>
       </div>
 
@@ -1785,7 +1785,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
         <div class="toggle-row">
           <div>
             <div class="toggle-label">Ocultar productos multi-nicho en shatokb.com</div>
-            <div class="toggle-sub">Los productos se publican en Shopify pero no aparecen en la tienda â solo van a MeLi</div>
+            <div class="toggle-sub">Los productos se publican en Shopify pero no aparecen en la tienda Ã¢ÂÂ solo van a MeLi</div>
           </div>
           <label class="toggle">
             <input type="checkbox" id="cfg-hide-multinichos" checked>
@@ -1794,7 +1794,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
         </div>
         <div class="toggle-row">
           <div>
-            <div class="toggle-label">Tag automÃ¡tico "hidden" en multi-nicho</div>
+            <div class="toggle-label">Tag automÃÂ¡tico "hidden" en multi-nicho</div>
             <div class="toggle-sub">Agrega el tag hidden para que el tema Shopify los filtre</div>
           </div>
           <label class="toggle">
@@ -1805,60 +1805,60 @@ tr:hover td { background: rgba(108,142,255,0.08); }
       </div>
 
       <button class="btn btn-success" onclick="saveConfig()">
-        <i class="fas fa-save"></i> Guardar configuraciÃ³n
+        <i class="fas fa-save"></i> Guardar configuraciÃÂ³n
       </button>
     </div>
 
-    <!-- ââ MÃDULO: PRICE MONITOR âââââââââââââââââââââââââââââââ -->
+    <!-- Ã¢ÂÂÃ¢ÂÂ MÃÂDULO: PRICE MONITOR Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
     <div id="tab-price-monitor" class="tab-content">
       <div class="coming-soon">
-        <div class="emoji">ð</div>
+        <div class="emoji">Ã°ÂÂÂ</div>
         <h2>Price Monitor + OOS</h2>
-        <p>Monitoreo de precios Amazon en tiempo real, detecciÃ³n automÃ¡tica de Out of Stock, pausa de listings en MeLi y alertas instantÃ¡neas por Telegram.</p>
-        <div class="phase">â³ Fase 2A â PrÃ³xima a construir</div>
+        <p>Monitoreo de precios Amazon en tiempo real, detecciÃÂ³n automÃÂ¡tica de Out of Stock, pausa de listings en MeLi y alertas instantÃÂ¡neas por Telegram.</p>
+        <div class="phase">Ã¢ÂÂ³ Fase 2A Ã¢ÂÂ PrÃÂ³xima a construir</div>
         <div style="margin-top:32px;display:flex;flex-direction:column;gap:10px;max-width:360px;text-align:left">
           <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
-            <span style="font-size:18px">ð¦</span>
-            <div><div style="font-weight:600;color:var(--text)">Out of Stock automÃ¡tico</div><div style="color:var(--text2);font-size:12px">Amazon sin stock â listings pausados en MeLi</div></div>
+            <span style="font-size:18px">Ã°ÂÂÂ¦</span>
+            <div><div style="font-weight:600;color:var(--text)">Out of Stock automÃÂ¡tico</div><div style="color:var(--text2);font-size:12px">Amazon sin stock Ã¢ÂÂ listings pausados en MeLi</div></div>
           </div>
           <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
-            <span style="font-size:18px">ð¬</span>
+            <span style="font-size:18px">Ã°ÂÂÂ¬</span>
             <div><div style="font-weight:600;color:var(--text)">Bot Telegram</div><div style="color:var(--text2);font-size:12px">Alertas en tiempo real sin abrir el portal</div></div>
           </div>
           <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
-            <span style="font-size:18px">ð¸</span>
-            <div><div style="font-weight:600;color:var(--text)">Alertas de precio</div><div style="color:var(--text2);font-size:12px">Amazon bajÃ³/subiÃ³ â notificaciÃ³n inmediata</div></div>
+            <span style="font-size:18px">Ã°ÂÂÂ¸</span>
+            <div><div style="font-weight:600;color:var(--text)">Alertas de precio</div><div style="color:var(--text2);font-size:12px">Amazon bajÃÂ³/subiÃÂ³ Ã¢ÂÂ notificaciÃÂ³n inmediata</div></div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ââ MÃDULO: EBAY CONNECT âââââââââââââââââââââââââââââââââ -->
+    <!-- Ã¢ÂÂÃ¢ÂÂ MÃÂDULO: EBAY CONNECT Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
     <div id="tab-ebay-connect" class="tab-content">
       <div class="coming-soon">
-        <div class="emoji">ð</div>
+        <div class="emoji">Ã°ÂÂÂ</div>
         <h2>eBay Connect</h2>
-        <p>ConexiÃ³n OAuth con eBay, precios independientes por marketplace con mÃ¡rgenes automÃ¡ticos y tipo de cambio USD â monedas locales actualizado cada hora.</p>
-        <div class="phase">â³ Fase 2B â PrÃ³xima a construir</div>
+        <p>ConexiÃÂ³n OAuth con eBay, precios independientes por marketplace con mÃÂ¡rgenes automÃÂ¡ticos y tipo de cambio USD Ã¢ÂÂ monedas locales actualizado cada hora.</p>
+        <div class="phase">Ã¢ÂÂ³ Fase 2B Ã¢ÂÂ PrÃÂ³xima a construir</div>
         <div style="margin-top:32px;display:flex;flex-direction:column;gap:10px;max-width:360px;text-align:left">
           <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
-            <span style="font-size:18px">ð</span>
-            <div><div style="font-weight:600;color:var(--text)">OAuth eBay</div><div style="color:var(--text2);font-size:12px">ConexiÃ³n segura y creaciÃ³n de listings</div></div>
+            <span style="font-size:18px">Ã°ÂÂÂ</span>
+            <div><div style="font-weight:600;color:var(--text)">OAuth eBay</div><div style="color:var(--text2);font-size:12px">ConexiÃÂ³n segura y creaciÃÂ³n de listings</div></div>
           </div>
           <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
-            <span style="font-size:18px">ð·ï¸</span>
-            <div><div style="font-weight:600;color:var(--text)">Precios independientes</div><div style="color:var(--text2);font-size:12px">MeLi +35%, eBay +50% â cada uno con su margen</div></div>
+            <span style="font-size:18px">Ã°ÂÂÂ·Ã¯Â¸Â</span>
+            <div><div style="font-weight:600;color:var(--text)">Precios independientes</div><div style="color:var(--text2);font-size:12px">MeLi +35%, eBay +50% Ã¢ÂÂ cada uno con su margen</div></div>
           </div>
           <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
-            <span style="font-size:18px">ð±</span>
-            <div><div style="font-weight:600;color:var(--text)">Tipo de cambio automÃ¡tico</div><div style="color:var(--text2);font-size:12px">USD â COP, MXN, CLP, ARS, BRL cada hora</div></div>
+            <span style="font-size:18px">Ã°ÂÂÂ±</span>
+            <div><div style="font-weight:600;color:var(--text)">Tipo de cambio automÃÂ¡tico</div><div style="color:var(--text2);font-size:12px">USD Ã¢ÂÂ COP, MXN, CLP, ARS, BRL cada hora</div></div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ââ MÃDULO: RADAR DE VIRALES âââââââââââââââââââââââââââââ -->
-        <div id="tab-radar-virales" class="tab-content">
+    <!-- Ã¢ÂÂÃ¢ÂÂ MÃÂDULO: RADAR DE VIRALES Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
+            <div id="tab-radar-virales" class="tab-content">
       <div style="padding:0 0 40px">
 
         <!-- Header -->
@@ -1924,49 +1924,49 @@ tr:hover td { background: rgba(108,142,255,0.08); }
       </div>
     </div>
 
-    <!-- ââ MÃDULO: PREDICCIÃN IA ââââââââââââââââââââââââââââââââ -->
+    <!-- Ã¢ÂÂÃ¢ÂÂ MÃÂDULO: PREDICCIÃÂN IA Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
     <div id="tab-prediccion-ia" class="tab-content">
       <div class="coming-soon">
-        <div class="emoji">ð®</div>
-        <h2>PredicciÃ³n IA</h2>
-        <p>El sistema aprende de tus patrones de venta. Predice cuÃ¡ndo una tendencia de USA llegarÃ¡ a Colombia. Compara costos Amazon vs Alibaba con ROI proyectado.</p>
-        <div class="phase" style="background:rgba(251,191,36,0.15);color:var(--yellow);border-color:rgba(251,191,36,0.3)">ð® Fase 4 â Futuro</div>
+        <div class="emoji">Ã°ÂÂÂ®</div>
+        <h2>PredicciÃÂ³n IA</h2>
+        <p>El sistema aprende de tus patrones de venta. Predice cuÃÂ¡ndo una tendencia de USA llegarÃÂ¡ a Colombia. Compara costos Amazon vs Alibaba con ROI proyectado.</p>
+        <div class="phase" style="background:rgba(251,191,36,0.15);color:var(--yellow);border-color:rgba(251,191,36,0.3)">Ã°ÂÂÂ® Fase 4 Ã¢ÂÂ Futuro</div>
         <div style="margin-top:32px;display:flex;flex-direction:column;gap:10px;max-width:360px;text-align:left">
           <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
-            <span style="font-size:18px">ð</span>
-            <div><div style="font-weight:600;color:var(--text)">PredicciÃ³n cross-country</div><div style="color:var(--text2);font-size:12px">Explota en USA hoy â llega a Colombia en X dÃ­as</div></div>
+            <span style="font-size:18px">Ã°ÂÂÂ</span>
+            <div><div style="font-weight:600;color:var(--text)">PredicciÃÂ³n cross-country</div><div style="color:var(--text2);font-size:12px">Explota en USA hoy Ã¢ÂÂ llega a Colombia en X dÃÂ­as</div></div>
           </div>
           <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
-            <span style="font-size:18px">ð¨ð³</span>
-            <div><div style="font-weight:600;color:var(--text)">MÃ³dulo Alibaba</div><div style="color:var(--text2);font-size:12px">Amazon $13.99 vs Alibaba $2.80 â ROI 312%</div></div>
+            <span style="font-size:18px">Ã°ÂÂÂ¨Ã°ÂÂÂ³</span>
+            <div><div style="font-weight:600;color:var(--text)">MÃÂ³dulo Alibaba</div><div style="color:var(--text2);font-size:12px">Amazon $13.99 vs Alibaba $2.80 Ã¢ÂÂ ROI 312%</div></div>
           </div>
           <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
-            <span style="font-size:18px">â¡</span>
-            <div><div style="font-weight:600;color:var(--text)">Repricing dinÃ¡mico</div><div style="color:var(--text2);font-size:12px">Escanea competidores cada 30 min y ajusta precio</div></div>
+            <span style="font-size:18px">Ã¢ÂÂ¡</span>
+            <div><div style="font-weight:600;color:var(--text)">Repricing dinÃÂ¡mico</div><div style="color:var(--text2);font-size:12px">Escanea competidores cada 30 min y ajusta precio</div></div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ââ MÃDULO: SAAS PLATFORM ââââââââââââââââââââââââââââââââ -->
+    <!-- Ã¢ÂÂÃ¢ÂÂ MÃÂDULO: SAAS PLATFORM Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
     <div id="tab-saas-platform" class="tab-content">
       <div class="coming-soon">
-        <div class="emoji">ð</div>
+        <div class="emoji">Ã°ÂÂÂ</div>
         <h2>SaaS Platform</h2>
-        <p>De herramienta personal a producto de software. Otros vendedores de Latam pagarÃ­an por acceder a lo que estÃ¡s construyendo.</p>
-        <div class="phase" style="background:rgba(248,113,113,0.15);color:var(--red);border-color:rgba(248,113,113,0.3)">ð Fase 5 â VisiÃ³n</div>
+        <p>De herramienta personal a producto de software. Otros vendedores de Latam pagarÃÂ­an por acceder a lo que estÃÂ¡s construyendo.</p>
+        <div class="phase" style="background:rgba(248,113,113,0.15);color:var(--red);border-color:rgba(248,113,113,0.3)">Ã°ÂÂÂ Fase 5 Ã¢ÂÂ VisiÃÂ³n</div>
         <div style="margin-top:32px;display:flex;flex-direction:column;gap:10px;max-width:360px;text-align:left">
           <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
-            <span style="font-size:18px">ð¥</span>
+            <span style="font-size:18px">Ã°ÂÂÂ¥</span>
             <div><div style="font-weight:600;color:var(--text)">Multi-usuario</div><div style="color:var(--text2);font-size:12px">Login propio, cuentas independientes, planes de pago</div></div>
           </div>
           <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
-            <span style="font-size:18px">ð°</span>
-            <div><div style="font-weight:600;color:var(--text)">Planes $29 / $79 / $199</div><div style="color:var(--text2);font-size:12px">BÃ¡sico Â· Pro Â· Ultra â 2M+ vendedores en Latam</div></div>
+            <span style="font-size:18px">Ã°ÂÂÂ°</span>
+            <div><div style="font-weight:600;color:var(--text)">Planes $29 / $79 / $199</div><div style="color:var(--text2);font-size:12px">BÃÂ¡sico ÃÂ· Pro ÃÂ· Ultra Ã¢ÂÂ 2M+ vendedores en Latam</div></div>
           </div>
           <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:center">
-            <span style="font-size:18px">ð±</span>
-            <div><div style="font-weight:600;color:var(--text)">App mÃ³vil PWA</div><div style="color:var(--text2);font-size:12px">Funciona como app nativa en iPhone y Android</div></div>
+            <span style="font-size:18px">Ã°ÂÂÂ±</span>
+            <div><div style="font-weight:600;color:var(--text)">App mÃÂ³vil PWA</div><div style="color:var(--text2);font-size:12px">Funciona como app nativa en iPhone y Android</div></div>
           </div>
         </div>
       </div>
@@ -1977,26 +1977,26 @@ tr:hover td { background: rgba(108,142,255,0.08); }
 
 </div><!-- /app -->
 
-<!-- ââ MODAL: CAPTURAR / EDITAR PRODUCTO âââââââââââââââââââââ -->
+<!-- Ã¢ÂÂÃ¢ÂÂ MODAL: CAPTURAR / EDITAR PRODUCTO Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
 <div class="modal-overlay" id="captureModal">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title" id="modalTitle">ð¦ Nuevo Producto</div>
-      <div class="modal-close" onclick="closeModal('captureModal')">Ã</div>
+      <div class="modal-title" id="modalTitle">Ã°ÂÂÂ¦ Nuevo Producto</div>
+      <div class="modal-close" onclick="closeModal('captureModal')">ÃÂ</div>
     </div>
     <div class="modal-body">
 
-      <!-- DetecciÃ³n de modo -->
+      <!-- DetecciÃÂ³n de modo -->
       <div class="alert alert-info" id="mode-alert">
         <i class="fas fa-info-circle"></i>
-        <span id="mode-alert-text">CompletÃ¡ los datos del producto para detectar el modo automÃ¡ticamente</span>
+        <span id="mode-alert-text">CompletÃÂ¡ los datos del producto para detectar el modo automÃÂ¡ticamente</span>
       </div>
 
-      <!-- GalerÃ­a de imÃ¡genes -->
+      <!-- GalerÃÂ­a de imÃÂ¡genes -->
       <div class="gallery-section" id="gallery-section" style="display:none">
-        <span class="gallery-label">ð¸ Imagen principal</span>
+        <span class="gallery-label">Ã°ÂÂÂ¸ Imagen principal</span>
         <img id="f-img-preview-main" src="" style="width:100%;height:160px;object-fit:contain;background:#fff;border-radius:8px;margin-bottom:10px;padding:8px;display:none">
-        <span class="gallery-sub">ð¼ï¸ Todas las imÃ¡genes â clic para seleccionar como principal</span>
+        <span class="gallery-sub">Ã°ÂÂÂ¼Ã¯Â¸Â Todas las imÃÂ¡genes Ã¢ÂÂ clic para seleccionar como principal</span>
         <div class="gallery-grid" id="gallery-grid"></div>
       </div>
 
@@ -2017,33 +2017,33 @@ tr:hover td { background: rgba(108,142,255,0.08); }
               <i class="fab fa-amazon"></i> Ver en Amazon
             </a>
             <a id="f-amazon-affiliate-link" href="#" target="_blank" class="btn btn-outline btn-sm" style="text-decoration:none">
-              ð¤ Link afiliado
+              Ã°ÂÂ¤Â Link afiliado
             </a>
           </div>
         </div>
 
-        <!-- TÃ­tulo Amazon -->
+        <!-- TÃÂ­tulo Amazon -->
         <div class="form-group full">
-          <label class="form-label">TÃ­tulo original (Amazon)</label>
-          <input type="text" class="form-input" id="f-title-amazon" placeholder="TÃ­tulo completo de Amazon..." oninput="autoDetectMode()">
+          <label class="form-label">TÃÂ­tulo original (Amazon)</label>
+          <input type="text" class="form-input" id="f-title-amazon" placeholder="TÃÂ­tulo completo de Amazon..." oninput="autoDetectMode()">
         </div>
 
-        <!-- TÃ­tulo para tienda -->
+        <!-- TÃÂ­tulo para tienda -->
         <div class="form-group full">
-          <label class="form-label">TÃ­tulo para Shopify / MeLi</label>
-          <input type="text" class="form-input" id="f-title-store" placeholder="TÃ­tulo optimizado para tu tienda...">
+          <label class="form-label">TÃÂ­tulo para Shopify / MeLi</label>
+          <input type="text" class="form-input" id="f-title-store" placeholder="TÃÂ­tulo optimizado para tu tienda...">
         </div>
 
-        <!-- DescripciÃ³n -->
+        <!-- DescripciÃÂ³n -->
         <div class="form-group full">
-          <label class="form-label">DescripciÃ³n</label>
-          <textarea class="form-textarea" id="f-desc" placeholder="DescripciÃ³n del producto..."></textarea>
+          <label class="form-label">DescripciÃÂ³n</label>
+          <textarea class="form-textarea" id="f-desc" placeholder="DescripciÃÂ³n del producto..."></textarea>
         </div>
 
-        <!-- CategorÃ­a Amazon -->
+        <!-- CategorÃÂ­a Amazon -->
         <div class="form-group">
-          <label class="form-label">CategorÃ­a Amazon</label>
-          <input type="text" class="form-input" id="f-category-amazon" placeholder="ej: Beauty âº Skin Care âº Serums" oninput="autoDetectMode()">
+          <label class="form-label">CategorÃÂ­a Amazon</label>
+          <input type="text" class="form-input" id="f-category-amazon" placeholder="ej: Beauty Ã¢ÂÂº Skin Care Ã¢ÂÂº Serums" oninput="autoDetectMode()">
         </div>
 
         <!-- Nicho -->
@@ -2051,29 +2051,29 @@ tr:hover td { background: rgba(108,142,255,0.08); }
           <label class="form-label">Nicho en tu tienda</label>
           <select class="form-select" id="f-nicho" onchange="onNichoChange()">
             <option value="">-- Seleccionar nicho --</option>
-            <option value="kbeauty">ð¸ K-Beauty</option>
-            <option value="electronica">ð» ElectrÃ³nica</option>
-            <option value="hogar">ð  Hogar &amp; Cocina</option>
-            <option value="herramientas">ð§ Herramientas</option>
-            <option value="deportes">â½ Deportes</option>
-            <option value="bebes">ð¶ BebÃ©s &amp; NiÃ±os</option>
-            <option value="mascotas">ð¾ Mascotas</option>
-            <option value="salud">ð¥ Salud</option>
-            <option value="otros">ð¦ Otros</option>
+            <option value="kbeauty">Ã°ÂÂÂ¸ K-Beauty</option>
+            <option value="electronica">Ã°ÂÂÂ» ElectrÃÂ³nica</option>
+            <option value="hogar">Ã°ÂÂÂ  Hogar &amp; Cocina</option>
+            <option value="herramientas">Ã°ÂÂÂ§ Herramientas</option>
+            <option value="deportes">Ã¢ÂÂ½ Deportes</option>
+            <option value="bebes">Ã°ÂÂÂ¶ BebÃÂ©s &amp; NiÃÂ±os</option>
+            <option value="mascotas">Ã°ÂÂÂ¾ Mascotas</option>
+            <option value="salud">Ã°ÂÂÂ¥ Salud</option>
+            <option value="otros">Ã°ÂÂÂ¦ Otros</option>
           </select>
         </div>
       </div>
 
       <!-- CALCULADORA DE PRECIO -->
       <div class="price-calc">
-        <div class="price-calc-title">ð° Calculadora de Precio</div>
+        <div class="price-calc-title">Ã°ÂÂÂ° Calculadora de Precio</div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
           <div class="form-group" style="margin:0">
             <label class="form-label">Precio Amazon ($)</label>
             <input type="number" class="form-input" id="f-price-amazon" placeholder="0.00" step="0.01" oninput="calcPrice()">
           </div>
           <div class="form-group" style="margin:0">
-            <label class="form-label">Costo envÃ­o ($)</label>
+            <label class="form-label">Costo envÃÂ­o ($)</label>
             <input type="number" class="form-input" id="f-shipping" placeholder="0.00" step="0.01" value="0" oninput="calcPrice()">
           </div>
           <div class="form-group" style="margin:0">
@@ -2084,7 +2084,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
         <input type="range" class="margin-slider" min="5" max="200" value="35" oninput="document.getElementById('f-margin').value=this.value;calcPrice()">
         <div style="margin-top:12px">
           <div class="price-row">
-            <span class="label">Costo total (Amazon + envÃ­o)</span>
+            <span class="label">Costo total (Amazon + envÃÂ­o)</span>
             <span class="value" id="calc-costo">$0.00</span>
           </div>
           <div class="price-row total">
@@ -2096,7 +2096,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
             <span class="value" style="color:var(--green)" id="calc-ganancia">$0.00</span>
           </div>
           <div class="price-row">
-            <span class="label">ComisiÃ³n afiliado (esposa)</span>
+            <span class="label">ComisiÃÂ³n afiliado (esposa)</span>
             <span class="value" style="color:var(--yellow)" id="calc-comision">$0.00</span>
           </div>
         </div>
@@ -2109,20 +2109,20 @@ tr:hover td { background: rgba(108,142,255,0.08); }
           <input type="number" class="form-input" id="f-stock" value="0" min="0">
         </div>
         <div class="form-group">
-          <label class="form-label">Alerta stock mÃ­nimo</label>
+          <label class="form-label">Alerta stock mÃÂ­nimo</label>
           <input type="number" class="form-input" id="f-stock-min" value="2" min="0">
         </div>
       </div>
 
-      <!-- SECCIÃN KOI INTEL (solo K-Beauty) -->
+      <!-- SECCIÃÂN KOI INTEL (solo K-Beauty) -->
       <div class="koi-intel-section" id="koi-intel-section" style="display:none">
         <div class="koi-intel-title">
-          ð¤ KOI Intel â Inteligencia de Producto
+          Ã°ÂÂ¤Â KOI Intel Ã¢ÂÂ Inteligencia de Producto
         </div>
 
         <div class="form-grid">
           <div class="form-group">
-            <label class="form-label">CategorÃ­a K-Beauty</label>
+            <label class="form-label">CategorÃÂ­a K-Beauty</label>
             <select class="form-select" id="f-koi-categoria" onchange="updateKoiSubcategoria()">
               <option value="cleanser">Cleanser</option>
               <option value="toner">Toner</option>
@@ -2137,65 +2137,65 @@ tr:hover td { background: rgba(108,142,255,0.08); }
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">SubcategorÃ­a</label>
+            <label class="form-label">SubcategorÃÂ­a</label>
             <select class="form-select" id="f-koi-subcategoria"></select>
           </div>
           <div class="form-group">
             <label class="form-label">Momento de uso</label>
             <div class="chip-selector" id="f-momento">
-              <div class="chip" onclick="toggleChip(this,'momento')" data-val="am">âï¸ AM</div>
-              <div class="chip selected" onclick="toggleChip(this,'momento')" data-val="pm">ð PM</div>
-              <div class="chip" onclick="toggleChip(this,'momento')" data-val="both">âï¸ð Ambos</div>
+              <div class="chip" onclick="toggleChip(this,'momento')" data-val="am">Ã¢ÂÂÃ¯Â¸Â AM</div>
+              <div class="chip selected" onclick="toggleChip(this,'momento')" data-val="pm">Ã°ÂÂÂ PM</div>
+              <div class="chip" onclick="toggleChip(this,'momento')" data-val="both">Ã¢ÂÂÃ¯Â¸ÂÃ°ÂÂÂ Ambos</div>
             </div>
           </div>
           <div class="form-group">
             <label class="form-label">Tier KOI</label>
             <select class="form-select" id="f-koi-tier">
-              <option value="CORE_MATCH">â­ CORE MATCH (score 90)</option>
-              <option value="GOOD_MATCH" selected>â GOOD MATCH (score 65)</option>
-              <option value="SECONDARY_MATCH">ð SECONDARY MATCH (score 45)</option>
-              <option value="EXCLUDED">â EXCLUDED (score 10)</option>
+              <option value="CORE_MATCH">Ã¢Â­Â CORE MATCH (score 90)</option>
+              <option value="GOOD_MATCH" selected>Ã¢ÂÂ GOOD MATCH (score 65)</option>
+              <option value="SECONDARY_MATCH">Ã°ÂÂÂ SECONDARY MATCH (score 45)</option>
+              <option value="EXCLUDED">Ã¢ÂÂ EXCLUDED (score 10)</option>
             </select>
           </div>
           <div class="form-group">
             <label class="form-label">Archetype</label>
             <select class="form-select" id="f-koi-archetype">
-              <option value="Barrier Specialist">ð¡ï¸ Barrier Specialist</option>
-              <option value="Acne Specialist">ð¯ Acne Specialist</option>
-              <option value="Pigmentation Specialist">â¨ Pigmentation Specialist</option>
-              <option value="Aging Specialist">â³ Aging Specialist</option>
-              <option value="Hydration Specialist">ð§ Hydration Specialist</option>
+              <option value="Barrier Specialist">Ã°ÂÂÂ¡Ã¯Â¸Â Barrier Specialist</option>
+              <option value="Acne Specialist">Ã°ÂÂÂ¯ Acne Specialist</option>
+              <option value="Pigmentation Specialist">Ã¢ÂÂ¨ Pigmentation Specialist</option>
+              <option value="Aging Specialist">Ã¢ÂÂ³ Aging Specialist</option>
+              <option value="Hydration Specialist">Ã°ÂÂÂ§ Hydration Specialist</option>
             </select>
           </div>
           <div class="form-group">
             <label class="form-label">Safety</label>
             <select class="form-select" id="f-koi-safety">
-              <option value="SAFE">â SAFE</option>
-              <option value="NO_PREGNANCY">â ï¸ NO_PREGNANCY</option>
+              <option value="SAFE">Ã¢ÂÂ SAFE</option>
+              <option value="NO_PREGNANCY">Ã¢ÂÂ Ã¯Â¸Â NO_PREGNANCY</option>
             </select>
           </div>
           <div class="form-group">
             <label class="form-label">Phase</label>
             <select class="form-select" id="f-koi-phase">
-              <option value="repair">ð¨ Repair</option>
-              <option value="treat" selected>ð Treat</option>
-              <option value="optimize">â¡ Optimize</option>
+              <option value="repair">Ã°ÂÂÂ¨ Repair</option>
+              <option value="treat" selected>Ã°ÂÂÂ Treat</option>
+              <option value="optimize">Ã¢ÂÂ¡ Optimize</option>
             </select>
           </div>
           <div class="form-group">
             <label class="form-label">Nivel usuario</label>
             <select class="form-select" id="f-koi-nivel">
-              <option value="beginner" selected>ð± Beginner</option>
-              <option value="intermediate">ð¿ Intermediate</option>
-              <option value="advanced">ð³ Advanced</option>
+              <option value="beginner" selected>Ã°ÂÂÂ± Beginner</option>
+              <option value="intermediate">Ã°ÂÂÂ¿ Intermediate</option>
+              <option value="advanced">Ã°ÂÂÂ³ Advanced</option>
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">PosiciÃ³n rutina AM</label>
+            <label class="form-label">PosiciÃÂ³n rutina AM</label>
             <input type="number" class="form-input" id="f-koi-pos-am" value="4" min="1" max="10">
           </div>
           <div class="form-group">
-            <label class="form-label">PosiciÃ³n rutina PM</label>
+            <label class="form-label">PosiciÃÂ³n rutina PM</label>
             <input type="number" class="form-input" id="f-koi-pos-pm" value="5" min="1" max="10">
           </div>
         </div>
@@ -2221,7 +2221,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
               <input type="range" class="fit-slider" id="fit-sens" min="0" max="100" value="80" oninput="document.getElementById('fit-sens-val').textContent=this.value+'%'">
             </div>
             <div class="fit-item">
-              <div class="fit-label"><span>AcnÃ©</span><span id="fit-acne-val">50%</span></div>
+              <div class="fit-label"><span>AcnÃÂ©</span><span id="fit-acne-val">50%</span></div>
               <input type="range" class="fit-slider" id="fit-acne" min="0" max="100" value="50" oninput="document.getElementById('fit-acne-val').textContent=this.value+'%'">
             </div>
             <div class="fit-item">
@@ -2265,7 +2265,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
             <span id="koi-score-text" style="font-size:18px;font-weight:800;color:#e879f9">65/100</span>
           </div>
           <div style="font-size:11px;color:var(--muted);margin-top:4px">
-            GOOD MATCH â KOI puede recomendarlo en rutinas
+            GOOD MATCH Ã¢ÂÂ KOI puede recomendarlo en rutinas
           </div>
         </div>
       </div>
@@ -2286,7 +2286,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
 <script>
 'use strict';
 
-// ââ CONFIG ââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ CONFIG Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 const PASSWORD = 'Luisfonse2010*';
 const WORKER   = 'https://kabuby.com';
 
@@ -2300,22 +2300,22 @@ let CONFIG = {
   autoHidden:      true
 };
 
-// ââ DATA STORE âââââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ DATA STORE Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 let PRODUCTS    = [];
 let DESPACHOS   = [];
 let INGREDIENTS = [];
 let editingId   = null;
 
 const NICHO_MAP = {
-  kbeauty:      { label: 'K-Beauty',       emoji: 'ð¸' },
-  electronica:  { label: 'ElectrÃ³nica',     emoji: 'ð»' },
-  hogar:        { label: 'Hogar & Cocina',  emoji: 'ð ' },
-  herramientas: { label: 'Herramientas',    emoji: 'ð§' },
-  deportes:     { label: 'Deportes',        emoji: 'â½' },
-  bebes:        { label: 'BebÃ©s & NiÃ±os',   emoji: 'ð¶' },
-  mascotas:     { label: 'Mascotas',        emoji: 'ð¾' },
-  salud:        { label: 'Salud',           emoji: 'ð¥' },
-  otros:        { label: 'Otros',           emoji: 'ð¦' }
+  kbeauty:      { label: 'K-Beauty',       emoji: 'Ã°ÂÂÂ¸' },
+  electronica:  { label: 'ElectrÃÂ³nica',     emoji: 'Ã°ÂÂÂ»' },
+  hogar:        { label: 'Hogar & Cocina',  emoji: 'Ã°ÂÂÂ ' },
+  herramientas: { label: 'Herramientas',    emoji: 'Ã°ÂÂÂ§' },
+  deportes:     { label: 'Deportes',        emoji: 'Ã¢ÂÂ½' },
+  bebes:        { label: 'BebÃÂ©s & NiÃÂ±os',   emoji: 'Ã°ÂÂÂ¶' },
+  mascotas:     { label: 'Mascotas',        emoji: 'Ã°ÂÂÂ¾' },
+  salud:        { label: 'Salud',           emoji: 'Ã°ÂÂÂ¥' },
+  otros:        { label: 'Otros',           emoji: 'Ã°ÂÂÂ¦' }
 };
 
 const SUBCATEGORIAS = {
@@ -2333,7 +2333,7 @@ const SUBCATEGORIAS = {
 
 const KBEAUTY_KEYWORDS = ['beauty','skin care','skincare','serum','moisturizer','cleanser','toner','spf','sunscreen','essence','ampoule','korean','k-beauty','facial','face cream','eye cream','mask','exfoliant'];
 
-// ââ AUTH âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ AUTH Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function doLogin() {
   const pass = document.getElementById('login-pass').value;
   const err  = document.getElementById('login-error');
@@ -2361,7 +2361,7 @@ function doLogout() {
   document.getElementById('login-pass').value = '';
 }
 
-// ââ LEER ?shato_data= DE LA URL âââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ LEER ?shato_data= DE LA URL Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 (function checkShatoDataParam() {
   try {
     const params = new URLSearchParams(window.location.search);
@@ -2380,26 +2380,26 @@ function doLogout() {
   }
 })();
 
-// Auto-login si ya hay sesiÃ³n
+// Auto-login si ya hay sesiÃÂ³n
 if (sessionStorage.getItem('shato_auth')) {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   // initApp se llama al cargar DOM
 }
 
-// ââ INIT âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ INIT Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function initApp() {
   loadConfig();
   loadData();
   updateSubcategorias();
-  // Ocultar submenu de Kabuby por defecto â mostrar home
+  // Ocultar submenu de Kabuby por defecto Ã¢ÂÂ mostrar home
   var sub   = document.getElementById('kabuby-submenu');
   var arrow = document.getElementById('arrow-kabuby');
   var navKabuby = document.getElementById('nav-mod-kabuby');
   if (sub)   { sub.style.display = 'none'; }
   if (arrow) { arrow.classList.remove('open'); }
   if (navKabuby) { navKabuby.classList.remove('active'); navKabuby.classList.remove('open-accordion'); }
-  // Si llegÃ³ producto desde URL â ir directo a Kabuby Scout
+  // Si llegÃÂ³ producto desde URL Ã¢ÂÂ ir directo a Kabuby Scout
   if (window._shato_pending_product) {
     const rawProd = window._shato_pending_product;
     window._shato_pending_product = null;
@@ -2407,7 +2407,7 @@ function initApp() {
       agregarProductoAlPortal(rawProd);
       showModulo('kabuby-scout');
       showTab('pendientes');
-      showNotif('ð¦ Producto recibido â hacÃ© click en "Ver detalle" para editarlo', 'success');
+      showNotif('Ã°ÂÂÂ¦ Producto recibido Ã¢ÂÂ hacÃÂ© click en "Ver detalle" para editarlo', 'success');
     }, 400);
   } else {
     // Mostrar pantalla de inicio del sistema
@@ -2415,7 +2415,7 @@ function initApp() {
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
       var home = document.getElementById('tab-home');
       if (home) home.classList.add('active');
-      document.getElementById('topbarTitle').textContent = 'ð§­ Kabuby Intelligence';
+      document.getElementById('topbarTitle').textContent = 'Ã°ÂÂ§Â­ Kabuby Intelligence';
     })();
   }
 }
@@ -2426,7 +2426,7 @@ function agregarProductoAlPortal(rawProd) {
   if (!prod) return;
   // Evitar duplicados por ASIN
   if (prod.asin && PRODUCTS.find(p => p.asin === prod.asin)) {
-    showNotif('â ï¸ Producto ya en bandeja: ' + prod.asin, 'warning');
+    showNotif('Ã¢ÂÂ Ã¯Â¸Â Producto ya en bandeja: ' + prod.asin, 'warning');
     return;
   }
   // Construir objeto completo con defaults
@@ -2462,7 +2462,7 @@ function agregarProductoAlPortal(rawProd) {
   renderPendientes();
 }
 
-// ââ CONFIG âââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ CONFIG Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function loadConfig() {
   const saved = localStorage.getItem('shato_config');
   if (saved) CONFIG = { ...CONFIG, ...JSON.parse(saved) };
@@ -2485,10 +2485,10 @@ function saveConfig() {
   CONFIG.hideMultinichos = document.getElementById('cfg-hide-multinichos').checked;
   CONFIG.autoHidden      = document.getElementById('cfg-auto-hidden').checked;
   localStorage.setItem('shato_config', JSON.stringify(CONFIG));
-  showNotif('â ConfiguraciÃ³n guardada', 'success');
+  showNotif('Ã¢ÂÂ ConfiguraciÃÂ³n guardada', 'success');
 }
 
-// ââ DATA âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ DATA Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function loadData() {
   const saved  = localStorage.getItem('shato_products');
   const savedD = localStorage.getItem('shato_despachos');
@@ -2501,21 +2501,21 @@ function saveData() {
   localStorage.setItem('shato_despachos', JSON.stringify(DESPACHOS));
 }
 
-// ââ TABS ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-// showModulo() â definida abajo (lÃ­nea ~2634) con lÃ³gica completa + hook Radar
+// Ã¢ÂÂÃ¢ÂÂ TABS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// showModulo() Ã¢ÂÂ definida abajo (lÃÂ­nea ~2634) con lÃÂ³gica completa + hook Radar
 
 function showTab(tab) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  // mantener activo el mÃ³dulo Kabuby Scout en sidebar
+  // mantener activo el mÃÂ³dulo Kabuby Scout en sidebar
   document.querySelectorAll('.sidebar-item:not(.modulo)').forEach(i => i.classList.remove('active'));
   const el  = document.getElementById('tab-'  + tab);
   const nav = document.getElementById('nav-' + tab);
   if (el)  el.classList.add('active');
   if (nav) nav.classList.add('active');
-  // asegurarse que el mÃ³dulo kabuby estÃ© activo en sidebar
+  // asegurarse que el mÃÂ³dulo kabuby estÃÂ© activo en sidebar
   var modKabuby = document.getElementById('nav-mod-kabuby');
   if (modKabuby) modKabuby.classList.add('active');
-  // mostrar submenu acordeÃ³n y flecha
+  // mostrar submenu acordeÃÂ³n y flecha
   var sub   = document.getElementById('kabuby-submenu');
   var arrow = document.getElementById('arrow-kabuby');
   var navKabuby = document.getElementById('nav-mod-kabuby');
@@ -2523,15 +2523,15 @@ function showTab(tab) {
   if (arrow) { arrow.classList.add('open'); }
   if (navKabuby) { navKabuby.classList.add('open-accordion'); }
   const titles = {
-    home:       'ð§­ Kabuby Intelligence',
-    dashboard:  'ð§© Kabuby Scout â Dashboard',
-    pendientes: 'ð§© Kabuby Scout â Pendientes',
-    despachos:  'ð§© Kabuby Scout â Despachos',
-    inventario: 'ð§© Kabuby Scout â Inventario',
-    config:     'ð§© Kabuby Scout â ConfiguraciÃ³n'
+    home:       'Ã°ÂÂ§Â­ Kabuby Intelligence',
+    dashboard:  'Ã°ÂÂ§Â© Kabuby Scout Ã¢ÂÂ Dashboard',
+    pendientes: 'Ã°ÂÂ§Â© Kabuby Scout Ã¢ÂÂ Pendientes',
+    despachos:  'Ã°ÂÂ§Â© Kabuby Scout Ã¢ÂÂ Despachos',
+    inventario: 'Ã°ÂÂ§Â© Kabuby Scout Ã¢ÂÂ Inventario',
+    config:     'Ã°ÂÂ§Â© Kabuby Scout Ã¢ÂÂ ConfiguraciÃÂ³n'
   };
   document.getElementById('topbarTitle').textContent = titles[tab] || tab;
-  // botÃ³n capturar â solo visible dentro de Kabuby Scout
+  // botÃÂ³n capturar Ã¢ÂÂ solo visible dentro de Kabuby Scout
   var btn = document.getElementById('topbar-action-btn');
   var kabubyTabs = ['dashboard','pendientes','despachos','inventario','config'];
   if (btn) btn.style.display = kabubyTabs.includes(tab) ? 'inline-flex' : 'none';
@@ -2546,7 +2546,7 @@ function goHome() {
   document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
   var home = document.getElementById('tab-home');
   if (home) home.classList.add('active');
-  document.getElementById('topbarTitle').textContent = 'ð§­ Kabuby Intelligence';
+  document.getElementById('topbarTitle').textContent = 'Ã°ÂÂ§Â­ Kabuby Intelligence';
   var btn = document.getElementById('topbar-action-btn');
   if (btn) btn.style.display = 'none';
   var sub   = document.getElementById('kabuby-submenu');
@@ -2557,7 +2557,7 @@ function goHome() {
   if (navKabuby) { navKabuby.classList.remove('open-accordion'); }
 }
 
-// ââ SHOW MODULO (mÃ³dulos del sidebar) âââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ SHOW MODULO (mÃÂ³dulos del sidebar) Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function showModulo(modulo) {
   var sub      = document.getElementById('kabuby-submenu');
   var arrow    = document.getElementById('arrow-kabuby');
@@ -2572,7 +2572,7 @@ function showModulo(modulo) {
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
       var home = document.getElementById('tab-home');
       if (home) home.classList.add('active');
-      document.getElementById('topbarTitle').textContent = 'ð§­ Kabuby Intelligence';
+      document.getElementById('topbarTitle').textContent = 'Ã°ÂÂ§Â­ Kabuby Intelligence';
       var btn2 = document.getElementById('topbar-action-btn');
       if (btn2) btn2.style.display = 'none';
     } else {
@@ -2584,16 +2584,16 @@ function showModulo(modulo) {
     return;
   }
 
-  // Para todos los demÃ¡s mÃ³dulos: cerrar accordion Kabuby Scout
+  // Para todos los demÃÂ¡s mÃÂ³dulos: cerrar accordion Kabuby Scout
   if (sub)       { sub.style.display = 'none'; }
   if (arrow)     { arrow.classList.remove('open'); }
   if (navKabuby) { navKabuby.classList.remove('open-accordion', 'active'); }
 
-  // Desactivar todos los mÃ³dulos y tabs
+  // Desactivar todos los mÃÂ³dulos y tabs
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.sidebar-item.modulo').forEach(m => m.classList.remove('active'));
 
-  // Activar el mÃ³dulo correcto
+  // Activar el mÃÂ³dulo correcto
   var tabId = 'tab-' + modulo;
   var navId = 'nav-mod-' + modulo.replace(/-/g, '').replace('radar', 'radar').replace('virales', '');
 
@@ -2611,13 +2611,13 @@ function showModulo(modulo) {
   var navEl = document.getElementById(navMap[modulo]);
   if (navEl) navEl.classList.add('active');
 
-  // TÃ­tulos del topbar
+  // TÃÂ­tulos del topbar
   var moduleTitles = {
-    'price-monitor': 'ð Price Monitor',
-    'ebay-connect':  'ð eBay Connect',
-    'radar-virales': 'ð¡ï¸ Radar de Tendencias MeLi',
-    'prediccion-ia': 'ð® PredicciÃ³n IA',
-    'saas-platform': 'ð SaaS Platform'
+    'price-monitor': 'Ã°ÂÂÂ Price Monitor',
+    'ebay-connect':  'Ã°ÂÂÂ eBay Connect',
+    'radar-virales': 'Ã°ÂÂÂ¡Ã¯Â¸Â Radar de Tendencias MeLi',
+    'prediccion-ia': 'Ã°ÂÂÂ® PredicciÃÂ³n IA',
+    'saas-platform': 'Ã°ÂÂÂ SaaS Platform'
   };
   document.getElementById('topbarTitle').textContent = moduleTitles[modulo] || modulo;
   var btn = document.getElementById('topbar-action-btn');
@@ -2633,7 +2633,7 @@ function showNicho(nicho) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
   document.getElementById('tab-nicho').classList.add('active');
-  const n = NICHO_MAP[nicho] || { label: nicho, emoji: 'ð¦' };
+  const n = NICHO_MAP[nicho] || { label: nicho, emoji: 'Ã°ÂÂÂ¦' };
   document.getElementById('nicho-title').textContent = n.emoji + ' ' + n.label;
   document.getElementById('nicho-sub').textContent   = 'Todos los productos de este nicho';
   document.getElementById('topbarTitle').textContent = n.emoji + ' ' + n.label;
@@ -2655,15 +2655,15 @@ function globalSearchFn(query) {
   );
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-nicho').classList.add('active');
-  document.getElementById('nicho-title').textContent = 'ð Resultados: "' + query + '"';
+  document.getElementById('nicho-title').textContent = 'Ã°ÂÂÂ Resultados: "' + query + '"';
   document.getElementById('nicho-sub').textContent   = results.length + ' producto(s) encontrado(s)';
-  document.getElementById('topbarTitle').textContent = 'ð BÃºsqueda';
+  document.getElementById('topbarTitle').textContent = 'Ã°ÂÂÂ BÃÂºsqueda';
   document.getElementById('nicho-grid').innerHTML    = results.length
     ? results.map(p => renderProductCard(p)).join('')
     : '<div class="empty-state" style="grid-column:1/-1"><i class="fas fa-search"></i><h3>Sin resultados</h3><p>No se encontraron productos para "' + query + '"</p></div>';
 }
 
-// ââ RENDER DASHBOARD âââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ RENDER DASHBOARD Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function renderDashboard() {
   const total      = PRODUCTS.length;
   const publicados = PRODUCTS.filter(p => p.status === 'published').length;
@@ -2698,26 +2698,26 @@ function renderDashboard() {
   const dashDisp = document.getElementById('dashboard-despachos');
   if (dashDisp) {
     if (urgentes.length === 0) {
-      dashDisp.innerHTML = '<div class="empty-state" style="padding:40px"><i class="fas fa-truck"></i><h3>Sin despachos urgentes</h3><p>Cuando tengas ventas aparecerÃ¡n aquÃ­</p></div>';
+      dashDisp.innerHTML = '<div class="empty-state" style="padding:40px"><i class="fas fa-truck"></i><h3>Sin despachos urgentes</h3><p>Cuando tengas ventas aparecerÃÂ¡n aquÃÂ­</p></div>';
     } else {
       dashDisp.innerHTML = urgentes.map(d => renderDespachoCard(d)).join('');
     }
   }
 }
 
-// ââ IMAGE PROXY âââââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ IMAGE PROXY Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function imgProxy(url) {
   if (!url) return '';
   // Ya proxied
   if (url.includes('images.weserv.nl')) return url;
-  // Amazon images â aplicar proxy
+  // Amazon images Ã¢ÂÂ aplicar proxy
   if (url.includes('amazon.com') || url.includes('ssl-images-amazon') || url.includes('m.media-amazon')) {
     return 'https://images.weserv.nl/?url=' + encodeURIComponent(url) + '&w=300&h=300&fit=contain&bg=white';
   }
   return url;
 }
 
-// ââ RENDER PRODUCT CARD ââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ RENDER PRODUCT CARD Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function renderProductCard(p) {
   const isKB     = p.nicho === 'kbeauty';
   const margin   = p.priceAmazon > 0 ? Math.round(((p.priceStore - p.priceAmazon) / p.priceStore) * 100) : 0;
@@ -2725,26 +2725,26 @@ function renderProductCard(p) {
   const imgSrc   = p.image || (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : '');
   const imgUrl   = imgProxy(imgSrc);
   const statusBadge = p.status === 'published'
-    ? '<span class="tag core">â Publicado</span>'
-    : '<span class="tag" style="color:var(--yellow);border-color:#92400e">â³ Pendiente</span>';
+    ? '<span class="tag core">Ã¢ÂÂ Publicado</span>'
+    : '<span class="tag" style="color:var(--yellow);border-color:#92400e">Ã¢ÂÂ³ Pendiente</span>';
 
   return '<div class="product-card" onclick="editProduct(\'' + p.id + '\')" style="cursor:pointer">' +
     (imgUrl
       ? '<img class="product-card-img" src="' + imgUrl + '" alt="" onerror="this.style.display=\'none\'">'
-      : '<div style="width:100%;height:200px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:48px;">ð¦</div>') +
+      : '<div style="width:100%;height:200px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:48px;">Ã°ÂÂÂ¦</div>') +
     '<div class="product-card-body">' +
-      '<div class="product-card-asin">ASIN: ' + (p.asin || 'â') + '</div>' +
-      '<div class="product-card-title">' + (p.titleStore || p.titleAmazon || 'Sin tÃ­tulo') + '</div>' +
+      '<div class="product-card-asin">ASIN: ' + (p.asin || 'Ã¢ÂÂ') + '</div>' +
+      '<div class="product-card-title">' + (p.titleStore || p.titleAmazon || 'Sin tÃÂ­tulo') + '</div>' +
       '<div class="product-card-prices">' +
         '<div class="price-amazon">Amazon: <span>$' + (p.priceAmazon || 0).toFixed(2) + '</span></div>' +
-        '<div class="price-arrow">â</div>' +
+        '<div class="price-arrow">Ã¢ÂÂ</div>' +
         '<div class="price-store">$' + (p.priceStore || 0).toFixed(2) + '</div>' +
         '<div class="margin-badge">' + margin + '%</div>' +
       '</div>' +
       '<div class="product-card-tags">' +
         (isKB
-          ? '<span class="tag kbeauty">ð¸ K-Beauty</span>'
-          : '<span class="tag nicho">' + (NICHO_MAP[p.nicho] ? NICHO_MAP[p.nicho].emoji + ' ' + NICHO_MAP[p.nicho].label : 'ð¦ ' + (p.nicho || 'Otros')) + '</span>') +
+          ? '<span class="tag kbeauty">Ã°ÂÂÂ¸ K-Beauty</span>'
+          : '<span class="tag nicho">' + (NICHO_MAP[p.nicho] ? NICHO_MAP[p.nicho].emoji + ' ' + NICHO_MAP[p.nicho].label : 'Ã°ÂÂÂ¦ ' + (p.nicho || 'Otros')) + '</span>') +
         statusBadge +
         (isKB && p.koiTier ? '<span class="tag core">' + p.koiTier + '</span>' : '') +
       '</div>' +
@@ -2760,36 +2760,36 @@ function renderProductCard(p) {
     '</div></div>';
 }
 
-// ââ RENDER PENDIENTES ââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ RENDER PENDIENTES Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function renderPendientes() {
   const pending = PRODUCTS.filter(p => p.status === 'pending');
   const grid    = document.getElementById('pendientes-grid');
   if (!grid) return;
   if (pending.length === 0) {
-    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;padding:60px"><i class="fas fa-inbox"></i><h3>No hay productos pendientes</h3><p>UsÃ¡ la extensiÃ³n Chrome en Amazon para capturar productos</p></div>';
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;padding:60px"><i class="fas fa-inbox"></i><h3>No hay productos pendientes</h3><p>UsÃÂ¡ la extensiÃÂ³n Chrome en Amazon para capturar productos</p></div>';
     return;
   }
   grid.innerHTML = pending.map(p => renderProductCard(p)).join('');
 }
 
-// ââ RENDER NICHO âââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ RENDER NICHO Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function renderNicho(nicho) {
   const prods = PRODUCTS.filter(p => p.nicho === nicho);
   const grid  = document.getElementById('nicho-grid');
   if (!grid) return;
   if (prods.length === 0) {
-    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;padding:60px"><i class="fas fa-box-open"></i><h3>Sin productos en este nicho</h3><p>CapturÃ¡ productos de Amazon para agregarlos</p></div>';
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;padding:60px"><i class="fas fa-box-open"></i><h3>Sin productos en este nicho</h3><p>CapturÃÂ¡ productos de Amazon para agregarlos</p></div>';
     return;
   }
   grid.innerHTML = prods.map(p => renderProductCard(p)).join('');
 }
 
-// ââ RENDER INVENTARIO ââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ RENDER INVENTARIO Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function renderInventario() {
   const tbody = document.getElementById('inventario-body');
   if (!tbody) return;
   if (PRODUCTS.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--muted)">No hay productos en tu inventario aÃºn</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--muted)">No hay productos en tu inventario aÃÂºn</td></tr>';
     return;
   }
   tbody.innerHTML = PRODUCTS.map(p => {
@@ -2797,27 +2797,27 @@ function renderInventario() {
     const sc     = p.stock === 0 ? 'stock-out' : (p.stock <= p.stockMin ? 'stock-low' : 'stock-ok');
     const afLink = buildAffiliateLink(p.asin);
     return '<tr>' +
-      '<td><strong>' + ((p.titleStore || p.titleAmazon || 'â').substring(0,40)) + '...</strong></td>' +
-      '<td><code style="font-size:11px">' + (p.asin || 'â') + '</code></td>' +
-      '<td>' + (NICHO_MAP[p.nicho] ? NICHO_MAP[p.nicho].emoji + ' ' + NICHO_MAP[p.nicho].label : 'â') + '</td>' +
+      '<td><strong>' + ((p.titleStore || p.titleAmazon || 'Ã¢ÂÂ').substring(0,40)) + '...</strong></td>' +
+      '<td><code style="font-size:11px">' + (p.asin || 'Ã¢ÂÂ') + '</code></td>' +
+      '<td>' + (NICHO_MAP[p.nicho] ? NICHO_MAP[p.nicho].emoji + ' ' + NICHO_MAP[p.nicho].label : 'Ã¢ÂÂ') + '</td>' +
       '<td>$' + (p.priceAmazon || 0).toFixed(2) + '</td>' +
       '<td><strong>$' + (p.priceStore || 0).toFixed(2) + '</strong></td>' +
       '<td><span style="color:' + (margin >= CONFIG.minMargin ? 'var(--green)' : 'var(--red)') + '">' + margin + '%</span></td>' +
       '<td class="' + sc + '">' + (p.stock || 0) + ' uds</td>' +
       '<td>' + (p.sold || 0) + '</td>' +
       '<td><div style="display:flex;gap:4px">' +
-        '<a href="' + afLink + '" target="_blank" class="btn btn-amazon btn-sm" style="text-decoration:none;font-size:10px">ð</a>' +
-        '<button class="btn btn-outline btn-sm" onclick="editProduct(\'' + p.id + '\')" style="font-size:10px">âï¸ Editar</button>' +
+        '<a href="' + afLink + '" target="_blank" class="btn btn-amazon btn-sm" style="text-decoration:none;font-size:10px">Ã°ÂÂÂ</a>' +
+        '<button class="btn btn-outline btn-sm" onclick="editProduct(\'' + p.id + '\')" style="font-size:10px">Ã¢ÂÂÃ¯Â¸Â Editar</button>' +
       '</div></td></tr>';
   }).join('');
 }
 
-// ââ RENDER DESPACHOS âââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ RENDER DESPACHOS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function renderDespachos() {
   const list = document.getElementById('despachos-list');
   if (!list) return;
   if (DESPACHOS.length === 0) {
-    list.innerHTML = '<div class="empty-state" style="padding:60px"><i class="fas fa-box-open"></i><h3>Sin ventas pendientes</h3><p>Las ventas de MeLi y Shopify aparecerÃ¡n aquÃ­ automÃ¡ticamente</p></div>';
+    list.innerHTML = '<div class="empty-state" style="padding:60px"><i class="fas fa-box-open"></i><h3>Sin ventas pendientes</h3><p>Las ventas de MeLi y Shopify aparecerÃÂ¡n aquÃÂ­ automÃÂ¡ticamente</p></div>';
     return;
   }
   list.innerHTML = DESPACHOS.map(d => renderDespachoCard(d)).join('');
@@ -2829,8 +2829,8 @@ function renderDespachoCard(d) {
   return '<div class="dispatch-card ' + (isDone ? 'done' : '') + '">' +
     '<div class="dispatch-header"><div>' +
       '<div class="dispatch-product">' + (d.productTitle || 'Producto') + '</div>' +
-      '<div class="dispatch-order">Orden: ' + (d.orderId || 'â') + ' Â· ' + (d.channel || 'MeLi') + '</div>' +
-    '</div><div class="dispatch-time">' + (isDone ? 'â Despachado' : 'ð´ Urgente') + '</div></div>' +
+      '<div class="dispatch-order">Orden: ' + (d.orderId || 'Ã¢ÂÂ') + ' ÃÂ· ' + (d.channel || 'MeLi') + '</div>' +
+    '</div><div class="dispatch-time">' + (isDone ? 'Ã¢ÂÂ Despachado' : 'Ã°ÂÂÂ´ Urgente') + '</div></div>' +
     '<div class="dispatch-info">' +
       '<div class="dispatch-info-item"><div class="label">Vendiste a</div><div class="value">$' + (d.salePrice || 0).toFixed(2) + '</div></div>' +
       '<div class="dispatch-info-item"><div class="label">Costo Amazon</div><div class="value">$' + (d.amazonPrice || 0).toFixed(2) + '</div></div>' +
@@ -2842,7 +2842,7 @@ function renderDespachoCard(d) {
     '</div></div>';
 }
 
-// ââ DISPATCH SEARCH ââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ DISPATCH SEARCH Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function searchDispatch(query) {
   if (!query || query.length < 2) {
     document.getElementById('dispatch-result').classList.remove('show');
@@ -2875,10 +2875,10 @@ function searchDispatch(query) {
       '<div class="fin-item"><div class="fin-label">Amazon</div><div class="fin-value">$' + (prod.priceAmazon || 0).toFixed(2) + '</div></div>' +
       '<div class="fin-item green"><div class="fin-label">Tu precio</div><div class="fin-value">$' + (prod.priceStore || 0).toFixed(2) + '</div></div>' +
       '<div class="fin-item green"><div class="fin-label">Ganancia</div><div class="fin-value">$' + ((prod.priceStore || 0) - (prod.priceAmazon || 0)).toFixed(2) + '</div></div>' +
-      '<div class="fin-item yellow"><div class="fin-label">ComisiÃ³n esposa</div><div class="fin-value">$' + comision + '</div></div>' +
+      '<div class="fin-item yellow"><div class="fin-label">ComisiÃÂ³n esposa</div><div class="fin-value">$' + comision + '</div></div>' +
     '</div>' +
     '<div style="display:flex;gap:10px">' +
-      '<a href="' + afLink + '" target="_blank" class="btn btn-amazon" style="text-decoration:none;flex:1;justify-content:center"><i class="fab fa-amazon"></i> COMPRAR EN AMAZON â link afiliado</a>' +
+      '<a href="' + afLink + '" target="_blank" class="btn btn-amazon" style="text-decoration:none;flex:1;justify-content:center"><i class="fab fa-amazon"></i> COMPRAR EN AMAZON Ã¢ÂÂ link afiliado</a>' +
       '<button class="btn btn-outline" onclick="addDespachoManual(\'' + prod.id + '\')"><i class="fas fa-plus"></i> Registrar venta</button>' +
     '</div>';
   resultEl.classList.add('show');
@@ -2887,8 +2887,8 @@ function searchDispatch(query) {
 function addDespachoManual(productId) {
   const prod = PRODUCTS.find(p => p.id === productId);
   if (!prod) return;
-  const salePrice = parseFloat(prompt('Â¿A quÃ© precio vendiste?', prod.priceStore)) || prod.priceStore;
-  const orderId   = prompt('NÃºmero de orden MeLi (opcional):', '') || 'MANUAL-' + Date.now();
+  const salePrice = parseFloat(prompt('ÃÂ¿A quÃÂ© precio vendiste?', prod.priceStore)) || prod.priceStore;
+  const orderId   = prompt('NÃÂºmero de orden MeLi (opcional):', '') || 'MANUAL-' + Date.now();
   const despacho  = {
     id: 'd-' + Date.now(), productId: prod.id, asin: prod.asin,
     productTitle: prod.titleStore || prod.titleAmazon,
@@ -2898,7 +2898,7 @@ function addDespachoManual(productId) {
   DESPACHOS.unshift(despacho);
   saveData();
   renderDashboard();
-  showNotif('â Venta registrada â comprÃ¡ en Amazon y despachÃ¡', 'success');
+  showNotif('Ã¢ÂÂ Venta registrada Ã¢ÂÂ comprÃÂ¡ en Amazon y despachÃÂ¡', 'success');
 }
 
 function markDispatched(id) {
@@ -2908,18 +2908,18 @@ function markDispatched(id) {
     const prod = PRODUCTS.find(p => p.id === d.productId);
     if (prod) { prod.sold = (prod.sold || 0) + 1; }
     saveData(); renderDespachos(); renderDashboard();
-    showNotif('â Marcado como despachado', 'success');
+    showNotif('Ã¢ÂÂ Marcado como despachado', 'success');
   }
 }
 
-// ââ MAPEAR DATOS DEL SCRAPER AL FORMATO DEL PORTAL ââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ MAPEAR DATOS DEL SCRAPER AL FORMATO DEL PORTAL Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function mapScraperToPortal(scraped) {
   if (!scraped) return scraped;
   if (scraped.titleAmazon !== undefined) return scraped;
 
   let desc = '';
   if (scraped.bullets && scraped.bullets.length > 0) {
-    desc = scraped.bullets.map(b => 'â¢ ' + b).join('\n');
+    desc = scraped.bullets.map(b => 'Ã¢ÂÂ¢ ' + b).join('\n');
   }
   if (scraped.description && scraped.description.length > 10) {
     desc += (desc ? '\n\n' : '') + scraped.description;
@@ -2960,24 +2960,24 @@ function mapScraperToPortal(scraped) {
   };
 }
 
-// ââ OPEN CAPTURE MODAL âââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ OPEN CAPTURE MODAL Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function openCaptureModal(prefill) {
   editingId   = null;
   INGREDIENTS = [];
-  document.getElementById('modalTitle').textContent  = 'ð¦ Nuevo Producto';
+  document.getElementById('modalTitle').textContent  = 'Ã°ÂÂÂ¦ Nuevo Producto';
   document.getElementById('btn-reject').style.display = 'none';
   clearForm();
 
   const mapped = prefill ? mapScraperToPortal(prefill) : null;
   if (mapped) {
     fillForm(mapped);
-    // GalerÃ­a de imÃ¡genes
+    // GalerÃÂ­a de imÃÂ¡genes
     const imgs = mapped.images || (mapped.image ? [mapped.image] : []);
     if (imgs.length > 1) {
       buildGallery(imgs, mapped.image || imgs[0]);
     }
     if (mapped._scraperData && mapped._scraperData.ingredients && mapped._scraperData.ingredients.length > 5) {
-      setTimeout(() => showNotif('ð§ª Ingredientes disponibles del scraper â revisa KOI Intel', 'info'), 600);
+      setTimeout(() => showNotif('Ã°ÂÂ§Âª Ingredientes disponibles del scraper Ã¢ÂÂ revisa KOI Intel', 'info'), 600);
     }
     if (mapped._scraperData && mapped._scraperData.amazonTag && !CONFIG.amazonTag) {
       CONFIG.amazonTag = mapped._scraperData.amazonTag;
@@ -3020,11 +3020,11 @@ function editProduct(id) {
   if (!prod) return;
   editingId   = id;
   INGREDIENTS = prod.ingredients || [];
-  document.getElementById('modalTitle').textContent  = 'âï¸ Editar Producto';
+  document.getElementById('modalTitle').textContent  = 'Ã¢ÂÂÃ¯Â¸Â Editar Producto';
   document.getElementById('btn-reject').style.display = 'flex';
   clearForm();
   fillForm(prod);
-  // GalerÃ­a si hay mÃºltiples imÃ¡genes
+  // GalerÃÂ­a si hay mÃÂºltiples imÃÂ¡genes
   const imgs = prod.images || (prod.image ? [prod.image] : []);
   if (imgs.length > 1) buildGallery(imgs, prod.image);
   document.getElementById('captureModal').classList.add('open');
@@ -3034,7 +3034,7 @@ function closeModal(id) {
   document.getElementById(id).classList.remove('open');
 }
 
-// ââ CLEAR FORM ââââââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ CLEAR FORM Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function clearForm() {
   ['f-img','f-asin','f-title-amazon','f-title-store','f-desc','f-category-amazon',
    'f-price-amazon','f-shipping','f-stock','f-stock-min'].forEach(id => {
@@ -3058,7 +3058,7 @@ function clearForm() {
   calcPrice();
 }
 
-// ââ FILL FORM âââââââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ FILL FORM Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function fillForm(p) {
   document.getElementById('f-img').value            = p.image || '';
   document.getElementById('f-asin').value           = p.asin  || '';
@@ -3106,7 +3106,7 @@ function fillForm(p) {
   autoDetectMode();
 }
 
-// ââ AUTO DETECT MODE âââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ AUTO DETECT MODE Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function autoDetectMode() {
   const cat   = (document.getElementById('f-category-amazon').value || '').toLowerCase();
   const title = (document.getElementById('f-title-amazon').value   || '').toLowerCase();
@@ -3116,11 +3116,11 @@ function autoDetectMode() {
   const nichoSel  = document.getElementById('f-nicho');
   if (isKB) {
     modeAlert.className = 'alert alert-info';
-    alertText.innerHTML = 'ð¸ <strong>Modo K-Beauty detectado</strong> â Se activarÃ¡n los campos de KOI Intel';
+    alertText.innerHTML = 'Ã°ÂÂÂ¸ <strong>Modo K-Beauty detectado</strong> Ã¢ÂÂ Se activarÃÂ¡n los campos de KOI Intel';
     if (!nichoSel.value) nichoSel.value = 'kbeauty';
   } else if (cat || title) {
     modeAlert.className = 'alert alert-info';
-    alertText.innerHTML = 'ð <strong>Modo Multi-nicho detectado</strong> â SeleccionÃ¡ el nicho correcto';
+    alertText.innerHTML = 'Ã°ÂÂÂ <strong>Modo Multi-nicho detectado</strong> Ã¢ÂÂ SeleccionÃÂ¡ el nicho correcto';
   }
   onNichoChange();
 }
@@ -3131,17 +3131,17 @@ function onNichoChange() {
   if (nicho === 'kbeauty') {
     koiSection.style.display = 'block';
     document.getElementById('mode-alert').className = 'alert alert-info';
-    document.getElementById('mode-alert-text').innerHTML = 'ð¸ <strong>Modo K-Beauty</strong> â CompletÃ¡ los campos de KOI Intel para que aparezca en las rutinas';
+    document.getElementById('mode-alert-text').innerHTML = 'Ã°ÂÂÂ¸ <strong>Modo K-Beauty</strong> Ã¢ÂÂ CompletÃÂ¡ los campos de KOI Intel para que aparezca en las rutinas';
   } else {
     koiSection.style.display = 'none';
     if (nicho) {
       document.getElementById('mode-alert').className = 'alert alert-info';
-      document.getElementById('mode-alert-text').innerHTML = 'ð <strong>Modo Multi-nicho</strong> â Se publicarÃ¡ en Shopify (oculto) y se sincronizarÃ¡ con MeLi';
+      document.getElementById('mode-alert-text').innerHTML = 'Ã°ÂÂÂ <strong>Modo Multi-nicho</strong> Ã¢ÂÂ Se publicarÃÂ¡ en Shopify (oculto) y se sincronizarÃÂ¡ con MeLi';
     }
   }
 }
 
-// ââ PRICE CALC âââââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ PRICE CALC Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function calcPrice() {
   const amazon   = parseFloat(document.getElementById('f-price-amazon').value) || 0;
   const shipping = parseFloat(document.getElementById('f-shipping').value) || 0;
@@ -3157,7 +3157,7 @@ function calcPrice() {
   document.getElementById('calc-comision').textContent = '$' + comision.toFixed(2) + ' (' + Math.round(comRate * 100) + '%)';
 }
 
-// ââ AMAZON LINKS âââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ AMAZON LINKS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function buildAffiliateLink(asin) {
   if (!asin) return '#';
   const tag  = CONFIG.amazonTag || '';
@@ -3180,7 +3180,7 @@ function updatePreview() {
   else { prev.style.display = 'none'; }
 }
 
-// ââ SUBCATEGORIAS ââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ SUBCATEGORIAS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function updateSubcategorias() {
   const cat  = document.getElementById('f-koi-categoria').value;
   const subs = SUBCATEGORIAS[cat] || [];
@@ -3189,7 +3189,7 @@ function updateSubcategorias() {
 }
 function updateKoiSubcategoria() { updateSubcategorias(); }
 
-// ââ INGREDIENTS ââââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ INGREDIENTS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function addIngredient() {
   const input = document.getElementById('ing-input');
   const val   = input.value.trim().toLowerCase().replace(/\s+/g, '_');
@@ -3206,18 +3206,18 @@ function removeIngredient(val) {
 function renderIngredients() {
   const list = document.getElementById('ingredients-list');
   list.innerHTML = INGREDIENTS.map(i =>
-    '<div class="ingredient-tag">' + i.replace(/_/g, ' ') + ' <span class="remove" onclick="removeIngredient(\'' + i + '\')">Ã</span></div>'
+    '<div class="ingredient-tag">' + i.replace(/_/g, ' ') + ' <span class="remove" onclick="removeIngredient(\'' + i + '\')">ÃÂ</span></div>'
   ).join('');
 }
 
-// ââ CHIP SELECTOR ââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ CHIP SELECTOR Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function toggleChip(el, group) {
   const parent = el.closest('.chip-selector');
   parent.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
 }
 
-// ââ PUBLISH PRODUCT ââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ PUBLISH PRODUCT Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function publishProduct() {
   const nicho       = document.getElementById('f-nicho').value;
   const titleAmazon = document.getElementById('f-title-amazon').value.trim();
@@ -3229,8 +3229,8 @@ function publishProduct() {
   const cost        = priceAmazon + shipping;
   const priceStore  = margin > 0 ? cost / (1 - margin / 100) : cost;
 
-  if (!nicho)                    { showNotif('â ï¸ SeleccionÃ¡ un nicho', 'warning'); return; }
-  if (!titleAmazon && !titleStore) { showNotif('â ï¸ CompletÃ¡ el tÃ­tulo', 'warning'); return; }
+  if (!nicho)                    { showNotif('Ã¢ÂÂ Ã¯Â¸Â SeleccionÃÂ¡ un nicho', 'warning'); return; }
+  if (!titleAmazon && !titleStore) { showNotif('Ã¢ÂÂ Ã¯Â¸Â CompletÃÂ¡ el tÃÂ­tulo', 'warning'); return; }
 
   const prod = {
     id:             editingId || 'p-' + Date.now(),
@@ -3290,7 +3290,7 @@ function publishProduct() {
   if (CONFIG.shopifyToken) {
     publishToShopify(prod);
   } else {
-    showNotif('â ï¸ Guardado localmente. ConfigurÃ¡ el token Shopify para publicar.', 'warning');
+    showNotif('Ã¢ÂÂ Ã¯Â¸Â Guardado localmente. ConfigurÃÂ¡ el token Shopify para publicar.', 'warning');
   }
 }
 
@@ -3298,20 +3298,20 @@ function quickPublish(id) {
   const prod = PRODUCTS.find(p => p.id === id);
   if (!prod) return;
   if (CONFIG.shopifyToken) { publishToShopify(prod); }
-  else { showNotif('â ï¸ ConfigurÃ¡ el token Shopify primero', 'warning'); }
+  else { showNotif('Ã¢ÂÂ Ã¯Â¸Â ConfigurÃÂ¡ el token Shopify primero', 'warning'); }
 }
 
 function rejectProduct() {
   if (!editingId) return;
-  if (!confirm('Â¿Rechazar y eliminar este producto?')) return;
+  if (!confirm('ÃÂ¿Rechazar y eliminar este producto?')) return;
   PRODUCTS = PRODUCTS.filter(p => p.id !== editingId);
   saveData(); closeModal('captureModal'); renderDashboard(); renderPendientes();
-  showNotif('ðï¸ Producto rechazado', 'warning');
+  showNotif('Ã°ÂÂÂÃ¯Â¸Â Producto rechazado', 'warning');
 }
 
-// ââ SHOPIFY API ââââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ SHOPIFY API Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 async function publishToShopify(prod) {
-  showNotif('â³ Publicando en Shopify...', 'success');
+  showNotif('Ã¢ÂÂ³ Publicando en Shopify...', 'success');
   const isKB   = prod.nicho === 'kbeauty';
   const domain = CONFIG.shopifyDomain || 'shatokb.myshopify.com';
   const token  = CONFIG.shopifyToken;
@@ -3361,23 +3361,23 @@ async function publishToShopify(prod) {
         PRODUCTS[idx].publishedAt = new Date().toISOString();
       }
       saveData(); renderDashboard(); renderPendientes();
-      showNotif('â Publicado en Shopify' + (isKB ? ' + KOI Intel guardado' : ' (oculto en tienda)'), 'success');
+      showNotif('Ã¢ÂÂ Publicado en Shopify' + (isKB ? ' + KOI Intel guardado' : ' (oculto en tienda)'), 'success');
     } else {
-      showNotif('â Error al publicar en Shopify â verificÃ¡ el token', 'error');
+      showNotif('Ã¢ÂÂ Error al publicar en Shopify Ã¢ÂÂ verificÃÂ¡ el token', 'error');
     }
   } catch(e) {
-    showNotif('â Error de red â Â¿tenÃ©s el token correcto?', 'error');
+    showNotif('Ã¢ÂÂ Error de red Ã¢ÂÂ ÃÂ¿tenÃÂ©s el token correcto?', 'error');
   }
 }
 
-// ââ NOTIFICATIONS ââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ NOTIFICATIONS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function showNotif(msg, type) {
   type = type || 'success';
-  const icons = { success: 'â', error: 'â', warning: 'â ï¸', info: 'â¹ï¸' };
+  const icons = { success: 'Ã¢ÂÂ', error: 'Ã¢ÂÂ', warning: 'Ã¢ÂÂ Ã¯Â¸Â', info: 'Ã¢ÂÂ¹Ã¯Â¸Â' };
   const container = document.getElementById('notif-container');
   const el = document.createElement('div');
   el.className = 'notif ' + type;
-  el.innerHTML = '<span>' + (icons[type] || 'â¹ï¸') + '</span><span>' + msg + '</span>';
+  el.innerHTML = '<span>' + (icons[type] || 'Ã¢ÂÂ¹Ã¯Â¸Â') + '</span><span>' + msg + '</span>';
   container.appendChild(el);
   setTimeout(() => el.remove(), 4000);
 }
@@ -3385,21 +3385,21 @@ function showNotif(msg, type) {
 // alias para compatibilidad
 var notify = showNotif;
 
-// ââ LISTENER: mensajes postMessage de la extensiÃ³n Chrome ââââââ
+// Ã¢ÂÂÃ¢ÂÂ LISTENER: mensajes postMessage de la extensiÃÂ³n Chrome Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 window.addEventListener('message', function(e) {
   if (e.data && e.data.type === 'SHATO_AMAZON_PRODUCT') {
     const d = e.data.product;
     if (!d) return;
     if (sessionStorage.getItem('shato_auth')) {
-      // Agregar a Pendientes, NO abrir modal â el usuario hace click en "Ver detalle"
+      // Agregar a Pendientes, NO abrir modal Ã¢ÂÂ el usuario hace click en "Ver detalle"
       agregarProductoAlPortal(d);
-      showNotif('ð¦ Producto recibido â hacÃ© click en "Ver detalle" para editarlo', 'success');
+      showNotif('Ã°ÂÂÂ¦ Producto recibido Ã¢ÂÂ hacÃÂ© click en "Ver detalle" para editarlo', 'success');
       showTab('pendientes');
     } else {
       // Guardar para mostrar tras login
       window._shato_pending_product = d;
       window._shatoAutoTab = 'pendientes';
-      showNotif('ð¦ Producto recibido â iniciÃ¡ sesiÃ³n para editarlo', 'warning');
+      showNotif('Ã°ÂÂÂ¦ Producto recibido Ã¢ÂÂ iniciÃÂ¡ sesiÃÂ³n para editarlo', 'warning');
     }
     if (e.source && e.source !== window) {
       e.source.postMessage({ type: 'SHATO_PRODUCT_RECEIVED', ok: true }, '*');
@@ -3409,10 +3409,10 @@ window.addEventListener('message', function(e) {
 
 // CustomEvent fallback
 window.addEventListener('SHATO_CAPTURE', function(e) {
-  if (e.detail) { openCaptureModal(e.detail); showNotif('ð¦ Producto capturado de Amazon', 'success'); }
+  if (e.detail) { openCaptureModal(e.detail); showNotif('Ã°ÂÂÂ¦ Producto capturado de Amazon', 'success'); }
 });
 
-// ââ CHROME STORAGE: leer producto pendiente ââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ CHROME STORAGE: leer producto pendiente Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function checkChromeStoragePendingProduct() {
   const params = new URLSearchParams(location.search);
   if (!params.has('shato_import')) return;
@@ -3422,25 +3422,25 @@ function checkChromeStoragePendingProduct() {
     const product = result.shato_pending_product;
     if (!product) return;
     setTimeout(function() {
-      // Agregar a Pendientes, NO abrir modal â el usuario hace click en "Ver detalle"
+      // Agregar a Pendientes, NO abrir modal Ã¢ÂÂ el usuario hace click en "Ver detalle"
       agregarProductoAlPortal(product);
       showTab('pendientes');
-      showNotif('ð¦ Producto recibido â hacÃ© click en "Ver detalle" para editarlo', 'success');
+      showNotif('Ã°ÂÂÂ¦ Producto recibido Ã¢ÂÂ hacÃÂ© click en "Ver detalle" para editarlo', 'success');
       chrome.runtime.sendMessage({ action: 'productConsumed' });
     }, 800);
   });
 }
 
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-// ââ RADAR DE TENDENCIAS MELI âââââââââââââââââââââââââââââââââââ
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// Ã¢ÂÂÃ¢ÂÂ RADAR DE TENDENCIAS MELI Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 
 const RADAR_COUNTRIES = [
-  { id: 'MCO', name: 'Colombia',  flag: 'ð¨ð´' },
-  { id: 'MLM', name: 'MÃ©xico',    flag: 'ð²ð½' },
-  { id: 'MLC', name: 'Chile',     flag: 'ð¨ð±' },
-  { id: 'MLA', name: 'Argentina', flag: 'ð¦ð·' },
-  { id: 'MLB', name: 'Brasil',    flag: 'ð§ð·' }
+  { id: 'MCO', name: 'Colombia',  flag: 'Ã°ÂÂÂ¨Ã°ÂÂÂ´' },
+  { id: 'MLM', name: 'MÃÂ©xico',    flag: 'Ã°ÂÂÂ²Ã°ÂÂÂ½' },
+  { id: 'MLC', name: 'Chile',     flag: 'Ã°ÂÂÂ¨Ã°ÂÂÂ±' },
+  { id: 'MLA', name: 'Argentina', flag: 'Ã°ÂÂÂ¦Ã°ÂÂÂ·' },
+  { id: 'MLB', name: 'Brasil',    flag: 'Ã°ÂÂÂ§Ã°ÂÂÂ·' }
 ];
 
 // Cache en memoria con TTL de 5 minutos
@@ -3455,7 +3455,7 @@ async function radarFetchTrends(siteId) {
     return radarCache[siteId].data;
   }
   const meliUrl = 'https://api.mercadolibre.com/trends/' + siteId;
-  // Lista de proxies CORS â se prueban en orden hasta que uno responda
+  // Lista de proxies CORS Ã¢ÂÂ se prueban en orden hasta que uno responda
   const proxies = [
     u => 'https://api.allorigins.win/get?url=' + encodeURIComponent(u),
     u => 'https://corsproxy.io/?' + encodeURIComponent(u),
@@ -3469,7 +3469,7 @@ async function radarFetchTrends(siteId) {
       const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
       if (!res.ok) continue;
       const text = await res.text();
-      // allorigins devuelve { contents: "..." }, los demÃ¡s devuelven JSON directo
+      // allorigins devuelve { contents: "..." }, los demÃÂ¡s devuelven JSON directo
       let data;
       try {
         const outer = JSON.parse(text);
@@ -3495,9 +3495,9 @@ function radarRankClass(i) {
 }
 
 function radarRankText(i) {
-  if (i === 0) return 'ð¥';
-  if (i === 1) return 'ð¥';
-  if (i === 2) return 'ð¥';
+  if (i === 0) return 'Ã°ÂÂ¥Â';
+  if (i === 1) return 'Ã°ÂÂ¥Â';
+  if (i === 2) return 'Ã°ÂÂ¥Â';
   return '#' + (i + 1);
 }
 
@@ -3513,7 +3513,7 @@ function radarMeliSearchUrl(siteId, keyword) {
   return base + encodeURIComponent(keyword).replace(/%20/g, '-');
 }
 
-// Renderizar tarjeta de paÃ­s (vista ALL)
+// Renderizar tarjeta de paÃÂ­s (vista ALL)
 function radarRenderCountryCard(country, trends) {
   const top10 = trends.slice(0, 10);
   const items = top10.map((t, i) => {
@@ -3521,7 +3521,7 @@ function radarRenderCountryCard(country, trends) {
     return '<a class="radar-item" href="' + radarMeliSearchUrl(country.id, t.keyword) + '" target="_blank" title="Ver en MeLi">' +
       '<span class="radar-item-rank ' + cls + '">#' + (i + 1) + '</span>' +
       '<span class="radar-item-text">' + t.keyword + '</span>' +
-      '<span class="radar-item-arrow">â</span>' +
+      '<span class="radar-item-arrow">Ã¢ÂÂ</span>' +
       '</a>';
   }).join('');
 
@@ -3539,13 +3539,13 @@ function radarRenderSingleList(country, trends) {
   const list = document.getElementById('radar-single-list');
   const title = document.getElementById('radar-single-title');
   const count = document.getElementById('radar-single-count');
-  title.textContent = country.flag + ' ' + country.name + ' â Top Tendencias';
-  count.textContent = trends.length + ' bÃºsquedas trending';
+  title.textContent = country.flag + ' ' + country.name + ' Ã¢ÂÂ Top Tendencias';
+  count.textContent = trends.length + ' bÃÂºsquedas trending';
   list.innerHTML = trends.map((t, i) => {
     return '<a class="radar-single-item" href="' + radarMeliSearchUrl(country.id, t.keyword) + '" target="_blank">' +
       '<span class="radar-single-rank ' + radarRankClass(i) + '">' + radarRankText(i) + '</span>' +
       '<span class="radar-single-keyword">' + t.keyword + '</span>' +
-      '<span style="font-size:10px;color:var(--muted)">ver en MeLi â</span>' +
+      '<span style="font-size:10px;color:var(--muted)">ver en MeLi Ã¢ÂÂ</span>' +
       '</a>';
   }).join('');
 }
@@ -3555,27 +3555,27 @@ async function radarLoadCountry(country, cardEl) {
     const trends = await radarFetchTrends(country.id);
     cardEl.innerHTML = radarRenderCountryCard(country, trends);
   } catch (e) {
-    cardEl.innerHTML = '<div class="radar-country-card"><div class="radar-country-header"><span class="radar-country-name">' + country.flag + ' ' + country.name + '</span></div><div class="radar-error">â ï¸ No se pudo cargar â verificar conexiÃ³n</div></div>';
+    cardEl.innerHTML = '<div class="radar-country-card"><div class="radar-country-header"><span class="radar-country-name">' + country.flag + ' ' + country.name + '</span></div><div class="radar-error">Ã¢ÂÂ Ã¯Â¸Â No se pudo cargar Ã¢ÂÂ verificar conexiÃÂ³n</div></div>';
   }
 }
 
 async function radarLoadSingle(country) {
   const list = document.getElementById('radar-single-list');
   const title = document.getElementById('radar-single-title');
-  title.textContent = country.flag + ' ' + country.name + ' â cargando...';
-  list.innerHTML = '<div class="radar-loading">â³ Cargando tendencias de ' + country.name + '...</div>';
+  title.textContent = country.flag + ' ' + country.name + ' Ã¢ÂÂ cargando...';
+  list.innerHTML = '<div class="radar-loading">Ã¢ÂÂ³ Cargando tendencias de ' + country.name + '...</div>';
   try {
     const trends = await radarFetchTrends(country.id);
     radarRenderSingleList(country, trends);
   } catch (e) {
-    list.innerHTML = '<div class="radar-error">â ï¸ No se pudieron cargar las tendencias. IntentÃ¡ nuevamente.</div>';
+    list.innerHTML = '<div class="radar-error">Ã¢ÂÂ Ã¯Â¸Â No se pudieron cargar las tendencias. IntentÃÂ¡ nuevamente.</div>';
   }
 }
 
 async function radarRefreshAll() {
   const btn = document.getElementById('radar-refresh-btn');
   const icon = document.getElementById('radar-refresh-icon');
-  icon.textContent = 'â³';
+  icon.textContent = 'Ã¢ÂÂ³';
   btn.disabled = true;
 
   // Limpiar cache
@@ -3588,10 +3588,10 @@ async function radarRefreshAll() {
     if (country) await radarLoadSingle(country);
   }
 
-  icon.textContent = 'ð';
+  icon.textContent = 'Ã°ÂÂÂ';
   btn.disabled = false;
   document.getElementById('radar-last-update').textContent =
-    'â° Ãltima actualizaciÃ³n: ' + new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}) + ' â datos oficiales de MercadoLibre';
+    'Ã¢ÂÂ° ÃÂltima actualizaciÃÂ³n: ' + new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}) + ' Ã¢ÂÂ datos oficiales de MercadoLibre';
 }
 
 async function radarInitAllView() {
@@ -3599,7 +3599,7 @@ async function radarInitAllView() {
   grid.innerHTML = '';
   const promises = RADAR_COUNTRIES.map(country => {
     const div = document.createElement('div');
-    div.innerHTML = '<div class="radar-country-card"><div class="radar-country-header"><span class="radar-country-name">' + country.flag + ' ' + country.name + '</span></div><div class="radar-loading">â³ Cargando...</div></div>';
+    div.innerHTML = '<div class="radar-country-card"><div class="radar-country-header"><span class="radar-country-name">' + country.flag + ' ' + country.name + '</span></div><div class="radar-loading">Ã¢ÂÂ³ Cargando...</div></div>';
     grid.appendChild(div);
     return radarLoadCountry(country, div);
   });
@@ -3645,21 +3645,21 @@ function radarSearch() {
   });
 
   if (matches.length === 0) {
-    resultsEl.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px 0">No se encontrÃ³ "<strong style=\'color:var(--text)\'>' + q + '</strong>" en ningÃºn paÃ­s. AsegÃºrate de haber cargado las tendencias primero.</div>';
+    resultsEl.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px 0">No se encontrÃÂ³ "<strong style=\'color:var(--text)\'>' + q + '</strong>" en ningÃÂºn paÃÂ­s. AsegÃÂºrate de haber cargado las tendencias primero.</div>';
     return;
   }
 
-  resultsEl.innerHTML = '<div style="font-size:12px;color:var(--text2);margin-bottom:8px">Encontrado en ' + matches.length + ' posiciÃ³n(es):</div>' +
+  resultsEl.innerHTML = '<div style="font-size:12px;color:var(--text2);margin-bottom:8px">Encontrado en ' + matches.length + ' posiciÃÂ³n(es):</div>' +
     matches.map(m =>
       '<a class="radar-search-match" href="' + radarMeliSearchUrl(m.country.id, m.keyword) + '" target="_blank" style="text-decoration:none;color:var(--text)">' +
         '<span class="radar-search-flag">' + m.country.flag + '</span>' +
-        '<div style="flex:1"><div style="font-weight:600">' + m.keyword + '</div><div class="radar-search-pos">' + m.country.name + ' â posiciÃ³n #' + m.pos + '</div></div>' +
-        '<span style="font-size:11px;color:var(--accent)">ver en MeLi â</span>' +
+        '<div style="flex:1"><div style="font-weight:600">' + m.keyword + '</div><div class="radar-search-pos">' + m.country.name + ' Ã¢ÂÂ posiciÃÂ³n #' + m.pos + '</div></div>' +
+        '<span style="font-size:11px;color:var(--accent)">ver en MeLi Ã¢ÂÂ</span>' +
       '</a>'
     ).join('');
 }
 
-// Inicializar radar cuando se activa el mÃ³dulo
+// Inicializar radar cuando se activa el mÃÂ³dulo
 function initRadarModule() {
   radarActiveSite = 'MCO';
   // Resetear tabs visuales
@@ -3672,11 +3672,11 @@ function initRadarModule() {
   const colombia = RADAR_COUNTRIES[0];
   radarLoadSingle(colombia).then(() => {
     document.getElementById('radar-last-update').textContent =
-      'â° Ãltima actualizaciÃ³n: ' + new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}) + ' â datos oficiales de MercadoLibre';
+      'Ã¢ÂÂ° ÃÂltima actualizaciÃÂ³n: ' + new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}) + ' Ã¢ÂÂ datos oficiales de MercadoLibre';
   });
 }
 
-// ââ INIT DOM LOADED ââââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ INIT DOM LOADED Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 document.addEventListener('DOMContentLoaded', function() {
   // Auto-auth si viene de URL con ?preview=1 (solo para screenshots)
   if (window.location.search.includes('preview=1')) {
