@@ -1451,45 +1451,9 @@ tr:hover td { background: rgba(108,142,255,0.08); }
 <div id="login-screen">
   <div class="login-box">
     <div class="login-logo">
-      <!-- Kabuby Camel Logo -->
+      <!-- Kabuby Logo -->
       <div style="display:flex;justify-content:center;margin-bottom:16px">
-        <div style="width:72px;height:72px;filter:drop-shadow(0 0 16px rgba(108,142,255,0.6))">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="72" height="72">
-            <defs>
-              <radialGradient id="lgBg" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#0f1a35"/><stop offset="100%" stop-color="#0b1120"/></radialGradient>
-              <linearGradient id="lgCamel" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#8ba8ff"/><stop offset="50%" stop-color="#6c8eff"/><stop offset="100%" stop-color="#4a6fe8"/></linearGradient>
-              <filter id="lgGlow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-              <filter id="lgSoftGlow"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-            </defs>
-            <circle cx="100" cy="100" r="100" fill="url(#lgBg)"/>
-            <ellipse cx="105" cy="115" rx="65" ry="50" fill="#6c8eff" fill-opacity=".06"/>
-            <polygon points="62,148 70,120 85,110 100,108 125,108 140,115 148,130 148,148 125,152 100,153 80,152" fill="url(#lgCamel)" filter="url(#lgGlow)"/>
-            <polygon points="62,148 70,120 80,135" fill="#8ba8ff" opacity=".45"/>
-            <polygon points="140,115 148,130 138,138" fill="#4a6fe8" opacity=".6"/>
-            <polygon points="82,110 92,85 103,82 108,110" fill="url(#lgCamel)" filter="url(#lgGlow)"/>
-            <polygon points="82,110 92,85 86,100" fill="#8ba8ff" opacity=".4"/>
-            <polygon points="108,110 116,88 124,85 128,110" fill="url(#lgCamel)" filter="url(#lgGlow)"/>
-            <polygon points="116,88 124,85 119,97" fill="#8ba8ff" opacity=".4"/>
-            <polygon points="128,110 138,90 148,85 150,110 140,115" fill="url(#lgCamel)" filter="url(#lgGlow)"/>
-            <polygon points="148,85 158,75 170,78 175,90 165,100 150,100 142,92" fill="url(#lgCamel)" filter="url(#lgGlow)"/>
-            <polygon points="148,85 158,75 153,86" fill="#8ba8ff" opacity=".45"/>
-            <polygon points="165,95 175,92 178,100 170,105 162,103" fill="#4a6fe8"/>
-            <polygon points="155,73 160,62 166,70 160,75" fill="#6c8eff" filter="url(#lgGlow)"/>
-            <circle cx="163" cy="84" r="6" fill="#34d399" filter="url(#lgSoftGlow)"/>
-            <circle cx="163" cy="84" r="3.5" fill="#0b1120"/>
-            <circle cx="163" cy="84" r="2" fill="#34d399"/>
-            <circle cx="160.5" cy="81.5" r="1" fill="white" opacity=".9"/>
-            <polygon points="70,152 78,152 76,175 68,175" fill="#3a58cc" opacity=".9"/>
-            <polygon points="80,150 88,150 87,175 79,175" fill="#4a6fe8" opacity=".9"/>
-            <polygon points="112,148 120,148 119,172 111,172" fill="#3a58cc" opacity=".9"/>
-            <polygon points="122,147 130,147 129,172 121,172" fill="#4a6fe8" opacity=".9"/>
-            <polygon points="62,140 52,135 50,145 58,148" fill="#4a6fe8" opacity=".7"/>
-            <circle cx="119" cy="87" r="2.5" fill="white" opacity=".45"/>
-            <circle cx="45" cy="55" r="2.5" fill="#34d399" opacity=".65" filter="url(#lgSoftGlow)"/>
-            <circle cx="165" cy="38" r="1.8" fill="#6c8eff" opacity=".7"/>
-            <circle cx="170" cy="155" r="2" fill="#34d399" opacity=".4" filter="url(#lgSoftGlow)"/>
-          </svg>
-        </div>
+        <div style="width:72px;height:72px;background:rgba(108,142,255,0.1);border-radius:18px;border:1px solid rgba(108,142,255,0.25);display:flex;align-items:center;justify-content:center;font-size:42px">🧭</div>
       </div>
       <div class="brand" style="letter-spacing:6px;font-size:10px">KABUBY</div>
       <div class="name">Kabuby <span>Scout</span></div>
@@ -1517,36 +1481,8 @@ tr:hover td { background: rgba(108,142,255,0.08); }
 
   <!-- ── LOGO SISTEMA ─────────────────────────────────────── -->
   <div class="sidebar-logo" style="cursor:pointer;display:flex;align-items:center;gap:12px" onclick="showTab('home')">
-    <!-- Camel SVG logo inline — v2 BOLD SIMPLE -->
-    <div style="width:40px;height:40px;flex-shrink:0;background:rgba(108,142,255,0.12);border-radius:10px;border:1px solid rgba(108,142,255,0.25);display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px rgba(108,142,255,0.2)">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="30" height="30">
-        <!-- Camello bold minimalista — silueta clara a cualquier tamaño -->
-        <!-- Cuerpo principal -->
-        <rect x="8" y="34" width="36" height="16" rx="4" fill="#6c8eff"/>
-        <!-- Joroba izquierda (grande) -->
-        <ellipse cx="20" cy="32" rx="9" ry="10" fill="#6c8eff"/>
-        <!-- Joroba derecha (más pequeña) -->
-        <ellipse cx="34" cy="34" rx="7" ry="8" fill="#6c8eff"/>
-        <!-- Cuello -->
-        <rect x="38" y="22" width="8" height="18" rx="3" fill="#6c8eff"/>
-        <!-- Cabeza -->
-        <rect x="40" y="14" width="14" height="12" rx="4" fill="#6c8eff"/>
-        <!-- Hocico -->
-        <rect x="50" y="20" width="8" height="6" rx="2" fill="#5070dc"/>
-        <!-- Oreja -->
-        <polygon points="42,14 46,8 50,14" fill="#6c8eff"/>
-        <!-- Ojo verde — el detalle estrella -->
-        <circle cx="48" cy="18" r="3" fill="#34d399"/>
-        <circle cx="48" cy="18" r="1.2" fill="#0b1120"/>
-        <!-- Patas (4 rectángulos) -->
-        <rect x="10" y="50" width="5" height="10" rx="2" fill="#5070dc"/>
-        <rect x="18" y="50" width="5" height="10" rx="2" fill="#4a6fe8"/>
-        <rect x="28" y="50" width="5" height="10" rx="2" fill="#5070dc"/>
-        <rect x="36" y="50" width="5" height="10" rx="2" fill="#4a6fe8"/>
-        <!-- Cola curva -->
-        <path d="M8 40 Q2 36 4 30" stroke="#6c8eff" stroke-width="3" fill="none" stroke-linecap="round"/>
-      </svg>
-    </div>
+    <!-- Logo: emoji brújula igual al sistema -->
+    <div style="width:40px;height:40px;flex-shrink:0;background:rgba(108,142,255,0.12);border-radius:10px;border:1px solid rgba(108,142,255,0.25);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 12px rgba(108,142,255,0.2)">🧭</div>
     <div>
       <div class="brand" style="font-size:9px;letter-spacing:4px;margin-bottom:2px">KABUBY</div>
       <div class="system-name" style="font-size:13px;font-weight:800;color:#e8f0fe">Intelligence</div>
