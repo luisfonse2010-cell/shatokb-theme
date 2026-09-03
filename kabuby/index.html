@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
-<!-- BUILD: 2026-09-02 v7.2.0 — Signal Engine robusto: fallback curado + proxies extra + sin score 0 -->
-<!-- CF-CACHE-BUST: 1788394800000-v720-ROBUST-FALLBACK -->
+<!-- BUILD: 2026-09-03 v7.2.2 — MeLi fix: detecta conexión real vs. sin stock; etiquetas claras en barras -->
+<!-- CF-CACHE-BUST: 1788483600000-v722-MELI-CONN-FIX -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -4382,7 +4382,10 @@ async function signalCalcFull(keyword, siteId, nicho) {
   const bsr    = bsrItems.status   === 'fulfilled' ? bsrItems.value   : [];
   const reddit = redditData.status === 'fulfilled' ? redditData.value : null;
 
-  let meliScore   = meli   ? radarCalcScore(meli.available || 0) : -1;
+  // meliConnected = hubo respuesta real (null = CORS fallo o timeout)
+  const meliConnected = meli !== null;
+  // Si conectó pero available=0 → score 0 real (sin stock); si no conectó → -1 para curado
+  let meliScore   = meliConnected ? radarCalcScore(meli.available || 0) : -1;
   let tiktokScore = signalTikTokScore(tiktok);
   let trendsScore = signalGoogleTrendsScore(trends);
   let amazonScore = signalAmazonScore(keyword, bsr);
@@ -4390,8 +4393,10 @@ async function signalCalcFull(keyword, siteId, nicho) {
 
   // ── FALLBACK INTELIGENTE: si una fuente falla, usar datos curados ──
   const curated = signalCuratedScore(keyword);
-  const allFailed = meliScore < 0 && tiktokScore < 0 && trendsScore < 0 && amazonScore < 0 && redditScore < 0;
+  const allFailed = !meliConnected && tiktokScore < 0 && trendsScore < 0 && amazonScore < 0 && redditScore < 0;
 
+  // MeLi: solo curado si no hubo conexión; si conectó con 0 resultados, el score 0 es correcto
+  if (!meliConnected) { meliScore = Math.round(curated.tiktok * 0.85); } // ~85% TikTok curado
   if (tiktokScore < 0) { tiktokScore = curated.tiktok; }
   if (trendsScore < 0) { trendsScore = curated.trends; }
   if (amazonScore < 0) { amazonScore = curated.amazon; }
@@ -4404,7 +4409,7 @@ async function signalCalcFull(keyword, siteId, nicho) {
     keyword, siteId, nicho, signalScore,
     isFallback: allFailed, // indica que no hubo conexión real
     sources: {
-      meli:   { score: meliScore,   raw: meli,   fallback: meliScore < 0 },
+      meli:   { score: meliScore,   raw: meli,   fallback: !meliConnected },
       tiktok: { score: tiktokScore, raw: tiktok, fallback: !tiktok },
       trends: { score: trendsScore, raw: trends, fallback: !trends },
       amazon: { score: amazonScore, raw: bsr,    fallback: !bsr?.length },
@@ -4473,23 +4478,27 @@ async function signalAnalyzeKeyword() {
           'style="background:rgba(251,191,36,0.1);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);border-radius:7px;padding:7px 10px;font-size:11px;cursor:pointer;font-family:inherit">⭐</button>';
   html += '</div></div>';
 
-  // Aviso si es fallback
-  if (signalResult.isFallback) {
-    html += '<div style="font-size:10px;color:#fbbf24;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:6px;padding:5px 10px;margin-bottom:8px">⚠️ APIs sin conexión — score estimado con datos curados. Los datos reales varían.</div>';
+  // Aviso si hay fuentes en modo curado (cualquiera)
+  const fallbackCount = [src.meli, src.tiktok, src.trends, src.amazon, src.reddit].filter(s => s.fallback).length;
+  if (fallbackCount > 0) {
+    const allFb = fallbackCount === 5;
+    html += '<div style="font-size:10px;color:#fbbf24;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:6px;padding:5px 10px;margin-bottom:8px">' +
+            (allFb ? '⚠️ APIs sin conexión — score estimado con datos curados. Los datos reales varían.'
+                   : '⚠️ ' + fallbackCount + '/5 fuentes offline — score parcialmente estimado con datos curados.') + '</div>';
   }
 
   // Mini barras de fuentes
   const fRows = [
     { icon:'🛒', name:'MeLi',   s:src.meli.score,   c:'#6c8eff', w:'35%',
-      d: src.meli.fallback ? '⚠️ sin conexión MeLi' : src.meli.raw ? (src.meli.raw.available||0).toLocaleString()+' resultados' : '0 resultados' },
+      d: src.meli.fallback ? '~est. curado' : src.meli.raw ? (src.meli.raw.available||0).toLocaleString()+' resultados' : '0 resultados' },
     { icon:'🎵', name:'TikTok', s:src.tiktok.score, c:'#ff2d55', w:'25%',
-      d: src.tiktok.fallback ? '~est. curado' : src.tiktok.raw ? (src.tiktok.raw.postCount||0).toLocaleString()+' videos' : '~est.' },
+      d: src.tiktok.fallback ? '~est. curado' : (src.tiktok.raw ? (src.tiktok.raw.postCount||0).toLocaleString()+' videos' : '~est.') },
     { icon:'📈', name:'Trends', s:src.trends.score, c:'#34d399', w:'20%',
-      d: src.trends.fallback ? '~est. curado' : src.trends.raw ? 'avg '+src.trends.raw.avg+(src.trends.raw.trend>=0?' ↑+':' ↓')+Math.abs(src.trends.raw.trend)+'%' : '~est.' },
+      d: src.trends.fallback ? '~est. curado' : (src.trends.raw ? 'avg '+src.trends.raw.avg+(src.trends.raw.trend>=0?' ↑+':' ↓')+Math.abs(src.trends.raw.trend)+'%' : '~est.') },
     { icon:'📦', name:'Amazon', s:src.amazon.score, c:'#fbbf24', w:'12%',
-      d: src.amazon.fallback ? '~est. curado' : src.amazon.score>0 ? 'Top BSR' : 'No en BSR' },
+      d: src.amazon.fallback ? '~est. curado' : (src.amazon.score>0 ? 'BSR Top '+Math.round(100-src.amazon.score) : 'no en BSR') },
     { icon:'💬', name:'Reddit', s:src.reddit.score, c:'#ff6b8a', w:'8%',
-      d: src.reddit.fallback ? '~est. curado' : src.reddit.raw ? src.reddit.raw.postCount+' posts' : '~est.' },
+      d: src.reddit.fallback ? '~est. curado' : (src.reddit.raw ? src.reddit.raw.postCount+' posts' : '~est.') },
   ];
   html += '<div style="display:flex;flex-direction:column;gap:5px">';
   fRows.forEach(row => {
