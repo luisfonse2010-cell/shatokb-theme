@@ -4,8 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
-<!-- BUILD: 2026-09-03 v7.2.6 — Cazador integrado como tab nativo del SPA Kabuby -->
-<!-- CF-CACHE-BUST: 1788667200000-v726-ARBITRAGE-TAB -->
+<!-- BUILD: 2026-09-03 v7.2.7 — Logo camel Kabuby + favicon integrados -->
+<!-- CF-CACHE-BUST: 1788667200001-v727-CAMEL-LOGO -->
+<!-- ── FAVICON & ICONS ──────────────────────────────────── -->
+<link rel="icon" type="image/svg+xml" href="images/kabuby-favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="images/kabuby-favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+<meta name="theme-color" content="#0b1120">
+<meta name="msapplication-TileColor" content="#0b1120">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -103,6 +109,10 @@ body {
 }
 .sidebar-logo .title span { color: var(--accent); }
 .sidebar-logo .domain { font-size: 10px; color: var(--text2); margin-top: 2px; }
+/* Logo camel hover glow */
+.sidebar-logo:hover svg { filter: drop-shadow(0 0 12px rgba(108,142,255,0.7)) !important; }
+.sidebar-logo { transition: background 0.2s; }
+.sidebar-logo:hover { background: rgba(108,142,255,0.04); }
 
 .sidebar-search {
   padding: 12px 16px;
@@ -1441,7 +1451,47 @@ tr:hover td { background: rgba(108,142,255,0.08); }
 <div id="login-screen">
   <div class="login-box">
     <div class="login-logo">
-      <div class="brand">Kabuby</div>
+      <!-- Kabuby Camel Logo -->
+      <div style="display:flex;justify-content:center;margin-bottom:16px">
+        <div style="width:72px;height:72px;filter:drop-shadow(0 0 16px rgba(108,142,255,0.6))">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="72" height="72">
+            <defs>
+              <radialGradient id="lgBg" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#0f1a35"/><stop offset="100%" stop-color="#0b1120"/></radialGradient>
+              <linearGradient id="lgCamel" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#8ba8ff"/><stop offset="50%" stop-color="#6c8eff"/><stop offset="100%" stop-color="#4a6fe8"/></linearGradient>
+              <filter id="lgGlow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              <filter id="lgSoftGlow"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            <circle cx="100" cy="100" r="100" fill="url(#lgBg)"/>
+            <ellipse cx="105" cy="115" rx="65" ry="50" fill="#6c8eff" fill-opacity=".06"/>
+            <polygon points="62,148 70,120 85,110 100,108 125,108 140,115 148,130 148,148 125,152 100,153 80,152" fill="url(#lgCamel)" filter="url(#lgGlow)"/>
+            <polygon points="62,148 70,120 80,135" fill="#8ba8ff" opacity=".45"/>
+            <polygon points="140,115 148,130 138,138" fill="#4a6fe8" opacity=".6"/>
+            <polygon points="82,110 92,85 103,82 108,110" fill="url(#lgCamel)" filter="url(#lgGlow)"/>
+            <polygon points="82,110 92,85 86,100" fill="#8ba8ff" opacity=".4"/>
+            <polygon points="108,110 116,88 124,85 128,110" fill="url(#lgCamel)" filter="url(#lgGlow)"/>
+            <polygon points="116,88 124,85 119,97" fill="#8ba8ff" opacity=".4"/>
+            <polygon points="128,110 138,90 148,85 150,110 140,115" fill="url(#lgCamel)" filter="url(#lgGlow)"/>
+            <polygon points="148,85 158,75 170,78 175,90 165,100 150,100 142,92" fill="url(#lgCamel)" filter="url(#lgGlow)"/>
+            <polygon points="148,85 158,75 153,86" fill="#8ba8ff" opacity=".45"/>
+            <polygon points="165,95 175,92 178,100 170,105 162,103" fill="#4a6fe8"/>
+            <polygon points="155,73 160,62 166,70 160,75" fill="#6c8eff" filter="url(#lgGlow)"/>
+            <circle cx="163" cy="84" r="6" fill="#34d399" filter="url(#lgSoftGlow)"/>
+            <circle cx="163" cy="84" r="3.5" fill="#0b1120"/>
+            <circle cx="163" cy="84" r="2" fill="#34d399"/>
+            <circle cx="160.5" cy="81.5" r="1" fill="white" opacity=".9"/>
+            <polygon points="70,152 78,152 76,175 68,175" fill="#3a58cc" opacity=".9"/>
+            <polygon points="80,150 88,150 87,175 79,175" fill="#4a6fe8" opacity=".9"/>
+            <polygon points="112,148 120,148 119,172 111,172" fill="#3a58cc" opacity=".9"/>
+            <polygon points="122,147 130,147 129,172 121,172" fill="#4a6fe8" opacity=".9"/>
+            <polygon points="62,140 52,135 50,145 58,148" fill="#4a6fe8" opacity=".7"/>
+            <circle cx="119" cy="87" r="2.5" fill="white" opacity=".45"/>
+            <circle cx="45" cy="55" r="2.5" fill="#34d399" opacity=".65" filter="url(#lgSoftGlow)"/>
+            <circle cx="165" cy="38" r="1.8" fill="#6c8eff" opacity=".7"/>
+            <circle cx="170" cy="155" r="2" fill="#34d399" opacity=".4" filter="url(#lgSoftGlow)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="brand" style="letter-spacing:6px;font-size:10px">KABUBY</div>
       <div class="name">Kabuby <span>Scout</span></div>
       <div class="sub">Portal de Importación Amazon</div>
     </div>
@@ -1466,11 +1516,59 @@ tr:hover td { background: rgba(108,142,255,0.08); }
 <aside class="sidebar">
 
   <!-- ── LOGO SISTEMA ─────────────────────────────────────── -->
-  <div class="sidebar-logo" style="cursor:pointer" onclick="showTab('home')">
-    <div class="brand">Kabuby</div>
-    <div class="system-name">🧭 Kabuby Intelligence</div>
-    <div class="system-sub">Sistema de Inteligencia Comercial</div>
-    <div class="system-badge">v1.0 · 5 módulos</div>
+  <div class="sidebar-logo" style="cursor:pointer;display:flex;align-items:center;gap:12px" onclick="showTab('home')">
+    <!-- Camel SVG logo inline -->
+    <div style="width:44px;height:44px;flex-shrink:0;filter:drop-shadow(0 0 8px rgba(108,142,255,0.5))">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="44" height="44">
+        <defs>
+          <radialGradient id="sbBg" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#0f1a35"/><stop offset="100%" stop-color="#0b1120"/></radialGradient>
+          <linearGradient id="sbCamel" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#8ba8ff"/><stop offset="50%" stop-color="#6c8eff"/><stop offset="100%" stop-color="#4a6fe8"/></linearGradient>
+          <filter id="sbGlow"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <circle cx="100" cy="100" r="100" fill="url(#sbBg)"/>
+        <!-- Cuerpo -->
+        <polygon points="62,148 70,120 85,110 100,108 125,108 140,115 148,130 148,148 125,152 100,153 80,152" fill="url(#sbCamel)" filter="url(#sbGlow)"/>
+        <polygon points="62,148 70,120 80,135" fill="#8ba8ff" opacity=".45"/>
+        <polygon points="140,115 148,130 138,138" fill="#4a6fe8" opacity=".6"/>
+        <!-- Joroba trasera -->
+        <polygon points="82,110 92,85 103,82 108,110" fill="url(#sbCamel)" filter="url(#sbGlow)"/>
+        <polygon points="82,110 92,85 86,100" fill="#8ba8ff" opacity=".4"/>
+        <!-- Joroba delantera -->
+        <polygon points="108,110 116,88 124,85 128,110" fill="url(#sbCamel)" filter="url(#sbGlow)"/>
+        <polygon points="116,88 124,85 119,97" fill="#8ba8ff" opacity=".4"/>
+        <!-- Cuello -->
+        <polygon points="128,110 138,90 148,85 150,110 140,115" fill="url(#sbCamel)" filter="url(#sbGlow)"/>
+        <!-- Cabeza -->
+        <polygon points="148,85 158,75 170,78 175,90 165,100 150,100 142,92" fill="url(#sbCamel)" filter="url(#sbGlow)"/>
+        <polygon points="148,85 158,75 153,86" fill="#8ba8ff" opacity=".45"/>
+        <!-- Hocico -->
+        <polygon points="165,95 175,92 178,100 170,105 162,103" fill="#4a6fe8"/>
+        <!-- Oreja -->
+        <polygon points="155,73 160,62 166,70 160,75" fill="#6c8eff" filter="url(#sbGlow)"/>
+        <!-- Ojo verde ✨ -->
+        <circle cx="163" cy="84" r="5" fill="#34d399" filter="url(#sbGlow)"/>
+        <circle cx="163" cy="84" r="3" fill="#0b1120"/>
+        <circle cx="163" cy="84" r="1.5" fill="#34d399"/>
+        <circle cx="161" cy="82" r="0.8" fill="white" opacity=".9"/>
+        <!-- Patas -->
+        <polygon points="70,152 78,152 76,175 68,175" fill="#3a58cc" opacity=".9"/>
+        <polygon points="80,150 88,150 87,175 79,175" fill="#4a6fe8" opacity=".9"/>
+        <polygon points="112,148 120,148 119,172 111,172" fill="#3a58cc" opacity=".9"/>
+        <polygon points="122,147 130,147 129,172 121,172" fill="#4a6fe8" opacity=".9"/>
+        <!-- Cola -->
+        <polygon points="62,140 52,135 50,145 58,148" fill="#4a6fe8" opacity=".7"/>
+        <!-- Destello joroba -->
+        <circle cx="119" cy="87" r="2" fill="white" opacity=".4"/>
+        <!-- Partícula verde decorativa -->
+        <circle cx="45" cy="55" r="2" fill="#34d399" opacity=".6" filter="url(#sbGlow)"/>
+      </svg>
+    </div>
+    <div>
+      <div class="brand" style="font-size:9px;letter-spacing:4px;margin-bottom:2px">KABUBY</div>
+      <div class="system-name" style="font-size:13px;font-weight:800;color:#e8f0fe">Intelligence</div>
+      <div class="system-sub" style="font-size:9px;color:#6c8eff;margin-top:1px">Portal de Importación</div>
+      <div class="system-badge" style="font-size:9px">v1.0 · 5 módulos</div>
+    </div>
   </div>
 
   <!-- ── MÓDULOS DEL SISTEMA ─────────────────────────────── -->
