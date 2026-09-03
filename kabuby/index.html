@@ -5314,7 +5314,7 @@ const ARB_PAISES=[
   {id:'BR',flag:'🇧🇷',nombre:'Brasil',   ml:'https://api.mercadolibre.com/sites/MLBR/search?q=',mlUrl:'https://www.mercadolivre.com.br/jm/search?as_word=',comision:.17,importacion:.25,envio:8},
   {id:'MX',flag:'🇲🇽',nombre:'México',   ml:'https://api.mercadolibre.com/sites/MLMX/search?q=',mlUrl:'https://www.mercadolibre.com.mx/jm/search?as_word=',comision:.17,importacion:.20,envio:7},
   {id:'CO',flag:'🇨🇴',nombre:'Colombia', ml:'https://api.mercadolibre.com/sites/MLCO/search?q=',mlUrl:'https://www.mercadolibre.com.co/jm/search?as_word=',comision:.15,importacion:.22,envio:8},
-  {id:'AR',flag:'🇦🇷',nombre:'Argentina',ml:'https://api.mercadolibre.com/sites/MLAC/search?q=',mlUrl:'https://www.mercadolibre.com.ar/jm/search?as_word=',comision:.17,importacion:.30,envio:9},
+  {id:'AR',flag:'🇦🇷',nombre:'Argentina',ml:'https://api.mercadolibre.com/sites/MLAR/search?q=',mlUrl:'https://www.mercadolibre.com.ar/jm/search?as_word=',comision:.17,importacion:.30,envio:9},
   {id:'CL',flag:'🇨🇱',nombre:'Chile',    ml:'https://api.mercadolibre.com/sites/MLCL/search?q=',mlUrl:'https://www.mercadolibre.cl/jm/search?as_word=',comision:.15,importacion:.18,envio:8},
   {id:'PE',flag:'🇵🇪',nombre:'Perú',     ml:'https://api.mercadolibre.com/sites/MLPE/search?q=',mlUrl:'https://www.mercadolibre.com.pe/jm/search?as_word=',comision:.15,importacion:.20,envio:8},
   {id:'UY',flag:'🇺🇾',nombre:'Uruguay',  ml:'https://api.mercadolibre.com/sites/MLUY/search?q=',mlUrl:'https://www.mercadolibre.com.uy/jm/search?as_word=',comision:.15,importacion:.20,envio:9},
@@ -5326,6 +5326,7 @@ const ARB_CATS=['💄 Skincare & Belleza','💊 Suplementos & Salud','🏋️ Fi
 let arbVista='cazador';
 let arbCands=[''];
 let arbResultados=[];
+
 
 function arbDbGet(k){try{return JSON.parse(localStorage.getItem(k)||'[]');}catch(e){return[];}}
 function arbDbSet(k,d){try{localStorage.setItem(k,JSON.stringify(d));}catch(e){}}
@@ -5467,7 +5468,7 @@ function arbRenderCands(){
   list.innerHTML=arbCands.map((c,i)=>
     '<div class="arb-cand-row">'+
     '<input class="arb-cand-inp" type="text" value="'+c.replace(/"/g,'&quot;')+'" placeholder="ej: cerave moisturizing cream..." '+
-    'oninput="arbCands['+i+']=this.value" onkeydown="if(event.key===\'Enter\'){arbAddCand()}">'+
+    'oninput="arbSetCand('+i+',this.value)" onkeydown="if(event.key===\'Enter\'){arbAddCand()}">'+
     '<button class="arb-cand-rm" onclick="arbRmCand('+i+')">✕</button>'+
     '</div>'
   ).join('');
@@ -5476,8 +5477,12 @@ function arbRenderCands(){
 window.arbAddCand=function(){arbCands.push('');arbRenderCands();const ins=document.querySelectorAll('.arb-cand-inp');if(ins.length)ins[ins.length-1].focus();};
 window.arbRmCand=function(i){arbCands.splice(i,1);if(arbCands.length===0)arbCands=[''];arbRenderCands();};
 window.arbLimpiar=function(){arbCands=[''];arbRenderCands();const r=document.getElementById('arb-resultados');if(r)r.innerHTML='';};
+// Función global para actualizar el valor de un candidato desde el HTML inline
+window.arbSetCand=function(i,val){arbCands[i]=val;};
 
 window.arbAnalizar=async function(){
+  // Leer valores actuales de los inputs por si el oninput no actualizó
+  document.querySelectorAll('.arb-cand-inp').forEach((inp,i)=>{arbCands[i]=inp.value;});
   const nombres=arbCands.filter(c=>c.trim().length>0);
   if(nombres.length===0){alert('Agrega al menos un producto para analizar');return;}
   const ganancia=parseFloat(document.getElementById('arb-ganancia')?.value)||20;
