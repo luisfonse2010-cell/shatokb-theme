@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
-<!-- BUILD: 2026-09-03 v7.2.4c — onclick URL absoluta kabuby.com/arbitrage/index.html>
-<!-- CF-CACHE-BUST: 1788443202191-v724c-ARBITRAGE-ABSOLUTE-URL -->
+<!-- BUILD: 2026-09-03 v7.2.5 — Cazador integrado como overlay fullscreen (sin routing CF Pages) -->
+<!-- CF-CACHE-BUST: 1788580800000-v725-ARBITRAGE-OVERLAY -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -1341,6 +1341,106 @@ tr:hover td { background: rgba(108,142,255,0.08); }
 /* Mini fuente bars debajo de cada keyword */
 .signal-mini-bars { display: flex; gap: 2px; align-items: flex-end; height: 14px; flex-shrink: 0; }
 .signal-mini-bar  { width: 5px; border-radius: 2px 2px 0 0; background: var(--bg3); transition: height 0.4s; }
+
+/* ── ARB OVERLAY v7.2.5 ─────────────────────────────────── */
+#arb-overlay{display:none;position:fixed;inset:0;z-index:10000;background:#060d1a;overflow:hidden;flex-direction:column;font-family:'Inter',sans-serif}
+#arb-overlay.arb-show{display:flex}
+.arb-hdr{display:flex;align-items:center;gap:16px;padding:12px 20px;background:#0b1427;border-bottom:1px solid #1e3a5f;flex-shrink:0;flex-wrap:wrap}
+.arb-logo{font-size:18px;font-weight:800;color:#e8f0fe;white-space:nowrap}
+.arb-logo span{color:#6c8eff}
+.arb-badge-live{background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.3);font-size:9px;padding:2px 8px;border-radius:10px;font-weight:800;letter-spacing:.5px}
+.arb-stats{display:flex;gap:16px;margin-left:auto;align-items:center}
+.arb-stat{text-align:center;min-width:60px}
+.arb-stat-v{font-size:20px;font-weight:900;color:#6c8eff;line-height:1}
+.arb-stat-l{font-size:9px;color:#7a91b8;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.arb-close-btn{margin-left:8px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:#f87171;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .2s}
+.arb-close-btn:hover{background:rgba(248,113,113,.25)}
+.arb-body{display:flex;flex:1;overflow:hidden}
+.arb-sb{width:220px;background:#0b1427;border-right:1px solid #1e3a5f;display:flex;flex-direction:column;gap:2px;padding:12px 8px;overflow-y:auto;flex-shrink:0}
+.arb-nav{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;color:#b8c8e8;transition:all .2s;border:none;background:none;width:100%;text-align:left}
+.arb-nav:hover{background:#162445;color:#e8f0fe}
+.arb-nav.arb-active{background:rgba(108,142,255,.15);color:#6c8eff;border-left:2px solid #6c8eff}
+.arb-nav-icon{font-size:16px;flex-shrink:0}
+.arb-nav-badge{margin-left:auto;background:rgba(248,113,113,.15);color:#f87171;border-radius:8px;padding:1px 6px;font-size:10px;font-weight:700}
+.arb-sep{height:1px;background:#1e3a5f;margin:8px 4px}
+.arb-ext-link{display:flex;align-items:center;gap:8px;padding:8px 12px;color:#7a91b8;font-size:11px;text-decoration:none;border-radius:8px;transition:all .2s}
+.arb-ext-link:hover{color:#b8c8e8;background:#162445}
+.arb-content{flex:1;overflow-y:auto;padding:20px;background:#060d1a}
+.arb-card{background:#0f1d35;border:1px solid #1e3a5f;border-radius:14px;padding:20px;margin-bottom:16px}
+.arb-card-title{font-size:16px;font-weight:800;color:#e8f0fe;margin-bottom:4px}
+.arb-card-sub{font-size:12px;color:#7a91b8}
+.arb-card-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.arb-grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){.arb-grid2{grid-template-columns:1fr}}
+.arb-label{font-size:11px;font-weight:700;color:#7a91b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.arb-input{width:100%;background:#162445;border:1px solid #26406a;border-radius:8px;padding:9px 12px;color:#e8f0fe;font-size:13px;font-family:inherit;outline:none;transition:border .2s}
+.arb-input:focus{border-color:#6c8eff}
+.arb-select{width:100%;background:#162445;border:1px solid #26406a;border-radius:8px;padding:9px 12px;color:#e8f0fe;font-size:13px;font-family:inherit;outline:none;cursor:pointer}
+.arb-igroup{margin-bottom:12px}
+.arb-btn-pri{background:linear-gradient(135deg,#4f6ef7,#6c8eff);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .2s;font-family:inherit}
+.arb-btn-pri:hover{opacity:.85}
+.arb-btn-pri:disabled{opacity:.4;cursor:not-allowed}
+.arb-btn-sec{background:rgba(108,142,255,.08);border:1px solid rgba(108,142,255,.2);color:#6c8eff;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.arb-btn-sec:hover{background:rgba(108,142,255,.18)}
+.arb-btn-suc{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);color:#34d399;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s}
+.arb-btn-suc:hover{background:rgba(52,211,153,.2)}
+.arb-btn-dan{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);color:#f87171;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit}
+.arb-paises-grid{display:grid;gap:6px;margin-top:8px}
+.arb-pais-cb{display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:6px 8px;background:#162445;border-radius:6px;color:#b8c8e8}
+.arb-pais-cb input{accent-color:#6c8eff}
+.arb-candidato-list{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.arb-cand-row{display:flex;gap:6px;align-items:center}
+.arb-cand-inp{flex:1;background:#162445;border:1px solid #26406a;border-radius:8px;padding:8px 12px;color:#e8f0fe;font-size:12px;font-family:inherit;outline:none}
+.arb-cand-inp:focus{border-color:#6c8eff}
+.arb-cand-rm{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);color:#f87171;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:13px;font-family:inherit}
+.arb-loading{display:flex;align-items:center;gap:12px;padding:24px;color:#7a91b8;font-size:13px}
+.arb-spinner{width:20px;height:20px;border:2px solid #1e3a5f;border-top-color:#6c8eff;border-radius:50%;animation:arbSpin .7s linear infinite;flex-shrink:0}
+@keyframes arbSpin{to{transform:rotate(360deg)}}
+.arb-empty{text-align:center;padding:48px 24px;color:#7a91b8}
+.arb-empty-icon{font-size:40px;margin-bottom:12px}
+.arb-empty-title{font-size:16px;font-weight:700;color:#b8c8e8;margin-bottom:6px}
+.arb-empty-desc{font-size:12px;line-height:1.6}
+.arb-prod-card{background:#0b1427;border:1px solid #1e3a5f;border-radius:12px;padding:16px;margin-bottom:12px}
+.arb-prod-card.arb-opp-alta{border-left:3px solid #34d399}
+.arb-prod-card.arb-opp-media{border-left:3px solid #fcd34d}
+.arb-prod-card.arb-opp-baja{border-left:3px solid #f87171}
+.arb-score{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:10px;font-size:16px;font-weight:900;flex-shrink:0}
+.arb-score.arb-sh{background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.3)}
+.arb-score.arb-sm{background:rgba(252,211,77,.12);color:#fcd34d;border:1px solid rgba(252,211,77,.2)}
+.arb-score.arb-sl{background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.2)}
+.arb-tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+.arb-tag-viral{background:rgba(244,114,182,.15);color:#f472b6;border:1px solid rgba(244,114,182,.2)}
+.arb-tag-tendencia{background:rgba(252,211,77,.12);color:#fcd34d;border:1px solid rgba(252,211,77,.2)}
+.arb-tag-evergreen{background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.2)}
+.arb-tag-prueba{background:rgba(192,132,252,.12);color:#c084fc;border:1px solid rgba(192,132,252,.2)}
+.arb-tag-escalar{background:rgba(252,211,77,.1);color:#fbbf24;border:1px solid rgba(252,211,77,.2)}
+.arb-tag-optimizar{background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.2)}
+.arb-paises-row{display:grid;gap:4px;margin:10px 0}
+.arb-pais-item{display:grid;grid-template-columns:28px 80px 70px 80px 90px;align-items:center;gap:6px;padding:6px 8px;background:#162445;border-radius:8px;font-size:11px}
+.arb-v0{color:#34d399;font-weight:700}
+.arb-v1{color:#fcd34d;font-weight:700}
+.arb-v2{color:#f97316;font-weight:700}
+.arb-v3{color:#f87171;font-weight:700}
+.arb-vent-bar{margin:10px 0;background:rgba(108,142,255,.05);border:1px solid rgba(108,142,255,.1);border-radius:8px;padding:10px 12px}
+.arb-vent-track{height:6px;background:#162445;border-radius:3px;margin:6px 0;overflow:hidden}
+.arb-vent-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#34d399,#6c8eff);transition:width .8s}
+.arb-margen-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0}
+.arb-margen-item{background:#162445;border-radius:8px;padding:10px;text-align:center}
+.arb-margen-fase{font-size:9px;font-weight:700;color:#7a91b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.arb-margen-val{font-size:18px;font-weight:900;margin-bottom:2px}
+.arb-margen-det{font-size:10px;color:#7a91b8}
+.arb-strat{background:rgba(108,142,255,.04);border:1px solid rgba(108,142,255,.12);border-radius:8px;padding:10px;margin-top:8px}
+.arb-acciones{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.arb-alerta{display:flex;gap:12px;padding:12px;border-radius:10px;margin-bottom:10px;align-items:flex-start}
+.arb-alerta-urgente{background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.2)}
+.arb-alerta-success{background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.18)}
+.arb-alerta-warning{background:rgba(252,211,77,.06);border:1px solid rgba(252,211,77,.18)}
+.arb-tabs{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap}
+.arb-tab{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #26406a;background:none;color:#7a91b8;font-family:inherit;transition:all .2s}
+.arb-tab.arb-tab-act{background:rgba(108,142,255,.15);border-color:rgba(108,142,255,.3);color:#6c8eff}
+.arb-divider{height:1px;background:#1e3a5f;margin:12px 0}
+.arb-note-ta{width:100%;background:#162445;border:1px solid #26406a;border-radius:8px;padding:8px 12px;color:#e8f0fe;font-size:11px;font-family:inherit;resize:vertical;min-height:48px;outline:none}
+.arb-note-ta:focus{border-color:#6c8eff}
 </style>
 </head>
 <body>
@@ -1458,8 +1558,8 @@ tr:hover td { background: rgba(108,142,255,0.08); }
       </div>
     </div>
 
-    <!-- Módulo Cazador de Arbitraje Miami→LATAM ✅ ACTIVO -->
-    <div class="sidebar-item modulo" onclick="window.open('https://kabuby.com/kabuby/arbitrage/index.html','_blank')" id="nav-mod-arbitrage">
+    <!-- Módulo Cazador de Arbitraje Miami→LATAM ✅ ACTIVO v7.2.5 -->
+    <div class="sidebar-item modulo" onclick="arbAbrir()" id="nav-mod-arbitrage">
       <div class="modulo-icon" style="background:rgba(52,211,153,.15);color:#34d399">🎯</div>
       <div class="modulo-info">
         <div class="modulo-name">Cazador de Arbitraje</div>
@@ -5147,6 +5247,563 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   setTimeout(checkChromeStoragePendingProduct, 500);
 });
+</script>
+
+<!-- ══ CAZADOR DE ARBITRAJE OVERLAY v7.2.5 ══════════════════ -->
+<div id="arb-overlay">
+  <header class="arb-hdr">
+    <div class="arb-logo">🦈 Kab<span>uby</span> <span class="arb-badge-live">v2.0</span></div>
+    <div style="font-size:12px;color:#94a3b8;font-weight:500">· Cazador de Arbitraje Miami→LATAM · 8 países</div>
+    <div class="arb-stats">
+      <div class="arb-stat"><div class="arb-stat-v" id="arbs-activos">0</div><div class="arb-stat-l">Activos</div></div>
+      <div class="arb-stat"><div class="arb-stat-v" id="arbs-ops" style="color:#34d399">0</div><div class="arb-stat-l">Oportunidades</div></div>
+      <div class="arb-stat"><div class="arb-stat-v" id="arbs-ganado" style="color:#fcd34d">$0</div><div class="arb-stat-l">Ganado</div></div>
+      <div class="arb-stat"><div class="arb-stat-v" id="arbs-alertas" style="color:#f87171">0</div><div class="arb-stat-l">Alertas</div></div>
+    </div>
+    <button class="arb-close-btn" onclick="arbCerrar()">✕ Cerrar</button>
+  </header>
+  <div class="arb-body">
+    <aside class="arb-sb">
+      <button class="arb-nav arb-active" data-arb-vista="cazador" onclick="arbNav('cazador',this)"><span class="arb-nav-icon">🎯</span> Cazador</button>
+      <button class="arb-nav" data-arb-vista="portafolio" onclick="arbNav('portafolio',this)"><span class="arb-nav-icon">📋</span> Portafolio</button>
+      <button class="arb-nav" data-arb-vista="alertas" onclick="arbNav('alertas',this)"><span class="arb-nav-icon">🔔</span> Alertas <span class="arb-nav-badge" id="arb-badge-alertas"></span></button>
+      <button class="arb-nav" data-arb-vista="calculadora" onclick="arbNav('calculadora',this)"><span class="arb-nav-icon">💰</span> Calculadora</button>
+      <div class="arb-sep"></div>
+      <a href="https://ads.tiktok.com/business/creativecenter/inspiration/topproducts/pc/en" target="_blank" class="arb-ext-link">🎵 TikTok Trends</a>
+      <a href="https://www.amazon.com/gp/movers-and-shakers/" target="_blank" class="arb-ext-link">📦 Amazon Movers</a>
+      <a href="https://trends.google.com/trends/" target="_blank" class="arb-ext-link">📈 Google Trends</a>
+      <a href="https://www.alibaba.com/" target="_blank" class="arb-ext-link">🏭 Alibaba</a>
+    </aside>
+    <main class="arb-content" id="arb-main"></main>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+const ARB_DB_PORT='kabuby_portfolio_v2';
+const ARB_DB_OPS='kabuby_oportunidades_v2';
+
+const ARB_PAISES=[
+  {id:'BR',flag:'🇧🇷',nombre:'Brasil',   ml:'https://api.mercadolibre.com/sites/MLBR/search?q=',mlUrl:'https://www.mercadolivre.com.br/jm/search?as_word=',comision:.17,importacion:.25,envio:8},
+  {id:'MX',flag:'🇲🇽',nombre:'México',   ml:'https://api.mercadolibre.com/sites/MLMX/search?q=',mlUrl:'https://www.mercadolibre.com.mx/jm/search?as_word=',comision:.17,importacion:.20,envio:7},
+  {id:'CO',flag:'🇨🇴',nombre:'Colombia', ml:'https://api.mercadolibre.com/sites/MLCO/search?q=',mlUrl:'https://www.mercadolibre.com.co/jm/search?as_word=',comision:.15,importacion:.22,envio:8},
+  {id:'AR',flag:'🇦🇷',nombre:'Argentina',ml:'https://api.mercadolibre.com/sites/MLAC/search?q=',mlUrl:'https://www.mercadolibre.com.ar/jm/search?as_word=',comision:.17,importacion:.30,envio:9},
+  {id:'CL',flag:'🇨🇱',nombre:'Chile',    ml:'https://api.mercadolibre.com/sites/MLCL/search?q=',mlUrl:'https://www.mercadolibre.cl/jm/search?as_word=',comision:.15,importacion:.18,envio:8},
+  {id:'PE',flag:'🇵🇪',nombre:'Perú',     ml:'https://api.mercadolibre.com/sites/MLPE/search?q=',mlUrl:'https://www.mercadolibre.com.pe/jm/search?as_word=',comision:.15,importacion:.20,envio:8},
+  {id:'UY',flag:'🇺🇾',nombre:'Uruguay',  ml:'https://api.mercadolibre.com/sites/MLUY/search?q=',mlUrl:'https://www.mercadolibre.com.uy/jm/search?as_word=',comision:.15,importacion:.20,envio:9},
+  {id:'EC',flag:'🇪🇨',nombre:'Ecuador',  ml:'https://api.mercadolibre.com/sites/MLEC/search?q=',mlUrl:'https://www.mercadolibre.com.ec/jm/search?as_word=',comision:.15,importacion:.18,envio:8},
+];
+
+const ARB_CATS=['💄 Skincare & Belleza','💊 Suplementos & Salud','🏋️ Fitness & Deporte','🐾 Mascotas','🏠 Hogar & Cocina','📱 Gadgets & Tech','👶 Bebés & Niños','🌿 Natural & Orgánico','🎮 Entretenimiento','✈️ Viajes & Outdoor','Otro'];
+
+let arbVista='cazador';
+let arbCands=[''];
+let arbResultados=[];
+
+function arbDbGet(k){try{return JSON.parse(localStorage.getItem(k)||'[]');}catch(e){return[];}}
+function arbDbSet(k,d){try{localStorage.setItem(k,JSON.stringify(d));}catch(e){}}
+function arbDbAdd(k,item){const a=arbDbGet(k);a.unshift({...item,id:Date.now().toString(),fecha:new Date().toISOString()});arbDbSet(k,a);return a[0];}
+function arbDbUpd(k,id,upd){const a=arbDbGet(k);const i=a.findIndex(x=>x.id===id);if(i>=0){a[i]={...a[i],...upd,updatedAt:new Date().toISOString()};arbDbSet(k,a);}}
+function arbDbDel(k,id){arbDbSet(k,arbDbGet(k).filter(x=>x.id!==id));}
+function arbFmt(n){return '$'+Number(n).toFixed(2);}
+function arbFmtFecha(iso){if(!iso)return'—';const d=new Date(iso);return d.toLocaleDateString('es',{day:'2-digit',month:'short',year:'numeric'});}
+function arbDias(iso){if(!iso)return 0;return Math.floor((Date.now()-new Date(iso).getTime())/86400000);}
+
+function arbCalcMargen(costoAmazon,gananciaDeseada,paisId){
+  const p=ARB_PAISES.find(x=>x.id===paisId)||ARB_PAISES[0];
+  const precioML=gananciaDeseada+(gananciaDeseada*p.comision)+p.envio;
+  const precioCliente=precioML+(precioML*p.importacion);
+  const f1=costoAmazon;const m1=precioML-f1-p.envio;
+  const f2=costoAmazon*0.75;const m2=precioML-f2-p.envio;
+  const f3=costoAmazon*0.45;const m3=precioML-f3-p.envio;
+  return{
+    precioCliente:Math.round(precioCliente*100)/100,
+    precioML:Math.round(precioML*100)/100,
+    f1:{costo:f1,margen:Math.round(m1*100)/100,pct:Math.round((m1/precioML)*100)},
+    f2:{costo:Math.round(f2*100)/100,margen:Math.round(m2*100)/100,pct:Math.round((m2/precioML)*100)},
+    f3:{costo:Math.round(f3*100)/100,margen:Math.round(m3*100)/100,pct:Math.round((m3/precioML)*100)},
+  };
+}
+
+function arbClasificarDemanda(totalVend){
+  if(totalVend===0)return{tipo:'evergreen',label:'🌳 SIN COMPETENCIA',clase:'arb-tag-evergreen',duracion:'∞',estrategia:'Mercado virgen — entra ya con Fase 1, mueve rápido a Fase 2.',color:'#34d399'};
+  if(totalVend<=5)return{tipo:'tendencia',label:'📈 BAJA COMP.',clase:'arb-tag-tendencia',duracion:'8-12 sem',estrategia:'Prueba con Fase 1 (2-3 semanas) → Fase 2 con 5+ ventas confirmadas.',color:'#fcd34d'};
+  if(totalVend<=20)return{tipo:'tendencia',label:'⚡ MEDIA COMP.',clase:'arb-tag-tendencia',duracion:'4-6 sem',estrategia:'Entra con precio competitivo. Diferénciate en fotos y descripción.',color:'#f97316'};
+  return{tipo:'saturado',label:'⚠️ SATURADO',clase:'arb-tag-viral',duracion:'—',estrategia:'Mercado saturado. Considera Fase 3 o busca un nicho específico.',color:'#f87171'};
+}
+
+function arbCalcScore(vendedores,precioComp,precioTuyo){
+  let s=0;
+  if(vendedores===0)s+=40;
+  else if(vendedores<=3)s+=30;
+  else if(vendedores<=8)s+=18;
+  else if(vendedores<=20)s+=8;
+  else s-=10;
+  if(precioComp===0)s+=20;
+  else if(precioTuyo<precioComp)s+=15;
+  else if(precioTuyo>precioComp*1.3)s-=15;
+  else s+=5;
+  s+=20;
+  return Math.min(100,Math.max(0,s));
+}
+
+function arbEstimarVentana(totalVend,tipo){
+  if(tipo==='evergreen'){return{semanas:'∞',estado:'abierta',pct:100};}
+  if(totalVend===0)return{semanas:'10-14',estado:'abierta',pct:95};
+  if(totalVend<=5)return{semanas:'6-10',estado:'abierta',pct:75};
+  if(totalVend<=20)return{semanas:'2-6',estado:'cerrando',pct:40};
+  return{semanas:'<2',estado:'cerrada',pct:10};
+}
+
+function arbColorV(n){
+  if(n===0)return'arb-v0';
+  if(n<=4)return'arb-v1';
+  if(n<=12)return'arb-v2';
+  return'arb-v3';
+}
+
+// ── Abrir/Cerrar ──
+window.arbAbrir=function(){
+  document.getElementById('arb-overlay').classList.add('arb-show');
+  document.body.style.overflow='hidden';
+  arbNav('cazador',document.querySelector('.arb-nav'));
+};
+window.arbCerrar=function(){
+  document.getElementById('arb-overlay').classList.remove('arb-show');
+  document.body.style.overflow='';
+};
+
+// ── Navegación ──
+window.arbNav=function(vista,btn){
+  arbVista=vista;
+  document.querySelectorAll('.arb-nav').forEach(el=>el.classList.remove('arb-active'));
+  if(btn)btn.classList.add('arb-active');
+  else{const el=document.querySelector('[data-arb-vista="'+vista+'"]');if(el)el.classList.add('arb-active');}
+  const main=document.getElementById('arb-main');
+  if(!main)return;
+  switch(vista){
+    case 'cazador':main.innerHTML=arbHtmlCazador();arbBindCazador();break;
+    case 'portafolio':main.innerHTML=arbHtmlPortafolio();arbBindPortafolio();break;
+    case 'alertas':main.innerHTML=arbHtmlAlertas();break;
+    case 'calculadora':main.innerHTML=arbHtmlCalc();break;
+    default:main.innerHTML=arbHtmlCazador();arbBindCazador();
+  }
+  arbActualizarStats();
+};
+
+function arbActualizarStats(){
+  const port=arbDbGet(ARB_DB_PORT);
+  const ops=arbDbGet(ARB_DB_OPS);
+  const activos=port.filter(p=>p.fase_actual!=='cerrado'&&p.fase_actual!=='pausado');
+  const ganado=port.reduce((s,p)=>s+(p.ganancia_total||0),0);
+  const alertas=port.filter(p=>p.alerta&&p.alerta!=='').length;
+  const el=id=>document.getElementById(id);
+  if(el('arbs-activos'))el('arbs-activos').textContent=activos.length;
+  if(el('arbs-ops'))el('arbs-ops').textContent=ops.filter(o=>o.estado==='nueva').length;
+  if(el('arbs-ganado'))el('arbs-ganado').textContent=arbFmt(ganado);
+  if(el('arbs-alertas'))el('arbs-alertas').textContent=alertas;
+  const badge=document.getElementById('arb-badge-alertas');
+  if(badge)badge.textContent=alertas||'';
+}
+
+// ══ CAZADOR ══
+function arbHtmlCazador(){
+  return '<div class="arb-card">'+
+  '<div class="arb-card-hdr"><div><div class="arb-card-title">🎯 Cazador de Oportunidades</div><div class="arb-card-sub">Escribe productos que viste en TikTok, Amazon o donde sea — analizo todos los países LATAM</div></div>'+
+  '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+  '<a href="https://ads.tiktok.com/business/creativecenter/inspiration/topproducts/pc/en" target="_blank" class="arb-btn-sec">🎵 TikTok</a>'+
+  '<a href="https://www.amazon.com/gp/movers-and-shakers/" target="_blank" class="arb-btn-sec">📦 Amazon Movers</a>'+
+  '</div></div>'+
+  '<div class="arb-grid2">'+
+  '<div>'+
+  '<div class="arb-label">📋 Productos candidatos (uno por línea)</div>'+
+  '<div class="arb-candidato-list" id="arb-cand-list"></div>'+
+  '<button class="arb-btn-sec" style="width:100%;justify-content:center" onclick="arbAddCand()">+ Agregar producto</button>'+
+  '</div>'+
+  '<div>'+
+  '<div class="arb-igroup"><div class="arb-label">💰 Ganancia deseada por venta (USD)</div><input class="arb-input" type="number" id="arb-ganancia" value="20" min="5" max="500"></div>'+
+  '<div class="arb-igroup"><div class="arb-label">⚖️ Peso estimado</div><select class="arb-select" id="arb-peso"><option value="150">Muy liviano (&lt;200g) — sobres, cremas</option><option value="350" selected>Liviano (200-500g) — frascos, suplementos</option><option value="750">Medio (500g-1kg) — kits, sets</option><option value="1500">Pesado (+1kg)</option></select></div>'+
+  '<div class="arb-igroup"><div class="arb-label">🌎 Países a analizar</div><div class="arb-paises-grid" style="grid-template-columns:1fr 1fr" id="arb-paises-check">'+
+  ARB_PAISES.map(p=>'<label class="arb-pais-cb"><input type="checkbox" value="'+p.id+'" checked> '+p.flag+' '+p.nombre+'</label>').join('')+
+  '</div></div>'+
+  '</div>'+
+  '</div>'+
+  '<div style="margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">'+
+  '<button class="arb-btn-pri" onclick="arbAnalizar()" id="arb-btn-analizar">🚀 Analizar en todos los países</button>'+
+  '<button class="arb-btn-sec" onclick="arbLimpiar()">🗑️ Limpiar</button>'+
+  '<span style="font-size:11px;color:#7a91b8" id="arb-status"></span>'+
+  '</div>'+
+  '</div>'+
+  '<div id="arb-resultados"></div>';
+}
+
+function arbBindCazador(){
+  if(arbCands.length===0)arbCands=[''];
+  arbRenderCands();
+}
+
+function arbRenderCands(){
+  const list=document.getElementById('arb-cand-list');
+  if(!list)return;
+  list.innerHTML=arbCands.map((c,i)=>
+    '<div class="arb-cand-row">'+
+    '<input class="arb-cand-inp" type="text" value="'+c.replace(/"/g,'&quot;')+'" placeholder="ej: cerave moisturizing cream..." '+
+    'oninput="arbCands['+i+']=this.value" onkeydown="if(event.key===\'Enter\'){arbAddCand()}">'+
+    '<button class="arb-cand-rm" onclick="arbRmCand('+i+')">✕</button>'+
+    '</div>'
+  ).join('');
+}
+
+window.arbAddCand=function(){arbCands.push('');arbRenderCands();const ins=document.querySelectorAll('.arb-cand-inp');if(ins.length)ins[ins.length-1].focus();};
+window.arbRmCand=function(i){arbCands.splice(i,1);if(arbCands.length===0)arbCands=[''];arbRenderCands();};
+window.arbLimpiar=function(){arbCands=[''];arbRenderCands();const r=document.getElementById('arb-resultados');if(r)r.innerHTML='';};
+
+window.arbAnalizar=async function(){
+  const nombres=arbCands.filter(c=>c.trim().length>0);
+  if(nombres.length===0){alert('Agrega al menos un producto para analizar');return;}
+  const ganancia=parseFloat(document.getElementById('arb-ganancia')?.value)||20;
+  const peso=parseInt(document.getElementById('arb-peso')?.value)||350;
+  const paisesSeleccionados=[...document.querySelectorAll('#arb-paises-check input:checked')].map(el=>el.value);
+  if(paisesSeleccionados.length===0){alert('Selecciona al menos un país');return;}
+
+  const btn=document.getElementById('arb-btn-analizar');
+  const status=document.getElementById('arb-status');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Analizando...';}
+
+  const container=document.getElementById('arb-resultados');
+  if(container)container.innerHTML='<div class="arb-loading"><div class="arb-spinner"></div> Consultando Mercado Libre en '+paisesSeleccionados.length+' países para '+nombres.length+' producto(s)...</div>';
+
+  arbResultados=[];
+
+  for(let i=0;i<nombres.length;i++){
+    const nombre=nombres[i].trim();
+    if(status)status.textContent='('+(i+1)+'/'+nombres.length+') Analizando: '+nombre+'...';
+    const res=await arbAnalizarUno(nombre,ganancia,peso,paisesSeleccionados);
+    arbResultados.push(res);
+  }
+
+  arbResultados.sort((a,b)=>b.scoreMax-a.scoreMax);
+  if(btn){btn.disabled=false;btn.textContent='🚀 Analizar en todos los países';}
+  if(status)status.textContent='✅ '+nombres.length+' producto(s) analizados';
+  if(container)container.innerHTML=arbHtmlResultados(arbResultados);
+};
+
+async function arbAnalizarUno(nombre,ganancia,peso,paises){
+  const paisesData={};
+  let scoreMax=0;let mejorPais=null;
+
+  for(const paisId of paises){
+    const pais=ARB_PAISES.find(p=>p.id===paisId);
+    if(!pais)continue;
+    let vendedores=null;let precioPromedio=0;
+    try{
+      const url=pais.ml+encodeURIComponent(nombre)+'&limit=10';
+      const res=await fetch(url,{signal:AbortSignal.timeout(6000)});
+      if(res.ok){
+        const data=await res.json();
+        vendedores=data.paging?.total||0;
+        const items=data.results||[];
+        if(items.length>0){const precios=items.map(it=>it.price).filter(pp=>pp>0);precioPromedio=precios.length>0?precios.reduce((a,b)=>a+b,0)/precios.length:0;}
+      }
+    }catch(e){vendedores=null;}
+    const margen=arbCalcMargen(ganancia*1.5,ganancia,paisId);
+    const score=vendedores!==null?arbCalcScore(vendedores,precioPromedio,margen.precioML):0;
+    if(score>scoreMax){scoreMax=score;mejorPais=paisId;}
+    paisesData[paisId]={vendedores,precioPromedio:Math.round(precioPromedio*100)/100,margen,score,urlML:pais.mlUrl+encodeURIComponent(nombre)};
+  }
+
+  const totalVend=Object.values(paisesData).reduce((s,p)=>s+(p.vendedores||0),0);
+  const demanda=arbClasificarDemanda(totalVend);
+  const ventana=arbEstimarVentana(totalVend,demanda.tipo);
+  return{nombre,ganancia,peso,paises:paisesData,demanda,ventana,scoreMax,mejorPais,totalVend};
+}
+
+function arbHtmlResultados(resultados){
+  if(resultados.length===0)return'';
+  return '<div class="arb-card"><div class="arb-card-hdr"><div class="arb-card-title">📊 Resultados</div><span style="font-size:11px;color:#7a91b8">'+resultados.length+' producto(s) — ordenados por oportunidad</span></div>'+
+    resultados.map((r,idx)=>arbHtmlProdCard(r,idx)).join('')+'</div>';
+}
+
+function arbHtmlProdCard(r,idx){
+  const nivel=r.scoreMax>=70?'arb-opp-alta':r.scoreMax>=40?'arb-opp-media':'arb-opp-baja';
+  const sc=r.scoreMax>=70?'arb-sh':r.scoreMax>=40?'arb-sm':'arb-sl';
+  const medallas=['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
+  const vc=r.ventana.estado==='abierta'?'#34d399':r.ventana.estado==='cerrando'?'#fcd34d':'#f87171';
+
+  const paisesHtml=Object.entries(r.paises).map(([paisId,data])=>{
+    const pais=ARB_PAISES.find(p=>p.id===paisId);
+    const v=data.vendedores;const vs=v===null?'?':v;
+    const vc2=v===null?'':arbColorV(v);
+    const st=v===null?'—':v===0?'🔥 Nadie':v<=4?'✅ Entrar':v<=12?'⚡ Pronto':'⚠️ Vigilar';
+    const stColor=v===0?'#34d399':v<=4?'#fcd34d':v<=12?'#f97316':'#f87171';
+    return '<div class="arb-pais-item">'+
+      '<span>'+pais.flag+'</span>'+
+      '<span style="font-weight:600">'+pais.nombre+'</span>'+
+      '<span class="'+vc2+'" style="font-weight:700">'+vs+' vend.</span>'+
+      '<span style="color:#94a3b8">'+( data.precioPromedio>0?arbFmt(data.precioPromedio):'—')+'</span>'+
+      '<span style="color:'+stColor+';font-weight:700">'+st+'</span>'+
+      '</div>';
+  }).join('');
+
+  const mejorData=r.mejorPais?r.paises[r.mejorPais]:null;
+  const mg=mejorData?mejorData.margen:null;
+
+  const rEnc=encodeURIComponent(JSON.stringify(r));
+
+  return '<div class="arb-prod-card '+nivel+'" style="margin-bottom:14px">'+
+    '<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px">'+
+    '<div class="arb-score '+sc+'">'+r.scoreMax+'</div>'+
+    '<div style="flex:1">'+
+    '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+
+    '<span>'+( medallas[idx]||'•')+'</span>'+
+    '<span style="font-size:15px;font-weight:800;color:#e8f0fe">'+r.nombre+'</span>'+
+    '<span class="arb-tag '+r.demanda.clase+'">'+r.demanda.label+'</span>'+
+    '</div>'+
+    '<div style="font-size:11px;color:#7a91b8;margin-top:3px">'+Object.keys(r.paises).length+' países analizados · '+r.totalVend+' vendedores totales LATAM</div>'+
+    '</div>'+
+    '<div style="text-align:right;flex-shrink:0">'+
+    '<div style="font-size:9px;color:#7a91b8;font-weight:700;text-transform:uppercase">VENTANA</div>'+
+    '<div style="font-size:16px;font-weight:900;color:'+vc+'">'+r.ventana.semanas+' sem.</div>'+
+    '</div>'+
+    '</div>'+
+    '<div style="font-size:9px;font-weight:700;color:#7a91b8;letter-spacing:1px;margin-bottom:6px">VENDEDORES EN MERCADO LIBRE POR PAÍS</div>'+
+    '<div class="arb-paises-row" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))">'+paisesHtml+'</div>'+
+    '<div class="arb-vent-bar">'+
+    '<div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:#94a3b8">Ventana de oportunidad — '+r.demanda.duracion+'</span><span style="color:'+vc+';font-weight:700">'+(r.ventana.estado==='abierta'?'🟢 ABIERTA':r.ventana.estado==='cerrando'?'🟡 CERRANDO':'🔴 CERRADA')+'</span></div>'+
+    '<div class="arb-vent-track"><div class="arb-vent-fill" style="width:'+r.ventana.pct+'%"></div></div>'+
+    '</div>'+
+    (mg?'<div style="font-size:9px;font-weight:700;color:#7a91b8;letter-spacing:1px;margin:10px 0 6px">MARGEN POR FASE — '+(ARB_PAISES.find(p=>p.id===r.mejorPais)?.flag)+' '+(ARB_PAISES.find(p=>p.id===r.mejorPais)?.nombre)+'</div>'+
+    '<div class="arb-margen-row">'+
+    '<div class="arb-margen-item"><div class="arb-margen-fase">FASE 1 · AMAZON</div><div class="arb-margen-val" style="color:'+(mg.f1.pct>=15?'#34d399':mg.f1.pct>=5?'#fcd34d':'#f87171')+'">'+arbFmt(mg.f1.margen)+'</div><div class="arb-margen-det">'+mg.f1.pct+'% · Costo '+arbFmt(mg.f1.costo)+'</div></div>'+
+    '<div class="arb-margen-item"><div class="arb-margen-fase">FASE 2 · MAYORISTA</div><div class="arb-margen-val" style="color:'+(mg.f2.pct>=20?'#34d399':'#fcd34d')+'">'+arbFmt(mg.f2.margen)+'</div><div class="arb-margen-det">'+mg.f2.pct+'% · Costo '+arbFmt(mg.f2.costo)+'</div></div>'+
+    '<div class="arb-margen-item"><div class="arb-margen-fase">FASE 3 · IMPORTAR</div><div class="arb-margen-val" style="color:#34d399">'+arbFmt(mg.f3.margen)+'</div><div class="arb-margen-det">'+mg.f3.pct+'% · Costo '+arbFmt(mg.f3.costo)+'</div></div>'+
+    '</div>':"")+'<div class="arb-strat"><div style="font-size:10px;font-weight:700;color:#6c8eff;margin-bottom:4px">💡 ESTRATEGIA</div><div style="font-size:11px;color:#b8c8e8;line-height:1.6">'+r.demanda.estrategia+'</div></div>'+
+    '<div class="arb-acciones">'+
+    '<button class="arb-btn-suc" onclick="arbGuardar(\'' +rEnc+ '\')">✅ Guardar</button>'+
+    Object.entries(r.paises).slice(0,3).map(([pid,data])=>'<a href="'+data.urlML+'" target="_blank" class="arb-btn-sec">'+( ARB_PAISES.find(p=>p.id===pid)?.flag)+' ML '+pid+'</a>').join('')+
+    '<a href="https://www.amazon.com/s?k='+encodeURIComponent(r.nombre)+'" target="_blank" class="arb-btn-sec">📦 Amazon</a>'+
+    '</div>'+
+    '</div>';
+}
+
+window.arbGuardar=function(enc){
+  try{
+    const r=JSON.parse(decodeURIComponent(enc));
+    const vpp={};
+    Object.entries(r.paises).forEach(([k,v])=>{vpp['v_'+k.toLowerCase()]=v.vendedores||0;});
+    const item={nombre:r.nombre,peso:r.peso,tipo_demanda:r.demanda.tipo,fase_actual:'prueba',ganancia_deseada:r.ganancia,score_inicial:r.scoreMax,ventana_semanas:r.ventana.semanas,ventas_total:0,ganancia_total:0,alerta:'',paises_activos:Object.keys(r.paises),...vpp};
+    arbDbAdd(ARB_DB_PORT,item);
+    arbDbAdd(ARB_DB_OPS,{nombre:r.nombre,estado:'nueva',score:r.scoreMax});
+    alert('✅ "'+r.nombre+'" guardado en portafolio — Fase 1 Prueba');
+    arbActualizarStats();
+  }catch(e){alert('Error: '+e.message);}
+};
+
+// ══ PORTAFOLIO ══
+function arbHtmlPortafolio(){
+  const items=arbDbGet(ARB_DB_PORT);
+  const activos=items.filter(p=>p.fase_actual!=='cerrado');
+  const cerrados=items.filter(p=>p.fase_actual==='cerrado');
+  if(activos.length===0)return '<div class="arb-card"><div class="arb-empty"><div class="arb-empty-icon">📦</div><div class="arb-empty-title">Portafolio vacío</div><div class="arb-empty-desc">Usa el Cazador para encontrar oportunidades y guardarlas aquí.</div><button class="arb-btn-pri" style="margin-top:16px" onclick="arbNav(\'cazador\',null)">🎯 Ir al Cazador</button></div></div>';
+  const tabs='<div class="arb-tabs">'+
+    '<button class="arb-tab arb-tab-act" onclick="arbFiltPort(\'todos\',this)">Todos ('+activos.length+')</button>'+
+    '<button class="arb-tab" onclick="arbFiltPort(\'prueba\',this)">⚗️ Prueba ('+activos.filter(p=>p.fase_actual==='prueba').length+')</button>'+
+    '<button class="arb-tab" onclick="arbFiltPort(\'escalar\',this)">📈 Escalar ('+activos.filter(p=>p.fase_actual==='escalar').length+')</button>'+
+    '<button class="arb-tab" onclick="arbFiltPort(\'optimizar\',this)">🚀 Optimizar ('+activos.filter(p=>p.fase_actual==='optimizar').length+')</button>'+
+    '</div>';
+  return '<div class="arb-card">'+
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">'+
+    '<div><div style="font-size:18px;font-weight:800">📋 Mi Portafolio</div><div style="font-size:12px;color:#7a91b8">'+activos.length+' activos · '+cerrados.length+' cerrados</div></div>'+
+    '<button class="arb-btn-pri" onclick="arbNav(\'cazador\',null)">+ Nueva Oportunidad</button>'+
+    '</div>'+tabs+
+    '<div id="arb-port-list">'+activos.map(p=>arbHtmlPortItem(p)).join('')+'</div>'+
+    '</div>';
+}
+
+function arbHtmlPortItem(p){
+  const dias=arbDias(p.fecha);
+  return '<div class="arb-prod-card" id="arb-pi-'+p.id+'">'+
+    '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">'+
+    '<div style="flex:1">'+
+    '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px">'+
+    '<span style="font-weight:800;color:#e8f0fe">'+p.nombre+'</span>'+
+    '<span class="arb-tag arb-tag-'+(p.tipo_demanda||'tendencia')+'">'+(p.tipo_demanda==='viral'?'⚡ VIRAL':p.tipo_demanda==='evergreen'?'🌳 EVERGREEN':p.tipo_demanda==='saturado'?'⚠️ SATURADO':'📈 TENDENCIA')+'</span>'+
+    '<span class="arb-tag arb-tag-'+(p.fase_actual||'prueba')+'">'+( p.fase_actual||'prueba').toUpperCase()+'</span>'+
+    '</div>'+
+    '<div style="font-size:11px;color:#7a91b8">'+dias+' días · Meta: '+arbFmt(p.ganancia_deseada||20)+'/venta</div>'+
+    '</div>'+
+    '<div style="text-align:right">'+
+    '<div style="font-size:22px;font-weight:900;color:#34d399">'+arbFmt(p.ganancia_total||0)+'</div>'+
+    '<div style="font-size:10px;color:#7a91b8">ganado total</div>'+
+    '<div style="font-size:14px;font-weight:700;color:#6c8eff">'+( p.ventas_total||0)+' ventas</div>'+
+    '</div>'+
+    '</div>'+
+    '<div style="display:flex;gap:5px;margin:10px 0;flex-wrap:wrap">'+
+    ['prueba','escalar','optimizar','pausado','cerrado'].map(f=>'<button onclick="arbCambiarFase(\''+p.id+'\',\''+f+'\')" style="padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid '+(p.fase_actual===f?'rgba(108,142,255,.4)':'rgba(108,142,255,.15)')+';background:'+(p.fase_actual===f?'rgba(108,142,255,.2)':'none')+';color:'+(p.fase_actual===f?'#6c8eff':'#7a91b8')+';font-family:inherit">'+
+    (f==='prueba'?'⚗️':f==='escalar'?'📈':f==='optimizar'?'🚀':f==='pausado'?'⏸️':'✅')+' '+f+'</button>').join('')+
+    '</div>'+
+    '<div style="background:#162445;border-radius:8px;padding:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">'+
+    '<span style="font-size:12px;font-weight:600;color:#b8c8e8">📦 Registrar venta:</span>'+
+    '<input type="number" style="width:90px;background:#0b1427;border:1px solid #26406a;border-radius:6px;padding:5px 8px;color:#e8f0fe;font-size:12px;font-family:inherit" placeholder="Ganancia $" id="arb-venta-'+p.id+'" value="'+(p.ganancia_deseada||20)+'">'+
+    '<button class="arb-btn-suc" onclick="arbRegVenta(\''+p.id+'\')" style="padding:5px 12px;font-size:12px">+ Registrar</button>'+
+    '<span style="font-size:11px;color:#7a91b8" id="arb-vs-'+p.id+'"></span>'+
+    '</div>'+
+    '<textarea class="arb-note-ta" placeholder="Notas, proveedor, observaciones..." onchange="arbNota(\''+p.id+'\',this.value)">'+( p.notas||'')+'</textarea>'+
+    '<div class="arb-acciones" style="margin-top:8px">'+
+    (p.paises_activos||['BR','MX']).slice(0,3).map(pid=>{const pa=ARB_PAISES.find(pp=>pp.id===pid);return pa?'<a href="'+pa.mlUrl+encodeURIComponent(p.nombre)+'" target="_blank" class="arb-btn-sec">'+pa.flag+' ML '+pid+'</a>':''}).join('')+
+    '<a href="https://www.amazon.com/s?k='+encodeURIComponent(p.nombre)+'" target="_blank" class="arb-btn-sec">📦 Amazon</a>'+
+    '<button class="arb-btn-dan" onclick="arbEliminar(\''+p.id+'\')" style="margin-left:auto">🗑️ Eliminar</button>'+
+    '</div>'+
+    '</div>';
+}
+
+function arbBindPortafolio(){}
+
+window.arbFiltPort=function(fase,btn){
+  document.querySelectorAll('.arb-tabs .arb-tab').forEach(t=>t.classList.remove('arb-tab-act'));
+  if(btn)btn.classList.add('arb-tab-act');
+  const items=arbDbGet(ARB_DB_PORT);
+  const filtrados=fase==='todos'?items.filter(p=>p.fase_actual!=='cerrado'):items.filter(p=>p.fase_actual===fase);
+  const list=document.getElementById('arb-port-list');
+  if(list)list.innerHTML=filtrados.length?filtrados.map(p=>arbHtmlPortItem(p)).join(''):'<div class="arb-empty"><div class="arb-empty-icon">📭</div><div class="arb-empty-title">Sin productos en esta fase</div></div>';
+};
+
+window.arbCambiarFase=function(id,fase){arbDbUpd(ARB_DB_PORT,id,{fase_actual:fase});arbNav('portafolio',null);};
+
+window.arbRegVenta=function(id){
+  const inp=document.getElementById('arb-venta-'+id);
+  const g=parseFloat(inp?.value)||0;
+  if(g<=0)return;
+  const items=arbDbGet(ARB_DB_PORT);
+  const item=items.find(p=>p.id===id);
+  if(!item)return;
+  arbDbUpd(ARB_DB_PORT,id,{ventas_total:(item.ventas_total||0)+1,ganancia_total:(item.ganancia_total||0)+g});
+  const st=document.getElementById('arb-vs-'+id);
+  if(st){st.textContent='✅ +'+arbFmt(g)+' registrado';setTimeout(()=>{st.textContent='';},3000);}
+  arbActualizarStats();
+};
+
+window.arbNota=function(id,nota){arbDbUpd(ARB_DB_PORT,id,{notas:nota});};
+
+window.arbEliminar=function(id){
+  if(!confirm('¿Eliminar este producto del portafolio?'))return;
+  arbDbDel(ARB_DB_PORT,id);
+  arbNav('portafolio',null);
+};
+
+// ══ ALERTAS ══
+function arbHtmlAlertas(){
+  const items=arbDbGet(ARB_DB_PORT).filter(p=>p.fase_actual!=='cerrado');
+  const alertas=[];
+  items.forEach(p=>{
+    const dias=arbDias(p.fecha);
+    if(p.tipo_demanda==='viral'&&dias>21)alertas.push({tipo:'urgente',icono:'⚡',titulo:'Producto viral — ¡Actuar ya!',desc:'"'+p.nombre+'" lleva '+dias+' días. Los virales duran 2-6 semanas. Considera cerrar posición.',prod:p});
+    if(p.fase_actual==='prueba'&&(p.ventas_total||0)>=5)alertas.push({tipo:'success',icono:'🎯',titulo:'¡Listo para escalar!',desc:'"'+p.nombre+'" tiene '+p.ventas_total+' ventas. Mueve a Fase 2 — compra stock mayorista.',prod:p});
+    if(p.fase_actual==='prueba'&&dias>14&&(p.ventas_total||0)===0)alertas.push({tipo:'warning',icono:'⚠️',titulo:'Sin ventas en 2 semanas',desc:'"'+p.nombre+'" no generó ventas en '+dias+' días. Revisa precio o descarta.',prod:p});
+    if(p.fase_actual==='escalar'&&(p.ventas_total||0)>=20)alertas.push({tipo:'success',icono:'🚀',titulo:'¡Listo para optimizar!',desc:'"'+p.nombre+'" tiene '+p.ventas_total+' ventas. Considera importación directa (Fase 3).',prod:p});
+  });
+  return '<div style="font-size:18px;font-weight:800;margin-bottom:16px">🔔 Centro de Alertas</div>'+
+    (alertas.length===0?
+      '<div class="arb-card"><div class="arb-empty"><div class="arb-empty-icon">✅</div><div class="arb-empty-title">Todo en orden</div><div class="arb-empty-desc">No hay alertas activas. Las alertas aparecen cuando tus productos necesitan atención.</div></div></div>':
+      alertas.map(a=>'<div class="arb-alerta arb-alerta-'+a.tipo+'"><span style="font-size:20px">'+a.icono+'</span><div><div style="font-weight:700;margin-bottom:3px">'+a.titulo+'</div><div style="font-size:11px;color:#b8c8e8">'+a.desc+'</div><div style="margin-top:6px"><button class="arb-btn-sec" onclick="arbNav(\'portafolio\',null)" style="font-size:11px;padding:4px 10px">Ver portafolio</button></div></div></div>').join('')
+    )+'<div class="arb-card" style="margin-top:16px"><div class="arb-card-title" style="margin-bottom:10px">📅 Seguimiento</div>'+
+    (items.length===0?'<div style="color:#7a91b8;font-size:12px">Sin productos en portafolio</div>':
+      '<div style="display:flex;flex-direction:column;gap:6px">'+
+      items.map(p=>'<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#162445;border-radius:8px;font-size:12px;flex-wrap:wrap">'+
+        '<span class="arb-tag arb-tag-'+(p.fase_actual||'prueba')+'">'+(p.fase_actual||'prueba').toUpperCase()+'</span>'+
+        '<span style="flex:1;font-weight:600;color:#e8f0fe">'+p.nombre+'</span>'+
+        '<span style="color:#7a91b8">'+arbDias(p.fecha)+' días · '+(p.ventas_total||0)+' ventas · '+arbFmt(p.ganancia_total||0)+'</span>'+
+        '</div>').join('')+
+      '</div>'
+    )+'</div>';
+}
+
+// ══ CALCULADORA ══
+function arbHtmlCalc(){
+  return '<div class="arb-card">'+
+    '<div class="arb-card-hdr"><div><div class="arb-card-title">💰 Calculadora Miami → LATAM</div><div class="arb-card-sub">Calcula tu ganancia neta real antes de publicar</div></div></div>'+
+    '<div class="arb-grid2">'+
+    '<div>'+
+    '<div class="arb-igroup"><div class="arb-label">🛒 Costo en Amazon/Miami (USD)</div><input class="arb-input" type="number" id="arbc-costo" placeholder="18.99" oninput="arbCalcLive()"></div>'+
+    '<div class="arb-igroup"><div class="arb-label">💵 Precio que publicas en ML (USD)</div><input class="arb-input" type="number" id="arbc-ml" placeholder="45.00" oninput="arbCalcLive()"></div>'+
+    '<div class="arb-igroup"><div class="arb-label">🌎 País destino</div><select class="arb-select" id="arbc-pais" onchange="arbCalcLive()">'+ARB_PAISES.map(p=>'<option value="'+p.id+'">'+p.flag+' '+p.nombre+'</option>').join('')+'</select></div>'+
+    '<div class="arb-igroup"><div class="arb-label">⚖️ Fase de compra</div><select class="arb-select" id="arbc-fase" onchange="arbCalcLive()"><option value="1">Fase 1 — Amazon retail</option><option value="2">Fase 2 — Mayorista USA (~25% menos)</option><option value="3">Fase 3 — Import directo (~55% menos)</option></select></div>'+
+    '</div>'+
+    '<div id="arbc-res" style="background:#162445;border-radius:12px;padding:20px;display:flex;align-items:center;justify-content:center">'+
+    '<div style="color:#7a91b8;font-size:12px">Ingresa los datos para calcular →</div>'+
+    '</div>'+
+    '</div>'+
+    '</div>'+
+    '<div class="arb-card" style="margin-top:16px">'+
+    '<div class="arb-card-title" style="margin-bottom:10px">📊 Comparador rápido (3 productos)</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">'+
+    [1,2,3].map(n=>'<div style="background:#162445;border-radius:10px;padding:12px">'+
+    '<div style="font-size:11px;font-weight:700;color:#6c8eff;margin-bottom:8px">Producto '+n+'</div>'+
+    '<input class="arb-input" style="margin-bottom:6px;font-size:12px" placeholder="Nombre" id="arbc-n'+n+'">'+
+    '<input class="arb-input" style="margin-bottom:6px;font-size:12px" type="number" placeholder="Costo $" id="arbc-c'+n+'">'+
+    '<input class="arb-input" style="margin-bottom:6px;font-size:12px" type="number" placeholder="Precio ML $" id="arbc-m'+n+'">'+
+    '<div id="arbc-r'+n+'" style="font-size:12px;margin-top:4px"></div>'+
+    '</div>').join('')+
+    '</div>'+
+    '<button class="arb-btn-pri" style="margin-top:12px" onclick="arbCompararProds()">⚖️ Comparar</button>'+
+    '</div>';
+}
+
+window.arbCalcLive=function(){
+  const costo=parseFloat(document.getElementById('arbc-costo')?.value)||0;
+  const precioML=parseFloat(document.getElementById('arbc-ml')?.value)||0;
+  const paisId=document.getElementById('arbc-pais')?.value||'BR';
+  const fase=parseInt(document.getElementById('arbc-fase')?.value)||1;
+  const res=document.getElementById('arbc-res');
+  if(!res)return;
+  if(costo<=0||precioML<=0){res.innerHTML='<div style="color:#7a91b8;font-size:12px">Ingresa los datos para calcular →</div>';return;}
+  const pais=ARB_PAISES.find(p=>p.id===paisId);
+  const costoReal=fase===1?costo:fase===2?costo*0.75:costo*0.45;
+  const comision=precioML*pais.comision;
+  const envio=pais.envio;
+  const precioCliente=precioML+(precioML*pais.importacion);
+  const ganancia=precioML-costoReal-comision-envio;
+  const pct=(ganancia/precioML)*100;
+  const color=pct>=25?'#34d399':pct>=10?'#fcd34d':'#f87171';
+  res.innerHTML='<div style="width:100%">'+
+    '<div style="text-align:center;margin-bottom:14px">'+
+    '<div style="font-size:42px;font-weight:900;color:'+color+'">'+arbFmt(ganancia)+'</div>'+
+    '<div style="font-size:14px;color:'+color+';font-weight:700">'+pct.toFixed(1)+'% de margen neto</div>'+
+    '<div style="font-size:11px;color:#7a91b8">ganancia por venta</div>'+
+    '</div>'+
+    '<div style="display:flex;flex-direction:column;gap:6px;font-size:12px">'+
+    '<div style="display:flex;justify-content:space-between"><span style="color:#7a91b8">Precio ML (publicas):</span><span style="font-weight:700">'+arbFmt(precioML)+'</span></div>'+
+    '<div style="display:flex;justify-content:space-between"><span style="color:#7a91b8">Precio total al cliente:</span><span style="font-weight:700;color:#fcd34d">'+arbFmt(precioCliente)+'</span></div>'+
+    '<div style="height:1px;background:#26406a;margin:4px 0"></div>'+
+    '<div style="display:flex;justify-content:space-between"><span style="color:#7a91b8">- Costo (F'+fase+'):</span><span style="color:#f87171">-'+arbFmt(costoReal)+'</span></div>'+
+    '<div style="display:flex;justify-content:space-between"><span style="color:#7a91b8">- Comisión ML ('+( pais.comision*100).toFixed(0)+'%):</span><span style="color:#f87171">-'+arbFmt(comision)+'</span></div>'+
+    '<div style="display:flex;justify-content:space-between"><span style="color:#7a91b8">- Envío Miami→'+pais.nombre+':</span><span style="color:#f87171">-'+arbFmt(envio)+'</span></div>'+
+    '<div style="height:1px;background:#26406a;margin:4px 0"></div>'+
+    '<div style="display:flex;justify-content:space-between;font-size:14px"><span style="font-weight:700">= Tu ganancia neta:</span><span style="font-weight:900;color:'+color+'">'+arbFmt(ganancia)+'</span></div>'+
+    '</div>'+
+    (ganancia<10?'<div class="arb-alerta arb-alerta-urgente" style="margin-top:10px;font-size:11px;padding:8px 10px">⚠️ Margen muy bajo. Sube el precio o busca otro proveedor.</div>':'')+
+    (pct>=30?'<div class="arb-alerta arb-alerta-success" style="margin-top:10px;font-size:11px;padding:8px 10px">✅ Excelente margen. Vale la pena publicar.</div>':'')+
+    '</div>';
+};
+
+window.arbCompararProds=function(){
+  for(let n=1;n<=3;n++){
+    const costo=parseFloat(document.getElementById('arbc-c'+n)?.value)||0;
+    const ml=parseFloat(document.getElementById('arbc-m'+n)?.value)||0;
+    const el=document.getElementById('arbc-r'+n);
+    if(!el)continue;
+    if(costo<=0||ml<=0){el.innerHTML='';continue;}
+    const com=ml*0.17;
+    const g=ml-costo-com-8;
+    const pct=(g/ml*100).toFixed(1);
+    const color=g>=15?'#34d399':g>=5?'#fcd34d':'#f87171';
+    el.innerHTML='<div style="text-align:center;padding:8px;background:rgba(0,0,0,.2);border-radius:6px"><div style="font-size:20px;font-weight:900;color:'+color+'">'+arbFmt(g)+'</div><div style="font-size:11px;color:'+color+'">'+pct+'% margen</div></div>';
+  }
+};
+
+})();
 </script>
 </body>
 </html>
