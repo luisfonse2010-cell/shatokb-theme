@@ -1,20 +1,19 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- Fondo marino redondeado -->
-  <rect width="64" height="64" rx="14" fill="#0b1120"/>
+  <!-- Fondo blanco redondeado -->
+  <rect width="64" height="64" rx="14" fill="#ffffff"/>
   <!-- Círculo exterior brújula -->
-  <circle cx="32" cy="32" r="24" fill="none" stroke="#6c8eff" stroke-width="3"/>
-  <circle cx="32" cy="32" r="20" fill="#0f1d35"/>
+  <circle cx="32" cy="32" r="26" fill="none" stroke="#6c8eff" stroke-width="3.5"/>
+  <circle cx="32" cy="32" r="21" fill="#f0f4ff"/>
   <!-- Ticks cardinales -->
-  <line x1="32" y1="10" x2="32" y2="15" stroke="#6c8eff" stroke-width="2.5" stroke-linecap="round"/>
-  <line x1="32" y1="49" x2="32" y2="54" stroke="#6c8eff" stroke-width="2.5" stroke-linecap="round"/>
-  <line x1="10" y1="32" x2="15" y2="32" stroke="#6c8eff" stroke-width="2.5" stroke-linecap="round"/>
-  <line x1="49" y1="32" x2="54" y2="32" stroke="#6c8eff" stroke-width="2.5" stroke-linecap="round"/>
-  <!-- Aguja Norte (roja/acento) -->
-  <polygon points="32,14 29,32 35,32" fill="#34d399"/>
-  <!-- Aguja Sur -->
-  <polygon points="32,50 29,32 35,32" fill="#6c8eff" opacity="0.6"/>
+  <line x1="32" y1="8"  x2="32" y2="14" stroke="#6c8eff" stroke-width="3" stroke-linecap="round"/>
+  <line x1="32" y1="50" x2="32" y2="56" stroke="#6c8eff" stroke-width="3" stroke-linecap="round"/>
+  <line x1="8"  y1="32" x2="14" y2="32" stroke="#6c8eff" stroke-width="3" stroke-linecap="round"/>
+  <line x1="50" y1="32" x2="56" y2="32" stroke="#6c8eff" stroke-width="3" stroke-linecap="round"/>
+  <!-- Aguja Norte (verde) -->
+  <polygon points="32,13 28.5,32 35.5,32" fill="#34d399"/>
+  <!-- Aguja Sur (azul) -->
+  <polygon points="32,51 28.5,32 35.5,32" fill="#6c8eff"/>
   <!-- Centro -->
-  <circle cx="32" cy="32" r="3" fill="#6c8eff"/>
-  <circle cx="32" cy="32" r="1.5" fill="#34d399"/>
+  <circle cx="32" cy="32" r="3.5" fill="#6c8eff"/>
+  <circle cx="32" cy="32" r="1.8" fill="#34d399"/>
 </svg>
