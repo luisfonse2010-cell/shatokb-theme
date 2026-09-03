@@ -1,16 +1,16 @@
 {
-  "version": "7.1.2",
-  "build": "2026-09-02 v7.1.2 — Signal Engine COMPLETO + comentarios HTML fixeados",
-  "updated": "2026-09-03T00:00:27.870Z",
-  "bust": 1788393626045,
+  "version": "7.2.0",
+  "build": "2026-09-02 v7.2.0 — Signal Engine robusto: fallback curado + proxies extra + sin score 0",
+  "updated": "2026-09-03T00:11:44.986Z",
+  "bust": 1788394303225,
   "features": [
     "Signal Engine 5 fuentes",
-    "TikTok countik.com",
-    "Google Trends proxy",
+    "Fallback curado automático",
+    "TikTok countik.com + proxies",
+    "Google Trends 2 proxies",
     "Amazon BSR RSS",
     "Reddit Hot",
     "Watchlist",
-    "Heatmap",
-    "HTML comments fixed"
+    "Heatmap"
   ]
 }
