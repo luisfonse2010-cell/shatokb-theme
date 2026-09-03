@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
-<!-- BUILD: 2026-09-03 v7.2.2 — MeLi fix: detecta conexión real vs. sin stock; etiquetas claras en barras -->
-<!-- CF-CACHE-BUST: 1788483600000-v722-MELI-CONN-FIX -->
+<!-- BUILD: 2026-09-03 v7.2.4 — Cazador de Arbitraje en sidebar + link a /kabuby/arbitrage/ -->
+<!-- CF-CACHE-BUST: 1788490800000-v724-ARBITRAGE-SIDEBAR -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -1458,6 +1458,16 @@ tr:hover td { background: rgba(108,142,255,0.08); }
       </div>
     </div>
 
+    <!-- Módulo Cazador de Arbitraje Miami→LATAM ✅ ACTIVO -->
+    <div class="sidebar-item modulo" onclick="window.open('/kabuby/arbitrage/','_blank')" id="nav-mod-arbitrage">
+      <div class="modulo-icon" style="background:rgba(52,211,153,.15);color:#34d399">🎯</div>
+      <div class="modulo-info">
+        <div class="modulo-name">Cazador de Arbitraje</div>
+        <div class="modulo-desc">Miami · LATAM · 8 países</div>
+      </div>
+      <span class="modulo-badge-fase" style="background:rgba(52,211,153,.15);color:#34d399;border-color:rgba(52,211,153,.3);font-size:8px;padding:2px 6px;border-radius:10px;border:1px solid;font-weight:700;white-space:nowrap">LIVE</span>
+    </div>
+
     <!-- Módulo 2: Price Monitor + OOS ⏳ Fase 2A -->
     <div class="sidebar-item modulo" onclick="showModulo('price-monitor')" id="nav-mod-prices">
       <div class="modulo-icon blue">📊</div>
@@ -2078,11 +2088,11 @@ tr:hover td { background: rgba(108,142,255,0.08); }
           <div id="signal-heatmap-grid" style="overflow-x:auto"></div>
         </div>
 
-        <!-- Footer Signal Engine v7.1 -->
+        <!-- Footer Signal Engine v7.2.3 -->
         <div style="margin-top:16px;padding:12px 16px;background:rgba(108,142,255,0.06);border:1px solid rgba(108,142,255,0.15);border-radius:10px;font-size:11px;color:var(--muted);display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;justify-content:space-between">
           <div style="display:flex;gap:8px;align-items:flex-start">
             <span style="font-size:13px">🛰️</span>
-            <div><strong style="color:var(--text2)">Signal Engine v7.1</strong> — MeLi (35%) · TikTok (25%) · Google Trends (20%) · Amazon BSR (12%) · Reddit (8%). Cache 30 min. <span id="radar-nicho-info" style="color:var(--green)">Nicho: 💄 Belleza</span></div>
+            <div><strong style="color:var(--text2)">Signal Engine v7.2</strong> — MeLi (35%) · TikTok (25%) · Google Trends (20%) · Amazon BSR (12%) · Reddit (8%). Cache 30 min. <span id="radar-nicho-info" style="color:var(--green)">Nicho: 💄 Belleza</span></div>
           </div>
           <div style="display:flex;gap:6px;flex-shrink:0;margin-top:4px">
             <button onclick="signalToggleWatchlist()" style="background:rgba(251,191,36,0.1);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);border-radius:6px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer">⭐ Watchlist</button>
@@ -4736,19 +4746,25 @@ async function radarShowOpportunity(keyword, siteId) {
   // Barras de cada fuente
   const sourceRows = [
     { icon:'\ud83d\uded2', name:'MeLi',   s: src.meli.score,   w:'35%',
-      detail: src.meli.raw ? (src.meli.raw.available||0).toLocaleString() + ' resultados' : 'sin datos',
+      detail: src.meli.fallback ? '~est. curado'
+            : (src.meli.raw && src.meli.raw.available > 0) ? (src.meli.raw.available||0).toLocaleString() + ' resultados'
+            : 'sin stock MeLi',
       color:'#6c8eff' },
     { icon:'\ud83c\udfb5', name:'TikTok', s: src.tiktok.score, w:'25%',
-      detail: src.tiktok.raw ? (src.tiktok.raw.postCount||0).toLocaleString() + ' videos' : 'sin datos TikTok',
+      detail: src.tiktok.fallback ? '~est. curado'
+            : (src.tiktok.raw ? (src.tiktok.raw.postCount||0).toLocaleString() + ' videos' : '~est.'),
       color:'#ff2d55' },
     { icon:'\ud83d\udcc8', name:'Trends', s: src.trends.score, w:'20%',
-      detail: src.trends.raw ? 'Score ' + (src.trends.raw.score||0) + ' \u00b7 ' + ((src.trends.raw.trend||0) >= 0 ? '\u2191+' : '\u2193') + Math.abs(src.trends.raw.trend||0) + '%' : 'sin datos Google',
+      detail: src.trends.fallback ? '~est. curado'
+            : (src.trends.raw ? 'avg ' + (src.trends.raw.avg||src.trends.raw.score||0) + ((src.trends.raw.trend||0) >= 0 ? ' \u2191+' : ' \u2193') + Math.abs(src.trends.raw.trend||0) + '%' : '~est.'),
       color:'#34d399' },
     { icon:'\ud83d\udce6', name:'Amazon', s: src.amazon.score, w:'12%',
-      detail: src.amazon.score > 0 ? 'BSR Top ' + Math.round(100 - src.amazon.score/1.5 + 1) : 'No detectado en BSR',
+      detail: src.amazon.fallback ? '~est. curado'
+            : (src.amazon.score > 0 ? 'BSR Top ' + Math.round(100 - src.amazon.score) : 'no en BSR'),
       color:'#fbbf24' },
     { icon:'\ud83d\udde3\ufe0f', name:'Reddit', s: src.reddit.score, w:'8%',
-      detail: src.reddit.raw ? (src.reddit.raw.postCount||0) + ' posts \u00b7 r/' + (src.reddit.raw.sub||'') : 'sin datos',
+      detail: src.reddit.fallback ? '~est. curado'
+            : (src.reddit.raw ? (src.reddit.raw.postCount||0) + ' posts' + (src.reddit.raw.sub ? ' \u00b7 r/' + src.reddit.raw.sub : '') : '~est.'),
       color:'#ff6b8a' },
   ];
   html += '<div style="display:flex;flex-direction:column;gap:7px">';
