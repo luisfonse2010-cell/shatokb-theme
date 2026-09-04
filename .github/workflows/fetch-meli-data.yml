@@ -1,0 +1,69 @@
+name: Fetch MeLi Data
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+    inputs:
+      query:
+        description: 'Producto a buscar (vacío = fetch trending)'
+        required: false
+        default: ''
+      queries:
+        description: 'Múltiples productos separados por | '
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-meli:
+    name: Fetch MeLi LATAM Data
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Create meli-data directory
+        run: mkdir -p kabuby/meli-data
+
+      - name: Fetch MeLi data
+        run: |
+          cd kabuby/meli-fetch
+          QUERY="${{ github.event.inputs.query }}"
+          QUERIES="${{ github.event.inputs.queries }}"
+          if [ -n "$QUERIES" ]; then
+            IFS='|' read -ra QLIST <<< "$QUERIES"
+            node fetch-meli.js "${QLIST[@]}"
+          elif [ -n "$QUERY" ]; then
+            node fetch-meli.js "$QUERY"
+          else
+            node fetch-meli.js
+          fi
+
+      - name: Save fetch timestamp
+        run: |
+          echo "{"last_fetch": "$(date -u +%Y-%m-%dT%H:%M:%SZ)", "trigger": "${{ github.event_name }}"}" > kabuby/meli-data/last-fetch.json
+
+      - name: Commit and push MeLi data
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add kabuby/meli-data/
+          git diff --cached --quiet && echo "No hay cambios" && exit 0
+          QUERY="${{ github.event.inputs.query }}"
+          if [ -n "$QUERY" ]; then
+            git commit -m "data: MeLi fetch $QUERY [$(date -u +%H:%M UTC)]"
+          else
+            git commit -m "data: MeLi trending update [$(date -u +%H:%M UTC)]"
+          fi
+          git push
