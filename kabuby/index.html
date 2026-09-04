@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
 <!-- BUILD: 2026-09-04 v7.3.2 — GitHub Actions JSON cache = datos 100% reales MeLi -->
-<!-- CF-CACHE-BUST: 1788530078975-v732-RAW-GITHUB-FIX -->
+<!-- CF-CACHE-BUST: 1788530611198-v732-RAW-GITHUB-FIX -->
 <!-- ── FAVICON & ICONS ──────────────────────────────────── -->
 <link rel="icon" type="image/svg+xml" href="images/kabuby-favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="images/kabuby-favicon.svg">
@@ -5601,7 +5601,14 @@ const ARB_CAT_DETECT=[
   {cat:'Gadgets & Tech',                  keys:['gadget','device','electronic','tech','usb','wireless']},
 ];
 
-// ── Función principal: extrae marca + tipo + ingredientes del título Amazon ──
+// ── Función principal: extrae marca + tipo + ingrediente del título Amazon ───
+// Lógica en 3 niveles de prioridad:
+//   NIVEL 1 — Marca (siempre en inglés/original — igual en todo MeLi LATAM)
+//   NIVEL 2 — Tipo de producto (lo que es: mascarilla, sérum, crema...) — 1 término
+//   NIVEL 3 — Ingrediente estrella (lo que contiene: colágeno, ácido hialurónico...) — 1 término
+//   BONUS  — "coreana" si el título menciona Korean/K-Beauty (amplificador en MeLi LATAM)
+// Resultado: término corto, limpio y muy específico — exactamente como busca un comprador real
+
 window.arbExtraerTerminos=function(){
   const titulo=(document.getElementById('arb-titulo-amazon')?.value||'').trim();
   if(!titulo){
@@ -5614,71 +5621,159 @@ window.arbExtraerTerminos=function(){
 
   const tituloLow=titulo.toLowerCase();
 
-  // 1. Extraer marca — primera palabra en MAYÚSCULAS o antes de la primera coma
+  // ── NIVEL 1: Marca ──────────────────────────────────────────────────────────
+  // La marca es la 1ra o 2da palabra antes de la primera coma o descripción
+  // Regla: palabra ALL CAPS o TitleCase que NO sea un descriptor genérico
+  const PALABRAS_NO_MARCA=/^(Bio|Real|Deep|Pure|Pro|Max|Ultra|Super|New|Natural|Premium|Advanced|Original|Classic|Extra|Plus|Daily|Night|Day|Anti|Face|Skin|Hair|Body|Eye|Lip|Hand|Foot|Neck|All|For|The|With|And|Or|By|From|Made|Best|Good|Top|High|Low|Long|Short|Light|Heavy|Soft|Hard|Dry|Wet|Rich|Thin|Thick|Fast|Slow|Easy|Free|Safe|Pure|Clean|Clear|Bright|Dark|White|Black|Red|Blue|Green|Yellow|Pink|Gold|Silver)$/i;
   let marca='';
-  const primPalabras=titulo.split(/[\s,]+/);
-  // La marca suele ser la 1ra o 2da palabra en mayúsculas/title-case
-  for(let i=0;i<Math.min(3,primPalabras.length);i++){
-    const p=primPalabras[i];
-    if(p.length>=3 && (p===p.toUpperCase() || /^[A-Z][a-z]/.test(p)) && !/^(Bio|Real|Deep|Pure|Pro|Max|Ultra|Super|New|Natural|Premium)$/i.test(p)){
-      marca=p.replace(/[^a-zA-Z0-9]/g,'');
-      break;
+  // Primero intentar antes de la primera coma
+  const anteComa=(titulo.split(',')[0]||'').trim();
+  const palabrasComa=anteComa.split(/\s+/);
+  for(let i=0;i<Math.min(3,palabrasComa.length);i++){
+    const p=palabrasComa[i].replace(/[^a-zA-Z0-9]/g,'');
+    if(p.length>=3 && !PALABRAS_NO_MARCA.test(p)){
+      // Es marca si: está en MAYÚSCULAS, o es TitleCase y la siguiente palabra lo confirma
+      if(p===p.toUpperCase()||(p[0]===p[0].toUpperCase()&&p.slice(1)===p.slice(1).toLowerCase())){
+        marca=p;
+        break;
+      }
     }
   }
-  if(!marca)marca=primPalabras[0];
+  if(!marca) marca=palabrasComa[0]?.replace(/[^a-zA-Z0-9]/g,'')||'';
 
-  // 2. Detectar categoría
+  // ── NIVEL 2: Tipo de producto (UNO solo — el más específico) ────────────────
+  // Prioridad: frases largas primero (face mask > mask), más específico > genérico
+  const TIPOS_ES=[
+    // [término inglés a buscar, traducción ES, traducción PT, prioridad]
+    ['hydrogel mask','mascarilla hidrogel','máscara hidrogel',10],
+    ['sheet mask','mascarilla de tela','máscara de tecido',10],
+    ['sleeping mask','mascarilla de noche','máscara noturna',10],
+    ['eye patch','parche de ojos','patch para olhos',10],
+    ['eye mask','mascarilla de ojos','máscara para olhos',9],
+    ['face mask','mascarilla facial','máscara facial',9],
+    ['mask','mascarilla','máscara',8],
+    ['lip mask','mascarilla labial','máscara labial',9],
+    ['serum','sérum','sérum',9],
+    ['ampoule','ampolla','ampola',9],
+    ['essence','esencia','essência',8],
+    ['eye cream','crema de ojos','creme para os olhos',9],
+    ['eye gel','gel de ojos','gel para olhos',9],
+    ['sunscreen','protector solar','protetor solar',10],
+    ['spf','protector solar','protetor solar',9],
+    ['cleanser','limpiador facial','limpador facial',9],
+    ['foam cleanser','limpiador espumoso','limpador espumoso',10],
+    ['micellar water','agua micelar','água micelar',10],
+    ['toner','tónico','tônico',8],
+    ['moisturizer','hidratante facial','hidratante facial',8],
+    ['cream','crema','creme',7],
+    ['lotion','loción','loção',7],
+    ['gel','gel','gel',6],
+    ['oil','aceite facial','óleo facial',7],
+    ['mist','bruma facial','névoa facial',8],
+    ['pad','pad exfoliante','pad esfoliante',8],
+    ['pads','pads exfoliantes','pads esfoliantes',8],
+    ['patch','parche','patch',8],
+    ['exfoliator','exfoliante','esfoliante',8],
+    ['scrub','exfoliante','esfoliante',8],
+    ['supplement','suplemento','suplemento',9],
+    ['vitamin','vitamina','vitamina',8],
+  ];
+  let tipoES='',tipoPT='',tipoDetectado='',tipoPrioridad=0;
+  for(const [en,es,pt,pri] of TIPOS_ES){
+    if(tituloLow.includes(en) && pri>tipoPrioridad){
+      tipoES=es; tipoPT=pt; tipoDetectado=en; tipoPrioridad=pri;
+    }
+  }
+
+  // ── NIVEL 3: Ingrediente estrella (UNO solo — el más específico) ────────────
+  const INGREDIENTES=[
+    ['bio-collagen','colágeno','colágeno',10],
+    ['collagen','colágeno','colágeno',9],
+    ['hyaluronic acid','ácido hialurónico','ácido hialurônico',10],
+    ['niacinamide','niacinamida','niacinamida',10],
+    ['retinol','retinol','retinol',10],
+    ['vitamin c','vitamina c','vitamina c',10],
+    ['vitamin b','vitamina b','vitamina b',9],
+    ['ceramide','ceramida','ceramida',9],
+    ['peptide','péptido','peptídeo',9],
+    ['snail mucin','baba de caracol','baba de caracol',10],
+    ['snail','caracol','caracol',8],
+    ['propolis','propóleo','própolis',9],
+    ['centella asiatica','centella asiática','centella asiática',10],
+    ['centella','centella asiática','centella asiática',9],
+    ['mugwort','artemisa','artemísia',9],
+    ['rice','arroz','arroz',7],
+    ['tea tree','árbol del té','árvore do chá',9],
+    ['salicylic acid','ácido salicílico','ácido salicílico',10],
+    ['glycolic acid','ácido glicólico','ácido glicólico',10],
+    ['azelaic acid','ácido azelaico','ácido azelaico',10],
+    ['bakuchiol','bakuchiol','bakuchiol',9],
+    ['squalane','escualano','esqualano',9],
+    ['adenosine','adenosina','adenosina',8],
+    ['tranexamic acid','ácido tranexámico','ácido tranexâmico',10],
+    ['allantoin','alantoína','alantoína',8],
+    ['cica','cica','cica',8],
+    ['probiotic','probiótico','probiótico',9],
+    ['omega','omega','ômega',8],
+    ['zinc','zinc','zinco',8],
+    ['sulfur','azufre','enxofre',8],
+    ['kojic acid','ácido kójico','ácido kójico',9],
+  ];
+  let ingES='',ingPT='',ingDetectado='',ingPrioridad=0;
+  for(const [en,es,pt,pri] of INGREDIENTES){
+    if(tituloLow.includes(en) && pri>ingPrioridad){
+      ingES=es; ingPT=pt; ingDetectado=en; ingPrioridad=pri;
+    }
+  }
+
+  // ── BONUS: Origen coreano ────────────────────────────────────────────────────
+  const esCoreana=tituloLow.includes('korean')||tituloLow.includes('k-beauty')||
+                  tituloLow.includes('k beauty')||tituloLow.includes('korean skin care')||
+                  tituloLow.includes('kbeauty');
+
+  // ── DETECTAR CATEGORÍA ───────────────────────────────────────────────────────
   let categoriaDetectada='Skincare & Belleza';
   for(const cat of ARB_CAT_DETECT){
-    if(cat.keys.some(k=>tituloLow.includes(k))){
-      categoriaDetectada=cat.cat;
-      break;
-    }
+    if(cat.keys.some(k=>tituloLow.includes(k))){categoriaDetectada=cat.cat;break;}
   }
 
-  // 3. Extraer ingredientes/beneficios clave (top 3 más relevantes)
-  const claves=[];
-  // Ordenar diccionario de mayor a menor longitud para detectar frases primero
-  const dictEntries=Object.entries(ARB_DICT_ES).sort((a,b)=>b[0].length-a[0].length);
-  for(const [en,es] of dictEntries){
-    if(tituloLow.includes(en) && !claves.find(c=>c.en===en)){
-      claves.push({en,es,pt:ARB_DICT_PT[en]||es});
-      if(claves.length>=5)break;
-    }
+  // ── CONSTRUIR TÉRMINOS FINALES ───────────────────────────────────────────────
+  // Regla: [Marca] [tipo producto] [ingrediente estrella] [coreana si aplica]
+  // Máximo 4-5 palabras — exactamente como busca un comprador real en MeLi
+  const partsES=[marca];
+  const partsPT=[marca];
+
+  if(tipoES){partsES.push(tipoES); partsPT.push(tipoPT);}
+  // Solo añadir ingrediente si NO está ya implícito en el tipo
+  // (ej: "mascarilla hidrogel" ya es suficiente sin añadir "hidrogel" otra vez)
+  if(ingES && !tipoES.includes(ingES) && !tipoDetectado.includes(ingDetectado)){
+    partsES.push(ingES);
+    partsPT.push(ingPT);
   }
+  if(esCoreana){partsES.push('coreana');partsPT.push('coreana');}
 
-  // 4. Construir término ES: marca + tipo + ingredientes clave + "coreana" si aplica
-  const esCoreana=tituloLow.includes('korean')||tituloLow.includes('k-beauty')||tituloLow.includes('k beauty');
-  const termPartsES=[marca];
-  const termPartsPT=[marca];
-  // Añadir las primeras 3 traducciones más relevantes
-  const topClaves=claves.slice(0,3);
-  topClaves.forEach(c=>{
-    if(c.es && !termPartsES.includes(c.es))termPartsES.push(c.es);
-    if(c.pt && !termPartsPT.includes(c.pt))termPartsPT.push(c.pt);
-  });
-  if(esCoreana){termPartsES.push('coreana');termPartsPT.push('coreana');}
+  const termES=partsES.join(' ');
+  const termPT=partsPT.join(' ');
 
-  const termES=termPartsES.join(' ');
-  const termPT=termPartsPT.join(' ');
-
-  // 5. Rellenar UI
+  // ── RELLENAR UI ─────────────────────────────────────────────────────────────
   const mEl=document.getElementById('arb-marca');if(mEl)mEl.value=marca;
   const cEl=document.getElementById('arb-categoria-det');if(cEl)cEl.value=categoriaDetectada;
   const esEl=document.getElementById('arb-term-es');if(esEl)esEl.value=termES;
   const ptEl=document.getElementById('arb-term-pt');if(ptEl)ptEl.value=termPT;
 
-  // 6. Mostrar panel + info detallada
+  // ── MOSTRAR PANEL + INFO ─────────────────────────────────────────────────────
   const pan=document.getElementById('arb-terminos-panel');if(pan)pan.style.display='block';
   const inf=document.getElementById('arb-extract-info');
   if(inf){
-    const rows=topClaves.map(c=>'<span style="color:#e8f0fe">'+c.en+'</span> → ES: <span style="color:#34d399">'+c.es+'</span> / PT: <span style="color:#60a5fa">'+c.pt+'</span>').join('<br>');
+    const filas=[];
+    if(tipoDetectado) filas.push('<b style="color:#6c8eff">Tipo:</b> "'+tipoDetectado+'" → ES: <span style="color:#34d399">'+tipoES+'</span> / PT: <span style="color:#60a5fa">'+tipoPT+'</span>');
+    if(ingDetectado)  filas.push('<b style="color:#6c8eff">Ingrediente:</b> "'+ingDetectado+'" → ES: <span style="color:#34d399">'+ingES+'</span> / PT: <span style="color:#60a5fa">'+ingPT+'</span>');
+    if(esCoreana)     filas.push('<b style="color:#6c8eff">Origen:</b> Korean/K-Beauty → <span style="color:#34d399">+coreana</span>');
     inf.innerHTML=
-      '<div style="margin-bottom:6px"><b style="color:#6c8eff">Marca:</b> <span style="color:#e8f0fe">'+marca+'</span> &nbsp;·&nbsp; <b style="color:#6c8eff">Categoría:</b> <span style="color:#e8f0fe">'+categoriaDetectada+'</span></div>'+
-      '<div style="margin-bottom:4px"><b style="color:#6c8eff">Términos detectados del título:</b></div>'+
-      (rows||'<span style="color:#7a91b8">—</span>')+
-      '<div style="margin-top:8px;padding-top:8px;border-top:1px solid #1e3a5f">'+
-      '💡 <span style="color:#94a3b8">Puedes editar los campos arriba antes de analizar. El término en español se usará para los 7 países LATAM y el de português solo para Brasil.</span>'+
+      '<div style="margin-bottom:8px"><b style="color:#6c8eff">Marca:</b> <span style="color:#e8f0fe">'+marca+'</span> &nbsp;·&nbsp; <b style="color:#6c8eff">Categoría:</b> <span style="color:#e8f0fe">'+categoriaDetectada+'</span></div>'+
+      (filas.length?'<div style="margin-bottom:4px;color:#94a3b8;font-size:10px">DETECTADO DEL TÍTULO:</div>'+filas.join('<br>')+'<br>':'')+
+      '<div style="margin-top:8px;padding-top:8px;border-top:1px solid #1e3a5f;color:#94a3b8">'+
+      '💡 Edita los términos arriba si necesitas ajustar. ES = 7 países LATAM · PT = solo Brasil.'+
       '</div>';
   }
   if(st){st.textContent='✅ Términos generados — revisa y edita si necesario';st.style.color='#34d399';}
@@ -5855,94 +5950,91 @@ async function arbFetchFromCache(site, query) {
   return null;
 }
 
-// ── arbFetchML v7.3.2 — GitHub Actions JSON = datos 100% reales MeLi ─────
-// Jerarquía:
-//   1. JSON cacheado por GitHub Actions (no-Cloudflare IPs → datos reales ✅)
-//   2. Fetch directo desde browser (bloqueado por MeLi en CF, OK desde residencial)
-//   3. Worker propio del usuario
-//   4. koi-proxy (CF datacenter, MeLi lo bloquea → casi siempre falla)
-//   5. Proxies CORS públicos
-//   6. Estimación inteligente (último recurso)
-async function arbFetchML(apiUrl,paisId,nombreProducto){
-  const mSite=apiUrl.match(/sites\/([A-Z]+)\/search\?q=([^&]+)/);
+// ── arbFetchML v7.4.1 — Fetch directo browser = datos 100% reales MeLi ────
+// ARQUITECTURA DEFINITIVA:
+//   MeLi tiene CORS abierto para browsers reales (IPs residenciales/móviles).
+//   El browser del usuario siempre puede hacer fetch directo a api.mercadolibre.com.
+//   Los servidores (Cloudflare, GitHub Actions, proxies) son bloqueados por MeLi.
+//   Por eso: fetch DIRECTO desde el browser es el método más confiable.
+//
+// Jerarquía (de más a menos confiable):
+//   1. Fetch directo browser → api.mercadolibre.com (SIEMPRE funciona desde browser)
+//   2. JSON cacheado por GitHub Actions (si está disponible)
+//   3. Worker propio del usuario (si configuró uno)
+//   4. Estimación inteligente (ÚLTIMO recurso — solo si todo lo anterior falla)
 
-  // ── 1. JSON cacheado por GitHub Actions ──────────────────────────────────
-  // Este archivo se actualiza cada hora automáticamente desde servidores
-  // de GitHub (IPs no-Cloudflare → MeLi responde con datos reales ✅)
+// Cache en memoria de sesión para no repetir fetches del mismo término
+const _arbFetchCache = {};
+
+async function arbFetchML(apiUrl, paisId, nombreProducto){
+  // Cache de sesión — evita refetch del mismo término en la misma sesión
+  if(_arbFetchCache[apiUrl] && _arbFetchCache[apiUrl]._src !== 'estimate'){
+    return _arbFetchCache[apiUrl];
+  }
+
+  const mSite = apiUrl.match(/sites\/([A-Z]+)\/search\?q=([^&]+)/);
+
+  // ── 1. FETCH DIRECTO BROWSER — método principal y más confiable ───────────
+  // api.mercadolibre.com responde a browsers con CORS abierto.
+  // NO usar referrerPolicy ni headers extra — fetch simple es lo que funciona.
+  try{
+    const r = await fetch(apiUrl, {
+      method: 'GET',
+      signal: AbortSignal.timeout(12000),
+    });
+    if(r.ok){
+      const d = await r.json();
+      if(d && typeof d.paging === 'object' && Array.isArray(d.results)){
+        const prices = d.results.map(it=>it.price).filter(p=>p>0).sort((a,b)=>a-b);
+        const mediana = prices.length ? prices[Math.floor(prices.length/2)] : 0;
+        const result = {...d, _src:'direct', _price:mediana};
+        _arbFetchCache[apiUrl] = result;
+        return result;
+      }
+    }
+    // Si MeLi devolvió error HTTP, registrar pero no tirar excepción
+    if(!r.ok){
+      console.warn('[arbFetchML] MeLi HTTP '+r.status+' para '+apiUrl);
+    }
+  }catch(e){
+    console.warn('[arbFetchML] fetch directo falló:', e.message);
+  }
+
+  // ── 2. JSON cacheado por GitHub Actions ───────────────────────────────────
+  // Fallback: si el browser falló (raro), intentar JSON pre-generado
   if(mSite){
     try{
-      const ghData=await arbFetchFromCache(mSite[1],decodeURIComponent(mSite[2]));
-      if(ghData&&ghData.paging&&ghData.paging.total>0){
+      const ghData = await arbFetchFromCache(mSite[1], decodeURIComponent(mSite[2]));
+      if(ghData && ghData.paging && ghData.paging.total > 0){
+        _arbFetchCache[apiUrl] = ghData;
         return ghData;
       }
     }catch(e){}
   }
 
-  // ── 2. Fetch directo desde browser ───────────────────────────────────────
-  // Funciona solo si el usuario navega desde IP residencial (no Cloudflare).
-  // En kabuby.com (CF Pages) MeLi bloquea el IP del servidor, no del browser.
-  // Dejamos el intento por si el usuario tiene VPN o IP residencial activa.
-  const _arbDirectFetch=async(url)=>{
-    try{
-      const r=await fetch(url,{signal:AbortSignal.timeout(10000),referrerPolicy:'no-referrer'});
-      if(r.ok){const d=await r.json();if(d&&d.paging!==undefined&&Array.isArray(d.results))return d;}
-    }catch(e){}
-    try{
-      const r=await fetch(url,{signal:AbortSignal.timeout(10000)});
-      if(r.ok){const d=await r.json();if(d&&d.paging!==undefined&&Array.isArray(d.results))return d;}
-    }catch(e){}
-    return null;
-  };
-  const _d=await _arbDirectFetch(apiUrl);
-  if(_d){
-    const prices=(_d.results||[]).map(it=>it.price).filter(p=>p>0).sort((a,b)=>a-b);
-    const medianPrice=prices.length?prices[Math.floor(prices.length/2)]:0;
-    return{..._d,_src:'direct',_price:medianPrice};
-  }
-
   // ── 3. Worker propio del usuario ──────────────────────────────────────────
-  const workerBase=(localStorage.getItem('kabuby_meli_worker_url')||'').trim().replace(/\/+$/,'');
-  if(workerBase&&mSite){
+  const workerBase = (localStorage.getItem('kabuby_meli_worker_url')||'').trim().replace(/\/+$/,'');
+  if(workerBase && mSite){
     try{
-      const workerUrl=workerBase+'/search?site='+mSite[1]+'&q='+mSite[2]+'&limit=10';
-      const r=await fetch(workerUrl,{signal:AbortSignal.timeout(8000)});
-      if(r.ok){const d=await r.json();if(d.paging!==undefined)return{...d,_src:'user-worker'};}
-    }catch(e){}
-  }
-
-  // ── 4. koi-proxy Worker ───────────────────────────────────────────────────
-  const KOI_SITE_MAP={BR:'MLB',MX:'MLM',CO:'MCO',AR:'MLA',CL:'MLC',PE:'MPE',UY:'MLU',EC:'MEC'};
-  if(mSite){
-    const koiSite=KOI_SITE_MAP[paisId||''];
-    if(koiSite){
-      try{
-        const koiUrl=ARB_KOI_WORKER+'/meli-search?site='+koiSite+'&q='+mSite[2]+'&limit=10';
-        const r=await fetch(koiUrl,{signal:AbortSignal.timeout(8000)});
-        if(r.ok){
-          const d=await r.json();
-          if(typeof d.available==='number'){
-            const results=(d.sample||[]).map(s=>({title:s.title,price:s.price,id:s.id}));
-            return{paging:{total:d.available},results,_src:'koi-worker',_price:d.price||0};
-          }
-        }
-      }catch(e){}
-    }
-  }
-
-  // ── 5. Proxies CORS públicos ──────────────────────────────────────────────
-  for(const proxyFn of ARB_PROXIES){
-    try{
-      const r=await fetch(proxyFn(apiUrl),{signal:AbortSignal.timeout(5000)});
+      const workerUrl = workerBase+'/search?site='+mSite[1]+'&q='+mSite[2]+'&limit=10';
+      const r = await fetch(workerUrl, {signal:AbortSignal.timeout(8000)});
       if(r.ok){
-        const text=await r.text();
-        try{const d=JSON.parse(text);if(d&&d.paging!==undefined)return{...d,_src:'proxy'};}catch(e2){}
+        const d = await r.json();
+        if(d.paging !== undefined){
+          const result = {...d, _src:'user-worker'};
+          _arbFetchCache[apiUrl] = result;
+          return result;
+        }
       }
     }catch(e){}
   }
 
-  // ── 6. Estimación inteligente — ÚLTIMO recurso ────────────────────────────
-  const est=arbEstimarVendedores(nombreProducto||'',paisId||'');
-  return{paging:{total:est},results:[],_src:'estimate',_estimated:true};
+  // ── 4. Estimación inteligente — ÚLTIMO recurso ────────────────────────────
+  // Solo llega aquí si el browser bloqueó el fetch (muy raro — posible con VPN restrictiva)
+  const est = arbEstimarVendedores(nombreProducto||'', paisId||'');
+  const estimado = {paging:{total:est}, results:[], _src:'estimate', _estimated:true};
+  _arbFetchCache[apiUrl] = estimado;
+  return estimado;
 }
 
 async function arbAnalizarUno(termES,termPT,marca,ganancia,peso,paises){
