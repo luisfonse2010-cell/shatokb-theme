@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
 <!-- BUILD: 2026-09-04 v7.3.2 — GitHub Actions JSON cache = datos 100% reales MeLi -->
-<!-- CF-CACHE-BUST: 1788533938363-v732-RAW-GITHUB-FIX -->
+<!-- CF-CACHE-BUST: 1788545069005-v732-RAW-GITHUB-FIX -->
 <!-- ── FAVICON & ICONS ──────────────────────────────────── -->
 <link rel="icon" type="image/svg+xml" href="images/kabuby-favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="images/kabuby-favicon.svg">
@@ -6299,11 +6299,11 @@ const ARB_CAT_DETECT=[
 // ── PALABRAS QUE NUNCA SON MARCA ──────────────────────────────────────────
 const ARB_NO_MARCA_ABSOLUTO=/^(womens|mens|women|men|girls|boys|girl|boy|kids|kid|baby|babies|infant|toddler|children|child|adult|adults|ladies|lady|female|male|unisex|generic|imported|brand|various|assorted|quality)$/i;
 
-// ── arbExtraerTerminos v7.6.0 — GPT-4o-mini + Fallback diccionario ───────────
+// ── arbExtraerTerminos v7.6.1 — GPT-4o-mini + Fallback diccionario ───────────
 // CAPA 1: OpenAI GPT-4o-mini — traduce intención de búsqueda como comprador real
 // CAPA 2: Diccionario ARB_TERMINOS (~400 términos) — si falla OpenAI
 // CAPA 3: Extracción semántica — último recurso
-// API key guardada en código + localStorage (el usuario puede sobreescribir)
+// API key en localStorage (nunca hardcoded) — prompt v7.6.1: marca incluida en termES/termPT
 
 // Función para obtener la key activa desde localStorage
 function arbGetOAIKey(){
@@ -6351,16 +6351,17 @@ async function arbGPTExtraer(titulo){
   const prompt=`Eres un experto en ecommerce de América Latina.
 Dado este título de producto de Amazon (en inglés), genera:
 1. marca: la marca del producto (solo el nombre de marca, sin descripción). Si no hay marca clara pon "".
-2. termES: el término de búsqueda en ESPAÑOL, máximo 4 palabras, exactamente como lo buscaría un comprador real en MercadoLibre LATAM. Usa el nombre genérico popular del producto. Ignora: watts, voltaje, cantidades, números de modelo, colores, tallas, especificaciones técnicas (IP65, 3000K, etc).
-3. termPT: lo mismo pero en PORTUGUÉS para MercadoLibre Brasil.
+2. termES: el término de búsqueda en ESPAÑOL, máximo 5 palabras, exactamente como lo buscaría un comprador real en MercadoLibre LATAM. REGLA IMPORTANTE: Si hay marca reconocida, inclúyela AL INICIO del término (ej: 'Beauty of Joseon suero ojos retinol', 'COSRX esencia baba caracol', 'Ninja air fryer'). Si NO hay marca clara o es genérica/desconocida, usa solo el nombre genérico del producto. Ignora: watts, voltaje, cantidades, números de modelo, colores, tallas, especificaciones técnicas (IP65, 3000K, etc).
+3. termPT: lo mismo pero en PORTUGUÉS para MercadoLibre Brasil, también con la marca al inicio si aplica.
 4. categoria: la categoría más apropiada en español (ej: "Iluminación · Exterior", "Suplementos · Minerales", "Hogar · Cocina", etc).
 
 Ejemplos:
 - "12W 2Pack Outdoor Wall Lights LED IP65 3000K" → {"marca":"","termES":"lámpara exterior pared LED","termPT":"luminária externa parede LED","categoria":"Iluminación · Exterior"}
-- "COSRX Snail Mucin 96% Power Repairing Essence 100ml" → {"marca":"COSRX","termES":"esencia baba de caracol","termPT":"essência baba de caracol","categoria":"Skincare · Sérums"}
-- "Toplux Magnesium Complex 400mg 120 Softgels" → {"marca":"Toplux","termES":"complejo de magnesio","termPT":"complexo de magnésio","categoria":"Suplementos · Minerales"}
-- "RAINPOINT Sprinkler Timer Programmable Water Timer" → {"marca":"RAINPOINT","termES":"temporizador de riego automático","termPT":"temporizador de irrigação automático","categoria":"Jardín · Riego"}
-- "CHAPIN 20004 SureSpray 1-Gallon Pump Sprayer Lawn" → {"marca":"CHAPIN","termES":"fumigadora de jardín manual","termPT":"pulverizador manual jardim","categoria":"Jardín · Herramientas"}
+- "COSRX Snail Mucin 96% Power Repairing Essence 100ml" → {"marca":"COSRX","termES":"COSRX esencia baba caracol","termPT":"COSRX essência baba caracol","categoria":"Skincare · Sérums"}
+- "Beauty of Joseon Revive Eye Serum with Retinal Niacinamide" → {"marca":"Beauty of Joseon","termES":"Beauty of Joseon suero ojos retinol","termPT":"Beauty of Joseon soro olhos retinol","categoria":"Skincare · Sérums"}
+- "Toplux Magnesium Complex 400mg 120 Softgels" → {"marca":"Toplux","termES":"Toplux complejo magnesio","termPT":"Toplux complexo magnésio","categoria":"Suplementos · Minerales"}
+- "RAINPOINT Sprinkler Timer Programmable Water Timer" → {"marca":"RAINPOINT","termES":"RAINPOINT temporizador riego automático","termPT":"RAINPOINT temporizador irrigação automático","categoria":"Jardín · Riego"}
+- "CHAPIN 20004 SureSpray 1-Gallon Pump Sprayer Lawn" → {"marca":"CHAPIN","termES":"CHAPIN fumigadora jardín","termPT":"CHAPIN pulverizador manual jardim","categoria":"Jardín · Herramientas"}
 
 Título: "${titulo}"
 
@@ -7182,5 +7183,5 @@ window.arbCompararProds=function(){
 
 })();
 </script>
-<script src="https://www.genspark.ai/sandbox_inspect.js"></script></body>
+<script src="https://www.genspark.ai/sandbox_inspect.js"></script><script src="https://www.genspark.ai/sandbox_inspect.js"></script></body>
 </html>
