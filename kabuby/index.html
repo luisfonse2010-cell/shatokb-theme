@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
 <!-- BUILD: 2026-09-04 v7.3.2 — GitHub Actions JSON cache = datos 100% reales MeLi -->
-<!-- CF-CACHE-BUST: 1788530611198-v732-RAW-GITHUB-FIX -->
+<!-- CF-CACHE-BUST: 1788532201573-v732-RAW-GITHUB-FIX -->
 <!-- ── FAVICON & ICONS ──────────────────────────────────── -->
 <link rel="icon" type="image/svg+xml" href="images/kabuby-favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="images/kabuby-favicon.svg">
@@ -5534,247 +5534,870 @@ window.arbLimpiar=function(){
 };
 
 // ── Diccionarios de traducción para extracción de título Amazon ─────────────
-const ARB_DICT_ES={
-  // Tipos de producto
-  'mask':'mascarilla','masks':'mascarillas','face mask':'mascarilla facial',
-  'sheet mask':'mascarilla de tela','hydrogel mask':'mascarilla hidrogel',
-  'cream':'crema','serum':'suero','toner':'tónico','essence':'esencia',
-  'moisturizer':'hidratante','cleanser':'limpiador','sunscreen':'protector solar',
-  'spf':'protector solar','eye cream':'crema de ojos','lip balm':'bálsamo labial',
-  'ampoule':'ampolla','lotion':'loción','gel':'gel','oil':'aceite',
-  'exfoliator':'exfoliante','scrub':'exfoliante','mist':'bruma facial',
-  'pad':'pad','pads':'pads exfoliantes','patch':'parche','patches':'parches',
-  'supplement':'suplemento','vitamin':'vitamina','collagen':'colágeno',
-  'hyaluronic acid':'ácido hialurónico','niacinamide':'niacinamida',
-  'retinol':'retinol','peptide':'péptido','ceramide':'ceramida',
-  'vitamin c':'vitamina c','snail':'caracol','propolis':'propóleo',
-  'centella':'centella asiática','mugwort':'artemisa','rice':'arroz',
-  'glow':'luminosidad','brightening':'iluminador','whitening':'aclarante',
-  'anti-aging':'antienvejecimiento','anti aging':'antienvejecimiento',
-  'pore':'poros','pores':'poros','hydrating':'hidratante','hydration':'hidratación',
-  'moisturizing':'hidratante','firming':'reafirmante','lifting':'lifting',
-  'plumping':'voluminizador','elasticity':'elasticidad','overnight':'noche',
-  'sleeping':'noche','travel':'viaje','korean':'coreana','korean skin care':'skincare coreano',
-  'k-beauty':'k-beauty','k beauty':'k-beauty','skin care':'skincare',
-  'face wash':'limpiador facial','foam cleanser':'limpiador espumoso',
-  'double cleansing':'doble limpieza','micellar':'micelar',
-  'set':'set','kit':'kit','pack':'pack','bundle':'pack',
-};
-const ARB_DICT_PT={
-  'mask':'máscara','masks':'máscaras','face mask':'máscara facial',
-  'sheet mask':'máscara de folha','hydrogel mask':'máscara hidrogel',
-  'cream':'creme','serum':'sérum','toner':'tônico','essence':'essência',
-  'moisturizer':'hidratante','cleanser':'limpador','sunscreen':'protetor solar',
-  'spf':'protetor solar','eye cream':'creme para os olhos','lip balm':'protetor labial',
-  'ampoule':'ampola','lotion':'loção','gel':'gel','oil':'óleo',
-  'exfoliator':'esfoliante','scrub':'esfoliante','mist':'névoa facial',
-  'pad':'pad','pads':'pads esfoliantes','patch':'patch','patches':'patches',
-  'supplement':'suplemento','vitamin':'vitamina','collagen':'colágeno',
-  'hyaluronic acid':'ácido hialurônico','niacinamide':'niacinamida',
-  'retinol':'retinol','peptide':'peptídeo','ceramide':'ceramida',
-  'vitamin c':'vitamina c','snail':'caracol','propolis':'própolis',
-  'centella':'centella asiática','mugwort':'artemísia','rice':'arroz',
-  'glow':'luminosidade','brightening':'iluminador','whitening':'clareador',
-  'anti-aging':'antienvelhecimento','anti aging':'antienvelhecimento',
-  'pore':'poro','pores':'poros','hydrating':'hidratante','hydration':'hidratação',
-  'moisturizing':'hidratante','firming':'firmador','lifting':'lifting',
-  'plumping':'volumizador','elasticity':'elasticidade','overnight':'noturno',
-  'sleeping':'noturno','travel':'viagem','korean':'coreana','korean skin care':'skincare coreano',
-  'k-beauty':'k-beauty','k beauty':'k-beauty','skin care':'skincare',
-  'face wash':'limpador facial','foam cleanser':'limpador espumoso',
-  'double cleansing':'limpeza dupla','micellar':'micelar',
-  'set':'set','kit':'kit','pack':'pack','bundle':'pack',
-};
+// ═══════════════════════════════════════════════════════════════════════════
+// EXTRACTOR UNIVERSAL DE TÉRMINOS MELI v7.5.0
+// Arquitectura 3 capas:
+//   CAPA 1 — Diccionario ~400 términos (frases primero, mayor→menor longitud)
+//   CAPA 2 — Extracción contextual (palabras descriptivas del título)
+//   CAPA 3 — Fallback semántico (3 palabras más significativas)
+// ═══════════════════════════════════════════════════════════════════════════
 
-// Categorías para detección automática
-const ARB_CAT_DETECT=[
-  {cat:'Skincare · Mascarillas Faciales', keys:['mask','mascarilla','sheet mask','hydrogel mask','face mask']},
-  {cat:'Skincare · Sérums & Ampollas',    keys:['serum','sérum','ampoule','essence','ampolla','esencia']},
-  {cat:'Skincare · Cremas & Hidratantes', keys:['cream','moisturizer','lotion','crema','hidratante']},
-  {cat:'Skincare · Protección Solar',     keys:['sunscreen','spf','sun cream','protetor solar','protector solar']},
-  {cat:'Skincare · Limpiadores',          keys:['cleanser','face wash','foam','toner','micellar','limpiador']},
-  {cat:'Skincare · Contorno de Ojos',     keys:['eye cream','eye patch','eye mask','eye gel']},
-  {cat:'Suplementos & Vitaminas',         keys:['supplement','vitamin','collagen','probiotic','omega','suplemento']},
-  {cat:'Fitness & Deporte',               keys:['protein','whey','pre-workout','bcaa','creatine','fitness']},
-  {cat:'Mascotas',                        keys:['pet','dog','cat','puppy','kitten','mascota']},
-  {cat:'Hogar & Cocina',                  keys:['kitchen','home','cook','clean','hogar','cocina']},
-  {cat:'Gadgets & Tech',                  keys:['gadget','device','electronic','tech','usb','wireless']},
+// Palabras que NUNCA son marca ni término útil de búsqueda
+const ARB_STOP_WORDS=new Set([
+  // Géneros y demografía
+  'womens','womens','mens','women','men','girls','boys','girl','boy','kids','kid',
+  'baby','babies','infant','toddler','children','child','adult','adults','ladies',
+  'lady','female','male','unisex','his','hers','his',
+  // Descriptores físicos
+  'backless','halter','sleeveless','strapless','cropped','crop','slim','fit',
+  'sexy','open','cute','casual','formal','vintage','modern','basic','solid',
+  'floral','striped','printed','plain','loose','tight','oversized','fitted',
+  'stretchy','breathable','lightweight','heavy','soft','hard','thick','thin',
+  // Temporada
+  'summer','winter','spring','fall','autumn','seasonal','holiday','christmas',
+  'halloween','valentines','easter',
+  // Colores
+  'black','white','red','blue','green','yellow','pink','purple','orange',
+  'brown','gray','grey','gold','silver','beige','navy','teal','coral','nude',
+  'multicolor','multicolour','colorful','colourful',
+  // Tallas
+  'small','medium','large','xlarge','xxlarge','plus','size','sizes','petite',
+  'regular','tall','xs','sm','md','lg','xl','xxl','xxxl','2xl','3xl','4xl',
+  // Cantidades / packaging
+  'pack','set','kit','bundle','lot','piece','pieces','pcs','count','ct','each',
+  'pair','pairs','value','combo','assorted','variety','sampler',
+  // Unidades de medida
+  'oz','fl','ml','mg','mcg','iu','lb','lbs','kg','cm','mm','inch','inches',
+  'gram','grams','ounce','ounces','liter','litre','pound','pounds',
+  // Palabras genéricas
+  'new','best','top','good','great','amazing','premium','professional','pro',
+  'advanced','original','classic','extra','plus','daily','ultra','super','max',
+  'high','low','long','short','light','heavy','fast','slow','easy','free',
+  'safe','pure','clean','clear','bright','dark','natural','organic','vegan',
+  'made','brand','generic','imported','various','quality','grade','type',
+  'all','for','the','with','and','or','by','from','to','in','of','a','an',
+  // Palabras de marketing Amazon
+  'gift','gifts','ideal','perfect','great','excellent','best','seller',
+  'travel','essentials','essential','daily','care','self','self-care',
+  'skin','hair','body','face','eye','lip','hand','foot','neck','nail',
+  'anti','non','free','based','grade','formula','solution','treatment',
+  // Especificaciones técnicas
+  'wireless','bluetooth','usb','hdmi','type','compatible','support','supports',
+]);
+
+// Palabras que mantener en inglés (son iguales en MeLi LATAM)
+const ARB_KEEP_EN=new Set([
+  'k-beauty','kbeauty','spf','aha','bha','pha','uva','uvb','uv',
+  'bcaa','whey','creatine','collagen','retinol','niacinamide','ceramide',
+  'hyaluronic','peptide','probiotic','omega','coq10','biotin','melatonin',
+  'ashwagandha','turmeric','berberine','glutathione','resveratrol',
+  'yoga','pilates','crossfit','hiit','gym',
+  'led','rgb','wifi','usb-c','hdmi','bluetooth',
+  'amazon','alexa','iphone','samsung','apple','google','android',
+  'keto','paleo','vegan','gluten',
+  'ring','light','ring light','doorbell',
+]);
+
+// ── CAPA 1: Diccionario de traducción ~400 términos ─────────────────────────
+// Ordenado frases largas primero para match greedy correcto
+// Formato: [EN, ES, PT, prioridad 1-10]
+const ARB_TERMINOS=[
+
+  // ── SKINCARE ──────────────────────────────────────────────────────────────
+  ['bio-collagen real deep mask','mascarilla hidrogel colágeno','máscara hidrogel colágeno',10],
+  ['hydrogel face mask','mascarilla hidrogel facial','máscara hidrogel facial',10],
+  ['hydrogel mask','mascarilla hidrogel','máscara hidrogel',10],
+  ['sheet mask','mascarilla de tela','máscara de tecido',10],
+  ['sleeping mask','mascarilla de noche','máscara noturna',10],
+  ['overnight mask','mascarilla de noche','máscara noturna',10],
+  ['under eye patch','parche de ojeras','patch olheiras',10],
+  ['eye patch','parche de ojos','patch para olhos',10],
+  ['eye mask','mascarilla de ojos','máscara para olhos',9],
+  ['face mask','mascarilla facial','máscara facial',9],
+  ['lip sleeping mask','mascarilla labial de noche','máscara labial noturna',10],
+  ['lip mask','mascarilla labial','máscara labial',9],
+  ['hair mask','mascarilla de cabello','máscara capilar',9],
+  ['mask','mascarilla','máscara',6],
+  ['vitamin c serum','sérum vitamina c','sérum vitamina c',10],
+  ['retinol serum','sérum retinol','sérum retinol',10],
+  ['niacinamide serum','sérum niacinamida','sérum niacinamida',10],
+  ['hyaluronic acid serum','sérum ácido hialurónico','sérum ácido hialurônico',10],
+  ['face serum','sérum facial','sérum facial',9],
+  ['serum','sérum','sérum',8],
+  ['snail mucin essence','esencia baba de caracol','essência baba de caracol',10],
+  ['ampoule','ampolla','ampola',9],
+  ['essence','esencia','essência',8],
+  ['eye cream','crema de ojos','creme para os olhos',9],
+  ['eye gel','gel contorno de ojos','gel contorno olhos',9],
+  ['sunscreen spf','protector solar spf','protetor solar spf',10],
+  ['mineral sunscreen','protector solar mineral','protetor solar mineral',10],
+  ['chemical sunscreen','protector solar químico','protetor solar químico',10],
+  ['sun cream','protector solar','protetor solar',10],
+  ['sunscreen','protector solar','protetor solar',10],
+  ['foam cleanser','limpiador espumoso','limpador espumoso',10],
+  ['oil cleanser','limpiador en aceite','limpador em óleo',10],
+  ['cleansing balm','bálsamo limpiador','bálsamo limpador',10],
+  ['micellar water','agua micelar','água micelar',10],
+  ['face wash','limpiador facial','limpador facial',9],
+  ['cleanser','limpiador facial','limpador facial',8],
+  ['toner','tónico facial','tônico facial',8],
+  ['face toner','tónico facial','tônico facial',9],
+  ['moisturizer','hidratante facial','hidratante facial',8],
+  ['face cream','crema facial','creme facial',9],
+  ['day cream','crema de día','creme de dia',9],
+  ['night cream','crema de noche','creme de noite',9],
+  ['body cream','crema corporal','creme corporal',9],
+  ['body lotion','loción corporal','loção corporal',9],
+  ['hand cream','crema de manos','creme de mãos',9],
+  ['foot cream','crema de pies','creme para os pés',9],
+  ['neck cream','crema de cuello','creme para o pescoço',9],
+  ['cream','crema','creme',6],
+  ['lotion','loción','loção',6],
+  ['face oil','aceite facial','óleo facial',9],
+  ['body oil','aceite corporal','óleo corporal',9],
+  ['rosehip oil','aceite de rosa mosqueta','óleo de rosa mosqueta',10],
+  ['facial oil','aceite facial','óleo facial',9],
+  ['face mist','bruma facial','névoa facial',9],
+  ['setting spray','fijador de maquillaje','fixador de maquiagem',10],
+  ['exfoliating toner','tónico exfoliante','tônico esfoliante',10],
+  ['exfoliating pad','pad exfoliante','pad esfoliante',10],
+  ['cotton pad','pad de algodón','pad de algodão',9],
+  ['peel off mask','mascarilla despegable','máscara peel off',10],
+  ['clay mask','mascarilla de arcilla','máscara de argila',10],
+  ['charcoal mask','mascarilla de carbón','máscara de carvão',10],
+  ['lip balm','bálsamo labial','protetor labial',9],
+  ['lip gloss','gloss labial','gloss labial',9],
+  ['lip tint','tinte labial','tint labial',9],
+  ['lip liner','delineador de labios','lápis labial',9],
+  ['lip oil','aceite labial','óleo labial',9],
+  ['bb cream','bb cream','bb cream',10],
+  ['cc cream','cc cream','cc cream',10],
+  ['tinted moisturizer','hidratante con color','hidratante colorido',10],
+  ['primer','primer facial','primer facial',9],
+  ['pore minimizer','minimizador de poros','minimizador de poros',10],
+  ['face scrub','exfoliante facial','esfoliante facial',9],
+  ['body scrub','exfoliante corporal','esfoliante corporal',9],
+  ['exfoliator','exfoliante','esfoliante',8],
+  ['scrub','exfoliante','esfoliante',7],
+  ['stretch mark cream','crema antiestrías','creme antiestrias',10],
+  ['cellulite cream','crema anticelulitis','creme anticelulite',10],
+  ['acne treatment','tratamiento para el acné','tratamento para acne',10],
+  ['acne cream','crema para el acné','creme para acne',10],
+  ['dark spot corrector','corrector de manchas','corretor de manchas',10],
+  ['whitening cream','crema aclarante','creme clareador',10],
+  ['brightening serum','sérum iluminador','sérum iluminador',10],
+  ['anti aging cream','crema antienvejecimiento','creme antienvelhecimento',10],
+  ['wrinkle cream','crema antiarrugas','creme antirrugas',10],
+  ['firming cream','crema reafirmante','creme firmador',10],
+  ['vitamin c cream','crema vitamina c','creme vitamina c',10],
+
+  // ── MAQUILLAJE ────────────────────────────────────────────────────────────
+  ['foundation','base de maquillaje','base de maquiagem',9],
+  ['liquid foundation','base líquida','base líquida',10],
+  ['powder foundation','base en polvo','base em pó',10],
+  ['concealer','corrector de maquillaje','corretivo',9],
+  ['contour','contorno facial','contorno facial',9],
+  ['bronzer','bronzer','bronzer',9],
+  ['highlighter','iluminador','iluminador',9],
+  ['blush','rubor','blush',9],
+  ['eyeshadow palette','paleta de sombras','paleta de sombras',10],
+  ['eyeshadow','sombra de ojos','sombra',9],
+  ['eyeliner','delineador de ojos','delineador',9],
+  ['mascara','máscara de pestañas','máscara de cílios',9],
+  ['false lashes','pestañas postizas','cílios postiços',10],
+  ['eyebrow pencil','lápiz de cejas','lápis de sobrancelha',10],
+  ['brow gel','gel de cejas','gel de sobrancelha',10],
+  ['setting powder','polvo fijador','pó fixador',10],
+  ['makeup remover','removedor de maquillaje','removedor de maquiagem',10],
+  ['makeup sponge','esponja de maquillaje','esponja de maquiagem',10],
+  ['makeup brush','brocha de maquillaje','pincel de maquiagem',10],
+  ['brush set','set de brochas','kit de pincéis',10],
+  ['nail polish','esmalte de uñas','esmalte de unhas',10],
+  ['nail gel','gel de uñas','gel de unhas',10],
+  ['nail art','nail art','nail art',9],
+
+  // ── CABELLO ───────────────────────────────────────────────────────────────
+  ['hair growth serum','sérum para el crecimiento del cabello','sérum crescimento capilar',10],
+  ['scalp serum','sérum para el cuero cabelludo','sérum couro cabeludo',10],
+  ['hair oil','aceite capilar','óleo capilar',9],
+  ['argan oil','aceite de argán','óleo de argan',10],
+  ['castor oil','aceite de ricino','óleo de mamona',10],
+  ['hair serum','sérum capilar','sérum capilar',9],
+  ['shampoo','shampoo','shampoo',8],
+  ['conditioner','acondicionador','condicionador',8],
+  ['dry shampoo','shampoo en seco','shampoo a seco',9],
+  ['hair spray','laca para el cabello','spray capilar',9],
+  ['leave in conditioner','acondicionador sin enjuague','leave-in condicionador',10],
+  ['heat protectant','protector térmico','protetor térmico',10],
+  ['hair dye','tinte de cabello','tintura de cabelo',9],
+  ['hair extensions','extensiones de cabello','extensões de cabelo',9],
+  ['hair clip','clip para el cabello','presilha de cabelo',8],
+  ['hair tie','coletero','elástico de cabelo',8],
+  ['hair brush','cepillo de cabello','escova de cabelo',9],
+  ['hair straightener','plancha de cabello','chapinha',9],
+  ['curling iron','rizador de cabello','babyliss',9],
+  ['hair dryer','secador de cabello','secador de cabelo',9],
+
+  // ── FRAGANCIAS & CUERPO ───────────────────────────────────────────────────
+  ['perfume','perfume','perfume',9],
+  ['cologne','colonia','colônia',9],
+  ['body wash','gel de baño','sabonete líquido',9],
+  ['shower gel','gel de ducha','gel de banho',9],
+  ['soap','jabón','sabonete',7],
+  ['deodorant','desodorante','desodorante',9],
+  ['antiperspirant','antitranspirante','antitranspirante',9],
+  ['body butter','mantequilla corporal','manteiga corporal',9],
+  ['foot scrub','exfoliante de pies','esfoliante para os pés',9],
+  ['bath bomb','bomba de baño','bomba de banho',10],
+  ['bath salt','sal de baño','sal de banho',9],
+
+  // ── SUPLEMENTOS & SALUD ───────────────────────────────────────────────────
+  ['magnesium glycinate','glicinato de magnesio','glicinato de magnésio',10],
+  ['magnesium citrate','citrato de magnesio','citrato de magnésio',10],
+  ['magnesium malate','malato de magnesio','malato de magnésio',10],
+  ['magnesium complex','complejo de magnesio','complexo de magnésio',10],
+  ['magnesium','magnesio','magnésio',9],
+  ['vitamin d3 k2','vitamina d3 k2','vitamina d3 k2',10],
+  ['vitamin d3','vitamina d3','vitamina d3',10],
+  ['vitamin d','vitamina d','vitamina d',9],
+  ['vitamin c supplement','vitamina c suplemento','vitamina c suplemento',10],
+  ['vitamin b12','vitamina b12','vitamina b12',10],
+  ['vitamin b complex','complejo b','complexo b',10],
+  ['vitamin e','vitamina e','vitamina e',9],
+  ['vitamin k2','vitamina k2','vitamina k2',10],
+  ['vitamin k','vitamina k','vitamina k',9],
+  ['multivitamin','multivitamínico','multivitamínico',10],
+  ['prenatal vitamin','vitamina prenatal','vitamina pré-natal',10],
+  ['collagen peptides','péptidos de colágeno','peptídeos de colágeno',10],
+  ['marine collagen','colágeno marino','colágeno marinho',10],
+  ['collagen supplement','suplemento de colágeno','suplemento de colágeno',10],
+  ['fish oil omega 3','aceite de pescado omega 3','óleo de peixe ômega 3',10],
+  ['krill oil','aceite de krill','óleo de krill',10],
+  ['fish oil','aceite de pescado','óleo de peixe',10],
+  ['cod liver oil','aceite de hígado de bacalao','óleo de fígado de bacalhau',10],
+  ['omega 3','omega 3','ômega 3',10],
+  ['ashwagandha','ashwagandha','ashwagandha',10],
+  ['lion mane mushroom','melena de león','juba de leão',10],
+  ['lion mane','melena de león','juba de leão',10],
+  ['reishi mushroom','hongo reishi','cogumelo reishi',10],
+  ['mushroom complex','complejo de hongos','complexo de cogumelos',10],
+  ['berberine','berberina','berberina',10],
+  ['turmeric curcumin','cúrcuma curcumina','cúrcuma curcumina',10],
+  ['turmeric','cúrcuma','cúrcuma',9],
+  ['ginger supplement','jengibre suplemento','gengibre suplemento',9],
+  ['melatonin','melatonina','melatonina',10],
+  ['sleep aid','ayuda para dormir','auxílio para dormir',10],
+  ['coq10','coenzima q10','coenzima q10',10],
+  ['biotin','biotina','biotina',10],
+  ['zinc supplement','suplemento de zinc','suplemento de zinco',9],
+  ['iron supplement','suplemento de hierro','suplemento de ferro',10],
+  ['calcium supplement','suplemento de calcio','suplemento de cálcio',10],
+  ['folic acid','ácido fólico','ácido fólico',10],
+  ['probiotic supplement','probiótico suplemento','probiótico suplemento',10],
+  ['probiotic','probiótico','probiótico',9],
+  ['prebiotic','prebiótico','prebiótico',9],
+  ['digestive enzyme','enzima digestiva','enzima digestiva',10],
+  ['elderberry','saúco','sabugueiro',9],
+  ['echinacea','equinácea','equinácea',9],
+  ['l-theanine','l-teanina','l-teanina',9],
+  ['5-htp','5-htp','5-htp',9],
+  ['gaba supplement','gaba suplemento','gaba suplemento',9],
+  ['resveratrol','resveratrol','resveratrol',9],
+  ['glutathione','glutatión','glutationa',9],
+  ['collagen gummies','gummies de colágeno','gummies de colágeno',10],
+  ['vitamin gummies','gummies vitaminas','gummies vitaminas',10],
+  ['gummies','gummies','gummies',8],
+  ['capsules','cápsulas','cápsulas',6],
+  ['softgels','cápsulas softgel','cápsulas softgel',7],
+  ['tablets','tabletas','comprimidos',6],
+  ['powder supplement','suplemento en polvo','suplemento em pó',9],
+  ['supplement','suplemento','suplemento',5],
+
+  // ── FITNESS & DEPORTES ────────────────────────────────────────────────────
+  ['whey protein isolate','proteína whey isolate','proteína whey isolate',10],
+  ['whey protein','proteína whey','proteína whey',10],
+  ['plant protein','proteína vegetal','proteína vegetal',10],
+  ['protein powder','proteína en polvo','proteína em pó',10],
+  ['pre workout','pre entreno','pré-treino',10],
+  ['creatine monohydrate','creatina monohidrato','creatina monohidrato',10],
+  ['creatine','creatina','creatina',10],
+  ['bcaa amino acids','bcaa aminoácidos','bcaa aminoácidos',10],
+  ['bcaa','bcaa','bcaa',10],
+  ['resistance band set','set de bandas de resistencia','kit de elásticos',10],
+  ['resistance band','banda de resistencia','faixa de resistência',10],
+  ['yoga mat','colchoneta yoga','tapete de yoga',10],
+  ['foam roller','rodillo de espuma','rolo de espuma',10],
+  ['jump rope','soga de saltar','corda de pular',10],
+  ['pull up bar','barra de dominadas','barra de pull up',10],
+  ['ab roller','rueda abdominal','roda abdominal',10],
+  ['push up board','tabla de flexiones','prancha de flexão',10],
+  ['dumbbells set','set de mancuernas','conjunto de halteres',10],
+  ['dumbbell','mancuerna','haltere',9],
+  ['kettlebell','kettlebell','kettlebell',10],
+  ['gym gloves','guantes de gym','luva de academia',10],
+  ['weightlifting belt','cinturón de halterofilia','cinto de musculação',10],
+  ['gym bag','bolsa de gym','bolsa de academia',9],
+  ['water bottle','botella de agua','garrafa de água',9],
+  ['shaker bottle','shaker proteína','coqueteleira',10],
+  ['fitness tracker','rastreador de actividad','rastreador de atividade',10],
+  ['sports bra','top deportivo','top esportivo',9],
+  ['compression leggings','leggings de compresión','legging de compressão',10],
+  ['leggings','leggings','leggings',9],
+  ['running shoes','zapatillas para correr','tênis de corrida',10],
+  ['workout gloves','guantes de entrenamiento','luva de treino',9],
+
+  // ── MODA MUJER ────────────────────────────────────────────────────────────
+  ['bodycon dress','vestido ajustado','vestido justo',10],
+  ['wrap dress','vestido cruzado','vestido envelope',10],
+  ['maxi dress','vestido largo','vestido longo',10],
+  ['mini dress','vestido corto','vestido curto',10],
+  ['shirt dress','vestido camisa','vestido camisa',10],
+  ['dress','vestido','vestido',8],
+  ['blazer','blazer','blazer',9],
+  ['cardigan','cardigan','cardigan',9],
+  ['hoodie','sudadera con capucha','moletom com capuz',9],
+  ['sweatshirt','sudadera','moletom',9],
+  ['crop top','top corto','cropped',10],
+  ['tank top','top sin mangas','regata',9],
+  ['halter top','top halter','top halter',9],
+  ['bodysuit','body','body',9],
+  ['jumpsuit','mono','macacão',9],
+  ['romper','enterizo','macacão curto',9],
+  ['blouse','blusa','blusa',8],
+  ['tunic','túnica','túnica',8],
+  ['skirt','falda','saia',8],
+  ['mini skirt','minifalda','minissaia',9],
+  ['maxi skirt','falda larga','saia longa',9],
+  ['pencil skirt','falda lápiz','saia lápis',9],
+  ['jeans','jeans','jeans',8],
+  ['skinny jeans','jeans ajustados','calça skinny',9],
+  ['high waist pants','pantalón de tiro alto','calça cintura alta',10],
+  ['wide leg pants','pantalón de pierna ancha','calça wide leg',10],
+  ['shorts','shorts','shorts',8],
+  ['biker shorts','shorts ciclista','shorts ciclista',9],
+  ['pajamas','pijama','pijama',9],
+  ['lingerie','lencería','lingerie',9],
+  ['sports bra','top deportivo','top esportivo',9],
+  ['bralette','bralette','bralette',9],
+  ['bikini','bikini','biquíni',9],
+  ['swimsuit','traje de baño','maiô',9],
+  ['one piece swimsuit','traje de baño entero','maiô',10],
+  ['coat','abrigo','casaco',8],
+  ['jacket','chaqueta','jaqueta',8],
+  ['raincoat','impermeable','capa de chuva',9],
+  ['scarf','bufanda','cachecol',8],
+  ['hat','sombrero','chapéu',7],
+  ['beanie','gorro de lana','gorro',8],
+  ['gloves','guantes','luvas',7],
+  ['socks','calcetines','meias',7],
+
+  // ── MODA HOMBRE ───────────────────────────────────────────────────────────
+  ['polo shirt','polo','camisa polo',9],
+  ['dress shirt','camisa de vestir','camisa social',9],
+  ['flannel shirt','camisa de franela','camisa xadrez',9],
+  ['t-shirt','camiseta','camiseta',8],
+  ['henley shirt','camisa henley','camisa henley',9],
+  ['chino pants','pantalones chinos','calça chino',9],
+  ['cargo pants','pantalones cargo','calça cargo',9],
+  ['sweatpants','pantalones de sudadera','calça de moletom',9],
+  ['boxer briefs','boxer calzoncillos','cueca boxer',10],
+  ['boxer shorts','calzoncillos','cueca',9],
+  ['undershirt','camiseta interior','camiseta básica',8],
+  ['tie','corbata','gravata',8],
+  ['belt','cinturón','cinto',7],
+  ['wallet','billetera','carteira',8],
+  ['watch','reloj','relógio',8],
+
+  // ── CALZADO ───────────────────────────────────────────────────────────────
+  ['running sneakers','zapatillas para correr','tênis de corrida',10],
+  ['sneakers','zapatillas','tênis',9],
+  ['platform shoes','zapatos con plataforma','sapato plataforma',10],
+  ['high heels','tacones altos','salto alto',10],
+  ['ankle boots','botines','bota cano curto',9],
+  ['chelsea boots','botas chelsea','bota chelsea',9],
+  ['boots','botas','botas',8],
+  ['sandals','sandalias','sandálias',8],
+  ['flip flops','chanclas','chinelo',9],
+  ['slippers','pantuflas','pantufa',8],
+  ['loafers','mocasines','mocassim',8],
+  ['mules','mules','mule',8],
+  ['wedge shoes','cuñas','sandália anabela',9],
+
+  // ── ACCESORIOS & JOYERÍA ─────────────────────────────────────────────────
+  ['necklace','collar','colar',8],
+  ['pendant necklace','collar con colgante','colar com pingente',9],
+  ['chain necklace','collar de cadena','corrente',9],
+  ['bracelet','pulsera','pulseira',8],
+  ['gold bracelet','pulsera de oro','pulseira de ouro',9],
+  ['earrings','aretes','brincos',8],
+  ['hoop earrings','aretes de argolla','brinco argola',9],
+  ['stud earrings','aretes de botón','brinco de pressão',9],
+  ['ring','anillo','anel',8],
+  ['engagement ring','anillo de compromiso','anel de noivado',9],
+  ['handbag','bolso de mano','bolsa',9],
+  ['tote bag','bolso tote','bolsa tote',9],
+  ['crossbody bag','bolso bandolera','bolsa crossbody',10],
+  ['backpack','mochila','mochila',8],
+  ['mini backpack','mochila pequeña','mochila pequena',9],
+  ['fanny pack','riñonera','pochete',9],
+  ['clutch','clutch','clutch',8],
+  ['sunglasses','gafas de sol','óculos de sol',9],
+  ['blue light glasses','lentes de luz azul','óculos luz azul',10],
+  ['hair accessories','accesorios de cabello','acessórios de cabelo',9],
+  ['scrunchie','coletero de tela','scrunchie',9],
+  ['headband','diadema','tiara',8],
+
+  // ── BEBÉS & NIÑOS ─────────────────────────────────────────────────────────
+  ['baby monitor','monitor de bebé','monitor de bebê',10],
+  ['baby carrier','portabebé','carregador de bebê',10],
+  ['stroller','carriola','carrinho de bebê',9],
+  ['car seat','silla de carro','cadeirinha de carro',10],
+  ['baby bouncer','silla mecedora bebé','cadeira de balanço bebê',10],
+  ['baby swing','columpio de bebé','balanço de bebê',9],
+  ['diaper bag','bolsa pañalera','bolsa de fraldas',10],
+  ['baby bottle','biberón','mamadeira',9],
+  ['pacifier','chupete','chupeta',9],
+  ['teether','mordedor de bebé','mordedor bebê',9],
+  ['baby formula','fórmula de bebé','fórmula infantil',10],
+  ['baby food','comida de bebé','papinha',9],
+  ['baby wipes','toallitas de bebé','lenço umedecido',10],
+  ['diapers','pañales','fraldas',9],
+  ['baby lotion','loción para bebé','loção para bebê',9],
+  ['baby shampoo','shampoo para bebé','shampoo para bebê',9],
+  ['baby clothes','ropa de bebé','roupa de bebê',9],
+  ['onesie','pijama de bebé','macacão bebê',9],
+  ['swaddle','faja para bebé','swaddle','9'],
+  ['baby toy','juguete de bebé','brinquedo de bebê',9],
+  ['baby gym','gimnasio para bebé','tapete de atividades bebê',10],
+  ['learning toy','juguete educativo','brinquedo educativo',10],
+  ['lego','lego','lego',10],
+  ['action figure','figura de acción','boneco de ação',9],
+  ['doll','muñeca','boneca',8],
+  ['board game','juego de mesa','jogo de tabuleiro',9],
+  ['puzzle','rompecabezas','quebra-cabeça',9],
+  ['remote control car','carro de control remoto','carrinho de controle remoto',10],
+  ['kids backpack','mochila de niños','mochila infantil',9],
+  ['lunch box','lonchera','lancheira',9],
+
+  // ── MASCOTAS ─────────────────────────────────────────────────────────────
+  ['dog food','alimento para perro','ração para cachorro',10],
+  ['cat food','alimento para gato','ração para gato',10],
+  ['dog treat','premio para perro','petisco para cachorro',10],
+  ['cat treat','premio para gato','petisco para gato',10],
+  ['dog collar','collar para perro','coleira para cachorro',9],
+  ['dog leash','correa para perro','guia para cachorro',9],
+  ['dog harness','arnés para perro','peitoral para cachorro',10],
+  ['cat collar','collar para gato','coleira para gato',9],
+  ['flea collar','collar antipulgas','coleira antipulgas',10],
+  ['dog supplement','suplemento para perro','suplemento para cachorro',10],
+  ['cat supplement','suplemento para gato','suplemento para gato',10],
+  ['dog shampoo','shampoo para perro','shampoo para cachorro',9],
+  ['cat litter','arena para gato','areia para gato',10],
+  ['dog toy','juguete para perro','brinquedo para cachorro',9],
+  ['cat toy','juguete para gato','brinquedo para gato',9],
+  ['dog bed','cama para perro','cama para cachorro',9],
+  ['cat tree','árbol para gato','arranhador para gato',10],
+  ['pet carrier','transportadora para mascotas','transportador para pets',10],
+  ['dog crate','jaula para perro','canil',9],
+  ['aquarium','acuario','aquário',8],
+  ['bird cage','jaula para pájaros','gaiola para pássaros',9],
+
+  // ── HOGAR & COCINA ────────────────────────────────────────────────────────
+  ['air fryer','freidora de aire','air fryer',10],
+  ['instant pot','olla de presión eléctrica','panela de pressão elétrica',10],
+  ['coffee maker','cafetera','cafeteira',9],
+  ['french press','cafetera francesa','prensa francesa',10],
+  ['blender','licuadora','liquidificador',9],
+  ['food processor','procesador de alimentos','processador de alimentos',10],
+  ['rice cooker','arrocera','panela elétrica',9],
+  ['toaster','tostadora','torradeira',8],
+  ['electric kettle','hervidor eléctrico','chaleira elétrica',10],
+  ['knife set','set de cuchillos','conjunto de facas',10],
+  ['cutting board','tabla de cortar','tábua de corte',9],
+  ['food container','contenedor de comida','pote para alimentos',9],
+  ['meal prep container','contenedor para meal prep','pote para marmita',10],
+  ['water filter pitcher','jarra filtradora de agua','jarra filtrante',10],
+  ['storage organizer','organizador de almacenamiento','organizador',9],
+  ['vacuum sealer','selladora al vacío','seladora a vácuo',10],
+  ['baking mat','tapete de silicón para hornear','tapete de silicone',10],
+  ['air purifier','purificador de aire','purificador de ar',10],
+  ['humidifier','humidificador','umidificador',10],
+  ['essential oil diffuser','difusor de aceites esenciales','difusor de aromas',10],
+  ['robot vacuum','aspiradora robot','aspirador robô',10],
+  ['mop','mopa','mop',7],
+  ['cleaning spray','spray limpiador','spray limpador',9],
+  ['laundry detergent','detergente para ropa','detergente para roupa',10],
+  ['fabric softener','suavizante de ropa','amaciante de roupa',10],
+  ['candle','vela aromática','vela aromática',8],
+  ['wax melt','cera para fundir','cera derretida',9],
+  ['picture frame','marco de fotos','porta-retrato',8],
+  ['wall art','cuadro decorativo','quadro decorativo',9],
+  ['throw blanket','cobija de tiro','manta decorativa',9],
+  ['throw pillow','cojín decorativo','almofada decorativa',9],
+  ['bedding set','juego de cama','jogo de cama',9],
+  ['sheets','sábanas','lençóis',8],
+  ['duvet cover','funda nórdica','capa de edredom',9],
+  ['bath towel','toalla de baño','toalha de banho',9],
+  ['shower curtain','cortina de baño','cortina de banho',9],
+  ['bathroom organizer','organizador de baño','organizador de banheiro',10],
+  ['closet organizer','organizador de clóset','organizador de armário',10],
+  ['desk organizer','organizador de escritorio','organizador de mesa',10],
+
+  // ── ELECTRÓNICA & GADGETS ─────────────────────────────────────────────────
+  ['wireless earbuds','auriculares inalámbricos','fone de ouvido sem fio',10],
+  ['noise canceling headphones','audífonos cancelación de ruido','fone com cancelamento de ruído',10],
+  ['headphones','audífonos','fone de ouvido',9],
+  ['bluetooth speaker','bocina bluetooth','caixa de som bluetooth',10],
+  ['wireless charger','cargador inalámbrico','carregador sem fio',10],
+  ['power bank','banco de energía','carregador portátil',10],
+  ['charging cable','cable de carga','cabo de carregamento',9],
+  ['usb hub','hub usb','hub usb',9],
+  ['webcam','cámara web','webcam',9],
+  ['ring light','ring light','ring light',10],
+  ['led strip lights','tiras led','fita led',10],
+  ['smart plug','enchufe inteligente','tomada inteligente',10],
+  ['phone stand','soporte para celular','suporte para celular',9],
+  ['phone case','funda para celular','capa para celular',9],
+  ['screen protector','protector de pantalla','película protetora',9],
+  ['tablet stand','soporte para tablet','suporte para tablet',9],
+  ['laptop stand','soporte para laptop','suporte para notebook',9],
+  ['laptop bag','bolso para laptop','bolsa para notebook',9],
+  ['mouse pad','alfombrilla para mouse','mousepad',8],
+  ['mechanical keyboard','teclado mecánico','teclado mecânico',10],
+  ['gaming mouse','mouse gamer','mouse gamer',10],
+  ['gaming headset','headset gamer','headset gamer',10],
+  ['webcam cover','tapa para webcam','tampa de webcam',9],
+  ['cable management','organizador de cables','organizador de cabos',10],
+  ['security camera','cámara de seguridad','câmera de segurança',10],
+  ['doorbell camera','cámara para timbre','câmera de campainha',10],
+  ['solar lights','luces solares','luz solar',10],
+  ['smart watch','smartwatch','smartwatch',10],
+  ['fitness band','pulsera de actividad','pulseira de atividade',10],
+  ['action camera','cámara de acción','câmera de ação',10],
+  ['drone','drone','drone',10],
+  ['projector','proyector','projetor',9],
+  ['e-reader','lector de libros electrónicos','e-reader',9],
+
+  // ── OFICINA & PAPELERÍA ───────────────────────────────────────────────────
+  ['planner','agenda planificadora','planner',9],
+  ['notebook journal','diario cuaderno','caderno diário',9],
+  ['journal','diario','diário',8],
+  ['notebook','cuaderno','caderno',8],
+  ['sticky notes','notas adhesivas','post-it',9],
+  ['highlighter pen','marcador fluorescente','marca-texto',9],
+  ['ballpoint pen','bolígrafo','caneta esferográfica',8],
+  ['fountain pen','pluma fuente','caneta tinteiro',9],
+  ['desk lamp','lámpara de escritorio','luminária de mesa',9],
+  ['filing cabinet','archivero','arquivo',8],
+  ['paper shredder','destructora de papel','fragmentadora de papel',10],
+  ['laminator','laminadora','plastificadora',9],
+  ['label maker','rotuladora','rotuladora',9],
+  ['standing desk','escritorio de pie','mesa em pé',10],
+  ['ergonomic chair','silla ergonómica','cadeira ergonômica',10],
+  ['monitor stand','soporte para monitor','suporte para monitor',9],
+  ['whiteboard','pizarrón blanco','quadro branco',9],
+
+  // ── AUTOMOTRIZ ────────────────────────────────────────────────────────────
+  ['car mount','soporte para auto','suporte para carro',9],
+  ['phone car mount','soporte de celular para auto','suporte celular carro',10],
+  ['car charger','cargador para auto','carregador veicular',10],
+  ['dash cam','cámara para auto','câmera para carro',10],
+  ['car vacuum','aspiradora para auto','aspirador automotivo',10],
+  ['car seat cover','funda para asiento de auto','capa de banco de carro',10],
+  ['car air freshener','aromatizante para auto','aromatizante para carro',10],
+  ['tire inflator','inflador de neumáticos','calibrador de pneu',10],
+  ['jumper cables','cables de arranque','cabo de bateria',10],
+  ['steering wheel cover','funda para volante','capa de volante',10],
+
+  // ── JARDÍN & EXTERIOR ─────────────────────────────────────────────────────
+  ['plant pot','maceta','vaso de planta',8],
+  ['self watering pot','maceta autorregante','vaso autoirrigável',10],
+  ['garden hose','manguera de jardín','mangueira de jardim',9],
+  ['pruning shears','tijeras de podar','tesoura de poda',9],
+  ['garden gloves','guantes de jardín','luva de jardinagem',9],
+  ['plant fertilizer','fertilizante para plantas','fertilizante para plantas',9],
+  ['seed starter kit','kit de inicio de semillas','kit de mudas',10],
+  ['garden tool set','set de herramientas de jardín','kit de ferramentas de jardim',10],
+  ['solar garden lights','luces de jardín solares','luz solar para jardim',10],
+  ['outdoor string lights','luces de cuerda para exterior','varal de luzes',10],
+  ['hammock','hamaca','rede de descanso',9],
+  ['camping chair','silla de camping','cadeira de camping',9],
+  ['camping tent','carpa de camping','barraca de camping',9],
+  ['sleeping bag','bolsa de dormir','saco de dormir',9],
+  ['hiking backpack','mochila de senderismo','mochila de trilha',10],
+  ['hiking boots','botas de senderismo','bota de trilha',10],
+  ['water bottle insulated','botella térmica','garrafa térmica',10],
+
+  // ── HERRAMIENTAS ─────────────────────────────────────────────────────────
+  ['drill','taladro','furadeira',9],
+  ['screwdriver set','set de destornilladores','jogo de chaves de fenda',10],
+  ['tool set','set de herramientas','kit de ferramentas',9],
+  ['measuring tape','cinta métrica','trena',8],
+  ['level','nivel de burbuja','nível',8],
+  ['stud finder','detector de vigas','detector de pinos',9],
+  ['utility knife','cúter','estilete',8],
+  ['cable tester','probador de cables','testador de cabos',9],
+  ['soldering iron','soldador','ferro de solda',9],
+  ['multimeter','multímetro','multímetro',9],
+  ['extension cord','extensión eléctrica','extensão elétrica',9],
+  ['surge protector','supresor de picos','filtro de linha',9],
+
+  // ── SALUD & BIENESTAR ─────────────────────────────────────────────────────
+  ['blood pressure monitor','monitor de presión arterial','monitor de pressão arterial',10],
+  ['pulse oximeter','oxímetro de pulso','oxímetro',10],
+  ['thermometer','termómetro','termômetro',9],
+  ['heating pad','almohadilla térmica','bolsa térmica',9],
+  ['massage gun','pistola de masaje','massageador',10],
+  ['foam roller massage','rodillo de masaje','rolo de massagem',10],
+  ['resistance bands set','set de bandas de resistencia','kit de elásticos',10],
+  ['acupressure mat','colchoneta de acupresión','tapete de acupressão',10],
+  ['eye massager','masajeador de ojos','massageador ocular',10],
+  ['face roller','rodillo facial','rolo facial',10],
+  ['gua sha','gua sha','gua sha',10],
+  ['jade roller','rodillo de jade','rolo de jade',10],
+  ['derma roller','dermaroller','dermaroller',10],
+  ['led face mask','mascarilla led','máscara led',10],
+  ['red light therapy','terapia de luz roja','terapia de luz vermelha',10],
+  ['first aid kit','botiquín de primeros auxilios','kit de primeiros socorros',10],
+  ['pill organizer','organizador de pastillas','porta-comprimidos',9],
+  ['ice pack','bolsa de hielo','bolsa de gelo',8],
+  ['posture corrector','corrector de postura','corretor de postura',10],
+  ['knee brace','rodillera','joelheira',9],
+  ['ankle brace','tobillera','tornozeleira',9],
+  ['wrist brace','muñequera','munhequeira',9],
+  ['back brace','soporte lumbar','suporte lombar',10],
+  ['compression socks','calcetines de compresión','meia de compressão',10],
+  ['nasal strips','tiras nasales','tira nasal',9],
+  ['whitening strips','tiras blanqueadoras','tiras clareadores',10],
+  ['electric toothbrush','cepillo eléctrico','escova elétrica',10],
+  ['water flosser','irrigador bucal','irrigador oral',10],
+  ['mouthwash','enjuague bucal','enxaguante bucal',8],
+  ['teeth whitening','blanqueamiento dental','clareamento dental',10],
+
+  // ── LIBROS & EDUCACIÓN ────────────────────────────────────────────────────
+  ['coloring book','libro para colorear','livro de colorir',9],
+  ['activity book','libro de actividades','livro de atividades',9],
+  ['workbook','cuaderno de trabajo','caderno de exercícios',9],
+  ['flashcards','tarjetas de memoria','flashcards',9],
+
+  // ── ALIMENTOS & BEBIDAS ───────────────────────────────────────────────────
+  ['protein bar','barra de proteína','barra de proteína',10],
+  ['energy bar','barra energética','barra energética',10],
+  ['granola bar','barra de granola','barra de granola',9],
+  ['protein shake','batido de proteína','shake de proteína',10],
+  ['meal replacement','reemplazador de comida','substituto de refeição',10],
+  ['green tea','té verde','chá verde',8],
+  ['matcha powder','polvo de matcha','matcha em pó',10],
+  ['collagen coffee','café con colágeno','café com colágeno',10],
+  ['electrolyte drink','bebida electrolítica','bebida eletrolítica',10],
+  ['essential oil','aceite esencial','óleo essencial',9],
+  ['diffuser oil','aceite para difusor','óleo para difusor',9],
+
+  // ── VIAJE ─────────────────────────────────────────────────────────────────
+  ['luggage set','set de maletas','conjunto de malas',10],
+  ['carry on luggage','maleta de mano','mala de mão',10],
+  ['travel pillow','almohada de viaje','almofada de viagem',9],
+  ['packing cubes','cubos organizadores de maleta','cubos organizadores mala',10],
+  ['travel organizer','organizador de viaje','organizador de viagem',9],
+  ['passport holder','porta pasaporte','porta passaporte',9],
+  ['luggage lock','candado para maleta','cadeado para mala',9],
+  ['travel adapter','adaptador de viaje','adaptador de viagem',10],
+  ['neck pillow','almohada de cuello','almofada cervical',9],
+  ['sleep mask','antifaz para dormir','máscara de dormir',9],
 ];
 
-// ── Función principal: extrae marca + tipo + ingrediente del título Amazon ───
-// Lógica en 3 niveles de prioridad:
-//   NIVEL 1 — Marca (siempre en inglés/original — igual en todo MeLi LATAM)
-//   NIVEL 2 — Tipo de producto (lo que es: mascarilla, sérum, crema...) — 1 término
-//   NIVEL 3 — Ingrediente estrella (lo que contiene: colágeno, ácido hialurónico...) — 1 término
-//   BONUS  — "coreana" si el título menciona Korean/K-Beauty (amplificador en MeLi LATAM)
-// Resultado: término corto, limpio y muy específico — exactamente como busca un comprador real
+// ── CATEGORÍAS automáticas ────────────────────────────────────────────────
+const ARB_CAT_DETECT=[
+  {cat:'Skincare · Mascarillas Faciales', keys:['mask','mascarilla','sheet mask','hydrogel mask','face mask','peel off']},
+  {cat:'Skincare · Sérums & Ampollas',    keys:['serum','sérum','ampoule','essence','ampolla']},
+  {cat:'Skincare · Cremas & Hidratantes', keys:['cream','moisturizer','lotion','crema','hidratante']},
+  {cat:'Skincare · Protección Solar',     keys:['sunscreen','spf','sun cream','protector solar']},
+  {cat:'Skincare · Limpiadores',          keys:['cleanser','face wash','foam cleanser','micellar','cleansing balm']},
+  {cat:'Skincare · Contorno de Ojos',     keys:['eye cream','eye patch','eye mask','eye gel','eye serum']},
+  {cat:'Skincare · Exfoliantes',          keys:['exfoliator','scrub','peeling','exfoliating','glycolic','salicylic']},
+  {cat:'Maquillaje · Base & Corrección',  keys:['foundation','concealer','bb cream','cc cream','primer','powder']},
+  {cat:'Maquillaje · Ojos',               keys:['eyeshadow','eyeliner','mascara','brow','eyebrow','false lashes']},
+  {cat:'Maquillaje · Labios',             keys:['lip gloss','lip tint','lip balm','lipstick','lip liner','lip oil']},
+  {cat:'Maquillaje · Herramientas',       keys:['brush','sponge','blender','beauty blender','makeup brush']},
+  {cat:'Cabello · Tratamientos',          keys:['hair mask','hair serum','hair oil','scalp','growth','hair growth']},
+  {cat:'Cabello · Estilizado',            keys:['hair spray','heat protectant','hair dryer','straightener','curling']},
+  {cat:'Cabello · Cuidado',               keys:['shampoo','conditioner','dry shampoo','leave in']},
+  {cat:'Fragancias & Baño',               keys:['perfume','cologne','body wash','shower gel','bath bomb','deodorant']},
+  {cat:'Suplementos · Vitaminas',         keys:['vitamin','multivitamin','gummies','biotin','folic','prenatal']},
+  {cat:'Suplementos · Minerales',         keys:['magnesium','calcium','iron','zinc supplement','potassium','selenium']},
+  {cat:'Suplementos · Bienestar',         keys:['melatonin','ashwagandha','turmeric','omega','fish oil','collagen','probiotic','berberine','lion mane','coq10','elderberry']},
+  {cat:'Fitness · Proteínas',             keys:['whey','protein powder','bcaa','creatine','pre workout','amino']},
+  {cat:'Fitness · Equipos',               keys:['yoga mat','resistance band','foam roller','dumbbell','kettlebell','jump rope','pull up']},
+  {cat:'Fitness · Ropa Deportiva',        keys:['sports bra','leggings','compression','workout','gym bag','shaker']},
+  {cat:'Moda · Ropa Mujer',               keys:['dress','blouse','skirt','crop top','tank top','halter','bodysuit','jumpsuit','cardigan','blazer','bikini','swimsuit','lingerie','bralette','hoodie','sweatshirt']},
+  {cat:'Moda · Ropa Hombre',              keys:['polo shirt','dress shirt','t-shirt','chino','cargo pants','sweatpants','boxer','undershirt']},
+  {cat:'Moda · Calzado',                  keys:['sneakers','heels','boots','sandals','flip flops','slippers','loafers','shoes']},
+  {cat:'Moda · Accesorios',               keys:['necklace','bracelet','earrings','ring','handbag','backpack','sunglasses','wallet','watch','scarf','hat']},
+  {cat:'Bebés & Niños · Cuidado',         keys:['baby','diaper','pacifier','teether','formula','wipes','onesie','swaddle']},
+  {cat:'Bebés & Niños · Juguetes',        keys:['toy','lego','doll','action figure','puzzle','board game','learning']},
+  {cat:'Mascotas · Perros',               keys:['dog','puppy','canine']},
+  {cat:'Mascotas · Gatos',                keys:['cat','kitten','feline','litter']},
+  {cat:'Hogar · Cocina',                  keys:['air fryer','coffee maker','blender','knife','cutting board','cookware','pan','pot','baking']},
+  {cat:'Hogar · Organización',            keys:['organizer','storage','container','closet','drawer','shelf']},
+  {cat:'Hogar · Decoración',              keys:['candle','wall art','picture frame','throw blanket','pillow','rug','curtain','vase']},
+  {cat:'Hogar · Limpieza',                keys:['vacuum','mop','cleaning','detergent','scrubber','spray','disinfectant']},
+  {cat:'Hogar · Dormitorio',              keys:['bedding','sheets','duvet','pillow','mattress','towel']},
+  {cat:'Electrónica · Audio',             keys:['earbuds','headphones','speaker','bluetooth','noise canceling']},
+  {cat:'Electrónica · Carga & Cables',    keys:['charger','power bank','cable','hub','adapter','wireless charger']},
+  {cat:'Electrónica · Iluminación',       keys:['ring light','led','smart light','lamp','strip light']},
+  {cat:'Electrónica · Teléfono',          keys:['phone case','screen protector','phone stand','mount','phone holder']},
+  {cat:'Electrónica · Computadoras',      keys:['laptop','keyboard','mouse','webcam','monitor stand','desk']},
+  {cat:'Electrónica · Smart Home',        keys:['smart plug','security camera','doorbell','alexa','google home']},
+  {cat:'Salud · Monitoreo',               keys:['blood pressure','oximeter','thermometer','glucose','scale']},
+  {cat:'Salud · Fisioterapia',            keys:['massage gun','heating pad','foam roller','posture','brace','compression']},
+  {cat:'Salud · Dental & Personal',       keys:['toothbrush','whitening','flosser','mouthwash','razor','shaver']},
+  {cat:'Oficina & Papelería',             keys:['planner','journal','notebook','desk','chair','lamp','organizer','pen']},
+  {cat:'Automotriz',                      keys:['car','vehicle','auto','tire','dash cam','steering']},
+  {cat:'Jardín & Exterior',               keys:['garden','plant','outdoor','camping','hiking','tent','hammock']},
+  {cat:'Herramientas',                    keys:['drill','screwdriver','tool','measuring','wrench','plier']},
+  {cat:'Viaje',                           keys:['luggage','travel','suitcase','passport','packing','adapter']},
+  {cat:'Alimentos & Bebidas',             keys:['protein bar','snack','tea','coffee','matcha','electrolyte','meal replacement']},
+];
+
+// ── PALABRAS QUE NUNCA SON MARCA ──────────────────────────────────────────
+const ARB_NO_MARCA_ABSOLUTO=/^(womens|mens|women|men|girls|boys|girl|boy|kids|kid|baby|babies|infant|toddler|children|child|adult|adults|ladies|lady|female|male|unisex|generic|imported|brand|various|assorted|quality)$/i;
+
+// ── arbExtraerTerminos v7.5.0 — 3-Layer Universal Architecture ──────────────
+// CAPA 1: Diccionario ARB_TERMINOS (~400 términos, frases largas primero)
+// CAPA 2: Extracción contextual (palabras descriptivas no en diccionario)
+// CAPA 3: Fallback semántico (3 palabras más significativas del título)
+// Resultado: término MeLi corto y específico, bilingüe ES/PT
 
 window.arbExtraerTerminos=function(){
   const titulo=(document.getElementById('arb-titulo-amazon')?.value||'').trim();
+  const st=document.getElementById('arb-extract-status');
   if(!titulo){
-    const st=document.getElementById('arb-extract-status');
     if(st){st.textContent='⚠️ Pega primero el título de Amazon';st.style.color='#fbbf24';}
     return;
   }
-  const st=document.getElementById('arb-extract-status');
   if(st){st.textContent='⏳ Extrayendo...';st.style.color='#6c8eff';}
 
   const tituloLow=titulo.toLowerCase();
 
-  // ── NIVEL 1: Marca ──────────────────────────────────────────────────────────
-  // La marca es la 1ra o 2da palabra antes de la primera coma o descripción
-  // Regla: palabra ALL CAPS o TitleCase que NO sea un descriptor genérico
-  const PALABRAS_NO_MARCA=/^(Bio|Real|Deep|Pure|Pro|Max|Ultra|Super|New|Natural|Premium|Advanced|Original|Classic|Extra|Plus|Daily|Night|Day|Anti|Face|Skin|Hair|Body|Eye|Lip|Hand|Foot|Neck|All|For|The|With|And|Or|By|From|Made|Best|Good|Top|High|Low|Long|Short|Light|Heavy|Soft|Hard|Dry|Wet|Rich|Thin|Thick|Fast|Slow|Easy|Free|Safe|Pure|Clean|Clear|Bright|Dark|White|Black|Red|Blue|Green|Yellow|Pink|Gold|Silver)$/i;
-  let marca='';
-  // Primero intentar antes de la primera coma
-  const anteComa=(titulo.split(',')[0]||'').trim();
-  const palabrasComa=anteComa.split(/\s+/);
-  for(let i=0;i<Math.min(3,palabrasComa.length);i++){
-    const p=palabrasComa[i].replace(/[^a-zA-Z0-9]/g,'');
-    if(p.length>=3 && !PALABRAS_NO_MARCA.test(p)){
-      // Es marca si: está en MAYÚSCULAS, o es TitleCase y la siguiente palabra lo confirma
-      if(p===p.toUpperCase()||(p[0]===p[0].toUpperCase()&&p.slice(1)===p.slice(1).toLowerCase())){
-        marca=p;
-        break;
-      }
-    }
-  }
-  if(!marca) marca=palabrasComa[0]?.replace(/[^a-zA-Z0-9]/g,'')||'';
-
-  // ── NIVEL 2: Tipo de producto (UNO solo — el más específico) ────────────────
-  // Prioridad: frases largas primero (face mask > mask), más específico > genérico
-  const TIPOS_ES=[
-    // [término inglés a buscar, traducción ES, traducción PT, prioridad]
-    ['hydrogel mask','mascarilla hidrogel','máscara hidrogel',10],
-    ['sheet mask','mascarilla de tela','máscara de tecido',10],
-    ['sleeping mask','mascarilla de noche','máscara noturna',10],
-    ['eye patch','parche de ojos','patch para olhos',10],
-    ['eye mask','mascarilla de ojos','máscara para olhos',9],
-    ['face mask','mascarilla facial','máscara facial',9],
-    ['mask','mascarilla','máscara',8],
-    ['lip mask','mascarilla labial','máscara labial',9],
-    ['serum','sérum','sérum',9],
-    ['ampoule','ampolla','ampola',9],
-    ['essence','esencia','essência',8],
-    ['eye cream','crema de ojos','creme para os olhos',9],
-    ['eye gel','gel de ojos','gel para olhos',9],
-    ['sunscreen','protector solar','protetor solar',10],
-    ['spf','protector solar','protetor solar',9],
-    ['cleanser','limpiador facial','limpador facial',9],
-    ['foam cleanser','limpiador espumoso','limpador espumoso',10],
-    ['micellar water','agua micelar','água micelar',10],
-    ['toner','tónico','tônico',8],
-    ['moisturizer','hidratante facial','hidratante facial',8],
-    ['cream','crema','creme',7],
-    ['lotion','loción','loção',7],
-    ['gel','gel','gel',6],
-    ['oil','aceite facial','óleo facial',7],
-    ['mist','bruma facial','névoa facial',8],
-    ['pad','pad exfoliante','pad esfoliante',8],
-    ['pads','pads exfoliantes','pads esfoliantes',8],
-    ['patch','parche','patch',8],
-    ['exfoliator','exfoliante','esfoliante',8],
-    ['scrub','exfoliante','esfoliante',8],
-    ['supplement','suplemento','suplemento',9],
-    ['vitamin','vitamina','vitamina',8],
-  ];
+  // ══ CAPA 1: Diccionario ARB_TERMINOS (frases largas → cortas, mayor prioridad) ══
+  // Ordenar por longitud descendente para match greedy correcto
+  const terminosOrdenados=[...ARB_TERMINOS].sort((a,b)=>b[0].length-a[0].length);
   let tipoES='',tipoPT='',tipoDetectado='',tipoPrioridad=0;
-  for(const [en,es,pt,pri] of TIPOS_ES){
+  let ingES='',ingPT='',ingDetectado='',ingPrioridad=0;
+
+  // Primera pasada: encontrar el TIPO (producto) con mayor prioridad
+  for(const [en,es,pt,pri] of terminosOrdenados){
     if(tituloLow.includes(en) && pri>tipoPrioridad){
       tipoES=es; tipoPT=pt; tipoDetectado=en; tipoPrioridad=pri;
     }
   }
 
-  // ── NIVEL 3: Ingrediente estrella (UNO solo — el más específico) ────────────
-  const INGREDIENTES=[
-    ['bio-collagen','colágeno','colágeno',10],
-    ['collagen','colágeno','colágeno',9],
-    ['hyaluronic acid','ácido hialurónico','ácido hialurônico',10],
-    ['niacinamide','niacinamida','niacinamida',10],
-    ['retinol','retinol','retinol',10],
-    ['vitamin c','vitamina c','vitamina c',10],
-    ['vitamin b','vitamina b','vitamina b',9],
-    ['ceramide','ceramida','ceramida',9],
-    ['peptide','péptido','peptídeo',9],
-    ['snail mucin','baba de caracol','baba de caracol',10],
-    ['snail','caracol','caracol',8],
-    ['propolis','propóleo','própolis',9],
-    ['centella asiatica','centella asiática','centella asiática',10],
-    ['centella','centella asiática','centella asiática',9],
-    ['mugwort','artemisa','artemísia',9],
-    ['rice','arroz','arroz',7],
-    ['tea tree','árbol del té','árvore do chá',9],
-    ['salicylic acid','ácido salicílico','ácido salicílico',10],
-    ['glycolic acid','ácido glicólico','ácido glicólico',10],
-    ['azelaic acid','ácido azelaico','ácido azelaico',10],
-    ['bakuchiol','bakuchiol','bakuchiol',9],
-    ['squalane','escualano','esqualano',9],
-    ['adenosine','adenosina','adenosina',8],
-    ['tranexamic acid','ácido tranexámico','ácido tranexâmico',10],
-    ['allantoin','alantoína','alantoína',8],
-    ['cica','cica','cica',8],
-    ['probiotic','probiótico','probiótico',9],
-    ['omega','omega','ômega',8],
-    ['zinc','zinc','zinco',8],
-    ['sulfur','azufre','enxofre',8],
-    ['kojic acid','ácido kójico','ácido kójico',9],
-  ];
-  let ingES='',ingPT='',ingDetectado='',ingPrioridad=0;
-  for(const [en,es,pt,pri] of INGREDIENTES){
-    if(tituloLow.includes(en) && pri>ingPrioridad){
-      ingES=es; ingPT=pt; ingDetectado=en; ingPrioridad=pri;
+  // Segunda pasada: encontrar ACTIVO/INGREDIENTE diferente al tipo
+  const ACTIVOS_CLAVE=/^(hyaluronic|niacinamide|retinol|ceramide|peptide|snail|propolis|centella|bakuchiol|squalane|aha|bha|pha|salicylic|glycolic|lactic|azelaic|kojic|tranexamic|ascorbic|glutathione|arbutin|ferulic|adenosine|allantoin|cica|mugwort|exosome|retinoid|magnesium|ashwagandha|turmeric|berberine|melatonin|coq10|biotin|collagen|omega|probiotic|zinc|iron|calcium|folic|l-theanine|5-htp|gaba|creatine|electrolyte|glycine|lion|reishi|elderberry|vitamin)/i;
+  for(const [en,es,pt,pri] of terminosOrdenados){
+    if(!tituloLow.includes(en)) continue;
+    if(en===tipoDetectado) continue;
+    if(!ACTIVOS_CLAVE.test(en)) continue;
+    if(tipoDetectado && tipoDetectado.includes(en)) continue;
+    if(tipoES && tipoES.toLowerCase().includes(es.toLowerCase())) continue;
+    if(pri>ingPrioridad){ingES=es;ingPT=pt;ingDetectado=en;ingPrioridad=pri;}
+  }
+
+  // ══ CAPA 1b: Extracción de MARCA ══
+  // Reglas: 1ra-4ta palabra antes de primera coma, TitleCase o MAYÚSCULAS,
+  // NO en ARB_STOP_WORDS, NO en ARB_NO_MARCA_ABSOLUTO
+  let marca='';
+  const anteComa=(titulo.split(',')[0]||'').trim();
+  const palabrasComa=anteComa.split(/\s+/);
+  for(let i=0;i<Math.min(4,palabrasComa.length);i++){
+    const p=palabrasComa[i].replace(/[^a-zA-Z0-9]/g,'');
+    if(p.length<2) continue;
+    const pLow=p.toLowerCase();
+    if(ARB_STOP_WORDS.has(pLow)) continue;
+    if(ARB_NO_MARCA_ABSOLUTO.test(p)) continue;
+    const esDiccionario=terminosOrdenados.some(([en])=>en.split(' ')[0]===pLow&&en.length>pLow.length);
+    const esMayus=p===p.toUpperCase()&&p.length>1;
+    const esTitleCase=p[0]===p[0].toUpperCase()&&p.slice(1)===p.slice(1).toLowerCase()&&p.length>2;
+    if((esMayus||esTitleCase)&&!esDiccionario){marca=p;break;}
+  }
+  // Fallback: 1ra palabra no-stopword
+  if(!marca){
+    for(let i=0;i<Math.min(3,palabrasComa.length);i++){
+      const p=palabrasComa[i].replace(/[^a-zA-Z0-9]/g,'');
+      if(p.length<2) continue;
+      if(ARB_STOP_WORDS.has(p.toLowerCase())) continue;
+      if(ARB_NO_MARCA_ABSOLUTO.test(p)) continue;
+      marca=p; break;
     }
   }
 
-  // ── BONUS: Origen coreano ────────────────────────────────────────────────────
-  const esCoreana=tituloLow.includes('korean')||tituloLow.includes('k-beauty')||
-                  tituloLow.includes('k beauty')||tituloLow.includes('korean skin care')||
-                  tituloLow.includes('kbeauty');
+  // ══ CAPA 2: Extracción contextual si TIPO no detectado por diccionario ══
+  if(!tipoES){
+    const palabrasTitulo=tituloLow.split(/[\s,\-\/]+/);
+    const candidatos=palabrasTitulo.filter(p=>
+      p.length>4 && !ARB_STOP_WORDS.has(p) && p!==marca.toLowerCase()
+    );
+    if(candidatos.length>0){tipoES=candidatos[0];tipoPT=candidatos[0];}
+    if(candidatos.length>1 && !ingES){ingES=candidatos[1];ingPT=candidatos[1];}
+  }
 
-  // ── DETECTAR CATEGORÍA ───────────────────────────────────────────────────────
-  let categoriaDetectada='Skincare & Belleza';
+  // ══ CAPA 3: Fallback semántico si aún sin tipo ══
+  if(!tipoES){
+    const palabrasSignif=tituloLow
+      .split(/[\s,\-\/]+/)
+      .filter(p=>p.length>3&&!ARB_STOP_WORDS.has(p)&&p!==marca.toLowerCase())
+      .sort((a,b)=>b.length-a.length)
+      .slice(0,3);
+    tipoES=palabrasSignif.join(' ');
+    tipoPT=tipoES;
+  }
+
+  // ══ BONUS: K-Beauty ══
+  const esCoreana=tituloLow.includes('korean')||tituloLow.includes('k-beauty')||
+    tituloLow.includes('k beauty')||tituloLow.includes('kbeauty')||
+    tituloLow.includes('korean skin care');
+
+  // ══ DETECTAR CATEGORÍA ══
+  let categoriaDetectada='Producto Amazon';
   for(const cat of ARB_CAT_DETECT){
     if(cat.keys.some(k=>tituloLow.includes(k))){categoriaDetectada=cat.cat;break;}
   }
 
-  // ── CONSTRUIR TÉRMINOS FINALES ───────────────────────────────────────────────
-  // Regla: [Marca] [tipo producto] [ingrediente estrella] [coreana si aplica]
-  // Máximo 4-5 palabras — exactamente como busca un comprador real en MeLi
-  const partsES=[marca];
-  const partsPT=[marca];
-
-  if(tipoES){partsES.push(tipoES); partsPT.push(tipoPT);}
-  // Solo añadir ingrediente si NO está ya implícito en el tipo
-  // (ej: "mascarilla hidrogel" ya es suficiente sin añadir "hidrogel" otra vez)
-  if(ingES && !tipoES.includes(ingES) && !tipoDetectado.includes(ingDetectado)){
+  // ══ CONSTRUIR TÉRMINOS FINALES ══
+  // [Marca] [tipo ES] [activo ES si diferente] [coreana?]
+  const partsES=[]; const partsPT=[];
+  if(marca){partsES.push(marca);partsPT.push(marca);}
+  if(tipoES){partsES.push(tipoES);partsPT.push(tipoPT||tipoES);}
+  if(ingES && ingES!==tipoES && !tipoES.includes(ingES)){
     partsES.push(ingES);
-    partsPT.push(ingPT);
+    partsPT.push(ingPT||ingES);
   }
-  if(esCoreana){partsES.push('coreana');partsPT.push('coreana');}
+  if(esCoreana&&!tipoES.includes('coreana')){
+    partsES.push('coreana');partsPT.push('coreana');
+  }
+  const termES=partsES.join(' ').trim();
+  const termPT=partsPT.join(' ').trim();
 
-  const termES=partsES.join(' ');
-  const termPT=partsPT.join(' ');
-
-  // ── RELLENAR UI ─────────────────────────────────────────────────────────────
+  // ══ RELLENAR UI ══
   const mEl=document.getElementById('arb-marca');if(mEl)mEl.value=marca;
   const cEl=document.getElementById('arb-categoria-det');if(cEl)cEl.value=categoriaDetectada;
   const esEl=document.getElementById('arb-term-es');if(esEl)esEl.value=termES;
   const ptEl=document.getElementById('arb-term-pt');if(ptEl)ptEl.value=termPT;
 
-  // ── MOSTRAR PANEL + INFO ─────────────────────────────────────────────────────
+  // ══ MOSTRAR PANEL + DIAGNÓSTICO ══
   const pan=document.getElementById('arb-terminos-panel');if(pan)pan.style.display='block';
   const inf=document.getElementById('arb-extract-info');
   if(inf){
-    const filas=[];
-    if(tipoDetectado) filas.push('<b style="color:#6c8eff">Tipo:</b> "'+tipoDetectado+'" → ES: <span style="color:#34d399">'+tipoES+'</span> / PT: <span style="color:#60a5fa">'+tipoPT+'</span>');
-    if(ingDetectado)  filas.push('<b style="color:#6c8eff">Ingrediente:</b> "'+ingDetectado+'" → ES: <span style="color:#34d399">'+ingES+'</span> / PT: <span style="color:#60a5fa">'+ingPT+'</span>');
-    if(esCoreana)     filas.push('<b style="color:#6c8eff">Origen:</b> Korean/K-Beauty → <span style="color:#34d399">+coreana</span>');
+    const capas=[];
+    if(tipoDetectado) capas.push('<b style="color:#6c8eff">Tipo:</b> &quot;'+tipoDetectado+'&quot; &rarr; <span style="color:#34d399">'+tipoES+'<'+'/span> / <span style="color:#60a5fa">'+(tipoPT||tipoES)+'<'+'/span>');
+    else if(tipoES)   capas.push('<b style="color:#fbbf24">Tipo (extracción):</b> <span style="color:#34d399">'+tipoES+'<'+'/span>');
+    if(ingDetectado)  capas.push('<b style="color:#6c8eff">Activo:</b> &quot;'+ingDetectado+'&quot; &rarr; <span style="color:#34d399">'+ingES+'<'+'/span> / <span style="color:#60a5fa">'+(ingPT||ingES)+'<'+'/span>');
+    if(esCoreana)     capas.push('<b style="color:#6c8eff">Origen:</b> K-Beauty &rarr; <span style="color:#34d399">+coreana<'+'/span>');
     inf.innerHTML=
-      '<div style="margin-bottom:8px"><b style="color:#6c8eff">Marca:</b> <span style="color:#e8f0fe">'+marca+'</span> &nbsp;·&nbsp; <b style="color:#6c8eff">Categoría:</b> <span style="color:#e8f0fe">'+categoriaDetectada+'</span></div>'+
-      (filas.length?'<div style="margin-bottom:4px;color:#94a3b8;font-size:10px">DETECTADO DEL TÍTULO:</div>'+filas.join('<br>')+'<br>':'')+
+      '<div style="margin-bottom:8px"><b style="color:#6c8eff">Marca:</b> <span style="color:#e8f0fe">'+(marca||'—')+'<'+'/span> &nbsp;&middot;&nbsp; <b style="color:#6c8eff">Categoría:</b> <span style="color:#e8f0fe">'+categoriaDetectada+'<'+'/span><'+'/div>'+
+      (capas.length?'<div style="margin-bottom:4px;color:#94a3b8;font-size:10px">DETECTADO DEL TÍTULO:<'+'/div>'+capas.join('<br>')+'<br>':'')+
       '<div style="margin-top:8px;padding-top:8px;border-top:1px solid #1e3a5f;color:#94a3b8">'+
-      '💡 Edita los términos arriba si necesitas ajustar. ES = 7 países LATAM · PT = solo Brasil.'+
-      '</div>';
+      '💡 Edita los términos si necesitas ajustar. ES = 7 países · PT = solo Brasil.<'+'/div>';
   }
   if(st){st.textContent='✅ Términos generados — revisa y edita si necesario';st.style.color='#34d399';}
 };
