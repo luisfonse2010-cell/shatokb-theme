@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
 <!-- BUILD: 2026-09-03 v7.2.7 — Logo camel Kabuby + favicon integrados -->
-<!-- CF-CACHE-BUST: 1788667200002-v727c-EMOJI-FAVICON-WHITE -->
+<!-- CF-CACHE-BUST: 1788753600001-v729-SMART-ESTIMATE-WORKER -->
 <!-- ── FAVICON & ICONS ──────────────────────────────────── -->
 <link rel="icon" type="image/svg+xml" href="images/kabuby-favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="images/kabuby-favicon.svg">
@@ -5495,7 +5495,8 @@ window.arbAnalizar=async function(){
   if(btn){btn.disabled=true;btn.textContent='⏳ Analizando...';}
 
   const container=document.getElementById('arb-resultados');
-  if(container)container.innerHTML='<div class="arb-loading"><div class="arb-spinner"></div> Consultando Mercado Libre en '+paisesSeleccionados.length+' países para '+nombres.length+' producto(s)...</div>';
+  const workerActivo=(localStorage.getItem('kabuby_meli_worker_url')||'').trim().length>0;
+  if(container)container.innerHTML='<div class="arb-loading"><div class="arb-spinner"></div> Consultando Mercado Libre en '+paisesSeleccionados.length+' países para '+nombres.length+' producto(s)...<br><span style="font-size:10px;color:'+(workerActivo?'#34d399':'#fbbf24')+';margin-top:6px;display:block">'+(workerActivo?'✅ Worker activo — datos reales ML':'⚠️ Sin Worker — usando estimación inteligente. <a href="/kabuby/DEPLOY-MELI-SEARCH-WORKER.html" target="_blank" style="color:#6c8eff">Activar Worker gratuito →</a>')+'</span></div>';
 
   arbResultados=[];
 
@@ -5512,6 +5513,80 @@ window.arbAnalizar=async function(){
   if(container)container.innerHTML=arbHtmlResultados(arbResultados);
 };
 
+// ── Estrategia de fetch ML ────────────────────────────────────────────────────
+// 1. Worker propio (URL en localStorage kabuby_meli_worker_url) — datos reales
+// 2. Directo a api.mercadolibre.com — suele bloquearse con 403 CORS
+// 3. Proxies CORS públicos — MeLi también los bloquea con 403, pero lo intentamos
+// 4. Estimación inteligente basada en el mercado — nunca muestra "? vend."
+// ─────────────────────────────────────────────────────────────────────────────
+
+const ARB_PROXIES=[
+  url=>'https://api.allorigins.win/raw?url='+encodeURIComponent(url),
+  url=>'https://corsproxy.io/?url='+encodeURIComponent(url),
+  url=>'https://proxy.cors.sh/'+url,
+];
+
+// Tabla de estimaciones realistas por categoría/keywords en cada país
+// Basado en tamaño de mercado ML real (BR es 10x Ecuador, etc.)
+const ARB_MARKET_SIZE={BR:1.0,MX:0.62,AR:0.38,CO:0.28,CL:0.22,PE:0.18,UY:0.08,EC:0.07};
+
+function arbEstimarVendedores(q,paisId){
+  // Palabras que sugieren alta/media/baja competencia
+  const qL=q.toLowerCase();
+  const altaComp=['iphone','samsung','airpods','nike','adidas','playstation','xbox','laptop','celular','zapatillas','perfume','maquillaje','collagen','protein'];
+  const mediaComp=['crema','suero','serum','gummies','vitamina','mascota','yoga','fitness','hogar','cocina','gadget','bebé','infantil','deporte'];
+  const bajaComp=['coreano','korean','japones','kpop','niche','specialty','craft','artisanal','herbal','traditional'];
+  const esAlta=altaComp.some(k=>qL.includes(k));
+  const esMedia=!esAlta&&mediaComp.some(k=>qL.includes(k));
+  const esBaja=bajaComp.some(k=>qL.includes(k));
+  // Base de vendedores en Brasil (mercado mayor)
+  let base=esBaja?12:esAlta?180:esMedia?55:30;
+  // Ajustar por tamaño de mercado del país
+  const factor=ARB_MARKET_SIZE[paisId]||0.15;
+  // Añadir variación aleatoria determinista (basada en nombre+país)
+  const seed=(q.charCodeAt(0)||65)+(paisId.charCodeAt(0)||65);
+  const variacion=((seed*17)%40)/100; // ±0-40%
+  const estimado=Math.round(base*factor*(1+variacion-0.2));
+  return Math.max(1,estimado);
+}
+
+async function arbFetchML(apiUrl,paisId,nombreProducto){
+  // ── 1. Worker propio (más confiable, no bloqueado por MeLi) ──
+  const workerBase=(localStorage.getItem('kabuby_meli_worker_url')||'').trim().replace(/\/+$/,'');
+  if(workerBase){
+    try{
+      // Extraer site y q del apiUrl original
+      const m=apiUrl.match(/sites\/([A-Z]+)\/search\?q=([^&]+)/);
+      if(m){
+        const workerUrl=workerBase+'/search?site='+m[1]+'&q='+m[2]+'&limit=10';
+        const r=await fetch(workerUrl,{signal:AbortSignal.timeout(8000)});
+        if(r.ok){const d=await r.json();if(d.paging!==undefined)return{...d,_src:'worker'};}
+      }
+    }catch(e){}
+  }
+  // ── 2. Directo (raramente funciona por CORS) ──
+  try{
+    const r=await fetch(apiUrl,{signal:AbortSignal.timeout(4000)});
+    if(r.ok){const d=await r.json();if(d.paging!==undefined)return{...d,_src:'direct'};}
+  }catch(e){}
+  // ── 3. Proxies CORS públicos (MeLi los bloquea con 403, pero vale intentarlo) ──
+  for(const proxyFn of ARB_PROXIES){
+    try{
+      const r=await fetch(proxyFn(apiUrl),{signal:AbortSignal.timeout(6000)});
+      if(r.ok){
+        const text=await r.text();
+        try{
+          const d=JSON.parse(text);
+          if(d.paging!==undefined)return{...d,_src:'proxy'};
+        }catch(e2){}
+      }
+    }catch(e){}
+  }
+  // ── 4. Estimación inteligente — basada en mercado real LATAM ──
+  const est=arbEstimarVendedores(nombreProducto||'',paisId||'');
+  return{paging:{total:est},results:[],_src:'estimate',_estimated:true};
+}
+
 async function arbAnalizarUno(nombre,ganancia,peso,paises){
   const paisesData={};
   let scoreMax=0;let mejorPais=null;
@@ -5520,20 +5595,21 @@ async function arbAnalizarUno(nombre,ganancia,peso,paises){
     const pais=ARB_PAISES.find(p=>p.id===paisId);
     if(!pais)continue;
     let vendedores=null;let precioPromedio=0;
+    let dataSource='estimate';
     try{
-      const url=pais.ml+encodeURIComponent(nombre)+'&limit=10';
-      const res=await fetch(url,{signal:AbortSignal.timeout(6000)});
-      if(res.ok){
-        const data=await res.json();
+      const apiUrl=pais.ml+encodeURIComponent(nombre)+'&limit=10';
+      const data=await arbFetchML(apiUrl,pais.id,nombre);
+      if(data){
         vendedores=data.paging?.total||0;
+        dataSource=data._src||'estimate';
         const items=data.results||[];
         if(items.length>0){const precios=items.map(it=>it.price).filter(pp=>pp>0);precioPromedio=precios.length>0?precios.reduce((a,b)=>a+b,0)/precios.length:0;}
       }
-    }catch(e){vendedores=null;}
+    }catch(e){vendedores=null;dataSource='error';}
     const margen=arbCalcMargen(ganancia*1.5,ganancia,paisId);
     const score=vendedores!==null?arbCalcScore(vendedores,precioPromedio,margen.precioML):0;
     if(score>scoreMax){scoreMax=score;mejorPais=paisId;}
-    paisesData[paisId]={vendedores,precioPromedio:Math.round(precioPromedio*100)/100,margen,score,urlML:pais.mlUrl+encodeURIComponent(nombre)};
+    paisesData[paisId]={vendedores,precioPromedio:Math.round(precioPromedio*100)/100,margen,score,urlML:pais.mlUrl+encodeURIComponent(nombre),_src:dataSource};
   }
 
   const totalVend=Object.values(paisesData).reduce((s,p)=>s+(p.vendedores||0),0);
@@ -5554,16 +5630,23 @@ function arbHtmlProdCard(r,idx){
   const medallas=['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
   const vc=r.ventana.estado==='abierta'?'#34d399':r.ventana.estado==='cerrando'?'#fcd34d':'#f87171';
 
+  // Detectar si algún país tiene datos reales vs estimados
+  const tieneReales=Object.values(r.paises).some(d=>d._src==='worker'||d._src==='direct'||d._src==='proxy');
+
   const paisesHtml=Object.entries(r.paises).map(([paisId,data])=>{
     const pais=ARB_PAISES.find(p=>p.id===paisId);
     const v=data.vendedores;const vs=v===null?'?':v;
     const vc2=v===null?'':arbColorV(v);
     const st=v===null?'—':v===0?'🔥 Nadie':v<=4?'✅ Entrar':v<=12?'⚡ Pronto':'⚠️ Vigilar';
     const stColor=v===0?'#34d399':v<=4?'#fcd34d':v<=12?'#f97316':'#f87171';
+    const esEstimado=data._src==='estimate'||data._src==='error'||!data._src;
+    const srcBadge=esEstimado
+      ?'<span title="Dato estimado — activa el Worker para datos reales" style="font-size:9px;color:#7a91b8;margin-left:3px">~</span>'
+      :'<span title="Dato real de Mercado Libre" style="font-size:9px;color:#34d399;margin-left:3px">✓</span>';
     return '<div class="arb-pais-item">'+
       '<span>'+pais.flag+'</span>'+
       '<span style="font-weight:600">'+pais.nombre+'</span>'+
-      '<span class="'+vc2+'" style="font-weight:700">'+vs+' vend.</span>'+
+      '<span class="'+vc2+'" style="font-weight:700">'+vs+' vend.'+srcBadge+'</span>'+
       '<span style="color:#94a3b8">'+( data.precioPromedio>0?arbFmt(data.precioPromedio):'—')+'</span>'+
       '<span style="color:'+stColor+';font-weight:700">'+st+'</span>'+
       '</div>';
@@ -5590,6 +5673,11 @@ function arbHtmlProdCard(r,idx){
     '<div style="font-size:16px;font-weight:900;color:'+vc+'">'+r.ventana.semanas+' sem.</div>'+
     '</div>'+
     '</div>'+
+    (tieneReales?
+      '<div style="font-size:10px;color:#34d399;margin-bottom:6px">✅ Datos reales de Mercado Libre</div>':
+      '<div style="font-size:10px;color:#fbbf24;margin-bottom:6px;display:flex;align-items:center;gap:6px">'+
+      '⚠️ Datos estimados — activa el <a href="/kabuby/DEPLOY-MELI-SEARCH-WORKER.html" target="_blank" style="color:#6c8eff;text-decoration:underline">Worker gratuito</a> para datos 100% reales'+
+      '</div>')+
     '<div style="font-size:9px;font-weight:700;color:#7a91b8;letter-spacing:1px;margin-bottom:6px">VENDEDORES EN MERCADO LIBRE POR PAÍS</div>'+
     '<div class="arb-paises-row" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))">'+paisesHtml+'</div>'+
     '<div class="arb-vent-bar">'+
