@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
 <!-- BUILD: 2026-09-03 v7.2.7 — Logo camel Kabuby + favicon integrados -->
-<!-- CF-CACHE-BUST: 1788753600001-v729-SMART-ESTIMATE-WORKER -->
+<!-- CF-CACHE-BUST: 1788840000001-v730-KOI-PROXY-REAL-ML-DATA -->
 <!-- ── FAVICON & ICONS ──────────────────────────────────── -->
 <link rel="icon" type="image/svg+xml" href="images/kabuby-favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="images/kabuby-favicon.svg">
@@ -5495,8 +5495,7 @@ window.arbAnalizar=async function(){
   if(btn){btn.disabled=true;btn.textContent='⏳ Analizando...';}
 
   const container=document.getElementById('arb-resultados');
-  const workerActivo=(localStorage.getItem('kabuby_meli_worker_url')||'').trim().length>0;
-  if(container)container.innerHTML='<div class="arb-loading"><div class="arb-spinner"></div> Consultando Mercado Libre en '+paisesSeleccionados.length+' países para '+nombres.length+' producto(s)...<br><span style="font-size:10px;color:'+(workerActivo?'#34d399':'#fbbf24')+';margin-top:6px;display:block">'+(workerActivo?'✅ Worker activo — datos reales ML':'⚠️ Sin Worker — usando estimación inteligente. <a href="/kabuby/DEPLOY-MELI-SEARCH-WORKER.html" target="_blank" style="color:#6c8eff">Activar Worker gratuito →</a>')+'</span></div>';
+  if(container)container.innerHTML='<div class="arb-loading"><div class="arb-spinner"></div> Consultando Mercado Libre en <strong>'+paisesSeleccionados.length+' países</strong> para '+nombres.length+' producto(s)...<br><span style="font-size:10px;color:#34d399;margin-top:6px;display:block">✅ Conectando via koi-proxy — datos REALES de ML en tiempo real</span></div>';
 
   arbResultados=[];
 
@@ -5514,11 +5513,15 @@ window.arbAnalizar=async function(){
 };
 
 // ── Estrategia de fetch ML ────────────────────────────────────────────────────
-// 1. Worker propio (URL en localStorage kabuby_meli_worker_url) — datos reales
-// 2. Directo a api.mercadolibre.com — suele bloquearse con 403 CORS
-// 3. Proxies CORS públicos — MeLi también los bloquea con 403, pero lo intentamos
-// 4. Estimación inteligente basada en el mercado — nunca muestra "? vend."
+// 1. koi-proxy Worker (koi-proxy.luisfonse2010.workers.dev/meli-search) — CORS garantizado, datos REALES
+// 2. Worker propio del usuario (URL en localStorage kabuby_meli_worker_url)
+// 3. Directo a api.mercadolibre.com — suele bloquearse con 403 CORS
+// 4. Proxies CORS públicos — MeLi los bloquea con 403 pero lo intentamos
+// 5. Estimación inteligente — nunca muestra "? vend."
 // ─────────────────────────────────────────────────────────────────────────────
+
+// Worker koi-proxy — servidor propio con /meli-search CORS abierto
+const ARB_KOI_WORKER='https://koi-proxy.luisfonse2010.workers.dev';
 
 const ARB_PROXIES=[
   url=>'https://api.allorigins.win/raw?url='+encodeURIComponent(url),
@@ -5551,38 +5554,51 @@ function arbEstimarVendedores(q,paisId){
 }
 
 async function arbFetchML(apiUrl,paisId,nombreProducto){
-  // ── 1. Worker propio (más confiable, no bloqueado por MeLi) ──
-  const workerBase=(localStorage.getItem('kabuby_meli_worker_url')||'').trim().replace(/\/+$/,'');
-  if(workerBase){
+  // Extraer site y q del apiUrl para llamadas via worker
+  const mSite=apiUrl.match(/sites\/([A-Z]+)\/search\?q=([^&]+)/);
+
+  // ── 1. koi-proxy Worker (servidor propio, CORS garantizado, datos 100% REALES de ML) ──
+  if(mSite){
     try{
-      // Extraer site y q del apiUrl original
-      const m=apiUrl.match(/sites\/([A-Z]+)\/search\?q=([^&]+)/);
-      if(m){
-        const workerUrl=workerBase+'/search?site='+m[1]+'&q='+m[2]+'&limit=10';
-        const r=await fetch(workerUrl,{signal:AbortSignal.timeout(8000)});
-        if(r.ok){const d=await r.json();if(d.paging!==undefined)return{...d,_src:'worker'};}
-      }
+      const koiUrl=ARB_KOI_WORKER+'/meli-search?site='+mSite[1].replace('ML','')+'&q='+mSite[2]+'&limit=10';
+      const r=await fetch(koiUrl,{signal:AbortSignal.timeout(8000)});
+      if(r.ok){const d=await r.json();if(d.results!==undefined||d.available!==undefined){
+        // koi-proxy devuelve {available, results, query, site}
+        const total=d.available??d.paging?.total??0;
+        const results=d.results||[];
+        return{paging:{total},results,_src:'koi-worker'};
+      }}
     }catch(e){}
   }
-  // ── 2. Directo (raramente funciona por CORS) ──
+
+  // ── 2. Worker propio del usuario (URL guardada en localStorage) ──
+  const workerBase=(localStorage.getItem('kabuby_meli_worker_url')||'').trim().replace(/\/+$/,'');
+  if(workerBase&&mSite){
+    try{
+      const workerUrl=workerBase+'/search?site='+mSite[1]+'&q='+mSite[2]+'&limit=10';
+      const r=await fetch(workerUrl,{signal:AbortSignal.timeout(8000)});
+      if(r.ok){const d=await r.json();if(d.paging!==undefined)return{...d,_src:'user-worker'};}
+    }catch(e){}
+  }
+
+  // ── 3. Directo (raramente funciona por CORS) ──
   try{
     const r=await fetch(apiUrl,{signal:AbortSignal.timeout(4000)});
     if(r.ok){const d=await r.json();if(d.paging!==undefined)return{...d,_src:'direct'};}
   }catch(e){}
-  // ── 3. Proxies CORS públicos (MeLi los bloquea con 403, pero vale intentarlo) ──
+
+  // ── 4. Proxies CORS públicos (MeLi los bloquea pero vale intentarlo) ──
   for(const proxyFn of ARB_PROXIES){
     try{
-      const r=await fetch(proxyFn(apiUrl),{signal:AbortSignal.timeout(6000)});
+      const r=await fetch(proxyFn(apiUrl),{signal:AbortSignal.timeout(5000)});
       if(r.ok){
         const text=await r.text();
-        try{
-          const d=JSON.parse(text);
-          if(d.paging!==undefined)return{...d,_src:'proxy'};
-        }catch(e2){}
+        try{const d=JSON.parse(text);if(d.paging!==undefined)return{...d,_src:'proxy'};}catch(e2){}
       }
     }catch(e){}
   }
-  // ── 4. Estimación inteligente — basada en mercado real LATAM ──
+
+  // ── 5. Estimación inteligente — basada en mercado real LATAM ──
   const est=arbEstimarVendedores(nombreProducto||'',paisId||'');
   return{paging:{total:est},results:[],_src:'estimate',_estimated:true};
 }
@@ -5674,9 +5690,9 @@ function arbHtmlProdCard(r,idx){
     '</div>'+
     '</div>'+
     (tieneReales?
-      '<div style="font-size:10px;color:#34d399;margin-bottom:6px">✅ Datos reales de Mercado Libre</div>':
-      '<div style="font-size:10px;color:#fbbf24;margin-bottom:6px;display:flex;align-items:center;gap:6px">'+
-      '⚠️ Datos estimados — activa el <a href="/kabuby/DEPLOY-MELI-SEARCH-WORKER.html" target="_blank" style="color:#6c8eff;text-decoration:underline">Worker gratuito</a> para datos 100% reales'+
+      '<div style="font-size:10px;color:#34d399;margin-bottom:6px">✅ Datos reales de Mercado Libre — via koi-proxy</div>':
+      '<div style="font-size:10px;color:#fbbf24;margin-bottom:6px">'+
+      '⚠️ Estimados (koi-proxy no respondió) — <a href="/kabuby/DEPLOY-MELI-SEARCH-WORKER.html" target="_blank" style="color:#6c8eff;text-decoration:underline">activar Worker propio</a>'+
       '</div>')+
     '<div style="font-size:9px;font-weight:700;color:#7a91b8;letter-spacing:1px;margin-bottom:6px">VENDEDORES EN MERCADO LIBRE POR PAÍS</div>'+
     '<div class="arb-paises-row" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))">'+paisesHtml+'</div>'+
