@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
 <!-- BUILD: 2026-09-04 v7.3.2 — GitHub Actions JSON cache = datos 100% reales MeLi -->
-<!-- CF-CACHE-BUST: 1788517200310-v732-GH-ACTIONS-REAL-DATA -->
+<!-- CF-CACHE-BUST: 1788520723408-v732-GH-ACTIONS-REAL-DATA -->
 <!-- ── FAVICON & ICONS ──────────────────────────────────── -->
 <link rel="icon" type="image/svg+xml" href="images/kabuby-favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="images/kabuby-favicon.svg">
@@ -5759,7 +5759,7 @@ function arbHtmlProdCard(r,idx){
   const vc=r.ventana.estado==='abierta'?'#34d399':r.ventana.estado==='cerrando'?'#fcd34d':'#f87171';
 
   // Detectar si algún país tiene datos reales vs estimados
-  const tieneReales=Object.values(r.paises).some(d=>d._src==='github-cache'||d._src==='direct'||d._src==='koi-worker'||d._src==='user-worker'||d._src==='proxy');
+  const tieneReales=Object.values(r.paises).some(d=>d._src==='github-cache'||d._src==='github-cache'||d._src==='direct'||d._src==='koi-worker'||d._src==='user-worker'||d._src==='proxy');
 
   const paisesHtml=Object.entries(r.paises).map(([paisId,data])=>{
     const pais=ARB_PAISES.find(p=>p.id===paisId);
