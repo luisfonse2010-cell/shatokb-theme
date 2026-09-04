@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
 <!-- BUILD: 2026-09-03 v7.2.7 — Logo camel Kabuby + favicon integrados -->
-<!-- CF-CACHE-BUST: 1788840000001-v730-KOI-PROXY-REAL-ML-DATA -->
+<!-- CF-CACHE-BUST: 1788840000002-v730b-KOI-SITE-MAP-FIX -->
 <!-- ── FAVICON & ICONS ──────────────────────────────────── -->
 <link rel="icon" type="image/svg+xml" href="images/kabuby-favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="images/kabuby-favicon.svg">
@@ -5558,17 +5558,26 @@ async function arbFetchML(apiUrl,paisId,nombreProducto){
   const mSite=apiUrl.match(/sites\/([A-Z]+)\/search\?q=([^&]+)/);
 
   // ── 1. koi-proxy Worker (servidor propio, CORS garantizado, datos 100% REALES de ML) ──
+  // koi-proxy acepta: site=MCO|MLM|MLC|MLA|MLB  y devuelve {available, price, currency, sample}
+  // Mapeo de nuestros site IDs (MLBR, MLMX...) a los que acepta koi-proxy
+  const KOI_SITE_MAP={BR:'MLB',MX:'MLM',CO:'MCO',AR:'MLA',CL:'MLC'};
+  // PE, UY, EC no tienen soporte en koi-proxy — usarán fallback directo
   if(mSite){
-    try{
-      const koiUrl=ARB_KOI_WORKER+'/meli-search?site='+mSite[1].replace('ML','')+'&q='+mSite[2]+'&limit=10';
-      const r=await fetch(koiUrl,{signal:AbortSignal.timeout(8000)});
-      if(r.ok){const d=await r.json();if(d.results!==undefined||d.available!==undefined){
-        // koi-proxy devuelve {available, results, query, site}
-        const total=d.available??d.paging?.total??0;
-        const results=d.results||[];
-        return{paging:{total},results,_src:'koi-worker'};
-      }}
-    }catch(e){}
+    const koiSite=KOI_SITE_MAP[paisId||''];
+    if(koiSite){
+      try{
+        const koiUrl=ARB_KOI_WORKER+'/meli-search?site='+koiSite+'&q='+mSite[2]+'&limit=10';
+        const r=await fetch(koiUrl,{signal:AbortSignal.timeout(8000)});
+        if(r.ok){
+          const d=await r.json();
+          if(typeof d.available==='number'){
+            // Construir respuesta compatible con el formato interno de arbAnalizarUno
+            const results=(d.sample||[]).map(s=>({title:s.title,price:s.price,id:s.id}));
+            return{paging:{total:d.available},results,_src:'koi-worker',_price:d.price||0};
+          }
+        }
+      }catch(e){}
+    }
   }
 
   // ── 2. Worker propio del usuario (URL guardada en localStorage) ──
@@ -5618,8 +5627,13 @@ async function arbAnalizarUno(nombre,ganancia,peso,paises){
       if(data){
         vendedores=data.paging?.total||0;
         dataSource=data._src||'estimate';
-        const items=data.results||[];
-        if(items.length>0){const precios=items.map(it=>it.price).filter(pp=>pp>0);precioPromedio=precios.length>0?precios.reduce((a,b)=>a+b,0)/precios.length:0;}
+        // Si koi-proxy devolvió precio mediano directo, usarlo
+        if(data._price&&data._price>0){
+          precioPromedio=data._price;
+        } else {
+          const items=data.results||[];
+          if(items.length>0){const precios=items.map(it=>it.price).filter(pp=>pp>0);precioPromedio=precios.length>0?precios.reduce((a,b)=>a+b,0)/precios.length:0;}
+        }
       }
     }catch(e){vendedores=null;dataSource='error';}
     const margen=arbCalcMargen(ganancia*1.5,ganancia,paisId);
