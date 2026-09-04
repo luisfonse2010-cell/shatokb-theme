@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
 <!-- BUILD: 2026-09-04 v7.3.2 — GitHub Actions JSON cache = datos 100% reales MeLi -->
-<!-- CF-CACHE-BUST: 1788487744499-v732-GH-ACTIONS-REAL-DATA -->
+<!-- CF-CACHE-BUST: 1788517200310-v732-GH-ACTIONS-REAL-DATA -->
 <!-- ── FAVICON & ICONS ──────────────────────────────────── -->
 <link rel="icon" type="image/svg+xml" href="images/kabuby-favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="images/kabuby-favicon.svg">
@@ -5556,6 +5556,72 @@ function arbEstimarVendedores(q,paisId){
   return Math.max(1,estimado);
 }
 
+// ── Helper: buscar en JSON cacheado por GitHub Actions ────────────────────
+// Los JSON viven en /kabuby/meli-data/ y son escritos por el workflow
+// fetch-meli-data.yml que corre en servidores de GitHub (IPs no-Cloudflare).
+const _arbJsonCache = {};  // cache en memoria para esta sesión
+async function arbFetchFromCache(site, query) {
+  const slug = query.toLowerCase().replace(/[^a-z0-9]+/g, '-').substring(0, 50);
+  const cacheKey = site + ':' + slug;
+  if (_arbJsonCache[cacheKey]) return _arbJsonCache[cacheKey];
+
+  // 1. Intentar archivo de búsqueda específica
+  const searchUrl = '/kabuby/meli-data/search-' + slug + '.json';
+  try {
+    const r = await fetch(searchUrl, { signal: AbortSignal.timeout(5000) });
+    if (r.ok) {
+      const d = await r.json();
+      if (d && d.queries) {
+        for (const [q, paises] of Object.entries(d.queries)) {
+          if (paises[site] && paises[site].total > 0) {
+            const pData = paises[site];
+            const result = {
+              paging: { total: pData.total },
+              results: (pData.results || []).map(r2 => ({ id: r2.id, title: r2.title, price: r2.price })),
+              _src: 'github-cache',
+              _price: pData.median_price || 0,
+              _cached_at: pData.fetched_at,
+            };
+            _arbJsonCache[cacheKey] = result;
+            return result;
+          }
+        }
+      }
+    }
+  } catch(e) {}
+
+  // 2. Intentar trending.json
+  if (!_arbJsonCache['__trending__']) {
+    try {
+      const r = await fetch('/kabuby/meli-data/trending.json', { signal: AbortSignal.timeout(5000) });
+      if (r.ok) { _arbJsonCache['__trending__'] = await r.json(); }
+    } catch(e) {}
+  }
+  const trending = _arbJsonCache['__trending__'];
+  if (trending && trending.terms) {
+    for (const [term, paises] of Object.entries(trending.terms)) {
+      if (query.toLowerCase().includes(term.toLowerCase()) || term.toLowerCase().includes(query.toLowerCase())) {
+        const siteKeys = Object.keys(paises);
+        for (const k of siteKeys) {
+          if (paises[k].site === site && paises[k].total > 0) {
+            const pData = paises[k];
+            const result = {
+              paging: { total: pData.total },
+              results: (pData.results || []).map(r2 => ({ id: r2.id, title: r2.title, price: r2.price })),
+              _src: 'github-cache',
+              _price: pData.median_price || 0,
+              _cached_at: pData.fetched_at,
+            };
+            _arbJsonCache[cacheKey] = result;
+            return result;
+          }
+        }
+      }
+    }
+  }
+  return null;
+}
+
 async function arbFetchML(apiUrl,paisId,nombreProducto){
   // Extraer site y q del apiUrl para llamadas via worker
   const mSite=apiUrl.match(/sites\/([A-Z]+)\/search\?q=([^&]+)/);
@@ -5693,7 +5759,7 @@ function arbHtmlProdCard(r,idx){
   const vc=r.ventana.estado==='abierta'?'#34d399':r.ventana.estado==='cerrando'?'#fcd34d':'#f87171';
 
   // Detectar si algún país tiene datos reales vs estimados
-  const tieneReales=Object.values(r.paises).some(d=>d._src==='direct'||d._src==='koi-worker'||d._src==='user-worker'||d._src==='proxy');
+  const tieneReales=Object.values(r.paises).some(d=>d._src==='github-cache'||d._src==='direct'||d._src==='koi-worker'||d._src==='user-worker'||d._src==='proxy');
 
   const paisesHtml=Object.entries(r.paises).map(([paisId,data])=>{
     const pais=ARB_PAISES.find(p=>p.id===paisId);
@@ -5702,7 +5768,7 @@ function arbHtmlProdCard(r,idx){
     const st=v===null?'—':v===0?'🔥 Nadie':v<=4?'✅ Entrar':v<=12?'⚡ Pronto':'⚠️ Vigilar';
     const stColor=v===0?'#34d399':v<=4?'#fcd34d':v<=12?'#f97316':'#f87171';
     const esEstimado=data._src==='estimate'||data._src==='error'||!data._src;
-    const srcLabel=data._src==='direct'?'Dato real ML — directo desde browser':data._src==='koi-worker'?'Dato real ML — via worker':data._src==='user-worker'?'Dato real ML — tu worker':data._src==='proxy'?'Dato real ML — via proxy':'Dato estimado — sin conexión a ML';
+    const srcLabel=data._src==='github-cache'?'Dato real ML — verificado GitHub Actions ✓':data._src==='direct'?'Dato real ML — directo desde browser':data._src==='koi-worker'?'Dato real ML — via worker':data._src==='user-worker'?'Dato real ML — tu worker':data._src==='proxy'?'Dato real ML — via proxy':'Dato estimado — sin conexión a ML';
     const srcBadge=esEstimado
       ?'<span title="'+srcLabel+'" style="font-size:9px;color:#7a91b8;margin-left:3px">~</span>'
       :'<span title="'+srcLabel+'" style="font-size:9px;color:#34d399;margin-left:3px">✓</span>';
