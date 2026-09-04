@@ -1,6 +1,6 @@
 {
   "type": "search",
-  "generated_at": "2026-09-04T10:34:43.148Z",
+  "generated_at": "2026-09-04T11:42:07.859Z",
   "queries": {
     "crema facial": {
       "BR": {
@@ -8,8 +8,8 @@
         "pais_nombre": "Brasil",
         "site": "MLB",
         "total": 0,
-        "error": "HTTP 403",
-        "fetched_at": "2026-09-04T10:34:42.538Z",
+        "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLB/search?q=crema%20facial&limit=10",
+        "fetched_at": "2026-09-04T11:42:07.747Z",
         "_src": "error"
       },
       "MX": {
@@ -17,8 +17,8 @@
         "pais_nombre": "México",
         "site": "MLM",
         "total": 0,
-        "error": "HTTP 403",
-        "fetched_at": "2026-09-04T10:34:42.623Z",
+        "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLM/search?q=crema%20facial&limit=10",
+        "fetched_at": "2026-09-04T11:42:07.761Z",
         "_src": "error"
       },
       "CO": {
@@ -26,8 +26,8 @@
         "pais_nombre": "Colombia",
         "site": "MCO",
         "total": 0,
-        "error": "HTTP 403",
-        "fetched_at": "2026-09-04T10:34:42.712Z",
+        "error": "HTTP 403 para https://api.mercadolibre.com/sites/MCO/search?q=crema%20facial&limit=10",
+        "fetched_at": "2026-09-04T11:42:07.778Z",
         "_src": "error"
       },
       "AR": {
@@ -35,8 +35,8 @@
         "pais_nombre": "Argentina",
         "site": "MLA",
         "total": 0,
-        "error": "HTTP 403",
-        "fetched_at": "2026-09-04T10:34:42.801Z",
+        "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLA/search?q=crema%20facial&limit=10",
+        "fetched_at": "2026-09-04T11:42:07.794Z",
         "_src": "error"
       },
       "CL": {
@@ -44,8 +44,8 @@
         "pais_nombre": "Chile",
         "site": "MLC",
         "total": 0,
-        "error": "HTTP 403",
-        "fetched_at": "2026-09-04T10:34:42.897Z",
+        "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLC/search?q=crema%20facial&limit=10",
+        "fetched_at": "2026-09-04T11:42:07.810Z",
         "_src": "error"
       },
       "PE": {
@@ -53,8 +53,8 @@
         "pais_nombre": "Perú",
         "site": "MPE",
         "total": 0,
-        "error": "HTTP 403",
-        "fetched_at": "2026-09-04T10:34:42.979Z",
+        "error": "HTTP 403 para https://api.mercadolibre.com/sites/MPE/search?q=crema%20facial&limit=10",
+        "fetched_at": "2026-09-04T11:42:07.829Z",
         "_src": "error"
       },
       "UY": {
@@ -62,8 +62,8 @@
         "pais_nombre": "Uruguay",
         "site": "MLU",
         "total": 0,
-        "error": "HTTP 403",
-        "fetched_at": "2026-09-04T10:34:43.065Z",
+        "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLU/search?q=crema%20facial&limit=10",
+        "fetched_at": "2026-09-04T11:42:07.844Z",
         "_src": "error"
       },
       "EC": {
@@ -71,8 +71,8 @@
         "pais_nombre": "Ecuador",
         "site": "MEC",
         "total": 0,
-        "error": "HTTP 403",
-        "fetched_at": "2026-09-04T10:34:43.148Z",
+        "error": "HTTP 403 para https://api.mercadolibre.com/sites/MEC/search?q=crema%20facial&limit=10",
+        "fetched_at": "2026-09-04T11:42:07.859Z",
         "_src": "error"
       }
     }
