@@ -1,0 +1,80 @@
+{
+  "type": "search",
+  "generated_at": "2026-09-04T10:37:05.174Z",
+  "queries": {
+    "protctor solar": {
+      "BR": {
+        "pais_id": "BR",
+        "pais_nombre": "Brasil",
+        "site": "MLB",
+        "total": 0,
+        "error": "HTTP 403",
+        "fetched_at": "2026-09-04T10:37:04.770Z",
+        "_src": "error"
+      },
+      "MX": {
+        "pais_id": "MX",
+        "pais_nombre": "México",
+        "site": "MLM",
+        "total": 0,
+        "error": "HTTP 403",
+        "fetched_at": "2026-09-04T10:37:04.828Z",
+        "_src": "error"
+      },
+      "CO": {
+        "pais_id": "CO",
+        "pais_nombre": "Colombia",
+        "site": "MCO",
+        "total": 0,
+        "error": "HTTP 403",
+        "fetched_at": "2026-09-04T10:37:04.886Z",
+        "_src": "error"
+      },
+      "AR": {
+        "pais_id": "AR",
+        "pais_nombre": "Argentina",
+        "site": "MLA",
+        "total": 0,
+        "error": "HTTP 403",
+        "fetched_at": "2026-09-04T10:37:04.944Z",
+        "_src": "error"
+      },
+      "CL": {
+        "pais_id": "CL",
+        "pais_nombre": "Chile",
+        "site": "MLC",
+        "total": 0,
+        "error": "HTTP 403",
+        "fetched_at": "2026-09-04T10:37:05.002Z",
+        "_src": "error"
+      },
+      "PE": {
+        "pais_id": "PE",
+        "pais_nombre": "Perú",
+        "site": "MPE",
+        "total": 0,
+        "error": "HTTP 403",
+        "fetched_at": "2026-09-04T10:37:05.060Z",
+        "_src": "error"
+      },
+      "UY": {
+        "pais_id": "UY",
+        "pais_nombre": "Uruguay",
+        "site": "MLU",
+        "total": 0,
+        "error": "HTTP 403",
+        "fetched_at": "2026-09-04T10:37:05.117Z",
+        "_src": "error"
+      },
+      "EC": {
+        "pais_id": "EC",
+        "pais_nombre": "Ecuador",
+        "site": "MEC",
+        "total": 0,
+        "error": "HTTP 403",
+        "fetched_at": "2026-09-04T10:37:05.174Z",
+        "_src": "error"
+      }
+    }
+  }
+}
