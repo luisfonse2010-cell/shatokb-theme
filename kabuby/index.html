@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
 <!-- BUILD: 2026-09-04 v7.3.2 — GitHub Actions JSON cache = datos 100% reales MeLi -->
-<!-- CF-CACHE-BUST: 1788520723408-v732-GH-ACTIONS-REAL-DATA -->
+<!-- CF-CACHE-BUST: 1788530078975-v732-RAW-GITHUB-FIX -->
 <!-- ── FAVICON & ICONS ──────────────────────────────────── -->
 <link rel="icon" type="image/svg+xml" href="images/kabuby-favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="images/kabuby-favicon.svg">
@@ -4144,7 +4144,15 @@ const RADAR_CATEGORIES = {
 // El Worker proxy fallaba porque MeLi bloquea IPs de datacenters CF.
 // Solución: llamar directo desde el browser, sin proxy.
 async function radarSearchTerm(siteId, term) {
-  // Llamada directa a MeLi — funciona desde browsers (CORS abierto)
+  // ── 0. Intentar desde caché GitHub Actions (datos reales, sin restricción CF) ──
+  try {
+    const cached = await arbFetchFromCache(siteId, term);
+    if (cached && cached.paging && cached.paging.total > 0) {
+      return { keyword: term, available: cached.paging.total, price: cached._price || 0, _src: 'github-cache' };
+    }
+  } catch(e) {}
+
+  // ── 1. Llamada directa a MeLi (puede fallar en CF IPs, funciona en residencial) ──
   try {
     const url = `https://api.mercadolibre.com/sites/${siteId}/search?q=${encodeURIComponent(term)}&limit=5`;
     const r = await fetch(url, { signal: AbortSignal.timeout(10000) });
@@ -4154,7 +4162,7 @@ async function radarSearchTerm(siteId, term) {
     const total = (j.paging && j.paging.total) ? j.paging.total : j.results.length;
     const prices = j.results.map(x => x.price).filter(p => p > 0).sort((a,b) => a-b);
     const price = prices.length ? prices[Math.floor(prices.length/2)] : 0;
-    return { keyword: term, available: total, price };
+    return { keyword: term, available: total, price, _src: 'direct' };
   } catch(e) { return null; }
 }
 
@@ -5311,14 +5319,14 @@ const ARB_DB_PORT='kabuby_portfolio_v2';
 const ARB_DB_OPS='kabuby_oportunidades_v2';
 
 const ARB_PAISES=[
-  {id:'BR',flag:'🇧🇷',nombre:'Brasil',   ml:'https://api.mercadolibre.com/sites/MLBR/search?q=',mlUrl:'https://www.mercadolivre.com.br/jm/search?as_word=',comision:.17,importacion:.25,envio:8},
-  {id:'MX',flag:'🇲🇽',nombre:'México',   ml:'https://api.mercadolibre.com/sites/MLMX/search?q=',mlUrl:'https://www.mercadolibre.com.mx/jm/search?as_word=',comision:.17,importacion:.20,envio:7},
-  {id:'CO',flag:'🇨🇴',nombre:'Colombia', ml:'https://api.mercadolibre.com/sites/MLCO/search?q=',mlUrl:'https://www.mercadolibre.com.co/jm/search?as_word=',comision:.15,importacion:.22,envio:8},
-  {id:'AR',flag:'🇦🇷',nombre:'Argentina',ml:'https://api.mercadolibre.com/sites/MLAR/search?q=',mlUrl:'https://www.mercadolibre.com.ar/jm/search?as_word=',comision:.17,importacion:.30,envio:9},
-  {id:'CL',flag:'🇨🇱',nombre:'Chile',    ml:'https://api.mercadolibre.com/sites/MLCL/search?q=',mlUrl:'https://www.mercadolibre.cl/jm/search?as_word=',comision:.15,importacion:.18,envio:8},
-  {id:'PE',flag:'🇵🇪',nombre:'Perú',     ml:'https://api.mercadolibre.com/sites/MLPE/search?q=',mlUrl:'https://www.mercadolibre.com.pe/jm/search?as_word=',comision:.15,importacion:.20,envio:8},
-  {id:'UY',flag:'🇺🇾',nombre:'Uruguay',  ml:'https://api.mercadolibre.com/sites/MLUY/search?q=',mlUrl:'https://www.mercadolibre.com.uy/jm/search?as_word=',comision:.15,importacion:.20,envio:9},
-  {id:'EC',flag:'🇪🇨',nombre:'Ecuador',  ml:'https://api.mercadolibre.com/sites/MLEC/search?q=',mlUrl:'https://www.mercadolibre.com.ec/jm/search?as_word=',comision:.15,importacion:.18,envio:8},
+  {id:'BR',flag:'🇧🇷',nombre:'Brasil',   site:'MLB',ml:'https://api.mercadolibre.com/sites/MLB/search?q=',mlUrl:'https://listado.mercadolivre.com.br/search?as_word=',comision:.17,importacion:.25,envio:8},
+  {id:'MX',flag:'🇲🇽',nombre:'México',   site:'MLM',ml:'https://api.mercadolibre.com/sites/MLM/search?q=',mlUrl:'https://listado.mercadolibre.com.mx/search?as_word=',comision:.17,importacion:.20,envio:7},
+  {id:'CO',flag:'🇨🇴',nombre:'Colombia', site:'MCO',ml:'https://api.mercadolibre.com/sites/MCO/search?q=',mlUrl:'https://listado.mercadolibre.com.co/search?as_word=',comision:.15,importacion:.22,envio:8},
+  {id:'AR',flag:'🇦🇷',nombre:'Argentina',site:'MLA',ml:'https://api.mercadolibre.com/sites/MLA/search?q=',mlUrl:'https://listado.mercadolibre.com.ar/search?as_word=',comision:.17,importacion:.30,envio:9},
+  {id:'CL',flag:'🇨🇱',nombre:'Chile',    site:'MLC',ml:'https://api.mercadolibre.com/sites/MLC/search?q=',mlUrl:'https://listado.mercadolibre.cl/search?as_word=',comision:.15,importacion:.18,envio:8},
+  {id:'PE',flag:'🇵🇪',nombre:'Perú',     site:'MPE',ml:'https://api.mercadolibre.com/sites/MPE/search?q=',mlUrl:'https://listado.mercadolibre.com.pe/search?as_word=',comision:.15,importacion:.20,envio:8},
+  {id:'UY',flag:'🇺🇾',nombre:'Uruguay',  site:'MLU',ml:'https://api.mercadolibre.com/sites/MLU/search?q=',mlUrl:'https://listado.mercadolibre.com.uy/search?as_word=',comision:.15,importacion:.20,envio:9},
+  {id:'EC',flag:'🇪🇨',nombre:'Ecuador',  site:'MEC',ml:'https://api.mercadolibre.com/sites/MEC/search?q=',mlUrl:'https://listado.mercadolibre.com.ec/search?as_word=',comision:.15,importacion:.18,envio:8},
 ];
 
 const ARB_CATS=['💄 Skincare & Belleza','💊 Suplementos & Salud','🏋️ Fitness & Deporte','🐾 Mascotas','🏠 Hogar & Cocina','📱 Gadgets & Tech','👶 Bebés & Niños','🌿 Natural & Orgánico','🎮 Entretenimiento','✈️ Viajes & Outdoor','Otro'];
@@ -5339,17 +5347,26 @@ function arbDias(iso){if(!iso)return 0;return Math.floor((Date.now()-new Date(is
 
 function arbCalcMargen(costoAmazon,gananciaDeseada,paisId){
   const p=ARB_PAISES.find(x=>x.id===paisId)||ARB_PAISES[0];
-  const precioML=gananciaDeseada+(gananciaDeseada*p.comision)+p.envio;
-  const precioCliente=precioML+(precioML*p.importacion);
-  const f1=costoAmazon;const m1=precioML-f1-p.envio;
-  const f2=costoAmazon*0.75;const m2=precioML-f2-p.envio;
-  const f3=costoAmazon*0.45;const m3=precioML-f3-p.envio;
+  // Precio de venta ML = (costo + envio + ganancia) / (1 - comision)
+  // Esto garantiza que después de pagar comisión quede exactamente `gananciaDeseada`
+  const calcPrecioML=(costo)=>Math.round(((costo+p.envio+gananciaDeseada)/(1-p.comision))*100)/100;
+  const f1c=costoAmazon;
+  const f2c=Math.round(costoAmazon*0.75*100)/100;
+  const f3c=Math.round(costoAmazon*0.45*100)/100;
+  const f1ml=calcPrecioML(f1c);
+  const f2ml=calcPrecioML(f2c);
+  const f3ml=calcPrecioML(f3c);
+  const m1=Math.round((f1ml*(1-p.comision)-f1c-p.envio)*100)/100;
+  const m2=Math.round((f2ml*(1-p.comision)-f2c-p.envio)*100)/100;
+  const m3=Math.round((f3ml*(1-p.comision)-f3c-p.envio)*100)/100;
+  const precioML=f1ml;
+  const precioCliente=Math.round(precioML*(1+p.importacion)*100)/100;
   return{
-    precioCliente:Math.round(precioCliente*100)/100,
-    precioML:Math.round(precioML*100)/100,
-    f1:{costo:f1,margen:Math.round(m1*100)/100,pct:Math.round((m1/precioML)*100)},
-    f2:{costo:Math.round(f2*100)/100,margen:Math.round(m2*100)/100,pct:Math.round((m2/precioML)*100)},
-    f3:{costo:Math.round(f3*100)/100,margen:Math.round(m3*100)/100,pct:Math.round((m3/precioML)*100)},
+    precioCliente,
+    precioML,
+    f1:{costo:f1c,margen:m1,pct:Math.round((m1/f1ml)*100)},
+    f2:{costo:f2c,margen:m2,pct:Math.round((m2/f2ml)*100)},
+    f3:{costo:f3c,margen:m3,pct:Math.round((m3/f3ml)*100)},
   };
 }
 
@@ -5429,26 +5446,69 @@ function arbActualizarStats(){
 // ══ CAZADOR ══
 function arbHtmlCazador(){
   return '<div class="arb-card">'+
-  '<div class="arb-card-hdr"><div><div class="arb-card-title">🎯 Cazador de Oportunidades</div><div class="arb-card-sub">Escribe productos que viste en TikTok, Amazon o donde sea — analizo todos los países LATAM</div></div>'+
+  '<div class="arb-card-hdr"><div><div class="arb-card-title">🎯 Cazador de Oportunidades</div><div class="arb-card-sub">Pega el título de Amazon — extraigo marca, producto e ingredientes y genero los términos óptimos para MeLi LATAM</div></div>'+
   '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
   '<a href="https://ads.tiktok.com/business/creativecenter/inspiration/topproducts/pc/en" target="_blank" class="arb-btn-sec">🎵 TikTok</a>'+
   '<a href="https://www.amazon.com/gp/movers-and-shakers/" target="_blank" class="arb-btn-sec">📦 Amazon Movers</a>'+
   '</div></div>'+
-  '<div class="arb-grid2">'+
-  '<div>'+
-  '<div class="arb-label">📋 Productos candidatos (uno por línea)</div>'+
-  '<div class="arb-candidato-list" id="arb-cand-list"></div>'+
-  '<button class="arb-btn-sec" style="width:100%;justify-content:center" onclick="arbAddCand()">+ Agregar producto</button>'+
+
+  // ── PASO 1: Título Amazon ──
+  '<div style="background:#0d1d3a;border:1px solid #26406a;border-radius:10px;padding:14px;margin-bottom:14px">'+
+  '<div style="font-size:11px;font-weight:700;color:#6c8eff;letter-spacing:1px;margin-bottom:8px">PASO 1 · PEGA EL TÍTULO DE AMAZON</div>'+
+  '<textarea id="arb-titulo-amazon" class="arb-input" rows="3" placeholder="ej: BIODANCE Bio-Collagen Real Deep Mask, Hydrating Overnight Hydrogel Face Mask, Pore Minimizing, Elasticity..." style="resize:vertical;line-height:1.5"></textarea>'+
+  '<div style="display:flex;gap:8px;margin-top:8px;align-items:center">'+
+  '<button class="arb-btn-pri" style="padding:7px 18px;font-size:12px" onclick="arbExtraerTerminos()">🔍 Extraer términos MeLi</button>'+
+  '<span style="font-size:11px;color:#7a91b8" id="arb-extract-status"></span>'+
   '</div>'+
+  '</div>'+
+
+  // ── PASO 2: Términos generados (editables) ──
+  '<div id="arb-terminos-panel" style="display:none;background:#0d1d3a;border:1px solid #26406a;border-radius:10px;padding:14px;margin-bottom:14px">'+
+  '<div style="font-size:11px;font-weight:700;color:#6c8eff;letter-spacing:1px;margin-bottom:10px">PASO 2 · TÉRMINOS DE BÚSQUEDA EN MELI (editables)</div>'+
+
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">'+
+  '<div>'+
+  '<div style="font-size:10px;color:#94a3b8;margin-bottom:4px">📌 Marca detectada</div>'+
+  '<input id="arb-marca" class="arb-input" type="text" placeholder="ej: BIODANCE" style="font-weight:700;color:#6c8eff">'+
+  '</div>'+
+  '<div>'+
+  '<div style="font-size:10px;color:#94a3b8;margin-bottom:4px">🏷️ Categoría detectada</div>'+
+  '<input id="arb-categoria-det" class="arb-input" type="text" placeholder="ej: Skincare · Mascarillas" readonly style="color:#94a3b8">'+
+  '</div>'+
+  '</div>'+
+
+  '<div style="margin-bottom:10px">'+
+  '<div style="font-size:10px;color:#94a3b8;margin-bottom:4px">🇲🇽🇨🇴🇦🇷🇨🇱🇵🇪🇺🇾🇪🇨 Buscar en MeLi LATAM (español)</div>'+
+  '<input id="arb-term-es" class="arb-input" type="text" placeholder="ej: BIODANCE mascarilla hidrogel colágeno coreana">'+
+  '<div style="font-size:10px;color:#4a6a9a;margin-top:4px">Usado para: MX · CO · AR · CL · PE · UY · EC</div>'+
+  '</div>'+
+
+  '<div style="margin-bottom:12px">'+
+  '<div style="font-size:10px;color:#94a3b8;margin-bottom:4px">🇧🇷 Buscar en MeLi Brasil (português)</div>'+
+  '<input id="arb-term-pt" class="arb-input" type="text" placeholder="ej: BIODANCE máscara hidrogel colágeno coreana">'+
+  '<div style="font-size:10px;color:#4a6a9a;margin-top:4px">Usado exclusivamente para: BR (MLB)</div>'+
+  '</div>'+
+
+  '<div style="background:#0a1628;border-radius:8px;padding:10px;font-size:11px;color:#7a91b8;line-height:1.8" id="arb-extract-info"></div>'+
+  '</div>'+
+
+  // ── PASO 3: Configuración ──
+  '<div style="background:#0d1d3a;border:1px solid #26406a;border-radius:10px;padding:14px;margin-bottom:14px">'+
+  '<div style="font-size:11px;font-weight:700;color:#6c8eff;letter-spacing:1px;margin-bottom:10px">PASO 3 · CONFIGURACIÓN</div>'+
+  '<div class="arb-grid2">'+
   '<div>'+
   '<div class="arb-igroup"><div class="arb-label">💰 Ganancia deseada por venta (USD)</div><input class="arb-input" type="number" id="arb-ganancia" value="20" min="5" max="500"></div>'+
   '<div class="arb-igroup"><div class="arb-label">⚖️ Peso estimado</div><select class="arb-select" id="arb-peso"><option value="150">Muy liviano (&lt;200g) — sobres, cremas</option><option value="350" selected>Liviano (200-500g) — frascos, suplementos</option><option value="750">Medio (500g-1kg) — kits, sets</option><option value="1500">Pesado (+1kg)</option></select></div>'+
+  '</div>'+
+  '<div>'+
   '<div class="arb-igroup"><div class="arb-label">🌎 Países a analizar</div><div class="arb-paises-grid" style="grid-template-columns:1fr 1fr" id="arb-paises-check">'+
   ARB_PAISES.map(p=>'<label class="arb-pais-cb"><input type="checkbox" value="'+p.id+'" checked> '+p.flag+' '+p.nombre+'</label>').join('')+
   '</div></div>'+
   '</div>'+
   '</div>'+
-  '<div style="margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">'+
+  '</div>'+
+
+  '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">'+
   '<button class="arb-btn-pri" onclick="arbAnalizar()" id="arb-btn-analizar">🚀 Analizar en todos los países</button>'+
   '<button class="arb-btn-sec" onclick="arbLimpiar()">🗑️ Limpiar</button>'+
   '<span style="font-size:11px;color:#7a91b8" id="arb-status"></span>'+
@@ -5458,33 +5518,196 @@ function arbHtmlCazador(){
 }
 
 function arbBindCazador(){
-  if(arbCands.length===0)arbCands=[''];
-  arbRenderCands();
+  // noop — nuevo UI no usa candidatos múltiples
 }
 
-function arbRenderCands(){
-  const list=document.getElementById('arb-cand-list');
-  if(!list)return;
-  list.innerHTML=arbCands.map((c,i)=>
-    '<div class="arb-cand-row">'+
-    '<input class="arb-cand-inp" type="text" value="'+c.replace(/"/g,'&quot;')+'" placeholder="ej: cerave moisturizing cream..." '+
-    'oninput="arbSetCand('+i+',this.value)" onkeydown="if(event.key===\'Enter\'){arbAddCand()}">'+
-    '<button class="arb-cand-rm" onclick="arbRmCand('+i+')">✕</button>'+
-    '</div>'
-  ).join('');
-}
+window.arbLimpiar=function(){
+  const t=document.getElementById('arb-titulo-amazon');if(t)t.value='';
+  const te=document.getElementById('arb-term-es');if(te)te.value='';
+  const tp=document.getElementById('arb-term-pt');if(tp)tp.value='';
+  const m=document.getElementById('arb-marca');if(m)m.value='';
+  const c=document.getElementById('arb-categoria-det');if(c)c.value='';
+  const inf=document.getElementById('arb-extract-info');if(inf)inf.innerHTML='';
+  const pan=document.getElementById('arb-terminos-panel');if(pan)pan.style.display='none';
+  const st=document.getElementById('arb-extract-status');if(st)st.textContent='';
+  const r=document.getElementById('arb-resultados');if(r)r.innerHTML='';
+};
 
-window.arbAddCand=function(){arbCands.push('');arbRenderCands();const ins=document.querySelectorAll('.arb-cand-inp');if(ins.length)ins[ins.length-1].focus();};
-window.arbRmCand=function(i){arbCands.splice(i,1);if(arbCands.length===0)arbCands=[''];arbRenderCands();};
-window.arbLimpiar=function(){arbCands=[''];arbRenderCands();const r=document.getElementById('arb-resultados');if(r)r.innerHTML='';};
-// Función global para actualizar el valor de un candidato desde el HTML inline
-window.arbSetCand=function(i,val){arbCands[i]=val;};
+// ── Diccionarios de traducción para extracción de título Amazon ─────────────
+const ARB_DICT_ES={
+  // Tipos de producto
+  'mask':'mascarilla','masks':'mascarillas','face mask':'mascarilla facial',
+  'sheet mask':'mascarilla de tela','hydrogel mask':'mascarilla hidrogel',
+  'cream':'crema','serum':'suero','toner':'tónico','essence':'esencia',
+  'moisturizer':'hidratante','cleanser':'limpiador','sunscreen':'protector solar',
+  'spf':'protector solar','eye cream':'crema de ojos','lip balm':'bálsamo labial',
+  'ampoule':'ampolla','lotion':'loción','gel':'gel','oil':'aceite',
+  'exfoliator':'exfoliante','scrub':'exfoliante','mist':'bruma facial',
+  'pad':'pad','pads':'pads exfoliantes','patch':'parche','patches':'parches',
+  'supplement':'suplemento','vitamin':'vitamina','collagen':'colágeno',
+  'hyaluronic acid':'ácido hialurónico','niacinamide':'niacinamida',
+  'retinol':'retinol','peptide':'péptido','ceramide':'ceramida',
+  'vitamin c':'vitamina c','snail':'caracol','propolis':'propóleo',
+  'centella':'centella asiática','mugwort':'artemisa','rice':'arroz',
+  'glow':'luminosidad','brightening':'iluminador','whitening':'aclarante',
+  'anti-aging':'antienvejecimiento','anti aging':'antienvejecimiento',
+  'pore':'poros','pores':'poros','hydrating':'hidratante','hydration':'hidratación',
+  'moisturizing':'hidratante','firming':'reafirmante','lifting':'lifting',
+  'plumping':'voluminizador','elasticity':'elasticidad','overnight':'noche',
+  'sleeping':'noche','travel':'viaje','korean':'coreana','korean skin care':'skincare coreano',
+  'k-beauty':'k-beauty','k beauty':'k-beauty','skin care':'skincare',
+  'face wash':'limpiador facial','foam cleanser':'limpiador espumoso',
+  'double cleansing':'doble limpieza','micellar':'micelar',
+  'set':'set','kit':'kit','pack':'pack','bundle':'pack',
+};
+const ARB_DICT_PT={
+  'mask':'máscara','masks':'máscaras','face mask':'máscara facial',
+  'sheet mask':'máscara de folha','hydrogel mask':'máscara hidrogel',
+  'cream':'creme','serum':'sérum','toner':'tônico','essence':'essência',
+  'moisturizer':'hidratante','cleanser':'limpador','sunscreen':'protetor solar',
+  'spf':'protetor solar','eye cream':'creme para os olhos','lip balm':'protetor labial',
+  'ampoule':'ampola','lotion':'loção','gel':'gel','oil':'óleo',
+  'exfoliator':'esfoliante','scrub':'esfoliante','mist':'névoa facial',
+  'pad':'pad','pads':'pads esfoliantes','patch':'patch','patches':'patches',
+  'supplement':'suplemento','vitamin':'vitamina','collagen':'colágeno',
+  'hyaluronic acid':'ácido hialurônico','niacinamide':'niacinamida',
+  'retinol':'retinol','peptide':'peptídeo','ceramide':'ceramida',
+  'vitamin c':'vitamina c','snail':'caracol','propolis':'própolis',
+  'centella':'centella asiática','mugwort':'artemísia','rice':'arroz',
+  'glow':'luminosidade','brightening':'iluminador','whitening':'clareador',
+  'anti-aging':'antienvelhecimento','anti aging':'antienvelhecimento',
+  'pore':'poro','pores':'poros','hydrating':'hidratante','hydration':'hidratação',
+  'moisturizing':'hidratante','firming':'firmador','lifting':'lifting',
+  'plumping':'volumizador','elasticity':'elasticidade','overnight':'noturno',
+  'sleeping':'noturno','travel':'viagem','korean':'coreana','korean skin care':'skincare coreano',
+  'k-beauty':'k-beauty','k beauty':'k-beauty','skin care':'skincare',
+  'face wash':'limpador facial','foam cleanser':'limpador espumoso',
+  'double cleansing':'limpeza dupla','micellar':'micelar',
+  'set':'set','kit':'kit','pack':'pack','bundle':'pack',
+};
+
+// Categorías para detección automática
+const ARB_CAT_DETECT=[
+  {cat:'Skincare · Mascarillas Faciales', keys:['mask','mascarilla','sheet mask','hydrogel mask','face mask']},
+  {cat:'Skincare · Sérums & Ampollas',    keys:['serum','sérum','ampoule','essence','ampolla','esencia']},
+  {cat:'Skincare · Cremas & Hidratantes', keys:['cream','moisturizer','lotion','crema','hidratante']},
+  {cat:'Skincare · Protección Solar',     keys:['sunscreen','spf','sun cream','protetor solar','protector solar']},
+  {cat:'Skincare · Limpiadores',          keys:['cleanser','face wash','foam','toner','micellar','limpiador']},
+  {cat:'Skincare · Contorno de Ojos',     keys:['eye cream','eye patch','eye mask','eye gel']},
+  {cat:'Suplementos & Vitaminas',         keys:['supplement','vitamin','collagen','probiotic','omega','suplemento']},
+  {cat:'Fitness & Deporte',               keys:['protein','whey','pre-workout','bcaa','creatine','fitness']},
+  {cat:'Mascotas',                        keys:['pet','dog','cat','puppy','kitten','mascota']},
+  {cat:'Hogar & Cocina',                  keys:['kitchen','home','cook','clean','hogar','cocina']},
+  {cat:'Gadgets & Tech',                  keys:['gadget','device','electronic','tech','usb','wireless']},
+];
+
+// ── Función principal: extrae marca + tipo + ingredientes del título Amazon ──
+window.arbExtraerTerminos=function(){
+  const titulo=(document.getElementById('arb-titulo-amazon')?.value||'').trim();
+  if(!titulo){
+    const st=document.getElementById('arb-extract-status');
+    if(st){st.textContent='⚠️ Pega primero el título de Amazon';st.style.color='#fbbf24';}
+    return;
+  }
+  const st=document.getElementById('arb-extract-status');
+  if(st){st.textContent='⏳ Extrayendo...';st.style.color='#6c8eff';}
+
+  const tituloLow=titulo.toLowerCase();
+
+  // 1. Extraer marca — primera palabra en MAYÚSCULAS o antes de la primera coma
+  let marca='';
+  const primPalabras=titulo.split(/[\s,]+/);
+  // La marca suele ser la 1ra o 2da palabra en mayúsculas/title-case
+  for(let i=0;i<Math.min(3,primPalabras.length);i++){
+    const p=primPalabras[i];
+    if(p.length>=3 && (p===p.toUpperCase() || /^[A-Z][a-z]/.test(p)) && !/^(Bio|Real|Deep|Pure|Pro|Max|Ultra|Super|New|Natural|Premium)$/i.test(p)){
+      marca=p.replace(/[^a-zA-Z0-9]/g,'');
+      break;
+    }
+  }
+  if(!marca)marca=primPalabras[0];
+
+  // 2. Detectar categoría
+  let categoriaDetectada='Skincare & Belleza';
+  for(const cat of ARB_CAT_DETECT){
+    if(cat.keys.some(k=>tituloLow.includes(k))){
+      categoriaDetectada=cat.cat;
+      break;
+    }
+  }
+
+  // 3. Extraer ingredientes/beneficios clave (top 3 más relevantes)
+  const claves=[];
+  // Ordenar diccionario de mayor a menor longitud para detectar frases primero
+  const dictEntries=Object.entries(ARB_DICT_ES).sort((a,b)=>b[0].length-a[0].length);
+  for(const [en,es] of dictEntries){
+    if(tituloLow.includes(en) && !claves.find(c=>c.en===en)){
+      claves.push({en,es,pt:ARB_DICT_PT[en]||es});
+      if(claves.length>=5)break;
+    }
+  }
+
+  // 4. Construir término ES: marca + tipo + ingredientes clave + "coreana" si aplica
+  const esCoreana=tituloLow.includes('korean')||tituloLow.includes('k-beauty')||tituloLow.includes('k beauty');
+  const termPartsES=[marca];
+  const termPartsPT=[marca];
+  // Añadir las primeras 3 traducciones más relevantes
+  const topClaves=claves.slice(0,3);
+  topClaves.forEach(c=>{
+    if(c.es && !termPartsES.includes(c.es))termPartsES.push(c.es);
+    if(c.pt && !termPartsPT.includes(c.pt))termPartsPT.push(c.pt);
+  });
+  if(esCoreana){termPartsES.push('coreana');termPartsPT.push('coreana');}
+
+  const termES=termPartsES.join(' ');
+  const termPT=termPartsPT.join(' ');
+
+  // 5. Rellenar UI
+  const mEl=document.getElementById('arb-marca');if(mEl)mEl.value=marca;
+  const cEl=document.getElementById('arb-categoria-det');if(cEl)cEl.value=categoriaDetectada;
+  const esEl=document.getElementById('arb-term-es');if(esEl)esEl.value=termES;
+  const ptEl=document.getElementById('arb-term-pt');if(ptEl)ptEl.value=termPT;
+
+  // 6. Mostrar panel + info detallada
+  const pan=document.getElementById('arb-terminos-panel');if(pan)pan.style.display='block';
+  const inf=document.getElementById('arb-extract-info');
+  if(inf){
+    const rows=topClaves.map(c=>'<span style="color:#e8f0fe">'+c.en+'</span> → ES: <span style="color:#34d399">'+c.es+'</span> / PT: <span style="color:#60a5fa">'+c.pt+'</span>').join('<br>');
+    inf.innerHTML=
+      '<div style="margin-bottom:6px"><b style="color:#6c8eff">Marca:</b> <span style="color:#e8f0fe">'+marca+'</span> &nbsp;·&nbsp; <b style="color:#6c8eff">Categoría:</b> <span style="color:#e8f0fe">'+categoriaDetectada+'</span></div>'+
+      '<div style="margin-bottom:4px"><b style="color:#6c8eff">Términos detectados del título:</b></div>'+
+      (rows||'<span style="color:#7a91b8">—</span>')+
+      '<div style="margin-top:8px;padding-top:8px;border-top:1px solid #1e3a5f">'+
+      '💡 <span style="color:#94a3b8">Puedes editar los campos arriba antes de analizar. El término en español se usará para los 7 países LATAM y el de português solo para Brasil.</span>'+
+      '</div>';
+  }
+  if(st){st.textContent='✅ Términos generados — revisa y edita si necesario';st.style.color='#34d399';}
+};
 
 window.arbAnalizar=async function(){
-  // Leer valores actuales de los inputs por si el oninput no actualizó
-  document.querySelectorAll('.arb-cand-inp').forEach((inp,i)=>{arbCands[i]=inp.value;});
-  const nombres=arbCands.filter(c=>c.trim().length>0);
-  if(nombres.length===0){alert('Agrega al menos un producto para analizar');return;}
+  // Leer términos de búsqueda
+  const termES=(document.getElementById('arb-term-es')?.value||'').trim();
+  const termPT=(document.getElementById('arb-term-pt')?.value||'').trim();
+  const marca=(document.getElementById('arb-marca')?.value||'').trim();
+  const tituloAmazon=(document.getElementById('arb-titulo-amazon')?.value||'').trim();
+
+  // Necesitamos al menos el término ES o el título
+  if(!termES && !tituloAmazon){
+    alert('Pega el título de Amazon y haz clic en "Extraer términos MeLi" primero — o escribe directamente el término de búsqueda en español.');
+    return;
+  }
+
+  // Si hay título pero no se extrajeron términos todavía, extraer automáticamente
+  if(!termES && tituloAmazon){
+    window.arbExtraerTerminos();
+    // Esperar un tick para que se llenen los inputs
+    await new Promise(r=>setTimeout(r,50));
+  }
+
+  const termFinalES=(document.getElementById('arb-term-es')?.value||'').trim()||tituloAmazon;
+  const termFinalPT=(document.getElementById('arb-term-pt')?.value||'').trim()||termFinalES;
+  const nombreDisplay=marca?(marca+' — '+termFinalES):termFinalES;
+
   const ganancia=parseFloat(document.getElementById('arb-ganancia')?.value)||20;
   const peso=parseInt(document.getElementById('arb-peso')?.value)||350;
   const paisesSeleccionados=[...document.querySelectorAll('#arb-paises-check input:checked')].map(el=>el.value);
@@ -5495,20 +5718,24 @@ window.arbAnalizar=async function(){
   if(btn){btn.disabled=true;btn.textContent='⏳ Analizando...';}
 
   const container=document.getElementById('arb-resultados');
-  if(container)container.innerHTML='<div class="arb-loading"><div class="arb-spinner"></div> Consultando Mercado Libre en <strong>'+paisesSeleccionados.length+' países</strong> para '+nombres.length+' producto(s)...<br><span style="font-size:10px;color:#34d399;margin-top:6px;display:block">✅ Fetch directo a MeLi desde browser — datos 100% REALES en tiempo real</span></div>';
+  if(container)container.innerHTML=
+    '<div class="arb-loading"><div class="arb-spinner"></div>'+
+    ' Consultando Mercado Libre en <strong>'+paisesSeleccionados.length+' países</strong>...<br>'+
+    '<span style="font-size:11px;color:#6c8eff;margin-top:6px;display:block">🇲🇽🇨🇴🇦🇷🇨🇱🇵🇪🇺🇾🇪🇨 ES: <b>'+termFinalES+'</b></span>'+
+    '<span style="font-size:11px;color:#60a5fa;margin-top:2px;display:block">🇧🇷 PT: <b>'+termFinalPT+'</b></span>'+
+    '<span style="font-size:10px;color:#34d399;margin-top:6px;display:block">✅ Fetch directo a MeLi — datos 100% REALES en tiempo real</span>'+
+    '</div>';
 
   arbResultados=[];
+  if(status)status.textContent='Analizando: '+nombreDisplay+'...';
 
-  for(let i=0;i<nombres.length;i++){
-    const nombre=nombres[i].trim();
-    if(status)status.textContent='('+(i+1)+'/'+nombres.length+') Analizando: '+nombre+'...';
-    const res=await arbAnalizarUno(nombre,ganancia,peso,paisesSeleccionados);
-    arbResultados.push(res);
-  }
+  // Pasar términos ES y PT por separado a arbAnalizarUno
+  const res=await arbAnalizarUno(termFinalES,termFinalPT,marca,ganancia,peso,paisesSeleccionados);
+  arbResultados.push(res);
 
   arbResultados.sort((a,b)=>b.scoreMax-a.scoreMax);
   if(btn){btn.disabled=false;btn.textContent='🚀 Analizar en todos los países';}
-  if(status)status.textContent='✅ '+nombres.length+' producto(s) analizados';
+  if(status)status.textContent='✅ Análisis completado';
   if(container)container.innerHTML=arbHtmlResultados(arbResultados);
 };
 
@@ -5557,20 +5784,22 @@ function arbEstimarVendedores(q,paisId){
 }
 
 // ── Helper: buscar en JSON cacheado por GitHub Actions ────────────────────
-// Los JSON viven en /kabuby/meli-data/ y son escritos por el workflow
-// fetch-meli-data.yml que corre en servidores de GitHub (IPs no-Cloudflare).
+// Los JSON se leen desde raw.githubusercontent.com (CORS abierto, sin SPA routing)
+// CF Pages intercepta rutas locales → usamos GitHub raw directamente
 const _arbJsonCache = {};  // cache en memoria para esta sesión
+const _ARB_RAW_BASE = 'https://raw.githubusercontent.com/luisfonse2010-cell/shatokb-theme/main/kabuby/meli-data/';
 async function arbFetchFromCache(site, query) {
   const slug = query.toLowerCase().replace(/[^a-z0-9]+/g, '-').substring(0, 50);
   const cacheKey = site + ':' + slug;
   if (_arbJsonCache[cacheKey]) return _arbJsonCache[cacheKey];
 
-  // 1. Intentar archivo de búsqueda específica
-  const searchUrl = '/kabuby/meli-data/search-' + slug + '.json';
+  // 1. Intentar archivo de búsqueda específica desde GitHub raw
+  const searchUrl = _ARB_RAW_BASE + 'search-' + slug + '.json';
   try {
     const r = await fetch(searchUrl, { signal: AbortSignal.timeout(5000) });
     if (r.ok) {
       const d = await r.json();
+      // Buscar dentro del archivo: d.queries[query][pais]
       if (d && d.queries) {
         for (const [q, paises] of Object.entries(d.queries)) {
           if (paises[site] && paises[site].total > 0) {
@@ -5590,17 +5819,21 @@ async function arbFetchFromCache(site, query) {
     }
   } catch(e) {}
 
-  // 2. Intentar trending.json
+  // 2. Intentar trending.json desde GitHub raw
   if (!_arbJsonCache['__trending__']) {
     try {
-      const r = await fetch('/kabuby/meli-data/trending.json', { signal: AbortSignal.timeout(5000) });
-      if (r.ok) { _arbJsonCache['__trending__'] = await r.json(); }
+      const r = await fetch(_ARB_RAW_BASE + 'trending.json', { signal: AbortSignal.timeout(5000) });
+      if (r.ok) {
+        _arbJsonCache['__trending__'] = await r.json();
+      }
     } catch(e) {}
   }
   const trending = _arbJsonCache['__trending__'];
   if (trending && trending.terms) {
+    // Buscar el término más parecido
     for (const [term, paises] of Object.entries(trending.terms)) {
       if (query.toLowerCase().includes(term.toLowerCase()) || term.toLowerCase().includes(query.toLowerCase())) {
+        // Buscar el site dentro del término
         const siteKeys = Object.keys(paises);
         for (const k of siteKeys) {
           if (paises[k].site === site && paises[k].total > 0) {
@@ -5622,30 +5855,41 @@ async function arbFetchFromCache(site, query) {
   return null;
 }
 
+// ── arbFetchML v7.3.2 — GitHub Actions JSON = datos 100% reales MeLi ─────
+// Jerarquía:
+//   1. JSON cacheado por GitHub Actions (no-Cloudflare IPs → datos reales ✅)
+//   2. Fetch directo desde browser (bloqueado por MeLi en CF, OK desde residencial)
+//   3. Worker propio del usuario
+//   4. koi-proxy (CF datacenter, MeLi lo bloquea → casi siempre falla)
+//   5. Proxies CORS públicos
+//   6. Estimación inteligente (último recurso)
 async function arbFetchML(apiUrl,paisId,nombreProducto){
-  // Extraer site y q del apiUrl para llamadas via worker
   const mSite=apiUrl.match(/sites\/([A-Z]+)\/search\?q=([^&]+)/);
 
-  // ── 1. DIRECTO desde browser — MeLi CORS abierto para browsers reales ──
-  // Funciona desde kabuby.com (dominio de usuario). MeLi bloquea datacenters/CFs.
-  // Intentamos con referrerPolicy:'no-referrer' para evitar que el origin sea visible.
-  // Patrón idéntico a radarSearchTerm() que funciona en el módulo Radar en kabuby.com.
-  const _arbDirectFetch=async(url)=>{
-    // Intento A: sin referrer (oculta el origin — maximiza chance de pasar)
+  // ── 1. JSON cacheado por GitHub Actions ──────────────────────────────────
+  // Este archivo se actualiza cada hora automáticamente desde servidores
+  // de GitHub (IPs no-Cloudflare → MeLi responde con datos reales ✅)
+  if(mSite){
     try{
-      const r=await fetch(url,{signal:AbortSignal.timeout(10000),referrerPolicy:'no-referrer'});
-      if(r.ok){
-        const d=await r.json();
-        if(d&&d.paging!==undefined&&Array.isArray(d.results))return d;
+      const ghData=await arbFetchFromCache(mSite[1],decodeURIComponent(mSite[2]));
+      if(ghData&&ghData.paging&&ghData.paging.total>0){
+        return ghData;
       }
     }catch(e){}
-    // Intento B: fetch normal sin opciones extra (idéntico a radarSearchTerm)
+  }
+
+  // ── 2. Fetch directo desde browser ───────────────────────────────────────
+  // Funciona solo si el usuario navega desde IP residencial (no Cloudflare).
+  // En kabuby.com (CF Pages) MeLi bloquea el IP del servidor, no del browser.
+  // Dejamos el intento por si el usuario tiene VPN o IP residencial activa.
+  const _arbDirectFetch=async(url)=>{
+    try{
+      const r=await fetch(url,{signal:AbortSignal.timeout(10000),referrerPolicy:'no-referrer'});
+      if(r.ok){const d=await r.json();if(d&&d.paging!==undefined&&Array.isArray(d.results))return d;}
+    }catch(e){}
     try{
       const r=await fetch(url,{signal:AbortSignal.timeout(10000)});
-      if(r.ok){
-        const d=await r.json();
-        if(d&&d.paging!==undefined&&Array.isArray(d.results))return d;
-      }
+      if(r.ok){const d=await r.json();if(d&&d.paging!==undefined&&Array.isArray(d.results))return d;}
     }catch(e){}
     return null;
   };
@@ -5656,16 +5900,7 @@ async function arbFetchML(apiUrl,paisId,nombreProducto){
     return{..._d,_src:'direct',_price:medianPrice};
   }
 
-  // ── 1b. Reusar radarSearchTerm() — misma función, misma URL, ya funciona en Radar ──
-  // Si radarSearchTerm devuelve datos, los convertimos al formato interno del Cazador.
-  if(mSite){
-    const _rs=await radarSearchTerm(mSite[1],decodeURIComponent(mSite[2]));
-    if(_rs&&typeof _rs.available==='number'&&_rs.available>0){
-      return{paging:{total:_rs.available},results:[],_src:'direct',_price:_rs.price||0};
-    }
-  }
-
-  // ── 2. Worker propio del usuario (URL guardada en localStorage) ──
+  // ── 3. Worker propio del usuario ──────────────────────────────────────────
   const workerBase=(localStorage.getItem('kabuby_meli_worker_url')||'').trim().replace(/\/+$/,'');
   if(workerBase&&mSite){
     try{
@@ -5675,8 +5910,8 @@ async function arbFetchML(apiUrl,paisId,nombreProducto){
     }catch(e){}
   }
 
-  // ── 3. koi-proxy Worker (actualmente retorna 403 de MeLi — MeLi bloquea CF datacenter IPs) ──
-  const KOI_SITE_MAP={BR:'MLB',MX:'MLM',CO:'MCO',AR:'MLA',CL:'MLC'};
+  // ── 4. koi-proxy Worker ───────────────────────────────────────────────────
+  const KOI_SITE_MAP={BR:'MLB',MX:'MLM',CO:'MCO',AR:'MLA',CL:'MLC',PE:'MPE',UY:'MLU',EC:'MEC'};
   if(mSite){
     const koiSite=KOI_SITE_MAP[paisId||''];
     if(koiSite){
@@ -5694,7 +5929,7 @@ async function arbFetchML(apiUrl,paisId,nombreProducto){
     }
   }
 
-  // ── 4. Proxies CORS públicos (MeLi también los bloquea, pero vale intentarlo) ──
+  // ── 5. Proxies CORS públicos ──────────────────────────────────────────────
   for(const proxyFn of ARB_PROXIES){
     try{
       const r=await fetch(proxyFn(apiUrl),{signal:AbortSignal.timeout(5000)});
@@ -5705,12 +5940,16 @@ async function arbFetchML(apiUrl,paisId,nombreProducto){
     }catch(e){}
   }
 
-  // ── 5. Estimación inteligente — basada en mercado real LATAM — ÚLTIMO recurso ──
+  // ── 6. Estimación inteligente — ÚLTIMO recurso ────────────────────────────
   const est=arbEstimarVendedores(nombreProducto||'',paisId||'');
   return{paging:{total:est},results:[],_src:'estimate',_estimated:true};
 }
 
-async function arbAnalizarUno(nombre,ganancia,peso,paises){
+async function arbAnalizarUno(termES,termPT,marca,ganancia,peso,paises){
+  // termES = término en español para LATAM (MX/CO/AR/CL/PE/UY/EC)
+  // termPT = término en portugués para Brasil (BR)
+  // marca  = nombre de marca para mostrar en resultados
+  const nombre=marca?marca+' '+termES:termES; // nombre display
   const paisesData={};
   let scoreMax=0;let mejorPais=null;
 
@@ -5719,9 +5958,11 @@ async function arbAnalizarUno(nombre,ganancia,peso,paises){
     if(!pais)continue;
     let vendedores=null;let precioPromedio=0;
     let dataSource='estimate';
+    // Brasil usa término en portugués, el resto en español
+    const termBusqueda=paisId==='BR'?(termPT||termES):termES;
     try{
-      const apiUrl=pais.ml+encodeURIComponent(nombre)+'&limit=10';
-      const data=await arbFetchML(apiUrl,pais.id,nombre);
+      const apiUrl=pais.ml+encodeURIComponent(termBusqueda)+'&limit=10';
+      const data=await arbFetchML(apiUrl,pais.id,termBusqueda);
       if(data){
         vendedores=data.paging?.total||0;
         dataSource=data._src||'estimate';
@@ -5734,16 +5975,21 @@ async function arbAnalizarUno(nombre,ganancia,peso,paises){
         }
       }
     }catch(e){vendedores=null;dataSource='error';}
-    const margen=arbCalcMargen(ganancia*1.5,ganancia,paisId);
+    // costo base = precio que pagarías en Amazon (estimado como gananciaDeseada * 2)
+    // Fase 1: Amazon retail, Fase 2: mayorista 75%, Fase 3: importación directa 45%
+    const costoBase=ganancia*2;
+    const margen=arbCalcMargen(costoBase,ganancia,paisId);
     const score=vendedores!==null?arbCalcScore(vendedores,precioPromedio,margen.precioML):0;
     if(score>scoreMax){scoreMax=score;mejorPais=paisId;}
-    paisesData[paisId]={vendedores,precioPromedio:Math.round(precioPromedio*100)/100,margen,score,urlML:pais.mlUrl+encodeURIComponent(nombre),_src:dataSource};
+    // urlML: link directo a MeLi con el término correcto por idioma
+    const urlMLTerm=paisId==='BR'?(termPT||termES):termES;
+    paisesData[paisId]={vendedores,precioPromedio:Math.round(precioPromedio*100)/100,margen,score,urlML:pais.mlUrl+encodeURIComponent(urlMLTerm),termBuscado:termBusqueda,_src:dataSource};
   }
 
   const totalVend=Object.values(paisesData).reduce((s,p)=>s+(p.vendedores||0),0);
   const demanda=arbClasificarDemanda(totalVend);
   const ventana=arbEstimarVentana(totalVend,demanda.tipo);
-  return{nombre,ganancia,peso,paises:paisesData,demanda,ventana,scoreMax,mejorPais,totalVend};
+  return{nombre,termES,termPT,marca,ganancia,peso,paises:paisesData,demanda,ventana,scoreMax,mejorPais,totalVend};
 }
 
 function arbHtmlResultados(resultados){
@@ -5759,7 +6005,7 @@ function arbHtmlProdCard(r,idx){
   const vc=r.ventana.estado==='abierta'?'#34d399':r.ventana.estado==='cerrando'?'#fcd34d':'#f87171';
 
   // Detectar si algún país tiene datos reales vs estimados
-  const tieneReales=Object.values(r.paises).some(d=>d._src==='github-cache'||d._src==='github-cache'||d._src==='direct'||d._src==='koi-worker'||d._src==='user-worker'||d._src==='proxy');
+  const tieneReales=Object.values(r.paises).some(d=>d._src==='github-cache'||d._src==='direct'||d._src==='koi-worker'||d._src==='user-worker'||d._src==='proxy');
 
   const paisesHtml=Object.entries(r.paises).map(([paisId,data])=>{
     const pais=ARB_PAISES.find(p=>p.id===paisId);
@@ -5792,9 +6038,10 @@ function arbHtmlProdCard(r,idx){
     '<div style="flex:1">'+
     '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+
     '<span>'+( medallas[idx]||'•')+'</span>'+
-    '<span style="font-size:15px;font-weight:800;color:#e8f0fe">'+r.nombre+'</span>'+
+    '<span style="font-size:15px;font-weight:800;color:#e8f0fe">'+(r.marca||r.nombre)+'</span>'+
     '<span class="arb-tag '+r.demanda.clase+'">'+r.demanda.label+'</span>'+
     '</div>'+
+    (r.termES?'<div style="font-size:10px;color:#4a6a9a;margin-top:3px">🔍 ES: <span style="color:#7a91b8">'+r.termES+'</span>'+(r.termPT&&r.termPT!==r.termES?' &nbsp;·&nbsp; 🇧🇷 PT: <span style="color:#7a91b8">'+r.termPT+'</span>':'')+'</div>':'')+
     '<div style="font-size:11px;color:#7a91b8;margin-top:3px">'+Object.keys(r.paises).length+' países analizados · '+r.totalVend+' vendedores totales LATAM</div>'+
     '</div>'+
     '<div style="text-align:right;flex-shrink:0">'+
@@ -5822,7 +6069,7 @@ function arbHtmlProdCard(r,idx){
     '<div class="arb-acciones">'+
     '<button class="arb-btn-suc" onclick="arbGuardar(\'' +rEnc+ '\')">✅ Guardar</button>'+
     Object.entries(r.paises).slice(0,3).map(([pid,data])=>'<a href="'+data.urlML+'" target="_blank" class="arb-btn-sec">'+( ARB_PAISES.find(p=>p.id===pid)?.flag)+' ML '+pid+'</a>').join('')+
-    '<a href="https://www.amazon.com/s?k='+encodeURIComponent(r.nombre)+'" target="_blank" class="arb-btn-sec">📦 Amazon</a>'+
+    '<a href="https://www.amazon.com/s?k='+encodeURIComponent(r.marca||r.termES||r.nombre)+'" target="_blank" class="arb-btn-sec">📦 Amazon</a>'+
     '</div>'+
     '</div>';
 }
@@ -6044,5 +6291,5 @@ window.arbCompararProds=function(){
 
 })();
 </script>
-</body>
+<script src="https://www.genspark.ai/sandbox_inspect.js"></script></body>
 </html>
