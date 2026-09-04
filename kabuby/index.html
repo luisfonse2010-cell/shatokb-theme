@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
 <!-- BUILD: 2026-09-04 v7.3.2 — GitHub Actions JSON cache = datos 100% reales MeLi -->
-<!-- CF-CACHE-BUST: 1788532201573-v732-RAW-GITHUB-FIX -->
+<!-- CF-CACHE-BUST: 1788532447120-v732-RAW-GITHUB-FIX -->
 <!-- ── FAVICON & ICONS ──────────────────────────────────── -->
 <link rel="icon" type="image/svg+xml" href="images/kabuby-favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="images/kabuby-favicon.svg">
@@ -5566,9 +5566,11 @@ const ARB_STOP_WORDS=new Set([
   // Cantidades / packaging
   'pack','set','kit','bundle','lot','piece','pieces','pcs','count','ct','each',
   'pair','pairs','value','combo','assorted','variety','sampler',
-  // Unidades de medida
+  // Unidades de medida y capacidad
   'oz','fl','ml','mg','mcg','iu','lb','lbs','kg','cm','mm','inch','inches',
   'gram','grams','ounce','ounces','liter','litre','pound','pounds',
+  'gallon','gallons','quart','quarts','pint','pints','cup','cups','floz',
+  'count','pk','gal','qt','pt','watt','watts','volt','volts','amp','amps',
   // Palabras genéricas
   'new','best','top','good','great','amazing','premium','professional','pro',
   'advanced','original','classic','extra','plus','daily','ultra','super','max',
@@ -6110,6 +6112,14 @@ const ARB_TERMINOS=[
   ['steering wheel cover','funda para volante','capa de volante',10],
 
   // ── JARDÍN & EXTERIOR ─────────────────────────────────────────────────────
+  ['pump sprayer','fumigadora de bomba','pulverizador manual',10],
+  ['garden sprayer','fumigadora de jardín','pulverizador de jardim',10],
+  ['weed killer','herbicida','herbicida',9],
+  ['lawn mower','cortadora de césped','cortador de grama',10],
+  ['leaf blower','soplador de hojas','soprador de folhas',10],
+  ['pressure washer','lavadora de presión','lavadora de alta pressão',10],
+  ['watering can','regadera','regador',8],
+  ['sprinkler','aspersor de jardín','aspersor',9],
   ['plant pot','maceta','vaso de planta',8],
   ['self watering pot','maceta autorregante','vaso autoirrigável',10],
   ['garden hose','manguera de jardín','mangueira de jardim',9],
@@ -6253,8 +6263,8 @@ const ARB_CAT_DETECT=[
   {cat:'Salud · Dental & Personal',       keys:['toothbrush','whitening','flosser','mouthwash','razor','shaver']},
   {cat:'Oficina & Papelería',             keys:['planner','journal','notebook','desk','chair','lamp','organizer','pen']},
   {cat:'Automotriz',                      keys:['car','vehicle','auto','tire','dash cam','steering']},
-  {cat:'Jardín & Exterior',               keys:['garden','plant','outdoor','camping','hiking','tent','hammock']},
-  {cat:'Herramientas',                    keys:['drill','screwdriver','tool','measuring','wrench','plier']},
+  {cat:'Jardín & Exterior',               keys:['garden','plant','outdoor','camping','hiking','tent','hammock','sprayer','lawn','weed','sprinkler','mower','blower']},
+  {cat:'Herramientas',                    keys:['drill','screwdriver','tool','measuring','wrench','plier','pump','pressure washer']},
   {cat:'Viaje',                           keys:['luggage','travel','suitcase','passport','packing','adapter']},
   {cat:'Alimentos & Bebidas',             keys:['protein bar','snack','tea','coffee','matcha','electrolyte','meal replacement']},
 ];
@@ -6332,10 +6342,17 @@ window.arbExtraerTerminos=function(){
   }
 
   // ══ CAPA 2: Extracción contextual si TIPO no detectado por diccionario ══
+  // Filtro extra: eliminar números de modelo (ej: 20004, X500, 1-Gallon)
+  const esNumModelo=/^\d+$|^\d+[a-z]{0,2}$|^[a-z]{1,2}\d+$/i; // 20004, 500ml, X2
+  const esPreposicion=/^(for|and|or|with|the|to|of|in|on|by|from|a|an|&)$/i;
   if(!tipoES){
-    const palabrasTitulo=tituloLow.split(/[\s,\-\/]+/);
+    const palabrasTitulo=tituloLow.split(/[\s,\-\/&]+/);
     const candidatos=palabrasTitulo.filter(p=>
-      p.length>4 && !ARB_STOP_WORDS.has(p) && p!==marca.toLowerCase()
+      p.length>3 &&
+      !ARB_STOP_WORDS.has(p) &&
+      !esNumModelo.test(p) &&
+      !esPreposicion.test(p) &&
+      p!==marca.toLowerCase()
     );
     if(candidatos.length>0){tipoES=candidatos[0];tipoPT=candidatos[0];}
     if(candidatos.length>1 && !ingES){ingES=candidatos[1];ingPT=candidatos[1];}
@@ -6344,8 +6361,8 @@ window.arbExtraerTerminos=function(){
   // ══ CAPA 3: Fallback semántico si aún sin tipo ══
   if(!tipoES){
     const palabrasSignif=tituloLow
-      .split(/[\s,\-\/]+/)
-      .filter(p=>p.length>3&&!ARB_STOP_WORDS.has(p)&&p!==marca.toLowerCase())
+      .split(/[\s,\-\/&]+/)
+      .filter(p=>p.length>3&&!ARB_STOP_WORDS.has(p)&&!esNumModelo.test(p)&&!esPreposicion.test(p)&&p!==marca.toLowerCase())
       .sort((a,b)=>b.length-a.length)
       .slice(0,3);
     tipoES=palabrasSignif.join(' ');
