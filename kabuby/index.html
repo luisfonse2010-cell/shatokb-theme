@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
 <!-- BUILD: 2026-09-04 v7.3.2 — GitHub Actions JSON cache = datos 100% reales MeLi -->
-<!-- CF-CACHE-BUST: 1788532779276-v732-RAW-GITHUB-FIX -->
+<!-- CF-CACHE-BUST: 1788533938363-v732-RAW-GITHUB-FIX -->
 <!-- ── FAVICON & ICONS ──────────────────────────────────── -->
 <link rel="icon" type="image/svg+xml" href="images/kabuby-favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="images/kabuby-favicon.svg">
@@ -5416,11 +5416,11 @@ window.arbSubTab=function(vista,btn){
   const main=document.getElementById('arb-main');
   if(!main)return;
   switch(vista){
-    case 'cazador':main.innerHTML=arbHtmlCazador();arbBindCazador();break;
+    case 'cazador':main.innerHTML=arbHtmlCazador();arbBindCazador();setTimeout(arbInicializarKeyUI,50);break;
     case 'portafolio':main.innerHTML=arbHtmlPortafolio();arbBindPortafolio();break;
     case 'alertas':main.innerHTML=arbHtmlAlertas();break;
     case 'calculadora':main.innerHTML=arbHtmlCalc();break;
-    default:main.innerHTML=arbHtmlCazador();arbBindCazador();
+    default:main.innerHTML=arbHtmlCazador();arbBindCazador();setTimeout(arbInicializarKeyUI,50);
   }
   arbActualizarStats();
 };
@@ -5457,8 +5457,22 @@ function arbHtmlCazador(){
   '<div style="font-size:11px;font-weight:700;color:#6c8eff;letter-spacing:1px;margin-bottom:8px">PASO 1 · PEGA EL TÍTULO DE AMAZON</div>'+
   '<textarea id="arb-titulo-amazon" class="arb-input" rows="3" placeholder="ej: BIODANCE Bio-Collagen Real Deep Mask, Hydrating Overnight Hydrogel Face Mask, Pore Minimizing, Elasticity..." style="resize:vertical;line-height:1.5"></textarea>'+
   '<div style="display:flex;gap:8px;margin-top:8px;align-items:center">'+
-  '<button class="arb-btn-pri" style="padding:7px 18px;font-size:12px" onclick="arbExtraerTerminos()">🔍 Extraer términos MeLi</button>'+
-  '<span style="font-size:11px;color:#7a91b8" id="arb-extract-status"></span>'+
+  '<button class="arb-btn-pri" style="padding:7px 18px;font-size:12px" onclick="arbExtraerTerminos()">🤖 Extraer términos MeLi con IA</button>'+
+  '<span style="font-size:11px;color:#7a91b8;margin-left:8px" id="arb-extract-status"></span>'+
+  '</div>'+
+  '<div style="margin-top:10px;background:#071428;border:1px solid #1e3a5f;border-radius:6px;padding:8px 10px">'+
+  '<div style="font-size:10px;color:#6c8eff;font-weight:700;margin-bottom:5px">🔑 CONFIGURAR API KEY DE OPENAI (requerida para IA)</div>'+
+  '<div style="display:flex;gap:6px;align-items:center">'+
+  '<input id="arb-oai-key-input" type="password" placeholder="Pega tu API key: sk-proj-..." '+
+  'style="flex:1;background:#0a1e3a;border:1px solid #26406a;border-radius:4px;padding:5px 10px;font-size:11px;color:#e8f0fe;outline:none" '+
+  'oninput="arbGuardarKey(this.value)">'+
+  '<button onclick="arbGuardarKey(document.getElementById(\'arb-oai-key-input\').value)" '+
+  'style="background:#1a3a6a;border:1px solid #26406a;border-radius:4px;padding:5px 12px;font-size:11px;color:#e8f0fe;cursor:pointer;white-space:nowrap">'+
+  '💾 Guardar'+
+  '<'+'/button>'+
+  '</div>'+
+  '<div id="arb-key-status" style="font-size:10px;margin-top:4px;color:#4a6080">'+
+  '</div>'+
   '</div>'+
   '</div>'+
 
@@ -6285,20 +6299,145 @@ const ARB_CAT_DETECT=[
 // ── PALABRAS QUE NUNCA SON MARCA ──────────────────────────────────────────
 const ARB_NO_MARCA_ABSOLUTO=/^(womens|mens|women|men|girls|boys|girl|boy|kids|kid|baby|babies|infant|toddler|children|child|adult|adults|ladies|lady|female|male|unisex|generic|imported|brand|various|assorted|quality)$/i;
 
-// ── arbExtraerTerminos v7.5.0 — 3-Layer Universal Architecture ──────────────
-// CAPA 1: Diccionario ARB_TERMINOS (~400 términos, frases largas primero)
-// CAPA 2: Extracción contextual (palabras descriptivas no en diccionario)
-// CAPA 3: Fallback semántico (3 palabras más significativas del título)
-// Resultado: término MeLi corto y específico, bilingüe ES/PT
+// ── arbExtraerTerminos v7.6.0 — GPT-4o-mini + Fallback diccionario ───────────
+// CAPA 1: OpenAI GPT-4o-mini — traduce intención de búsqueda como comprador real
+// CAPA 2: Diccionario ARB_TERMINOS (~400 términos) — si falla OpenAI
+// CAPA 3: Extracción semántica — último recurso
+// API key guardada en código + localStorage (el usuario puede sobreescribir)
 
-window.arbExtraerTerminos=function(){
+// Función para obtener la key activa desde localStorage
+function arbGetOAIKey(){
+  return localStorage.getItem('kabuby_oai_key')||'';
+}
+
+// Guardar key en localStorage y actualizar UI
+window.arbGuardarKey=function(val){
+  val=(val||'').trim();
+  const st=document.getElementById('arb-key-status');
+  const inp=document.getElementById('arb-oai-key-input');
+  if(val.startsWith('sk-')&&val.length>20){
+    localStorage.setItem('kabuby_oai_key',val);
+    if(st){st.textContent='✅ API Key guardada — la IA está activa';st.style.color='#34d399';}
+    if(inp){inp.style.borderColor='#34d399';}
+  } else if(val.length>0){
+    if(st){st.textContent='⚠️ Key inválida — debe empezar con sk-';st.style.color='#fbbf24';}
+    if(inp){inp.style.borderColor='#fbbf24';}
+  } else {
+    localStorage.removeItem('kabuby_oai_key');
+    if(st){st.textContent='⚠️ Sin API Key — usando diccionario de fallback';st.style.color='#f59e0b';}
+    if(inp){inp.style.borderColor='#26406a';}
+  }
+};
+
+// Inicializar campo de key al cargar el tab Cazador
+function arbInicializarKeyUI(){
+  const saved=localStorage.getItem('kabuby_oai_key')||'';
+  const inp=document.getElementById('arb-oai-key-input');
+  const st=document.getElementById('arb-key-status');
+  if(saved&&inp){
+    inp.value=saved;
+    inp.style.borderColor='#34d399';
+    if(st){st.textContent='✅ API Key cargada — IA activa';st.style.color='#34d399';}
+  } else if(st){
+    st.textContent='⚠️ Pega tu API Key de OpenAI para activar la IA';
+    st.style.color='#f59e0b';
+  }
+}
+
+// Llamada a GPT-4o-mini
+async function arbGPTExtraer(titulo){
+  const key=arbGetOAIKey();
+  if(!key) return null;
+  const prompt=`Eres un experto en ecommerce de América Latina.
+Dado este título de producto de Amazon (en inglés), genera:
+1. marca: la marca del producto (solo el nombre de marca, sin descripción). Si no hay marca clara pon "".
+2. termES: el término de búsqueda en ESPAÑOL, máximo 4 palabras, exactamente como lo buscaría un comprador real en MercadoLibre LATAM. Usa el nombre genérico popular del producto. Ignora: watts, voltaje, cantidades, números de modelo, colores, tallas, especificaciones técnicas (IP65, 3000K, etc).
+3. termPT: lo mismo pero en PORTUGUÉS para MercadoLibre Brasil.
+4. categoria: la categoría más apropiada en español (ej: "Iluminación · Exterior", "Suplementos · Minerales", "Hogar · Cocina", etc).
+
+Ejemplos:
+- "12W 2Pack Outdoor Wall Lights LED IP65 3000K" → {"marca":"","termES":"lámpara exterior pared LED","termPT":"luminária externa parede LED","categoria":"Iluminación · Exterior"}
+- "COSRX Snail Mucin 96% Power Repairing Essence 100ml" → {"marca":"COSRX","termES":"esencia baba de caracol","termPT":"essência baba de caracol","categoria":"Skincare · Sérums"}
+- "Toplux Magnesium Complex 400mg 120 Softgels" → {"marca":"Toplux","termES":"complejo de magnesio","termPT":"complexo de magnésio","categoria":"Suplementos · Minerales"}
+- "RAINPOINT Sprinkler Timer Programmable Water Timer" → {"marca":"RAINPOINT","termES":"temporizador de riego automático","termPT":"temporizador de irrigação automático","categoria":"Jardín · Riego"}
+- "CHAPIN 20004 SureSpray 1-Gallon Pump Sprayer Lawn" → {"marca":"CHAPIN","termES":"fumigadora de jardín manual","termPT":"pulverizador manual jardim","categoria":"Jardín · Herramientas"}
+
+Título: "${titulo}"
+
+Responde SOLO con JSON válido, sin markdown, sin explicación:`;
+
+  try{
+    const r=await fetch('https://api.openai.com/v1/chat/completions',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':'Bearer '+key
+      },
+      body:JSON.stringify({
+        model:'gpt-4o-mini',
+        messages:[{role:'user',content:prompt}],
+        max_tokens:200,
+        temperature:0.2
+      }),
+      signal:AbortSignal.timeout(15000)
+    });
+    if(!r.ok){
+      const err=await r.json().catch(()=>({}));
+      console.warn('[arbGPT] Error OpenAI:',r.status, err?.error?.message||'');
+      return null;
+    }
+    const d=await r.json();
+    const txt=(d.choices?.[0]?.message?.content||'').trim();
+    // Limpiar posible markdown ```json ... ```
+    const jsonStr=txt.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
+    const obj=JSON.parse(jsonStr);
+    if(obj.termES && obj.termPT) return obj;
+    return null;
+  }catch(e){
+    console.warn('[arbGPT] Falló:',e.message);
+    return null;
+  }
+}
+
+window.arbExtraerTerminos=async function(){
   const titulo=(document.getElementById('arb-titulo-amazon')?.value||'').trim();
   const st=document.getElementById('arb-extract-status');
   if(!titulo){
     if(st){st.textContent='⚠️ Pega primero el título de Amazon';st.style.color='#fbbf24';}
     return;
   }
-  if(st){st.textContent='⏳ Extrayendo...';st.style.color='#6c8eff';}
+  if(st){st.textContent='🤖 Analizando con IA...';st.style.color='#6c8eff';}
+
+  // ══ INTENTO 1: GPT-4o-mini ══
+  const gpt=await arbGPTExtraer(titulo);
+  if(gpt){
+    // GPT respondió correctamente — rellenar UI directamente
+    const mEl=document.getElementById('arb-marca');if(mEl)mEl.value=gpt.marca||'';
+    const cEl=document.getElementById('arb-categoria-det');if(cEl)cEl.value=gpt.categoria||'Producto Amazon';
+    const esEl=document.getElementById('arb-term-es');if(esEl)esEl.value=gpt.termES||'';
+    const ptEl=document.getElementById('arb-term-pt');if(ptEl)ptEl.value=gpt.termPT||gpt.termES||'';
+    const pan=document.getElementById('arb-terminos-panel');if(pan)pan.style.display='block';
+    const inf=document.getElementById('arb-extract-info');
+    if(inf){
+      inf.innerHTML=
+        '<div style="margin-bottom:8px">'+
+        '<b style="color:#6c8eff">Marca:</b> <span style="color:#e8f0fe">'+(gpt.marca||'—')+'<'+'/span>'+
+        ' &nbsp;&middot;&nbsp; '+
+        '<b style="color:#6c8eff">Categoría:</b> <span style="color:#e8f0fe">'+(gpt.categoria||'—')+'<'+'/span>'+
+        '<'+'/div>'+
+        '<div style="margin-bottom:6px">'+
+        '<span style="background:#0d2137;border:1px solid #1e3a5f;border-radius:4px;padding:2px 8px;font-size:11px;color:#34d399">'+
+        '🤖 Generado por GPT-4o-mini<'+'/span>'+
+        '<'+'/div>'+
+        '<div style="color:#94a3b8;font-size:11px;margin-top:6px;padding-top:6px;border-top:1px solid #1e3a5f">'+
+        '💡 Edita los términos si necesitas ajustar. ES = 7 países · PT = solo Brasil.<'+'/div>';
+    }
+    if(st){st.textContent='✅ Términos generados por IA — revisa y edita si necesario';st.style.color='#34d399';}
+    return;
+  }
+
+  // ══ FALLBACK: Diccionario ARB_TERMINOS si GPT falla ══
+  if(st){st.textContent='⚠️ IA no disponible — usando diccionario...';st.style.color='#fbbf24';}
 
   const tituloLow=titulo.toLowerCase();
 
@@ -6437,7 +6576,7 @@ window.arbExtraerTerminos=function(){
       '<div style="margin-top:8px;padding-top:8px;border-top:1px solid #1e3a5f;color:#94a3b8">'+
       '💡 Edita los términos si necesitas ajustar. ES = 7 países · PT = solo Brasil.<'+'/div>';
   }
-  if(st){st.textContent='✅ Términos generados — revisa y edita si necesario';st.style.color='#34d399';}
+  if(st){st.textContent='✅ Términos generados (diccionario) — revisa y edita si necesario';st.style.color='#f59e0b';}
 };
 
 window.arbAnalizar=async function(){
@@ -6455,8 +6594,7 @@ window.arbAnalizar=async function(){
 
   // Si hay título pero no se extrajeron términos todavía, extraer automáticamente
   if(!termES && tituloAmazon){
-    window.arbExtraerTerminos();
-    // Esperar un tick para que se llenen los inputs
+    await window.arbExtraerTerminos(); // async — esperar GPT
     await new Promise(r=>setTimeout(r,50));
   }
 
