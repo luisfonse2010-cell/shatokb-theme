@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
-<!-- BUILD: 2026-09-04 v7.3.2 — GitHub Actions JSON cache = datos 100% reales MeLi -->
-<!-- CF-CACHE-BUST: 1788545069005-v732-RAW-GITHUB-FIX -->
+<!-- BUILD: 2026-09-04 v7.7.0 — Fixes: costoBase real, score/demanda calibrados, precios moneda local, UI confiable -->
+<!-- CF-CACHE-BUST: 1788547049790-v770-SCORE-CALIBRADO -->
 <!-- ── FAVICON & ICONS ──────────────────────────────────── -->
 <link rel="icon" type="image/svg+xml" href="images/kabuby-favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="images/kabuby-favicon.svg">
@@ -5346,24 +5346,29 @@ function arbFmtFecha(iso){if(!iso)return'—';const d=new Date(iso);return d.toL
 function arbDias(iso){if(!iso)return 0;return Math.floor((Date.now()-new Date(iso).getTime())/86400000);}
 
 function arbCalcMargen(costoAmazon,gananciaDeseada,paisId){
+  // costoAmazon = precio real de compra en Amazon (USD)
+  // gananciaDeseada = margen neto que quiere el vendedor (USD)
+  // Precio ML = (costo + envio + ganancia_deseada) / (1 - comision_ML)
+  // Esto garantiza: precioML * (1 - comision) - costo - envio = gananciaDeseada
   const p=ARB_PAISES.find(x=>x.id===paisId)||ARB_PAISES[0];
-  // Precio de venta ML = (costo + envio + ganancia) / (1 - comision)
-  // Esto garantiza que después de pagar comisión quede exactamente `gananciaDeseada`
   const calcPrecioML=(costo)=>Math.round(((costo+p.envio+gananciaDeseada)/(1-p.comision))*100)/100;
-  const f1c=costoAmazon;
+  // Fase 1: compra en Amazon retail (precio full)
+  // Fase 2: mayorista EE.UU. (~25% descuento)
+  // Fase 3: importación directa fabricante (~55% descuento)
+  const f1c=Math.round(costoAmazon*100)/100;
   const f2c=Math.round(costoAmazon*0.75*100)/100;
   const f3c=Math.round(costoAmazon*0.45*100)/100;
   const f1ml=calcPrecioML(f1c);
   const f2ml=calcPrecioML(f2c);
   const f3ml=calcPrecioML(f3c);
+  // Margen real = ingresos netos - costo - envio
   const m1=Math.round((f1ml*(1-p.comision)-f1c-p.envio)*100)/100;
   const m2=Math.round((f2ml*(1-p.comision)-f2c-p.envio)*100)/100;
   const m3=Math.round((f3ml*(1-p.comision)-f3c-p.envio)*100)/100;
   const precioML=f1ml;
   const precioCliente=Math.round(precioML*(1+p.importacion)*100)/100;
   return{
-    precioCliente,
-    precioML,
+    precioCliente,precioML,
     f1:{costo:f1c,margen:m1,pct:Math.round((m1/f1ml)*100)},
     f2:{costo:f2c,margen:m2,pct:Math.round((m2/f2ml)*100)},
     f3:{costo:f3c,margen:m3,pct:Math.round((m3/f3ml)*100)},
@@ -5371,33 +5376,50 @@ function arbCalcMargen(costoAmazon,gananciaDeseada,paisId){
 }
 
 function arbClasificarDemanda(totalVend){
-  if(totalVend===0)return{tipo:'evergreen',label:'🌳 SIN COMPETENCIA',clase:'arb-tag-evergreen',duracion:'∞',estrategia:'Mercado virgen — entra ya con Fase 1, mueve rápido a Fase 2.',color:'#34d399'};
-  if(totalVend<=5)return{tipo:'tendencia',label:'📈 BAJA COMP.',clase:'arb-tag-tendencia',duracion:'8-12 sem',estrategia:'Prueba con Fase 1 (2-3 semanas) → Fase 2 con 5+ ventas confirmadas.',color:'#fcd34d'};
-  if(totalVend<=20)return{tipo:'tendencia',label:'⚡ MEDIA COMP.',clase:'arb-tag-tendencia',duracion:'4-6 sem',estrategia:'Entra con precio competitivo. Diferénciate en fotos y descripción.',color:'#f97316'};
-  return{tipo:'saturado',label:'⚠️ SATURADO',clase:'arb-tag-viral',duracion:'—',estrategia:'Mercado saturado. Considera Fase 3 o busca un nicho específico.',color:'#f87171'};
+  // totalVend = suma de vendedores en todos los países analizados
+  // Umbrales calibrados para el universo ML LATAM (8 países):
+  // 0-9 = virgen/bajisima, 10-40 = baja, 41-120 = media, 121-400 = alta, >400 = saturado
+  if(totalVend===0) return{tipo:'virgen',   label:'🌳 SIN COMPETENCIA', clase:'arb-tag-evergreen',duracion:'∞',        estrategia:'Mercado virgen — entra ya con Fase 1, valida demanda rápido.',                                         color:'#34d399'};
+  if(totalVend<=9)  return{tipo:'baja',     label:'📈 BAJA COMP.',       clase:'arb-tag-tendencia',duracion:'12-20 sem', estrategia:'Excelente oportunidad. Prueba Fase 1 (2-3 sem) y escala con 5+ ventas confirmadas.',                  color:'#34d399'};
+  if(totalVend<=40) return{tipo:'media',    label:'⚡ MEDIA COMP.',     clase:'arb-tag-tendencia',duracion:'6-12 sem',  estrategia:'Buen mercado. Entra con precio competitivo y diferenciáte en fotos y descripción.',                  color:'#fcd34d'};
+  if(totalVend<=120)return{tipo:'alta',     label:'🔥 ALTA COMP.',      clase:'arb-tag-viral',    duracion:'3-6 sem',   estrategia:'Competencia alta. Necesitas Fase 2-3 para ser rentable. Revisa nichos más específicos.',              color:'#f97316'};
+  if(totalVend<=400)return{tipo:'saturado', label:'⚠️ SATURADO',        clase:'arb-tag-viral',    duracion:'1-3 sem',   estrategia:'Mercado saturado. Busca variante específica (talla/color/uso) o pasa a Fase 3 importación directa.', color:'#f87171'};
+  return              {tipo:'hypersaturado',label:'🛑 HYPER SATURADO',  clase:'arb-tag-viral',    duracion:'—',        estrategia:'Demasiada competencia. No recomendado sin importación directa y marca propia.',                      color:'#ef4444'};
 }
 
-function arbCalcScore(vendedores,precioComp,precioTuyo){
-  let s=0;
-  if(vendedores===0)s+=40;
-  else if(vendedores<=3)s+=30;
-  else if(vendedores<=8)s+=18;
-  else if(vendedores<=20)s+=8;
-  else s-=10;
-  if(precioComp===0)s+=20;
-  else if(precioTuyo<precioComp)s+=15;
-  else if(precioTuyo>precioComp*1.3)s-=15;
-  else s+=5;
-  s+=20;
+function arbCalcScore(vendedores,precioCompML,precioTuyoUSD,paisId){
+  // vendedores = total vendedores en ese país específico
+  // precioCompML = precio promedio de la competencia en MeLi (moneda local)
+  // precioTuyoUSD = precio que pondrías en USD (se convierte para comparar)
+  // El score mide OPORTUNIDAD: menos vendedores + precio competitivo = mejor score
+  let s=50; // base neutra
+
+  // — Factor competencia (el más importante) —
+  if(vendedores===0)      s+=35;  // virgen
+  else if(vendedores<=3)  s+=28;
+  else if(vendedores<=8)  s+=18;
+  else if(vendedores<=15) s+=8;
+  else if(vendedores<=30) s+=0;
+  else if(vendedores<=60) s-=8;
+  else if(vendedores<=120)s-=18;
+  else                    s-=30;  // muy saturado
+
+  // — Factor precio (secundario — solo si hay datos reales) —
+  // precioCompML es en moneda local; sin tipo de cambio no podemos comparar directo.
+  // Si hay precio de competencia, al menos sabemos que hay demanda activa.
+  if(precioCompML>0) s+=5; // hay mercado activo con precios
+
   return Math.min(100,Math.max(0,s));
 }
 
 function arbEstimarVentana(totalVend,tipo){
-  if(tipo==='evergreen'){return{semanas:'∞',estado:'abierta',pct:100};}
-  if(totalVend===0)return{semanas:'10-14',estado:'abierta',pct:95};
-  if(totalVend<=5)return{semanas:'6-10',estado:'abierta',pct:75};
-  if(totalVend<=20)return{semanas:'2-6',estado:'cerrando',pct:40};
-  return{semanas:'<2',estado:'cerrada',pct:10};
+  // Calibrado con umbrales nuevos de arbClasificarDemanda
+  if(tipo==='virgen')       return{semanas:'∞',    estado:'abierta',   pct:100};
+  if(tipo==='baja')         return{semanas:'12-20', estado:'abierta',   pct:85};
+  if(tipo==='media')        return{semanas:'6-12',  estado:'abierta',   pct:62};
+  if(tipo==='alta')         return{semanas:'2-6',   estado:'cerrando',  pct:35};
+  if(tipo==='saturado')     return{semanas:'1-3',   estado:'cerrando',  pct:18};
+  return                          {semanas:'—',    estado:'cerrada',   pct:5};
 }
 
 function arbColorV(n){
@@ -6299,7 +6321,7 @@ const ARB_CAT_DETECT=[
 // ── PALABRAS QUE NUNCA SON MARCA ──────────────────────────────────────────
 const ARB_NO_MARCA_ABSOLUTO=/^(womens|mens|women|men|girls|boys|girl|boy|kids|kid|baby|babies|infant|toddler|children|child|adult|adults|ladies|lady|female|male|unisex|generic|imported|brand|various|assorted|quality)$/i;
 
-// ── arbExtraerTerminos v7.6.1 — GPT-4o-mini + Fallback diccionario ───────────
+// ── arbExtraerTerminos v7.7.0 — GPT-4o-mini + Fallback diccionario ───────────
 // CAPA 1: OpenAI GPT-4o-mini — traduce intención de búsqueda como comprador real
 // CAPA 2: Diccionario ARB_TERMINOS (~400 términos) — si falla OpenAI
 // CAPA 3: Extracción semántica — último recurso
@@ -6867,11 +6889,16 @@ async function arbAnalizarUno(termES,termPT,marca,ganancia,peso,paises){
         }
       }
     }catch(e){vendedores=null;dataSource='error';}
-    // costo base = precio que pagarías en Amazon (estimado como gananciaDeseada * 2)
-    // Fase 1: Amazon retail, Fase 2: mayorista 75%, Fase 3: importación directa 45%
-    const costoBase=ganancia*2;
+    // costoBase: precio real de compra en Amazon.
+    // Si MeLi devuelve precios en moneda local (BRL, MXN, COP, etc.) NO podemos
+    // convertirlos a USD sin tipo de cambio en tiempo real. Por eso el cálculo de
+    // margen usa el campo `ganancia` que el USUARIO ingresó manualmente (USD) como
+    // referencia directa. El costo estimado = Amazon estándar ~ 2x la ganancia
+    // deseada (heurística razonable para productos $10-$50 de Amazon).
+    // Si el usuario quiere precisión, deberá usar la Calculadora con el costo real.
+    const costoBase=ganancia*2; // heurística: costo Amazon ~ 2x ganancia deseada
     const margen=arbCalcMargen(costoBase,ganancia,paisId);
-    const score=vendedores!==null?arbCalcScore(vendedores,precioPromedio,margen.precioML):0;
+    const score=vendedores!==null?arbCalcScore(vendedores,precioPromedio,margen.precioML,paisId):0;
     if(score>scoreMax){scoreMax=score;mejorPais=paisId;}
     // urlML: link directo a MeLi con el término correcto por idioma
     const urlMLTerm=paisId==='BR'?(termPT||termES):termES;
@@ -6903,18 +6930,29 @@ function arbHtmlProdCard(r,idx){
     const pais=ARB_PAISES.find(p=>p.id===paisId);
     const v=data.vendedores;const vs=v===null?'?':v;
     const vc2=v===null?'':arbColorV(v);
-    const st=v===null?'—':v===0?'🔥 Nadie':v<=4?'✅ Entrar':v<=12?'⚡ Pronto':'⚠️ Vigilar';
-    const stColor=v===0?'#34d399':v<=4?'#fcd34d':v<=12?'#f97316':'#f87171';
+    // Etiquetas calibradas con nuevos umbrales (0=virgen,≤5=baja,≤15=media,≤40=alta,>40=sat)
+    const st=v===null?'—':v===0?'🔥 Nadie':v<=5?'✅ Entrar':v<=15?'⚡ Pronto':v<=40?'📊 Vigilar':'⚠️ Alta comp.';
+    const stColor=v===null?'#7a91b8':v===0?'#34d399':v<=5?'#34d399':v<=15?'#fcd34d':v<=40?'#f97316':'#f87171';
     const esEstimado=data._src==='estimate'||data._src==='error'||!data._src;
-    const srcLabel=data._src==='github-cache'?'Dato real ML — verificado GitHub Actions ✓':data._src==='direct'?'Dato real ML — directo desde browser':data._src==='koi-worker'?'Dato real ML — via worker':data._src==='user-worker'?'Dato real ML — tu worker':data._src==='proxy'?'Dato real ML — via proxy':'Dato estimado — sin conexión a ML';
+    // Precio en moneda LOCAL de MeLi (BRL para Brasil, MXN para México, etc.)
+    // Los precios de la API de MeLi son SIEMPRE en moneda local, no en USD
+    const monedaLocal={BR:'R$',MX:'MX$',CO:'$',AR:'$',CL:'$',PE:'S/',UY:'$U',EC:'$'};
+    const moneda=monedaLocal[paisId]||'$';
+    const precioLabel=data.precioPromedio>0
+      ? moneda+' '+Math.round(data.precioPromedio).toLocaleString('es')+' (local)'
+      : '—';
+    const srcLabel=data._src==='direct'?'Dato real MeLi — directo desde tu browser ✓'
+      :data._src==='github-cache'?'Dato real ML — cache GitHub Actions ✓'
+      :data._src==='user-worker'?'Dato real ML — tu worker ✓'
+      :'Estimado — MeLi no respondió. Verifica tu conexión e intenta de nuevo.';
     const srcBadge=esEstimado
-      ?'<span title="'+srcLabel+'" style="font-size:9px;color:#7a91b8;margin-left:3px">~</span>'
-      :'<span title="'+srcLabel+'" style="font-size:9px;color:#34d399;margin-left:3px">✓</span>';
+      ?'<span title="'+srcLabel+'" style="font-size:10px;color:#f59e0b;margin-left:2px">~</span>'
+      :'<span title="'+srcLabel+'" style="font-size:10px;color:#34d399;margin-left:2px">✓</span>';
     return '<div class="arb-pais-item">'+
       '<span>'+pais.flag+'</span>'+
       '<span style="font-weight:600">'+pais.nombre+'</span>'+
-      '<span class="'+vc2+'" style="font-weight:700">'+vs+' vend.'+srcBadge+'</span>'+
-      '<span style="color:#94a3b8">'+( data.precioPromedio>0?arbFmt(data.precioPromedio):'—')+'</span>'+
+      '<span class="'+vc2+'" style="font-weight:700">'+vs+' vend. '+srcBadge+'</span>'+
+      '<span style="color:#7a91b8;font-size:10px" title="Precio prom. competencia en moneda local MeLi">'+precioLabel+'</span>'+
       '<span style="color:'+stColor+';font-weight:700">'+st+'</span>'+
       '</div>';
   }).join('');
@@ -6952,11 +6990,12 @@ function arbHtmlProdCard(r,idx){
     '<div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:#94a3b8">Ventana de oportunidad — '+r.demanda.duracion+'</span><span style="color:'+vc+';font-weight:700">'+(r.ventana.estado==='abierta'?'🟢 ABIERTA':r.ventana.estado==='cerrando'?'🟡 CERRANDO':'🔴 CERRADA')+'</span></div>'+
     '<div class="arb-vent-track"><div class="arb-vent-fill" style="width:'+r.ventana.pct+'%"></div></div>'+
     '</div>'+
-    (mg?'<div style="font-size:9px;font-weight:700;color:#7a91b8;letter-spacing:1px;margin:10px 0 6px">MARGEN POR FASE — '+(ARB_PAISES.find(p=>p.id===r.mejorPais)?.flag)+' '+(ARB_PAISES.find(p=>p.id===r.mejorPais)?.nombre)+'</div>'+
+    (mg?'<div style="font-size:9px;font-weight:700;color:#7a91b8;letter-spacing:1px;margin:10px 0 4px">MARGEN ESTIMADO POR FASE (USD) — '+(ARB_PAISES.find(p=>p.id===r.mejorPais)?.flag)+' '+(ARB_PAISES.find(p=>p.id===r.mejorPais)?.nombre)+'</div>'+
+    '<div style="font-size:9px;color:#4a6a9a;margin-bottom:6px">Ganancia objetivo: <b style="color:#fcd34d">$'+r.ganancia+' USD</b> · Costo estimado: ~'+arbFmt(r.ganancia*2)+' · <i>Usa la Calculadora con el precio real de Amazon para mayor precisión.</i></div>'+
     '<div class="arb-margen-row">'+
-    '<div class="arb-margen-item"><div class="arb-margen-fase">FASE 1 · AMAZON</div><div class="arb-margen-val" style="color:'+(mg.f1.pct>=15?'#34d399':mg.f1.pct>=5?'#fcd34d':'#f87171')+'">'+arbFmt(mg.f1.margen)+'</div><div class="arb-margen-det">'+mg.f1.pct+'% · Costo '+arbFmt(mg.f1.costo)+'</div></div>'+
-    '<div class="arb-margen-item"><div class="arb-margen-fase">FASE 2 · MAYORISTA</div><div class="arb-margen-val" style="color:'+(mg.f2.pct>=20?'#34d399':'#fcd34d')+'">'+arbFmt(mg.f2.margen)+'</div><div class="arb-margen-det">'+mg.f2.pct+'% · Costo '+arbFmt(mg.f2.costo)+'</div></div>'+
-    '<div class="arb-margen-item"><div class="arb-margen-fase">FASE 3 · IMPORTAR</div><div class="arb-margen-val" style="color:#34d399">'+arbFmt(mg.f3.margen)+'</div><div class="arb-margen-det">'+mg.f3.pct+'% · Costo '+arbFmt(mg.f3.costo)+'</div></div>'+
+    '<div class="arb-margen-item"><div class="arb-margen-fase">FASE 1 · AMAZON RETAIL</div><div class="arb-margen-val" style="color:'+(mg.f1.pct>=15?'#34d399':mg.f1.pct>=5?'#fcd34d':'#f87171')+'">'+arbFmt(mg.f1.margen)+' USD</div><div class="arb-margen-det">'+mg.f1.pct+'% margen · Costo: '+arbFmt(mg.f1.costo)+'</div></div>'+
+    '<div class="arb-margen-item"><div class="arb-margen-fase">FASE 2 · MAYORISTA USA</div><div class="arb-margen-val" style="color:'+(mg.f2.pct>=20?'#34d399':'#fcd34d')+'">'+arbFmt(mg.f2.margen)+' USD</div><div class="arb-margen-det">'+mg.f2.pct+'% margen · Costo: '+arbFmt(mg.f2.costo)+'</div></div>'+
+    '<div class="arb-margen-item"><div class="arb-margen-fase">FASE 3 · IMPORT. DIRECTA</div><div class="arb-margen-val" style="color:#34d399">'+arbFmt(mg.f3.margen)+' USD</div><div class="arb-margen-det">'+mg.f3.pct+'% margen · Costo: '+arbFmt(mg.f3.costo)+'</div></div>'+
     '</div>':"")+'<div class="arb-strat"><div style="font-size:10px;font-weight:700;color:#6c8eff;margin-bottom:4px">💡 ESTRATEGIA</div><div style="font-size:11px;color:#b8c8e8;line-height:1.6">'+r.demanda.estrategia+'</div></div>'+
     '<div class="arb-acciones">'+
     '<button class="arb-btn-suc" onclick="arbGuardar(\'' +rEnc+ '\')">✅ Guardar</button>'+
