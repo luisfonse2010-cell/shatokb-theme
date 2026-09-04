@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
 <!-- BUILD: 2026-09-04 v7.3.2 — GitHub Actions JSON cache = datos 100% reales MeLi -->
-<!-- CF-CACHE-BUST: 1788532447120-v732-RAW-GITHUB-FIX -->
+<!-- CF-CACHE-BUST: 1788532779276-v732-RAW-GITHUB-FIX -->
 <!-- ── FAVICON & ICONS ──────────────────────────────────── -->
 <link rel="icon" type="image/svg+xml" href="images/kabuby-favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="images/kabuby-favicon.svg">
@@ -6112,6 +6112,11 @@ const ARB_TERMINOS=[
   ['steering wheel cover','funda para volante','capa de volante',10],
 
   // ── JARDÍN & EXTERIOR ─────────────────────────────────────────────────────
+  ['sprinkler timer','temporizador de riego','temporizador de irrigação',10],
+  ['water timer','temporizador de riego','temporizador de irrigação',10],
+  ['drip irrigation','riego por goteo','irrigação por gotejamento',10],
+  ['irrigation system','sistema de riego','sistema de irrigação',10],
+  ['soaker hose','manguera de goteo','mangueira soaker',10],
   ['pump sprayer','fumigadora de bomba','pulverizador manual',10],
   ['garden sprayer','fumigadora de jardín','pulverizador de jardim',10],
   ['weed killer','herbicida','herbicida',9],
@@ -6218,55 +6223,63 @@ const ARB_TERMINOS=[
 
 // ── CATEGORÍAS automáticas ────────────────────────────────────────────────
 const ARB_CAT_DETECT=[
+  // ── JARDÍN primero para evitar falsos positivos con 'ring' en 'watering' ──
+  {cat:'Jardín & Exterior',               keys:['garden hose','garden sprayer','pump sprayer','sprinkler timer','watering system','drip irrigation','irrigation','garden tool','lawn mower','leaf blower','weed killer','pressure washer','garden','plant pot','outdoor','camping','hiking','tent','hammock','sprayer','sprinkler','lawn','weed','mower','blower','watering']},
+  {cat:'Herramientas',                    keys:['drill bit','screwdriver set','tool set','measuring tape','power drill','circular saw','wrench set','plier set']},
+  // ── Skincare & Belleza ──
   {cat:'Skincare · Mascarillas Faciales', keys:['mask','mascarilla','sheet mask','hydrogel mask','face mask','peel off']},
   {cat:'Skincare · Sérums & Ampollas',    keys:['serum','sérum','ampoule','essence','ampolla']},
-  {cat:'Skincare · Cremas & Hidratantes', keys:['cream','moisturizer','lotion','crema','hidratante']},
+  {cat:'Skincare · Cremas & Hidratantes', keys:['face cream','eye cream','night cream','day cream','moisturizer','lotion','crema','hidratante']},
   {cat:'Skincare · Protección Solar',     keys:['sunscreen','spf','sun cream','protector solar']},
-  {cat:'Skincare · Limpiadores',          keys:['cleanser','face wash','foam cleanser','micellar','cleansing balm']},
+  {cat:'Skincare · Limpiadores',          keys:['cleanser','face wash','foam cleanser','micellar water','cleansing balm']},
   {cat:'Skincare · Contorno de Ojos',     keys:['eye cream','eye patch','eye mask','eye gel','eye serum']},
-  {cat:'Skincare · Exfoliantes',          keys:['exfoliator','scrub','peeling','exfoliating','glycolic','salicylic']},
-  {cat:'Maquillaje · Base & Corrección',  keys:['foundation','concealer','bb cream','cc cream','primer','powder']},
-  {cat:'Maquillaje · Ojos',               keys:['eyeshadow','eyeliner','mascara','brow','eyebrow','false lashes']},
+  {cat:'Skincare · Exfoliantes',          keys:['exfoliator','face scrub','body scrub','peeling','glycolic','salicylic']},
+  {cat:'Maquillaje · Base & Corrección',  keys:['foundation','concealer','bb cream','cc cream','setting powder','primer']},
+  {cat:'Maquillaje · Ojos',               keys:['eyeshadow palette','eyeshadow','eyeliner','mascara','eyebrow pencil','false lashes']},
   {cat:'Maquillaje · Labios',             keys:['lip gloss','lip tint','lip balm','lipstick','lip liner','lip oil']},
-  {cat:'Maquillaje · Herramientas',       keys:['brush','sponge','blender','beauty blender','makeup brush']},
-  {cat:'Cabello · Tratamientos',          keys:['hair mask','hair serum','hair oil','scalp','growth','hair growth']},
-  {cat:'Cabello · Estilizado',            keys:['hair spray','heat protectant','hair dryer','straightener','curling']},
-  {cat:'Cabello · Cuidado',               keys:['shampoo','conditioner','dry shampoo','leave in']},
-  {cat:'Fragancias & Baño',               keys:['perfume','cologne','body wash','shower gel','bath bomb','deodorant']},
-  {cat:'Suplementos · Vitaminas',         keys:['vitamin','multivitamin','gummies','biotin','folic','prenatal']},
-  {cat:'Suplementos · Minerales',         keys:['magnesium','calcium','iron','zinc supplement','potassium','selenium']},
-  {cat:'Suplementos · Bienestar',         keys:['melatonin','ashwagandha','turmeric','omega','fish oil','collagen','probiotic','berberine','lion mane','coq10','elderberry']},
-  {cat:'Fitness · Proteínas',             keys:['whey','protein powder','bcaa','creatine','pre workout','amino']},
-  {cat:'Fitness · Equipos',               keys:['yoga mat','resistance band','foam roller','dumbbell','kettlebell','jump rope','pull up']},
-  {cat:'Fitness · Ropa Deportiva',        keys:['sports bra','leggings','compression','workout','gym bag','shaker']},
-  {cat:'Moda · Ropa Mujer',               keys:['dress','blouse','skirt','crop top','tank top','halter','bodysuit','jumpsuit','cardigan','blazer','bikini','swimsuit','lingerie','bralette','hoodie','sweatshirt']},
-  {cat:'Moda · Ropa Hombre',              keys:['polo shirt','dress shirt','t-shirt','chino','cargo pants','sweatpants','boxer','undershirt']},
-  {cat:'Moda · Calzado',                  keys:['sneakers','heels','boots','sandals','flip flops','slippers','loafers','shoes']},
-  {cat:'Moda · Accesorios',               keys:['necklace','bracelet','earrings','ring','handbag','backpack','sunglasses','wallet','watch','scarf','hat']},
-  {cat:'Bebés & Niños · Cuidado',         keys:['baby','diaper','pacifier','teether','formula','wipes','onesie','swaddle']},
-  {cat:'Bebés & Niños · Juguetes',        keys:['toy','lego','doll','action figure','puzzle','board game','learning']},
-  {cat:'Mascotas · Perros',               keys:['dog','puppy','canine']},
-  {cat:'Mascotas · Gatos',                keys:['cat','kitten','feline','litter']},
-  {cat:'Hogar · Cocina',                  keys:['air fryer','coffee maker','blender','knife','cutting board','cookware','pan','pot','baking']},
-  {cat:'Hogar · Organización',            keys:['organizer','storage','container','closet','drawer','shelf']},
-  {cat:'Hogar · Decoración',              keys:['candle','wall art','picture frame','throw blanket','pillow','rug','curtain','vase']},
-  {cat:'Hogar · Limpieza',                keys:['vacuum','mop','cleaning','detergent','scrubber','spray','disinfectant']},
-  {cat:'Hogar · Dormitorio',              keys:['bedding','sheets','duvet','pillow','mattress','towel']},
-  {cat:'Electrónica · Audio',             keys:['earbuds','headphones','speaker','bluetooth','noise canceling']},
-  {cat:'Electrónica · Carga & Cables',    keys:['charger','power bank','cable','hub','adapter','wireless charger']},
-  {cat:'Electrónica · Iluminación',       keys:['ring light','led','smart light','lamp','strip light']},
-  {cat:'Electrónica · Teléfono',          keys:['phone case','screen protector','phone stand','mount','phone holder']},
-  {cat:'Electrónica · Computadoras',      keys:['laptop','keyboard','mouse','webcam','monitor stand','desk']},
-  {cat:'Electrónica · Smart Home',        keys:['smart plug','security camera','doorbell','alexa','google home']},
-  {cat:'Salud · Monitoreo',               keys:['blood pressure','oximeter','thermometer','glucose','scale']},
-  {cat:'Salud · Fisioterapia',            keys:['massage gun','heating pad','foam roller','posture','brace','compression']},
-  {cat:'Salud · Dental & Personal',       keys:['toothbrush','whitening','flosser','mouthwash','razor','shaver']},
-  {cat:'Oficina & Papelería',             keys:['planner','journal','notebook','desk','chair','lamp','organizer','pen']},
-  {cat:'Automotriz',                      keys:['car','vehicle','auto','tire','dash cam','steering']},
-  {cat:'Jardín & Exterior',               keys:['garden','plant','outdoor','camping','hiking','tent','hammock','sprayer','lawn','weed','sprinkler','mower','blower']},
-  {cat:'Herramientas',                    keys:['drill','screwdriver','tool','measuring','wrench','plier','pump','pressure washer']},
-  {cat:'Viaje',                           keys:['luggage','travel','suitcase','passport','packing','adapter']},
-  {cat:'Alimentos & Bebidas',             keys:['protein bar','snack','tea','coffee','matcha','electrolyte','meal replacement']},
+  {cat:'Maquillaje · Herramientas',       keys:['makeup brush','brush set','beauty sponge','makeup sponge']},
+  {cat:'Cabello · Tratamientos',          keys:['hair mask','hair serum','hair oil','scalp serum','hair growth']},
+  {cat:'Cabello · Estilizado',            keys:['heat protectant','hair dryer','hair straightener','curling iron','hair spray']},
+  {cat:'Cabello · Cuidado',               keys:['shampoo','conditioner','dry shampoo','leave in conditioner']},
+  {cat:'Fragancias & Baño',               keys:['perfume','cologne','body wash','shower gel','bath bomb','bath salt','deodorant']},
+  // ── Suplementos ──
+  {cat:'Suplementos · Vitaminas',         keys:['vitamin','multivitamin','gummies','biotin','folic acid','prenatal']},
+  {cat:'Suplementos · Minerales',         keys:['magnesium','calcium supplement','iron supplement','zinc supplement','potassium','selenium']},
+  {cat:'Suplementos · Bienestar',         keys:['melatonin','ashwagandha','turmeric','omega 3','fish oil','marine collagen','collagen peptides','probiotic','berberine','lion mane','coq10','elderberry']},
+  {cat:'Fitness · Proteínas',             keys:['whey protein','protein powder','bcaa','creatine','pre workout','amino acids']},
+  {cat:'Fitness · Equipos',               keys:['yoga mat','resistance band','foam roller','dumbbell','kettlebell','jump rope','pull up bar']},
+  {cat:'Fitness · Ropa Deportiva',        keys:['sports bra','compression leggings','leggings','workout','gym bag','shaker bottle']},
+  // ── Moda — frases específicas para evitar falsos positivos ──
+  {cat:'Moda · Ropa Mujer',               keys:['maxi dress','mini dress','wrap dress','bodycon dress','crop top','tank top','bodysuit','jumpsuit','cardigan','blazer','bikini top','swimsuit','lingerie set','bralette','zip hoodie','pullover sweatshirt']},
+  {cat:'Moda · Ropa Hombre',              keys:['polo shirt','dress shirt','flannel shirt','henley shirt','chino pants','cargo pants','sweatpants','boxer briefs','boxer shorts']},
+  {cat:'Moda · Calzado',                  keys:['running sneakers','platform shoes','high heels','ankle boots','chelsea boots','flip flops','slippers','loafers','wedge shoes']},
+  {cat:'Moda · Accesorios',               keys:['necklace','bracelet','hoop earrings','stud earrings','pendant','handbag','tote bag','crossbody bag','sunglasses','leather wallet','wristwatch','silk scarf','beanie']},
+  // ── Bebés, Mascotas ──
+  {cat:'Bebés & Niños · Cuidado',         keys:['baby monitor','baby carrier','baby bottle','baby wipes','baby formula','diaper bag','pacifier','teether','swaddle']},
+  {cat:'Bebés & Niños · Juguetes',        keys:['learning toy','building blocks','lego','action figure','board game','remote control car','kids backpack']},
+  {cat:'Mascotas · Perros',               keys:['dog food','dog treat','dog harness','dog leash','dog collar','dog toy','dog bed','dog shampoo','puppy']},
+  {cat:'Mascotas · Gatos',                keys:['cat food','cat treat','cat litter','cat toy','cat tree','kitten']},
+  // ── Hogar ──
+  {cat:'Hogar · Cocina',                  keys:['air fryer','instant pot','coffee maker','french press','blender','food processor','knife set','cutting board','meal prep','rice cooker']},
+  {cat:'Hogar · Organización',            keys:['closet organizer','storage organizer','desk organizer','drawer organizer','shelf organizer','packing cubes']},
+  {cat:'Hogar · Decoración',              keys:['scented candle','wall art','picture frame','throw blanket','throw pillow','area rug','shower curtain','flower vase']},
+  {cat:'Hogar · Limpieza',                keys:['robot vacuum','vacuum cleaner','mop','laundry detergent','fabric softener','cleaning spray','disinfectant']},
+  {cat:'Hogar · Dormitorio',              keys:['bedding set','bed sheets','duvet cover','throw pillow','mattress topper','bath towel']},
+  // ── Electrónica ──
+  {cat:'Electrónica · Audio',             keys:['wireless earbuds','noise canceling headphones','bluetooth speaker','gaming headset']},
+  {cat:'Electrónica · Carga & Cables',    keys:['wireless charger','power bank','charging cable','usb hub','travel adapter']},
+  {cat:'Electrónica · Iluminación',       keys:['ring light','led strip lights','smart light','desk lamp','floor lamp']},
+  {cat:'Electrónica · Teléfono',          keys:['phone case','screen protector','phone stand','phone car mount','phone holder']},
+  {cat:'Electrónica · Computadoras',      keys:['mechanical keyboard','gaming mouse','laptop stand','webcam','monitor stand']},
+  {cat:'Electrónica · Smart Home',        keys:['smart plug','security camera','video doorbell','smart thermostat','alexa']},
+  // ── Salud ──
+  {cat:'Salud · Monitoreo',               keys:['blood pressure monitor','pulse oximeter','thermometer','glucose meter','body scale']},
+  {cat:'Salud · Fisioterapia',            keys:['massage gun','heating pad','back brace','posture corrector','knee brace','compression socks']},
+  {cat:'Salud · Dental & Personal',       keys:['electric toothbrush','teeth whitening','water flosser','mouthwash','electric razor','hair remover']},
+  {cat:'Oficina & Papelería',             keys:['standing desk','ergonomic chair','planner','bullet journal','sticky notes','highlighter pen','ballpoint pen']},
+  {cat:'Automotriz',                      keys:['dash cam','car charger','phone car mount','car vacuum','car seat cover','car air freshener','jumper cables']},
+  {cat:'Viaje',                           keys:['carry on luggage','packing cubes','travel pillow','passport holder','travel adapter','luggage lock','neck pillow']},
+  {cat:'Alimentos & Bebidas',             keys:['protein bar','energy bar','matcha powder','collagen coffee','electrolyte drink','meal replacement','green tea']},
 ];
 
 // ── PALABRAS QUE NUNCA SON MARCA ──────────────────────────────────────────
@@ -6375,9 +6388,17 @@ window.arbExtraerTerminos=function(){
     tituloLow.includes('korean skin care');
 
   // ══ DETECTAR CATEGORÍA ══
+  // Usar word-boundary para evitar falsos positivos (ej: 'ring' en 'watering')
+  const catMatch=(titulo,k)=>{
+    // Frases de 2+ palabras: match directo de substring
+    if(k.includes(' ')) return titulo.includes(k);
+    // Palabras cortas (<5 chars): requieren word boundary
+    const re=new RegExp('(?:^|[\\s,\.\\-\/\\(])'+k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?:[\\s,\.\\-\/\\)!]|$)','i');
+    return re.test(titulo);
+  };
   let categoriaDetectada='Producto Amazon';
   for(const cat of ARB_CAT_DETECT){
-    if(cat.keys.some(k=>tituloLow.includes(k))){categoriaDetectada=cat.cat;break;}
+    if(cat.keys.some(k=>catMatch(tituloLow,k))){categoriaDetectada=cat.cat;break;}
   }
 
   // ══ CONSTRUIR TÉRMINOS FINALES ══
