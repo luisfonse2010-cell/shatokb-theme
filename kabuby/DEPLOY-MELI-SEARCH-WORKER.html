@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>🚀 Deploy Kabuby MeLi Search Worker</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#060d1a;color:#e2e8f0;padding:28px;max-width:860px;margin:0 auto;font-size:14px}
+h1{color:#6c8eff;font-size:22px;font-weight:800;margin-bottom:6px}
+.subtitle{color:#7a91b8;font-size:13px;margin-bottom:28px}
+.alert{background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.3);border-radius:10px;padding:16px 20px;margin-bottom:24px;font-size:13px;line-height:1.7;color:#fca5a5}
+.alert strong{color:#f87171}
+.step-card{background:#0f1d35;border:1px solid #26406a;border-radius:12px;padding:20px 24px;margin-bottom:16px;position:relative}
+.step-card.highlight{border-color:#6c8eff;box-shadow:0 0 20px rgba(108,142,255,0.1)}
+.step-num{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#6c8eff;color:#fff;font-weight:800;font-size:14px;margin-right:12px;flex-shrink:0;vertical-align:middle}
+.step-card h3{font-size:15px;font-weight:700;color:#e2e8f0;display:inline;vertical-align:middle}
+.step-card p{color:#b8c8e8;font-size:13px;line-height:1.7;margin-top:12px}
+.step-card a{color:#60c8ff}
+.code-block{background:#040a14;border:1px solid #1e3a5f;border-radius:8px;padding:16px;font-family:'Courier New',monospace;font-size:11px;line-height:1.6;color:#cbd5e1;white-space:pre;overflow-x:auto;margin-top:12px;position:relative;max-height:400px;overflow-y:auto}
+.copy-btn{position:sticky;top:6px;float:right;background:#6c8eff;color:#fff;border:none;border-radius:6px;padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;z-index:10}
+.copy-btn:hover{background:#8aa8ff}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;margin:2px}
+.tag.green{background:#0a2010;color:#34d399;border:1px solid rgba(52,211,153,0.3)}
+.tag.blue{background:#0a1530;color:#6c8eff;border:1px solid rgba(108,142,255,0.3)}
+.tag.yellow{background:#1a1500;color:#fcd34d;border:1px solid rgba(252,211,77,0.3)}
+kbd{background:#1e3a5f;color:#60c8ff;padding:1px 6px;border-radius:4px;font-size:11px;font-family:monospace}
+.test-btn{background:rgba(52,211,153,0.1);color:#34d399;border:1px solid rgba(52,211,153,0.3);border-radius:8px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;margin-top:12px}
+.test-btn:hover{background:rgba(52,211,153,0.2)}
+#test-out{margin-top:12px;background:#040a14;border:1px solid #1e3a5f;border-radius:8px;padding:14px;font-family:monospace;font-size:12px;line-height:1.7;display:none;max-height:200px;overflow-y:auto}
+.ok{color:#34d399}.err{color:#f87171}.wrn{color:#fbbf24}.inf{color:#93c5fd}
+.url-input{width:100%;background:#0a1730;border:1px solid #26406a;border-radius:8px;padding:10px 14px;color:#e2e8f0;font-size:13px;font-family:monospace;margin-top:8px;outline:none}
+.url-input:focus{border-color:#6c8eff}
+.save-btn{background:#6c8eff;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;margin-top:8px}
+.save-btn:hover{background:#8aa8ff}
+#save-status{display:none;margin-top:8px;font-size:12px;padding:8px 14px;border-radius:6px}
+</style>
+</head>
+<body>
+
+<h1>🚀 Kabuby — Deploy MeLi Search Worker</h1>
+<p class="subtitle">Crea el Worker de Cloudflare que permite al Cazador de Arbitraje obtener datos REALES de Mercado Libre</p>
+
+<div class="alert">
+  <strong>⚠️ ¿Por qué necesitamos esto?</strong><br>
+  <code>api.mercadolibre.com</code> bloquea con <strong>HTTP 403 CORS</strong> todas las peticiones desde browsers y 
+  también rechaza proxies públicos (allorigins, corsproxy.io, cors.sh). 
+  Un <strong>Cloudflare Worker propio</strong> hace la petición <em>server-to-server</em> sin restricciones CORS 
+  y devuelve los datos con cabeceras que permiten leerlos desde kabuby.com. <strong>Es gratis en el plan free de Cloudflare.</strong>
+</div>
+
+<!-- PASO 1 -->
+<div class="step-card">
+  <span class="step-num">1</span><h3>Abrir Cloudflare Dashboard</h3>
+  <p>
+    Ve a <a href="https://dash.cloudflare.com/" target="_blank">dash.cloudflare.com</a> e inicia sesión.<br>
+    En el menú lateral izquierdo haz clic en <strong>"Workers &amp; Pages"</strong>.<br>
+    Luego clic en el botón azul <strong>"Create application"</strong> → pestaña <strong>"Workers"</strong> → <strong>"Create Worker"</strong>.
+  </p>
+</div>
+
+<!-- PASO 2 -->
+<div class="step-card">
+  <span class="step-num">2</span><h3>Nombrar el Worker</h3>
+  <p>
+    En el campo <strong>Name</strong> escribe exactamente: <kbd>kabuby-meli-search</kbd><br>
+    Haz clic en <strong>"Deploy"</strong> (puedes ignorar el código de ejemplo por ahora).
+  </p>
+</div>
+
+<!-- PASO 3 -->
+<div class="step-card highlight">
+  <span class="step-num">3</span><h3>⭐ Reemplazar el código del Worker</h3>
+  <p>
+    Después del deploy, haz clic en <strong>"Edit code"</strong> (botón azul arriba a la derecha).<br>
+    <strong>Selecciona todo</strong> (<kbd>Ctrl+A</kbd>) → <strong>Borra</strong> → <strong>Pega este código:</strong>
+  </p>
+  <div class="code-block" id="worker-code">/**
+ * Kabuby MeLi Search Proxy Worker v1.0
+ * Endpoint: /search?site=MLBR&q=producto&limit=10
+ * Endpoint: /health
+ *
+ * Sitios válidos: MLBR, MLMX, MLCO, MLAR, MLCL, MLPE, MLUY, MLEC
+ */
+
+const ALLOWED_SITES = ['MLBR','MLMX','MLCO','MLAR','MLCL','MLPE','MLUY','MLEC'];
+const ALLOWED_ORIGIN = '*'; // Puedes restringir a 'https://kabuby.com'
+
+export default {
+  async fetch(request, env, ctx) {
+
+    // Handle CORS preflight
+    if (request.method === 'OPTIONS') {
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders()
+      });
+    }
+
+    const url = new URL(request.url);
+
+    // Health check
+    if (url.pathname === '/health' || url.pathname === '/') {
+      return jsonResp({ status: 'ok', worker: 'kabuby-meli-search', version: '1.0' });
+    }
+
+    // Search endpoint
+    if (url.pathname !== '/search') {
+      return jsonResp({ error: 'Usa /search?site=MLBR&q=producto&limit=10' }, 400);
+    }
+
+    const site  = (url.searchParams.get('site') || '').toUpperCase();
+    const q     = url.searchParams.get('q') || '';
+    const limit = Math.min(parseInt(url.searchParams.get('limit') || '10'), 50);
+
+    if (!ALLOWED_SITES.includes(site)) {
+      return jsonResp({ error: 'site inválido. Usa: ' + ALLOWED_SITES.join(', ') }, 400);
+    }
+    if (!q.trim()) {
+      return jsonResp({ error: 'El parámetro q (búsqueda) es requerido' }, 400);
+    }
+
+    const meliUrl = `https://api.mercadolibre.com/sites/${site}/search?q=${encodeURIComponent(q)}&limit=${limit}`;
+
+    try {
+      const resp = await fetch(meliUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; KabubySearch/1.0; +https://kabuby.com)',
+          'Accept': 'application/json',
+          'Accept-Language': 'es-419',
+        },
+        cf: { cacheTtl: 180, cacheEverything: true }
+      });
+
+      const body = await resp.text();
+
+      return new Response(body, {
+        status: resp.status,
+        headers: {
+          ...corsHeaders(),
+          'Content-Type': 'application/json',
+          'Cache-Control': 'public, max-age=180',
+          'X-Proxy': 'kabuby-meli-search',
+          'X-Site': site,
+        }
+      });
+
+    } catch (e) {
+      return jsonResp({ error: 'Fetch a MeLi falló: ' + e.message }, 502);
+    }
+  }
+};
+
+function corsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Max-Age': '86400',
+  };
+}
+
+function jsonResp(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ...corsHeaders(), 'Content-Type': 'application/json' }
+  });
+}
+</div>
+  <button class="copy-btn" onclick="copyCode()">📋 Copiar código</button>
+  <p style="margin-top:12px">
+    Después de pegar el código, haz clic en el botón <strong>"Deploy"</strong> (arriba a la derecha del editor).<br>
+    Cloudflare te mostrará la URL del worker: algo como <code style="color:#60c8ff">https://kabuby-meli-search.TU-USUARIO.workers.dev</code>
+  </p>
+</div>
+
+<!-- PASO 4 -->
+<div class="step-card">
+  <span class="step-num">4</span><h3>Probar que el Worker funciona</h3>
+  <p>
+    Abre en tu browser: <code style="color:#60c8ff">https://kabuby-meli-search.TU-USUARIO.workers.dev/health</code><br>
+    Deberías ver: <code style="color:#34d399">{"status":"ok","worker":"kabuby-meli-search","version":"1.0"}</code><br>
+    Luego prueba una búsqueda real:<br>
+    <code style="color:#60c8ff">https://kabuby-meli-search.TU-USUARIO.workers.dev/search?site=MLBR&q=crema+coreana&limit=5</code>
+  </p>
+  <button class="test-btn" onclick="testWorker()">🧪 Probar Worker ahora</button>
+  <div id="test-out"></div>
+</div>
+
+<!-- PASO 5 -->
+<div class="step-card highlight">
+  <span class="step-num">5</span><h3>⭐ Guardar la URL del Worker en Kabuby</h3>
+  <p>Pega aquí la URL de tu Worker (sin / al final). Kabuby la guardará en tu localStorage y empezará a usarla automáticamente:</p>
+  <input type="text" class="url-input" id="worker-url-input" 
+    placeholder="https://kabuby-meli-search.TU-USUARIO.workers.dev"
+    value="">
+  <br>
+  <button class="save-btn" onclick="saveWorkerUrl()">💾 Guardar URL y activar</button>
+  <div id="save-status"></div>
+</div>
+
+<!-- PASO 6 -->
+<div class="step-card">
+  <span class="step-num">6</span><h3>¿Ya lo tienes configurado?</h3>
+  <p>
+    Si el Worker está activo y la URL guardada, ve al Cazador de Arbitraje en kabuby.com y analiza cualquier producto.<br>
+    Verás datos <strong style="color:#34d399">reales de vendedores</strong> en los 8 países LATAM en lugar de <span style="color:#f87171">? vend.</span>
+  </p>
+</div>
+
+<script>
+// ──────────────────────────────────────────────
+// Copy code button
+// ──────────────────────────────────────────────
+function copyCode() {
+  const el = document.getElementById('worker-code');
+  const text = el.innerText.replace('📋 Copiar código','').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '✅ Copiado!';
+    setTimeout(() => { btn.textContent = '📋 Copiar código'; }, 2000);
+  });
+}
+
+// ──────────────────────────────────────────────
+// Test worker
+// ──────────────────────────────────────────────
+async function testWorker() {
+  const out = document.getElementById('test-out');
+  out.style.display = 'block';
+  out.innerHTML = '<span class="inf">⏳ Probando Worker...</span>\n';
+
+  const saved = localStorage.getItem('kabuby_meli_worker_url');
+  const inputVal = document.getElementById('worker-url-input').value.trim();
+  const workerUrl = inputVal || saved;
+
+  if (!workerUrl) {
+    out.innerHTML += '<span class="err">❌ No hay URL de Worker guardada. Pégala en el campo de arriba primero.</span>\n';
+    return;
+  }
+
+  // Health check
+  try {
+    out.innerHTML += `<span class="inf">→ Probando /health: ${workerUrl}/health</span>\n`;
+    const r = await fetch(`${workerUrl}/health`, { signal: AbortSignal.timeout(8000) });
+    const d = await r.json();
+    out.innerHTML += `<span class="ok">✅ Health OK: ${JSON.stringify(d)}</span>\n`;
+  } catch(e) {
+    out.innerHTML += `<span class="err">❌ Health falló: ${e.message}</span>\n`;
+    return;
+  }
+
+  // Search test
+  try {
+    out.innerHTML += `<span class="inf">→ Probando búsqueda: crema coreana en MLBR...</span>\n`;
+    const r = await fetch(`${workerUrl}/search?site=MLBR&q=crema+coreana&limit=5`, { signal: AbortSignal.timeout(10000) });
+    const d = await r.json();
+    if (d.paging) {
+      out.innerHTML += `<span class="ok">✅ Búsqueda OK → ${d.paging.total} resultados totales en Brasil</span>\n`;
+      if (d.results && d.results.length > 0) {
+        out.innerHTML += `<span class="ok">   Primer resultado: ${d.results[0].title?.substring(0,60)}...</span>\n`;
+        out.innerHTML += `<span class="ok">   Precio: ${d.results[0].currency_id} ${d.results[0].price}</span>\n`;
+      }
+      out.innerHTML += `<span class="ok">🎉 Worker funcionando correctamente — ¡guarda la URL y actívalo!</span>\n`;
+    } else {
+      out.innerHTML += `<span class="wrn">⚠️ Respuesta inesperada: ${JSON.stringify(d).substring(0,100)}</span>\n`;
+    }
+  } catch(e) {
+    out.innerHTML += `<span class="err">❌ Búsqueda falló: ${e.message}</span>\n`;
+  }
+}
+
+// ──────────────────────────────────────────────
+// Save worker URL
+// ──────────────────────────────────────────────
+function saveWorkerUrl() {
+  const input = document.getElementById('worker-url-input');
+  const url = input.value.trim().replace(/\/+$/, ''); // quitar trailing slash
+  const status = document.getElementById('save-status');
+
+  if (!url || !url.startsWith('https://')) {
+    status.style.display = 'block';
+    status.style.background = 'rgba(248,113,113,0.1)';
+    status.style.border = '1px solid rgba(248,113,113,0.3)';
+    status.style.color = '#f87171';
+    status.textContent = '❌ URL inválida. Debe empezar con https://';
+    return;
+  }
+
+  localStorage.setItem('kabuby_meli_worker_url', url);
+
+  status.style.display = 'block';
+  status.style.background = 'rgba(52,211,153,0.1)';
+  status.style.border = '1px solid rgba(52,211,153,0.3)';
+  status.style.color = '#34d399';
+  status.textContent = '✅ URL guardada en localStorage. El Cazador de Arbitraje la usará automáticamente en kabuby.com.';
+
+  // Verificar que se puede leer de vuelta
+  const verify = localStorage.getItem('kabuby_meli_worker_url');
+  if (verify === url) {
+    status.textContent += ' Verificado ✓';
+  }
+}
+
+// Pre-cargar URL guardada
+window.onload = function() {
+  const saved = localStorage.getItem('kabuby_meli_worker_url');
+  if (saved) {
+    document.getElementById('worker-url-input').value = saved;
+    document.getElementById('save-status').style.display = 'block';
+    document.getElementById('save-status').style.background = 'rgba(108,142,255,0.1)';
+    document.getElementById('save-status').style.border = '1px solid rgba(108,142,255,0.3)';
+    document.getElementById('save-status').style.color = '#6c8eff';
+    document.getElementById('save-status').textContent = `ℹ️ URL ya guardada: ${saved}`;
+  }
+};
+</script>
+</body>
+</html>
