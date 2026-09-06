@@ -1,6 +1,6 @@
 {
   "type": "trending",
-  "generated_at": "2026-09-05T22:26:25.719Z",
+  "generated_at": "2026-09-06T00:20:27.100Z",
   "terms": {
     "crema facial": {
       "BR": {
@@ -9,7 +9,7 @@
         "site": "MLB",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLB/search?q=crema%20facial&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.106Z",
+        "fetched_at": "2026-09-06T00:20:25.561Z",
         "_src": "error"
       },
       "MX": {
@@ -18,7 +18,7 @@
         "site": "MLM",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLM/search?q=crema%20facial&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.122Z",
+        "fetched_at": "2026-09-06T00:20:25.580Z",
         "_src": "error"
       },
       "CO": {
@@ -27,7 +27,7 @@
         "site": "MCO",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MCO/search?q=crema%20facial&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.147Z",
+        "fetched_at": "2026-09-06T00:20:25.596Z",
         "_src": "error"
       },
       "AR": {
@@ -36,7 +36,7 @@
         "site": "MLA",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLA/search?q=crema%20facial&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.164Z",
+        "fetched_at": "2026-09-06T00:20:25.616Z",
         "_src": "error"
       },
       "CL": {
@@ -45,7 +45,7 @@
         "site": "MLC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLC/search?q=crema%20facial&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.180Z",
+        "fetched_at": "2026-09-06T00:20:25.631Z",
         "_src": "error"
       },
       "PE": {
@@ -54,7 +54,7 @@
         "site": "MPE",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MPE/search?q=crema%20facial&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.197Z",
+        "fetched_at": "2026-09-06T00:20:25.649Z",
         "_src": "error"
       },
       "UY": {
@@ -63,7 +63,7 @@
         "site": "MLU",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLU/search?q=crema%20facial&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.213Z",
+        "fetched_at": "2026-09-06T00:20:25.662Z",
         "_src": "error"
       },
       "EC": {
@@ -72,7 +72,7 @@
         "site": "MEC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MEC/search?q=crema%20facial&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.230Z",
+        "fetched_at": "2026-09-06T00:20:25.678Z",
         "_src": "error"
       }
     },
@@ -83,7 +83,7 @@
         "site": "MLB",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLB/search?q=protector%20solar&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.245Z",
+        "fetched_at": "2026-09-06T00:20:25.694Z",
         "_src": "error"
       },
       "MX": {
@@ -92,7 +92,7 @@
         "site": "MLM",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLM/search?q=protector%20solar&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.265Z",
+        "fetched_at": "2026-09-06T00:20:25.710Z",
         "_src": "error"
       },
       "CO": {
@@ -101,7 +101,7 @@
         "site": "MCO",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MCO/search?q=protector%20solar&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.283Z",
+        "fetched_at": "2026-09-06T00:20:25.727Z",
         "_src": "error"
       },
       "AR": {
@@ -110,7 +110,7 @@
         "site": "MLA",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLA/search?q=protector%20solar&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.301Z",
+        "fetched_at": "2026-09-06T00:20:25.744Z",
         "_src": "error"
       },
       "CL": {
@@ -119,7 +119,7 @@
         "site": "MLC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLC/search?q=protector%20solar&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.320Z",
+        "fetched_at": "2026-09-06T00:20:25.759Z",
         "_src": "error"
       },
       "PE": {
@@ -128,7 +128,7 @@
         "site": "MPE",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MPE/search?q=protector%20solar&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.335Z",
+        "fetched_at": "2026-09-06T00:20:25.774Z",
         "_src": "error"
       },
       "UY": {
@@ -137,7 +137,7 @@
         "site": "MLU",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLU/search?q=protector%20solar&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.352Z",
+        "fetched_at": "2026-09-06T00:20:25.793Z",
         "_src": "error"
       },
       "EC": {
@@ -146,7 +146,7 @@
         "site": "MEC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MEC/search?q=protector%20solar&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.368Z",
+        "fetched_at": "2026-09-06T00:20:25.809Z",
         "_src": "error"
       }
     },
@@ -157,7 +157,7 @@
         "site": "MLB",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLB/search?q=suero%20vitamina%20c&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.386Z",
+        "fetched_at": "2026-09-06T00:20:25.824Z",
         "_src": "error"
       },
       "MX": {
@@ -166,7 +166,7 @@
         "site": "MLM",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLM/search?q=suero%20vitamina%20c&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.402Z",
+        "fetched_at": "2026-09-06T00:20:25.838Z",
         "_src": "error"
       },
       "CO": {
@@ -175,7 +175,7 @@
         "site": "MCO",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MCO/search?q=suero%20vitamina%20c&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.418Z",
+        "fetched_at": "2026-09-06T00:20:25.853Z",
         "_src": "error"
       },
       "AR": {
@@ -184,7 +184,7 @@
         "site": "MLA",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLA/search?q=suero%20vitamina%20c&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.434Z",
+        "fetched_at": "2026-09-06T00:20:25.868Z",
         "_src": "error"
       },
       "CL": {
@@ -193,7 +193,7 @@
         "site": "MLC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLC/search?q=suero%20vitamina%20c&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.452Z",
+        "fetched_at": "2026-09-06T00:20:25.886Z",
         "_src": "error"
       },
       "PE": {
@@ -202,7 +202,7 @@
         "site": "MPE",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MPE/search?q=suero%20vitamina%20c&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.469Z",
+        "fetched_at": "2026-09-06T00:20:25.900Z",
         "_src": "error"
       },
       "UY": {
@@ -211,7 +211,7 @@
         "site": "MLU",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLU/search?q=suero%20vitamina%20c&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.484Z",
+        "fetched_at": "2026-09-06T00:20:25.915Z",
         "_src": "error"
       },
       "EC": {
@@ -220,7 +220,7 @@
         "site": "MEC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MEC/search?q=suero%20vitamina%20c&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.504Z",
+        "fetched_at": "2026-09-06T00:20:25.930Z",
         "_src": "error"
       }
     },
@@ -231,7 +231,7 @@
         "site": "MLB",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLB/search?q=acido%20hialuronico&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.520Z",
+        "fetched_at": "2026-09-06T00:20:25.946Z",
         "_src": "error"
       },
       "MX": {
@@ -240,7 +240,7 @@
         "site": "MLM",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLM/search?q=acido%20hialuronico&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.539Z",
+        "fetched_at": "2026-09-06T00:20:25.961Z",
         "_src": "error"
       },
       "CO": {
@@ -249,7 +249,7 @@
         "site": "MCO",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MCO/search?q=acido%20hialuronico&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.555Z",
+        "fetched_at": "2026-09-06T00:20:25.977Z",
         "_src": "error"
       },
       "AR": {
@@ -258,7 +258,7 @@
         "site": "MLA",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLA/search?q=acido%20hialuronico&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.574Z",
+        "fetched_at": "2026-09-06T00:20:25.995Z",
         "_src": "error"
       },
       "CL": {
@@ -267,7 +267,7 @@
         "site": "MLC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLC/search?q=acido%20hialuronico&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.590Z",
+        "fetched_at": "2026-09-06T00:20:26.011Z",
         "_src": "error"
       },
       "PE": {
@@ -276,7 +276,7 @@
         "site": "MPE",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MPE/search?q=acido%20hialuronico&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.604Z",
+        "fetched_at": "2026-09-06T00:20:26.028Z",
         "_src": "error"
       },
       "UY": {
@@ -285,7 +285,7 @@
         "site": "MLU",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLU/search?q=acido%20hialuronico&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.620Z",
+        "fetched_at": "2026-09-06T00:20:26.044Z",
         "_src": "error"
       },
       "EC": {
@@ -294,7 +294,7 @@
         "site": "MEC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MEC/search?q=acido%20hialuronico&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.636Z",
+        "fetched_at": "2026-09-06T00:20:26.060Z",
         "_src": "error"
       }
     },
@@ -305,7 +305,7 @@
         "site": "MLB",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLB/search?q=retinol&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.654Z",
+        "fetched_at": "2026-09-06T00:20:26.075Z",
         "_src": "error"
       },
       "MX": {
@@ -314,7 +314,7 @@
         "site": "MLM",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLM/search?q=retinol&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.669Z",
+        "fetched_at": "2026-09-06T00:20:26.098Z",
         "_src": "error"
       },
       "CO": {
@@ -323,7 +323,7 @@
         "site": "MCO",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MCO/search?q=retinol&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.686Z",
+        "fetched_at": "2026-09-06T00:20:26.115Z",
         "_src": "error"
       },
       "AR": {
@@ -332,7 +332,7 @@
         "site": "MLA",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLA/search?q=retinol&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.702Z",
+        "fetched_at": "2026-09-06T00:20:26.131Z",
         "_src": "error"
       },
       "CL": {
@@ -341,7 +341,7 @@
         "site": "MLC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLC/search?q=retinol&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.719Z",
+        "fetched_at": "2026-09-06T00:20:26.147Z",
         "_src": "error"
       },
       "PE": {
@@ -350,7 +350,7 @@
         "site": "MPE",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MPE/search?q=retinol&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.737Z",
+        "fetched_at": "2026-09-06T00:20:26.161Z",
         "_src": "error"
       },
       "UY": {
@@ -359,7 +359,7 @@
         "site": "MLU",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLU/search?q=retinol&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.753Z",
+        "fetched_at": "2026-09-06T00:20:26.177Z",
         "_src": "error"
       },
       "EC": {
@@ -368,7 +368,7 @@
         "site": "MEC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MEC/search?q=retinol&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.770Z",
+        "fetched_at": "2026-09-06T00:20:26.194Z",
         "_src": "error"
       }
     },
@@ -379,7 +379,7 @@
         "site": "MLB",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLB/search?q=colageno&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.787Z",
+        "fetched_at": "2026-09-06T00:20:26.211Z",
         "_src": "error"
       },
       "MX": {
@@ -388,7 +388,7 @@
         "site": "MLM",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLM/search?q=colageno&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.803Z",
+        "fetched_at": "2026-09-06T00:20:26.228Z",
         "_src": "error"
       },
       "CO": {
@@ -397,7 +397,7 @@
         "site": "MCO",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MCO/search?q=colageno&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.820Z",
+        "fetched_at": "2026-09-06T00:20:26.250Z",
         "_src": "error"
       },
       "AR": {
@@ -406,7 +406,7 @@
         "site": "MLA",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLA/search?q=colageno&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.836Z",
+        "fetched_at": "2026-09-06T00:20:26.264Z",
         "_src": "error"
       },
       "CL": {
@@ -415,7 +415,7 @@
         "site": "MLC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLC/search?q=colageno&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.851Z",
+        "fetched_at": "2026-09-06T00:20:26.279Z",
         "_src": "error"
       },
       "PE": {
@@ -424,7 +424,7 @@
         "site": "MPE",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MPE/search?q=colageno&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.868Z",
+        "fetched_at": "2026-09-06T00:20:26.294Z",
         "_src": "error"
       },
       "UY": {
@@ -433,7 +433,7 @@
         "site": "MLU",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLU/search?q=colageno&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.886Z",
+        "fetched_at": "2026-09-06T00:20:26.309Z",
         "_src": "error"
       },
       "EC": {
@@ -442,7 +442,7 @@
         "site": "MEC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MEC/search?q=colageno&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.904Z",
+        "fetched_at": "2026-09-06T00:20:26.325Z",
         "_src": "error"
       }
     },
@@ -453,7 +453,7 @@
         "site": "MLB",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLB/search?q=auriculares%20bluetooth&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.920Z",
+        "fetched_at": "2026-09-06T00:20:26.340Z",
         "_src": "error"
       },
       "MX": {
@@ -462,7 +462,7 @@
         "site": "MLM",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLM/search?q=auriculares%20bluetooth&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.936Z",
+        "fetched_at": "2026-09-06T00:20:26.356Z",
         "_src": "error"
       },
       "CO": {
@@ -471,7 +471,7 @@
         "site": "MCO",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MCO/search?q=auriculares%20bluetooth&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.952Z",
+        "fetched_at": "2026-09-06T00:20:26.370Z",
         "_src": "error"
       },
       "AR": {
@@ -480,7 +480,7 @@
         "site": "MLA",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLA/search?q=auriculares%20bluetooth&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.970Z",
+        "fetched_at": "2026-09-06T00:20:26.384Z",
         "_src": "error"
       },
       "CL": {
@@ -489,7 +489,7 @@
         "site": "MLC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLC/search?q=auriculares%20bluetooth&limit=10",
-        "fetched_at": "2026-09-05T22:26:24.987Z",
+        "fetched_at": "2026-09-06T00:20:26.401Z",
         "_src": "error"
       },
       "PE": {
@@ -498,7 +498,7 @@
         "site": "MPE",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MPE/search?q=auriculares%20bluetooth&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.003Z",
+        "fetched_at": "2026-09-06T00:20:26.415Z",
         "_src": "error"
       },
       "UY": {
@@ -507,7 +507,7 @@
         "site": "MLU",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLU/search?q=auriculares%20bluetooth&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.019Z",
+        "fetched_at": "2026-09-06T00:20:26.432Z",
         "_src": "error"
       },
       "EC": {
@@ -516,7 +516,7 @@
         "site": "MEC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MEC/search?q=auriculares%20bluetooth&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.036Z",
+        "fetched_at": "2026-09-06T00:20:26.449Z",
         "_src": "error"
       }
     },
@@ -527,7 +527,7 @@
         "site": "MLB",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLB/search?q=smartwatch&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.058Z",
+        "fetched_at": "2026-09-06T00:20:26.464Z",
         "_src": "error"
       },
       "MX": {
@@ -536,7 +536,7 @@
         "site": "MLM",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLM/search?q=smartwatch&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.075Z",
+        "fetched_at": "2026-09-06T00:20:26.482Z",
         "_src": "error"
       },
       "CO": {
@@ -545,7 +545,7 @@
         "site": "MCO",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MCO/search?q=smartwatch&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.090Z",
+        "fetched_at": "2026-09-06T00:20:26.498Z",
         "_src": "error"
       },
       "AR": {
@@ -554,7 +554,7 @@
         "site": "MLA",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLA/search?q=smartwatch&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.108Z",
+        "fetched_at": "2026-09-06T00:20:26.512Z",
         "_src": "error"
       },
       "CL": {
@@ -563,7 +563,7 @@
         "site": "MLC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLC/search?q=smartwatch&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.129Z",
+        "fetched_at": "2026-09-06T00:20:26.529Z",
         "_src": "error"
       },
       "PE": {
@@ -572,7 +572,7 @@
         "site": "MPE",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MPE/search?q=smartwatch&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.146Z",
+        "fetched_at": "2026-09-06T00:20:26.544Z",
         "_src": "error"
       },
       "UY": {
@@ -581,7 +581,7 @@
         "site": "MLU",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLU/search?q=smartwatch&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.165Z",
+        "fetched_at": "2026-09-06T00:20:26.558Z",
         "_src": "error"
       },
       "EC": {
@@ -590,7 +590,7 @@
         "site": "MEC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MEC/search?q=smartwatch&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.182Z",
+        "fetched_at": "2026-09-06T00:20:26.572Z",
         "_src": "error"
       }
     },
@@ -601,7 +601,7 @@
         "site": "MLB",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLB/search?q=cargador%20portatil&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.197Z",
+        "fetched_at": "2026-09-06T00:20:26.588Z",
         "_src": "error"
       },
       "MX": {
@@ -610,7 +610,7 @@
         "site": "MLM",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLM/search?q=cargador%20portatil&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.215Z",
+        "fetched_at": "2026-09-06T00:20:26.604Z",
         "_src": "error"
       },
       "CO": {
@@ -619,7 +619,7 @@
         "site": "MCO",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MCO/search?q=cargador%20portatil&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.230Z",
+        "fetched_at": "2026-09-06T00:20:26.620Z",
         "_src": "error"
       },
       "AR": {
@@ -628,7 +628,7 @@
         "site": "MLA",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLA/search?q=cargador%20portatil&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.247Z",
+        "fetched_at": "2026-09-06T00:20:26.635Z",
         "_src": "error"
       },
       "CL": {
@@ -637,7 +637,7 @@
         "site": "MLC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLC/search?q=cargador%20portatil&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.261Z",
+        "fetched_at": "2026-09-06T00:20:26.654Z",
         "_src": "error"
       },
       "PE": {
@@ -646,7 +646,7 @@
         "site": "MPE",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MPE/search?q=cargador%20portatil&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.276Z",
+        "fetched_at": "2026-09-06T00:20:26.673Z",
         "_src": "error"
       },
       "UY": {
@@ -655,7 +655,7 @@
         "site": "MLU",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLU/search?q=cargador%20portatil&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.296Z",
+        "fetched_at": "2026-09-06T00:20:26.692Z",
         "_src": "error"
       },
       "EC": {
@@ -664,7 +664,7 @@
         "site": "MEC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MEC/search?q=cargador%20portatil&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.312Z",
+        "fetched_at": "2026-09-06T00:20:26.706Z",
         "_src": "error"
       }
     },
@@ -675,7 +675,7 @@
         "site": "MLB",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLB/search?q=funda%20celular&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.329Z",
+        "fetched_at": "2026-09-06T00:20:26.725Z",
         "_src": "error"
       },
       "MX": {
@@ -684,7 +684,7 @@
         "site": "MLM",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLM/search?q=funda%20celular&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.348Z",
+        "fetched_at": "2026-09-06T00:20:26.741Z",
         "_src": "error"
       },
       "CO": {
@@ -693,7 +693,7 @@
         "site": "MCO",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MCO/search?q=funda%20celular&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.368Z",
+        "fetched_at": "2026-09-06T00:20:26.756Z",
         "_src": "error"
       },
       "AR": {
@@ -702,7 +702,7 @@
         "site": "MLA",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLA/search?q=funda%20celular&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.388Z",
+        "fetched_at": "2026-09-06T00:20:26.775Z",
         "_src": "error"
       },
       "CL": {
@@ -711,7 +711,7 @@
         "site": "MLC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLC/search?q=funda%20celular&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.406Z",
+        "fetched_at": "2026-09-06T00:20:26.789Z",
         "_src": "error"
       },
       "PE": {
@@ -720,7 +720,7 @@
         "site": "MPE",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MPE/search?q=funda%20celular&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.421Z",
+        "fetched_at": "2026-09-06T00:20:26.807Z",
         "_src": "error"
       },
       "UY": {
@@ -729,7 +729,7 @@
         "site": "MLU",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLU/search?q=funda%20celular&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.437Z",
+        "fetched_at": "2026-09-06T00:20:26.822Z",
         "_src": "error"
       },
       "EC": {
@@ -738,7 +738,7 @@
         "site": "MEC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MEC/search?q=funda%20celular&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.456Z",
+        "fetched_at": "2026-09-06T00:20:26.837Z",
         "_src": "error"
       }
     },
@@ -749,7 +749,7 @@
         "site": "MLB",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLB/search?q=camara%20web&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.472Z",
+        "fetched_at": "2026-09-06T00:20:26.851Z",
         "_src": "error"
       },
       "MX": {
@@ -758,7 +758,7 @@
         "site": "MLM",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLM/search?q=camara%20web&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.491Z",
+        "fetched_at": "2026-09-06T00:20:26.867Z",
         "_src": "error"
       },
       "CO": {
@@ -767,7 +767,7 @@
         "site": "MCO",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MCO/search?q=camara%20web&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.506Z",
+        "fetched_at": "2026-09-06T00:20:26.885Z",
         "_src": "error"
       },
       "AR": {
@@ -776,7 +776,7 @@
         "site": "MLA",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLA/search?q=camara%20web&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.522Z",
+        "fetched_at": "2026-09-06T00:20:26.901Z",
         "_src": "error"
       },
       "CL": {
@@ -785,7 +785,7 @@
         "site": "MLC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLC/search?q=camara%20web&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.537Z",
+        "fetched_at": "2026-09-06T00:20:26.918Z",
         "_src": "error"
       },
       "PE": {
@@ -794,7 +794,7 @@
         "site": "MPE",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MPE/search?q=camara%20web&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.555Z",
+        "fetched_at": "2026-09-06T00:20:26.933Z",
         "_src": "error"
       },
       "UY": {
@@ -803,7 +803,7 @@
         "site": "MLU",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLU/search?q=camara%20web&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.573Z",
+        "fetched_at": "2026-09-06T00:20:26.948Z",
         "_src": "error"
       },
       "EC": {
@@ -812,7 +812,7 @@
         "site": "MEC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MEC/search?q=camara%20web&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.589Z",
+        "fetched_at": "2026-09-06T00:20:26.964Z",
         "_src": "error"
       }
     },
@@ -823,7 +823,7 @@
         "site": "MLB",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLB/search?q=teclado%20mecanico&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.605Z",
+        "fetched_at": "2026-09-06T00:20:26.984Z",
         "_src": "error"
       },
       "MX": {
@@ -832,7 +832,7 @@
         "site": "MLM",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLM/search?q=teclado%20mecanico&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.623Z",
+        "fetched_at": "2026-09-06T00:20:26.999Z",
         "_src": "error"
       },
       "CO": {
@@ -841,7 +841,7 @@
         "site": "MCO",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MCO/search?q=teclado%20mecanico&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.639Z",
+        "fetched_at": "2026-09-06T00:20:27.017Z",
         "_src": "error"
       },
       "AR": {
@@ -850,7 +850,7 @@
         "site": "MLA",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLA/search?q=teclado%20mecanico&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.656Z",
+        "fetched_at": "2026-09-06T00:20:27.033Z",
         "_src": "error"
       },
       "CL": {
@@ -859,7 +859,7 @@
         "site": "MLC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLC/search?q=teclado%20mecanico&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.671Z",
+        "fetched_at": "2026-09-06T00:20:27.049Z",
         "_src": "error"
       },
       "PE": {
@@ -868,7 +868,7 @@
         "site": "MPE",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MPE/search?q=teclado%20mecanico&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.688Z",
+        "fetched_at": "2026-09-06T00:20:27.067Z",
         "_src": "error"
       },
       "UY": {
@@ -877,7 +877,7 @@
         "site": "MLU",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MLU/search?q=teclado%20mecanico&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.704Z",
+        "fetched_at": "2026-09-06T00:20:27.083Z",
         "_src": "error"
       },
       "EC": {
@@ -886,7 +886,7 @@
         "site": "MEC",
         "total": 0,
         "error": "HTTP 403 para https://api.mercadolibre.com/sites/MEC/search?q=teclado%20mecanico&limit=10",
-        "fetched_at": "2026-09-05T22:26:25.719Z",
+        "fetched_at": "2026-09-06T00:20:27.100Z",
         "_src": "error"
       }
     }
