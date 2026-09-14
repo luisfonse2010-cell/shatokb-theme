@@ -47,10 +47,11 @@ body {
 #login-screen {
   position: fixed; inset: 0; background: var(--bg);
   display: flex; align-items: center; justify-content: center; z-index: 9999;
+  overflow: auto; padding: 20px;
 }
 .login-box {
   background: var(--bg2); border: 1px solid var(--border);
-  border-radius: 20px; padding: 48px 40px; width: 100%; max-width: 400px;
+  border-radius: 20px; padding: 48px 40px; width: 100%; max-width: 400px; min-width: 0;
   box-shadow: 0 32px 80px rgba(0,0,20,0.8);
 }
 .login-logo { text-align: center; margin-bottom: 32px; }
@@ -73,6 +74,15 @@ body {
 }
 .login-btn:hover { background: #5a52e0; }
 .login-error { color: var(--red); font-size: 12px; text-align: center; margin-top: 12px; display: none; }
+.public-intro { margin: 22px 0 18px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--text2); font-size: 12px; line-height: 1.55; }
+.public-intro strong { color: var(--text); }
+.public-legal-links { display: flex; justify-content: center; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
+.public-legal-links a { color: #a5b8ff; font-size: 12px; font-weight: 700; text-decoration: none; }
+.public-legal-links a:hover { text-decoration: underline; }
+
+@media (max-width: 480px) {
+  .login-box { padding: 34px 24px; }
+}
 
 /* ── APP LAYOUT ──────────────────────────────────────────── */
 #app { display: none; min-height: 100vh; }
@@ -1458,7 +1468,15 @@ tr:hover td { background: rgba(108,142,255,0.08); }
       </div>
       <div class="brand" style="letter-spacing:6px;font-size:10px">KABUBY</div>
       <div class="name">Kabuby <span>Scout</span></div>
-      <div class="sub">Portal de Importación Amazon</div>
+      <div class="sub">Business intelligence &amp; market research</div>
+    </div>
+    <div class="public-intro">
+      <strong>Evidence-based research, currently under development.</strong>
+      Kabuby studies public information from multiple authorized sources to identify consumer problems, unmet needs, workarounds, trends and solution gaps. YouTube is one independent public-data source. Kabuby is not endorsed by YouTube or Google and does not upload, modify or manage YouTube content.
+      <div class="public-legal-links" aria-label="Public legal pages">
+        <a href="/privacy">Privacy Policy</a>
+        <a href="/terms">Terms of Service</a>
+      </div>
     </div>
     <div class="login-field">
       <label>Contraseña</label>
