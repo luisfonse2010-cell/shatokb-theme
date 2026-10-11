@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#06101b">
+  <meta name="description" content="Kabuby Intelligence OS — certified read-only business intelligence.">
+  <title>Kabuby Intelligence OS</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell" data-daypart="morning">
+    <aside class="sidebar" aria-label="Primary navigation">
+      <a class="brand" href="#today" aria-label="Kabuby Intelligence OS, Today">
+        <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true"><path d="M7 6h12L8 42H0L7 6Zm18 0h20L25 26l18 16H27L14 28 25 6Z"/></svg>
+        <span class="brand-word"><b>kabuby</b><small>Commerce Intelligence OS</small></span>
+      </a>
+      <nav id="primary-navigation"></nav>
+      <div class="sidebar-quote" aria-label="Product principle"><span>“</span><p>Complex brain.<br>Simple decisions.</p></div>
+      <div class="sidebar-footer">
+        <a href="#help" data-page="help"><span aria-hidden="true">?</span><span data-i18n="nav.help">Help</span></a>
+        <a href="#account" data-page="account"><span aria-hidden="true">◉</span><span data-i18n="nav.account">Account</span></a>
+      </div>
+    </aside>
+
+    <main id="main-content" tabindex="-1">
+      <header class="topbar">
+        <form class="ask-kabuby" id="ask-kabuby" role="search">
+          <label class="sr-only" for="ask-input" data-i18n="ask.label">Ask Kabuby</label>
+          <span aria-hidden="true">⌕</span>
+          <input id="ask-input" autocomplete="off" data-i18n-placeholder="ask.placeholder" placeholder="Ask Kabuby anything…">
+          <button type="submit" data-i18n="ask.button">Ask</button>
+        </form>
+        <div class="topbar-actions">
+          <span id="system-status" class="system-status" aria-live="polite"><i></i><span data-i18n="status.loading">Loading certified intelligence</span></span>
+          <button id="locale-button" class="locale-button" type="button" aria-label="Change language">EN</button>
+          <button id="notification-button" class="icon-button" type="button" aria-label="Notifications">♧</button>
+          <div class="owner-profile"><span class="owner-avatar">K</span><span><small data-i18n="owner.greeting">Intelligence OS</small><b data-i18n="owner.name">Owner view</b></span></div>
+        </div>
+      </header>
+      <div id="app" aria-live="polite" aria-busy="true"></div>
+    </main>
+  </div>
+  <div id="notice" class="notice" role="status" aria-live="polite"></div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

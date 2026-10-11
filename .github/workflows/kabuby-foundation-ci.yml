@@ -1,0 +1,34 @@
+name: Kabuby Pages foundation certification
+
+on:
+  pull_request:
+    paths:
+      - 'today/**'
+      - 'kabuby/**'
+      - 'test/**'
+      - '.github/workflows/kabuby-foundation-ci.yml'
+      - '.github/workflows/deploy-kabuby.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'today/**'
+      - 'kabuby/**'
+      - 'test/**'
+      - '.github/workflows/kabuby-foundation-ci.yml'
+      - '.github/workflows/deploy-kabuby.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  foundation-certification:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.12.0'
+      - name: Run static frontend certification
+        run: node --test test/*.test.mjs
+      - name: Reject whitespace errors
+        run: git diff --check HEAD^ HEAD

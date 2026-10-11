@@ -1,0 +1,34 @@
+{
+  "schema_version": "kabuby-pages-intelligence-os/v1",
+  "surface": "TODAY_COMMAND_CENTER",
+  "source_lineage": {
+    "physical_intelligence_commit": "b97730a278521fa0ceb5bfcce6de11d1bf6d8b0e",
+    "physical_implementation": "COMPLETE_INTEGRATED_CERTIFIED"
+  },
+  "visual_reference": {
+    "canonical_path": "development/design/references/KABUBY_TODAY_COMMAND_CENTER_CANONICAL_REFERENCE_V1.png",
+    "sha256": "da406ca7d5e559c5f69ac29d0635f0d90342be09d65c15537e42abacbd3a2a49",
+    "dimensions": "1536x1024",
+    "fidelity_target": "PIXEL_LEVEL_AS_PRACTICALLY_POSSIBLE_SUBJECT_TO_REAL_DATA_TRUTH_SECURITY_ACCESSIBILITY_AND_RESPONSIVE_NECESSITY"
+  },
+  "projection": {
+    "route": "https://api.kabuby.com/api/v1/intelligence/physical",
+    "method": "GET",
+    "browser_role": "AUTHENTICATED_READ_ONLY_PRESENTATION",
+    "commercial_authority": "NONE"
+  },
+  "scout": {
+    "state": "PRESERVE_AS_IS_PROTECTED",
+    "route": "/",
+    "source_changes": 0,
+    "contract_changes": 0,
+    "chrome_extension_changes": 0
+  },
+  "truth_guards": [
+    "NO_DESIGN_MOCK_NUMBERS_AS_PRODUCTION_TRUTH",
+    "EXPLICIT_UNKNOWN_PARTIAL_STALE_BLOCKED_WAITING_STATES",
+    "NO_BROWSER_PROVIDER_INTEGRATIONS",
+    "NO_COMMERCIAL_ACTIONS",
+    "NO_RAW_PROVIDER_PAYLOADS"
+  ]
+}

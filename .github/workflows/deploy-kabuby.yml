@@ -1,19 +1,13 @@
-name: Deploy Kabuby → Cloudflare Pages
+name: Kabuby Pages deployment path retired
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
-  deploy:
+  git-integration-only:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: npm install -g wrangler
-      - name: Deploy kabuby/ → Cloudflare Pages
+      - name: Preserve the single Pages deployment path
         run: |
-          wrangler pages deploy kabuby/ --project-name=kabuby --commit-dirty=true
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          echo "Cloudflare Pages Git integration is the sole Kabuby Pages deployment path."
+          echo "This retired GitHub workflow intentionally performs no deployment."

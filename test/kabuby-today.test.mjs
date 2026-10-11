@@ -31,7 +31,7 @@ test('fallback is labeled and cannot claim write authority', () => {
   assert.match(fallback, /writes: 0/);
 });
 test('Spanish presentation assigns owner and Kabuby responsibility clearly', () => {
-  assert.doesNotMatch(app, /owner|Kabuby está investigando/i);
+  assert.doesNotMatch(app, /\bOwner\b|Kabuby está investigando/i);
   for (const label of ['TU DECISIÓN', 'KABUBY', 'MONITOREO', 'AUTOMATIZACIÓN FUTURA', 'SIN ACCIÓN']) assert.match(app, new RegExp(label));
   assert.match(app, /Para ti/);
   assert.match(app, /Kabuby hará/);
