@@ -28,6 +28,8 @@ test('authenticated projection and evidence are separate semantic states', () =>
   assert.match(app, /commercial_actions_enabled !== false/);
   const authBlock = app.slice(app.indexOf('function authDescription'), app.indexOf('function authBanner'));
   assert.doesNotMatch(authBlock, /today\.waiting/);
+  assert.match(app, /authrequired:'AUTH REQUIRED'/);
+  assert.match(app, /const securityState = m\.isAvailable/);
 });
 
 test('all safe shell controls have a concrete read-only destination', () => {
