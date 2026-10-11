@@ -1,0 +1,24 @@
+{
+  "schema_version": "kabuby-pages-release-governance/v1",
+  "status": "REPOSITORY_PREREQUISITES_COMPLETE_EXTERNAL_CONFIGURATION_REQUIRED",
+  "authoritative_path": ["GITHUB_SOURCE_OF_TRUTH", "KABUBY_FOUNDATION_CI", "CLOUDFLARE_PAGES_PREVIEW", "VALIDATION", "EXPLICIT_PRODUCTION_PROMOTION"],
+  "github_actions_pages_deploy": "NEUTRALIZED_TO_CERTIFICATION_ONLY",
+  "repository_enforced": ["source_commit_traceability", "Scout_protection_test", "secret_audit", "PII_audit", "explicit_promotion_input", "legacy_MeLi_scheduled_write_disabled"],
+  "last_known_good": {
+    "source_commit": null,
+    "pages_deployment_id": null,
+    "public_content_sha256": "ee811b37c804f2cd7c397037c442ee608dc15f865e54ef7b3f2a0f5d9fb9664f",
+    "scout_integrity_baseline_commit": "17b65b2d8dc4f480751378ea419113e80f052021"
+  },
+  "rollback": {
+    "target": "Cloudflare Pages deployment selected by administrator after verifying immutable source commit and Scout integrity baseline",
+    "procedure": ["select known-good Pages deployment", "promote explicitly", "validate public content baseline", "run Scout protection check", "record resulting deployment id and source commit"],
+    "release_invalid_if": ["Scout source integrity differs", "required CI is not successful", "source commit is not traceable"]
+  },
+  "external_admin_actions_required": [
+    "Grant a read-only Pages configuration review or have an administrator record the project deployment and Git-integration settings.",
+    "Restrict previews to reviewed pull requests and production promotion to the approved default-branch release process.",
+    "Record a known-good Pages deployment id and its immutable source commit for rollback.",
+    "Configure repository branch protection to require Kabuby foundation CI and Scout protection before the production source branch is merged."
+  ]
+}

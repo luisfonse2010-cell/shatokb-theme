@@ -38,3 +38,15 @@ test('Today does not retain stale executive data as current state',()=>{
 test('shared Physical client is authenticated GET-only and validates read-only authority',()=>{
   assert.match(client,/method: 'GET'/);assert.match(client,/credentials: 'include'/);assert.doesNotMatch(client,/method: '(POST|PUT|PATCH|DELETE)'/);assert.match(client,/PHYSICAL_READ_MODEL_CONTRACT_REJECTED/);assert.match(client,/commercial_authority === 'NONE'/);assert.match(client,/loading.*loaded.*empty.*partial.*stale.*blocked.*error.*unauthorized.*unknown/);
 });
+
+test('release governance keeps legacy MeLi refresh archival and records the single Pages path',()=>{
+  const workflow=readFileSync(new URL('../.github/workflows/fetch-meli-data.yml',import.meta.url),'utf8');
+  const governance=JSON.parse(readFileSync(new URL('../development/frontend-foundation/KABUBY_PAGES_RELEASE_GOVERNANCE_V1.json',import.meta.url),'utf8'));
+  assert.doesNotMatch(workflow,/schedule:|contents: write|fetch-meli\.js|git push/);
+  assert.deepEqual(governance.authoritative_path,['GITHUB_SOURCE_OF_TRUTH','KABUBY_FOUNDATION_CI','CLOUDFLARE_PAGES_PREVIEW','VALIDATION','EXPLICIT_PRODUCTION_PROMOTION']);
+  assert.equal(governance.github_actions_pages_deploy,'NEUTRALIZED_TO_CERTIFICATION_ONLY');
+});
+
+test('i18n foundation is loaded without changing protected Scout source',()=>{
+  assert.match(html,/<script type="module" src="\.\/i18n\.js"><\/script>/);
+});
