@@ -21,6 +21,9 @@ test('Pages Today is an executable Intelligence OS route with canonical Physical
   assert.equal(manifest.visual_reference.sha256, 'da406ca7d5e559c5f69ac29d0635f0d90342be09d65c15537e42abacbd3a2a49');
   assert.equal(manifest.visual_reference.dimensions, '1536x1024');
   assert.equal(manifest.visual_assets.owner_reference_logo_mark.path, './assets/kabuby-reference-logo-mark-v1.png');
+  assert.equal(manifest.visual_assets.canonical_favicon, './favicon.png');
+  assert.match(html, /rel="icon" type="image\/png" href="\.\/favicon\.png"/);
+  assert.equal(sha256(readFileSync(new URL('../kabuby/today/favicon.png', import.meta.url))), manifest.visual_assets.owner_reference_logo_mark.sha256);
   assert.equal(manifest.visual_assets.owner_reference_logo_mark.sha256, '06c278b04a4addc637a931e4c93e4346440b33959ba46abb4203ee5abb087680');
   assert.equal(manifest.visual_assets.owner_daypart_reference_images.selection, 'LOCAL_DAYPART_ONLY');
   assert.equal(Object.keys(manifest.visual_assets.owner_daypart_reference_images.crops).length, 4);

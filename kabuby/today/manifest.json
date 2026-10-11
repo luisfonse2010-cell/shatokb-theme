@@ -38,7 +38,7 @@
       "sha256": "06c278b04a4addc637a931e4c93e4346440b33959ba46abb4203ee5abb087680",
       "source": "CANONICAL_REFERENCE_CROP_X21_Y21_W36_H34"
     },
-    "canonical_favicon": "./favicon.svg",
+    "canonical_favicon": "./favicon.png",
     "owner_daypart_reference_images": {
       "source": "OWNER_SUPPLIED_DAYPART_REFERENCE_2026-10-11",
       "selection": "LOCAL_DAYPART_ONLY",
