@@ -3,12 +3,13 @@
  * GET /api/v1/intelligence/physical; this file intentionally contains no
  * operational snapshot, fallback metrics, opportunity, or marketplace data.
  */
-export const PHYSICAL_PROJECTION_PATH = 'https://api.kabuby.com/api/v1/intelligence/physical';
+export const PHYSICAL_PROJECTION_PATH = '/api/v1/intelligence/physical';
 export const PROJECTION_UI_CONTRACT = Object.freeze({
   source: 'CERTIFIED_PHYSICAL_READ_ONLY_PROJECTION',
   route: PHYSICAL_PROJECTION_PATH,
   method: 'GET',
-  authentication: 'GATE1_CF_ACCESS_CROSS_ORIGIN_READ_ONLY',
+  authentication: 'GATE1_CF_ACCESS_SAME_ORIGIN_READ_ONLY',
+  gateway: 'PAGES_FUNCTION_TO_PRIVATE_WORKER_SERVICE_BINDING',
   commercial_authority: 'NONE',
   commercial_actions_enabled: false,
   provider_calls: 0,

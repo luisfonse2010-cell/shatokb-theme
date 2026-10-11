@@ -15,9 +15,10 @@ test('Pages Today is an executable Intelligence OS route with canonical Physical
   assert.match(html, /Kabuby Intelligence OS/);
   assert.match(html, /\.\/app\.js/);
   assert.equal(manifest.source_lineage.physical_intelligence_commit, 'b97730a278521fa0ceb5bfcce6de11d1bf6d8b0e');
-  assert.equal(manifest.projection.route, 'https://api.kabuby.com/api/v1/intelligence/physical');
+  assert.equal(manifest.projection.route, '/api/v1/intelligence/physical');
   assert.equal(manifest.projection.commercial_authority, 'NONE');
-  assert.equal(manifest.projection.credentials, 'include');
+  assert.equal(manifest.projection.credentials, 'same-origin');
+  assert.equal(manifest.projection.gateway.binding, 'PHYSICAL_PROJECTION');
   assert.equal(manifest.visual_reference.sha256, 'da406ca7d5e559c5f69ac29d0635f0d90342be09d65c15537e42abacbd3a2a49');
   assert.equal(manifest.visual_reference.dimensions, '1536x1024');
   assert.equal(manifest.visual_assets.owner_reference_logo_mark.path, './assets/kabuby-reference-logo-mark-v1.png');
@@ -30,9 +31,12 @@ test('Pages Today is an executable Intelligence OS route with canonical Physical
 });
 
 test('Today is browser-safe, authenticated read-only presentation with explicit evidence states', () => {
-  assert.match(data, /https:\/\/api\.kabuby\.com\/api\/v1\/intelligence\/physical/);
+  assert.match(data, /'\/api\/v1\/intelligence\/physical'/);
+  assert.doesNotMatch(data, /api\.kabuby\.com/);
   assert.match(app, /method:'GET'/);
-  assert.match(app, /credentials:'include'/);
+  assert.match(app, /credentials:'same-origin'/);
+  assert.match(app, /payload\?\.data\?\.physical/);
+  assert.doesNotMatch(app, /target="_blank"[^>]*data-action="connect-access"/);
   assert.match(app, /commercial_authority !== 'NONE'/);
   assert.match(app, /commercial_actions_enabled !== false/);
   assert.match(app, /WAITING_FOR_EVIDENCE/);

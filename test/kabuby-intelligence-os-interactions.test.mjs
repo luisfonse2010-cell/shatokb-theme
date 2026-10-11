@@ -23,7 +23,8 @@ test('every rendered button has behavior or an explicit disabled commercial boun
 test('authenticated projection and evidence are separate semantic states', () => {
   for (const state of ['AUTHENTICATED','AUTH_REQUIRED','SESSION_EXPIRED','ACCESS_DENIED','PROJECTION_UNAVAILABLE','NETWORK_ERROR']) assert.match(app, new RegExp(state));
   assert.match(app, /Connect \/ sign in/);
-  assert.match(app, /credentials:'include'/);
+  assert.match(app, /credentials:'same-origin'/);
+  assert.match(app, /window\.location\.assign/);
   assert.match(app, /commercial_authority !== 'NONE'/);
   assert.match(app, /commercial_actions_enabled !== false/);
   const authBlock = app.slice(app.indexOf('function authDescription'), app.indexOf('function authBanner'));

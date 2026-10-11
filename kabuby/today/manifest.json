@@ -12,10 +12,17 @@
     "fidelity_target": "PIXEL_LEVEL_AS_PRACTICALLY_POSSIBLE_SUBJECT_TO_REAL_DATA_TRUTH_SECURITY_ACCESSIBILITY_AND_RESPONSIVE_NECESSITY"
   },
   "projection": {
-    "route": "https://api.kabuby.com/api/v1/intelligence/physical",
+    "route": "/api/v1/intelligence/physical",
     "method": "GET",
-    "credentials": "include",
-    "browser_role": "AUTHENTICATED_READ_ONLY_PRESENTATION",
+    "credentials": "same-origin",
+    "browser_role": "AUTHENTICATED_SAME_ORIGIN_READ_ONLY_PRESENTATION",
+    "gateway": {
+      "type": "PAGES_FUNCTION_PRIVATE_WORKER_SERVICE_BINDING",
+      "binding": "PHYSICAL_PROJECTION",
+      "user_authentication": "CLOUDFLARE_ACCESS_ASSERTION_AT_KABUBY_ORIGIN",
+      "browser_secrets": "NONE",
+      "raw_provider_payloads": "DENIED"
+    },
     "commercial_authority": "NONE"
   },
   "scout": {
