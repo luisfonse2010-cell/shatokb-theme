@@ -86,6 +86,7 @@ test('Scout remains byte-identical and is linked without engineering-governance 
   assert.match(app, /href="\/"/);
   assert.doesNotMatch(app, /PRESERVE_AS_IS_PROTECTED|PROTECTED CONTRACT|nav-lock/);
   assert.doesNotMatch(app, /<dt>Projection<\/dt>/);
+  assert.doesNotMatch(app, /COMMAND_CENTER_PROJECTION_CONTRACT|PROJECTION_UI_CONTRACT|GATE1_CF_ACCESS/);
   assert.equal(manifest.scout.source_changes, 0);
   assert.equal(manifest.scout.chrome_extension_changes, 0);
 });
