@@ -13,15 +13,19 @@ function navegar(vista) {
   renderVista();
 }
 
+function renderLegacyNotConnected() {
+  return `<div class="card"><div class="card-title">Cazador histórico — no conectado</div><div class="card-subtitle">Las estimaciones de demanda, margen, precio y oportunidad heredadas no se presentan como verdad actual. Esta superficie espera una futura integración con evidencia certificada.</div><div class="empty-desc">Solo lectura · sin compra · sin publicación · sin cálculo económico ejecutable.</div></div>`;
+}
+
 function renderVista() {
   const main = document.getElementById('main-content');
   switch(vistaActual) {
-    case 'cazador':    main.innerHTML = renderCazador(); bindCazador(); break;
-    case 'resultados': main.innerHTML = renderResultados(); break;
-    case 'portafolio': main.innerHTML = renderPortafolio(); bindPortafolio(); break;
-    case 'alertas':    main.innerHTML = renderAlertas(); break;
-    case 'calculadora':main.innerHTML = renderCalculadora(); bindCalculadora(); break;
-    default: main.innerHTML = renderCazador(); bindCazador();
+    case 'cazador':    main.innerHTML = renderLegacyNotConnected(); break;
+    case 'resultados': main.innerHTML = renderLegacyNotConnected(); break;
+    case 'portafolio': main.innerHTML = renderLegacyNotConnected(); break;
+    case 'alertas':    main.innerHTML = renderLegacyNotConnected(); break;
+    case 'calculadora':main.innerHTML = renderLegacyNotConnected(); break;
+    default: main.innerHTML = renderLegacyNotConnected();
   }
   actualizarStats();
 }

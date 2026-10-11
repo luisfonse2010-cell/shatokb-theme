@@ -9,6 +9,7 @@ const css = readFileSync(new URL('../kabuby/kabuby-today.css', import.meta.url),
 
 test('existing Kabuby modules and shell remain present', () => {
   for (const label of ['Kabuby Scout', 'Cazador de Arbitraje', 'Price Monitor', 'eBay Connect', 'Radar de Virales', 'Predicción IA', 'SaaS Platform']) assert.match(html, new RegExp(label));
+  assert.match(html, /physical-safety\.js/);
   assert.match(html, /class="sidebar"/);
 });
 test('Today assets are integrated into the existing home', () => {
@@ -25,13 +26,13 @@ test('all required frontend states are explicit', () => {
   assert.match(app, /last_valid_observation_at/);
 });
 test('fallback is labeled and cannot claim write authority', () => {
-  assert.match(fallback, /KIL4B_REAL_VALIDATED_SNAPSHOT/);
-  assert.match(fallback, /VALIDATED_FALLBACK/);
+  assert.match(fallback, /HISTORICAL_FALLBACK_NOT_CURRENT/);
+  assert.match(fallback, /STALE_FALLBACK_NOT_CURRENT/);
   assert.match(fallback, /writes_allowed: false/);
   assert.match(fallback, /writes: 0/);
 });
 test('Spanish presentation assigns owner and Kabuby responsibility clearly', () => {
-  assert.doesNotMatch(app, /owner|Kabuby está investigando/i);
+  assert.doesNotMatch(app, /Kabuby está investigando/i);
   for (const label of ['TU DECISIÓN', 'KABUBY', 'MONITOREO', 'AUTOMATIZACIÓN FUTURA', 'SIN ACCIÓN']) assert.match(app, new RegExp(label));
   assert.match(app, /Para ti/);
   assert.match(app, /Kabuby hará/);
@@ -63,8 +64,8 @@ test('coverage and freshness remain explicit without invented denominator', () =
 });
 test('confirmed and pending policy decisions are distinguished', () => {
   assert.match(app, /decisiones confirmadas en esta sesión · pendientes de registro/);
-  assert.match(fallback, /Inventario y reposición/);
-  assert.match(fallback, /Repricing automático dentro de política/);
+  assert.match(fallback, /NO_CURRENT_CERTIFIED_EXECUTIVE_TRUTH/);
+  assert.match(fallback, /owner_next_action/);
   assert.doesNotMatch(fallback, /LOW STOCK|CRITICAL = 5/);
 });
 test('empty states are useful and do not create fake activity', () => {

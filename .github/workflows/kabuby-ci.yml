@@ -1,0 +1,39 @@
+name: Kabuby foundation CI
+
+on:
+  pull_request:
+    paths:
+      - 'kabuby/**'
+      - 'test/**'
+      - '.github/workflows/kabuby-ci.yml'
+  push:
+    paths:
+      - 'kabuby/**'
+      - 'test/**'
+      - '.github/workflows/kabuby-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  foundation:
+    name: Static foundation and Scout protection
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate JavaScript syntax
+        run: |
+          node --check kabuby/physical-read-client.js
+          node --check kabuby/physical-safety.js
+          node --check kabuby/kabuby-today.js
+          node --check kabuby/arbitrage/app.js
+      - name: Run frontend contracts
+        run: node --test test/*.test.mjs
+      - name: Reject browser secrets and direct provider inference
+        run: |
+          ! rg -n 'api\.openai\.com|kabuby_oai_key|raw\.githubusercontent\.com/.*/meli-data' kabuby/index.html
+      - name: Scout source protection
+        run: node --test test/kabuby-foundation.test.mjs

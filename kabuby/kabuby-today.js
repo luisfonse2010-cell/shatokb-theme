@@ -1,7 +1,6 @@
 (function () {
   'use strict';
   const ENDPOINT = 'https://api.kabuby.com/api/v1/intelligence/today';
-  const CACHE_KEY = 'kabuby_today_last_valid_v1';
   const fallback = window.KABUBY_TODAY_VALIDATED_FALLBACK;
   const forcedState = new URLSearchParams(location.search).get('today_state');
   const allowedStates = new Set(['loading', 'loaded', 'partial', 'stale', 'error', 'unauthorized']);
@@ -20,10 +19,10 @@
 
   function statusCopy(state) {
     return {
-      loaded: ['Actualizado', 'Datos del modelo KIL en vivo'],
-      partial: ['Vista parcial', 'Snapshot validado KIL4B; no es tiempo real'],
-      stale: ['Datos desactualizados', 'Se conserva la última observación válida'],
-      error: ['Sin actualización', 'No fue posible refrescar; se muestra la última observación válida'],
+      loaded: ['Actualizado', 'Lectura autenticada de evidencia certificada'],
+      partial: ['Vista parcial', 'No hay cobertura completa certificada'],
+      stale: ['Datos desactualizados', 'No se usa evidencia histórica como estado actual'],
+      error: ['Sin actualización', 'No fue posible consultar la lectura autenticada'],
       unauthorized: ['Acceso requerido', 'Inicia sesión mediante Cloudflare Access para ver datos actuales'],
       loading: ['Actualizando', 'Consultando la inteligencia ejecutiva de Kabuby']
     }[state] || ['Vista parcial', 'Evidencia limitada'];
@@ -98,13 +97,10 @@
       if (!response.ok) throw new Error(`Executive Today HTTP ${response.status}`);
       const data = normalize(await response.json());
       if (!data || data.writes !== 0) throw new Error('Executive Today contract rejected');
-      localStorage.setItem(CACHE_KEY, JSON.stringify(data));
       renderShell(data, data.data_state?.toLowerCase() || 'loaded');
     } catch (error) {
-      let cached = null;
-      try { cached = JSON.parse(localStorage.getItem(CACHE_KEY)); } catch (_) { cached = null; }
-      renderShell(cached || fallback, cached ? 'error' : 'partial');
-      console.info('[Kabuby Today] Read-only refresh unavailable; preserving explicit fallback state.');
+      renderShell(fallback, 'stale');
+      console.info('[Kabuby Today] Read-only refresh unavailable; no cached operational state is presented.');
     }
   }
 

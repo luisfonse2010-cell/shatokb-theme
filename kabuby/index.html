@@ -1594,7 +1594,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
         <div class="modulo-name">Cazador de Arbitraje</div>
         <div class="modulo-desc">Miami · LATAM · 8 países</div>
       </div>
-      <span class="modulo-badge-fase" style="background:rgba(52,211,153,.15);color:#34d399;border-color:rgba(52,211,153,.3);font-size:8px;padding:2px 6px;border-radius:10px;border:1px solid;font-weight:700;white-space:nowrap">LIVE</span>
+      <span class="modulo-badge-fase" style="background:rgba(52,211,153,.15);color:#34d399;border-color:rgba(52,211,153,.3);font-size:8px;padding:2px 6px;border-radius:10px;border:1px solid;font-weight:700;white-space:nowrap">LEGACY</span>
     </div>
 
     <!-- Módulo 2: Price Monitor + OOS ⏳ Fase 2A -->
@@ -1624,7 +1624,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
         <div class="modulo-name">Radar de Virales</div>
         <div class="modulo-desc">MeLi · Google · TikTok</div>
       </div>
-      <span class="modulo-badge-fase" style="background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.3)">LIVE</span>
+      <span class="modulo-badge-fase" style="background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.3)">PROXY</span>
     </div>
 
     <!-- Módulo 5: Predicción IA 🔮 Fase 4 -->
@@ -2146,7 +2146,7 @@ tr:hover td { background: rgba(108,142,255,0.08); }
           <div>
             <h2 style="font-size:20px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px">
               🌡️ Radar de Tendencias MeLi
-              <span style="font-size:11px;font-weight:600;background:rgba(52,211,153,0.15);color:var(--green);padding:3px 9px;border-radius:20px;border:1px solid rgba(52,211,153,0.3)">LIVE</span>
+              <span style="font-size:11px;font-weight:600;background:rgba(52,211,153,0.15);color:var(--green);padding:3px 9px;border-radius:20px;border:1px solid rgba(52,211,153,0.3)">PROXY</span>
             </h2>
             <p style="font-size:13px;color:var(--text2);margin-top:4px">Qué busca la gente ahora mismo en 5 países — actualizado en tiempo real</p>
           </div>
@@ -6352,100 +6352,18 @@ const ARB_NO_MARCA_ABSOLUTO=/^(womens|mens|women|men|girls|boys|girl|boy|kids|ki
 // CAPA 3: Extracción semántica — último recurso
 // API key en localStorage (nunca hardcoded) — prompt v7.6.1: marca incluida en termES/termPT
 
-// Función para obtener la key activa desde localStorage
-function arbGetOAIKey(){
-  return localStorage.getItem('kabuby_oai_key')||'';
-}
-
-// Guardar key en localStorage y actualizar UI
-window.arbGuardarKey=function(val){
-  val=(val||'').trim();
+// Legacy Cazador inference is deliberately disconnected from browser credentials and direct AI transport.
+function arbGetOAIKey(){ return ''; }
+window.arbGuardarKey=function(){
   const st=document.getElementById('arb-key-status');
-  const inp=document.getElementById('arb-oai-key-input');
-  if(val.startsWith('sk-')&&val.length>20){
-    localStorage.setItem('kabuby_oai_key',val);
-    if(st){st.textContent='✅ API Key guardada — la IA está activa';st.style.color='#34d399';}
-    if(inp){inp.style.borderColor='#34d399';}
-  } else if(val.length>0){
-    if(st){st.textContent='⚠️ Key inválida — debe empezar con sk-';st.style.color='#fbbf24';}
-    if(inp){inp.style.borderColor='#fbbf24';}
-  } else {
-    localStorage.removeItem('kabuby_oai_key');
-    if(st){st.textContent='⚠️ Sin API Key — usando diccionario de fallback';st.style.color='#f59e0b';}
-    if(inp){inp.style.borderColor='#26406a';}
-  }
+  if(st){st.textContent='Función no conectada a evidencia certificada';st.style.color='#fbbf24';}
 };
-
-// Inicializar campo de key al cargar el tab Cazador
 function arbInicializarKeyUI(){
-  const saved=localStorage.getItem('kabuby_oai_key')||'';
-  const inp=document.getElementById('arb-oai-key-input');
-  const st=document.getElementById('arb-key-status');
-  if(saved&&inp){
-    inp.value=saved;
-    inp.style.borderColor='#34d399';
-    if(st){st.textContent='✅ API Key cargada — IA activa';st.style.color='#34d399';}
-  } else if(st){
-    st.textContent='⚠️ Pega tu API Key de OpenAI para activar la IA';
-    st.style.color='#f59e0b';
-  }
+  const inp=document.getElementById('arb-oai-key-input'),st=document.getElementById('arb-key-status');
+  if(inp){inp.value='';inp.disabled=true;}
+  if(st){st.textContent='IA local deshabilitada hasta integrar una ruta certificada';st.style.color='#fbbf24';}
 }
-
-// Llamada a GPT-4o-mini
-async function arbGPTExtraer(titulo){
-  const key=arbGetOAIKey();
-  if(!key) return null;
-  const prompt=`Eres un experto en ecommerce de América Latina.
-Dado este título de producto de Amazon (en inglés), genera:
-1. marca: la marca del producto (solo el nombre de marca, sin descripción). Si no hay marca clara pon "".
-2. termES: el término de búsqueda en ESPAÑOL, máximo 5 palabras, exactamente como lo buscaría un comprador real en MercadoLibre LATAM. REGLA IMPORTANTE: Si hay marca reconocida, inclúyela AL INICIO del término (ej: 'Beauty of Joseon suero ojos retinol', 'COSRX esencia baba caracol', 'Ninja air fryer'). Si NO hay marca clara o es genérica/desconocida, usa solo el nombre genérico del producto. Ignora: watts, voltaje, cantidades, números de modelo, colores, tallas, especificaciones técnicas (IP65, 3000K, etc).
-3. termPT: lo mismo pero en PORTUGUÉS para MercadoLibre Brasil, también con la marca al inicio si aplica.
-4. categoria: la categoría más apropiada en español (ej: "Iluminación · Exterior", "Suplementos · Minerales", "Hogar · Cocina", etc).
-
-Ejemplos:
-- "12W 2Pack Outdoor Wall Lights LED IP65 3000K" → {"marca":"","termES":"lámpara exterior pared LED","termPT":"luminária externa parede LED","categoria":"Iluminación · Exterior"}
-- "COSRX Snail Mucin 96% Power Repairing Essence 100ml" → {"marca":"COSRX","termES":"COSRX esencia baba caracol","termPT":"COSRX essência baba caracol","categoria":"Skincare · Sérums"}
-- "Beauty of Joseon Revive Eye Serum with Retinal Niacinamide" → {"marca":"Beauty of Joseon","termES":"Beauty of Joseon suero ojos retinol","termPT":"Beauty of Joseon soro olhos retinol","categoria":"Skincare · Sérums"}
-- "Toplux Magnesium Complex 400mg 120 Softgels" → {"marca":"Toplux","termES":"Toplux complejo magnesio","termPT":"Toplux complexo magnésio","categoria":"Suplementos · Minerales"}
-- "RAINPOINT Sprinkler Timer Programmable Water Timer" → {"marca":"RAINPOINT","termES":"RAINPOINT temporizador riego automático","termPT":"RAINPOINT temporizador irrigação automático","categoria":"Jardín · Riego"}
-- "CHAPIN 20004 SureSpray 1-Gallon Pump Sprayer Lawn" → {"marca":"CHAPIN","termES":"CHAPIN fumigadora jardín","termPT":"CHAPIN pulverizador manual jardim","categoria":"Jardín · Herramientas"}
-
-Título: "${titulo}"
-
-Responde SOLO con JSON válido, sin markdown, sin explicación:`;
-
-  try{
-    const r=await fetch('https://api.openai.com/v1/chat/completions',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'Authorization':'Bearer '+key
-      },
-      body:JSON.stringify({
-        model:'gpt-4o-mini',
-        messages:[{role:'user',content:prompt}],
-        max_tokens:200,
-        temperature:0.2
-      }),
-      signal:AbortSignal.timeout(15000)
-    });
-    if(!r.ok){
-      const err=await r.json().catch(()=>({}));
-      console.warn('[arbGPT] Error OpenAI:',r.status, err?.error?.message||'');
-      return null;
-    }
-    const d=await r.json();
-    const txt=(d.choices?.[0]?.message?.content||'').trim();
-    // Limpiar posible markdown ```json ... ```
-    const jsonStr=txt.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
-    const obj=JSON.parse(jsonStr);
-    if(obj.termES && obj.termPT) return obj;
-    return null;
-  }catch(e){
-    console.warn('[arbGPT] Falló:',e.message);
-    return null;
-  }
-}
+async function arbGPTExtraer(){ return null; }
 
 window.arbExtraerTerminos=async function(){
   const titulo=(document.getElementById('arb-titulo-amazon')?.value||'').trim();
@@ -6729,7 +6647,7 @@ function arbEstimarVendedores(q,paisId){
 // Los JSON se leen desde raw.githubusercontent.com (CORS abierto, sin SPA routing)
 // CF Pages intercepta rutas locales → usamos GitHub raw directamente
 const _arbJsonCache = {};  // cache en memoria para esta sesión
-const _ARB_RAW_BASE = 'https://raw.githubusercontent.com/luisfonse2010-cell/shatokb-theme/main/kabuby/meli-data/';
+const _ARB_RAW_BASE = null; // Historical cache is not active Kabuby truth.
 async function arbFetchFromCache(site, query) {
   const slug = query.toLowerCase().replace(/[^a-z0-9]+/g, '-').substring(0, 50);
   const cacheKey = site + ':' + slug;
@@ -7275,5 +7193,6 @@ window.arbCompararProds=function(){
 </script>
 <script src="./kabuby-today-fallback.js"></script>
 <script src="./kabuby-today.js"></script>
-<script src="https://www.genspark.ai/sandbox_inspect.js"></script><script src="https://www.genspark.ai/sandbox_inspect.js"></script></body>
+<script src="./physical-read-client.js"></script>
+<script src="./physical-safety.js"></script></body>
 </html>

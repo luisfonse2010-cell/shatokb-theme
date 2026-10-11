@@ -1,19 +1,36 @@
-name: Deploy Kabuby → Cloudflare Pages
+name: Kabuby Pages release governance
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
+    inputs:
+      approved_preview_url:
+        description: 'Preview URL already validated outside this workflow'
+        required: true
+      source_commit:
+        description: 'Immutable source commit that passed Kabuby foundation CI'
+        required: true
+      explicit_production_promotion:
+        description: 'Must be true only after owner-approved production promotion'
+        required: true
+        type: boolean
+
+permissions:
+  contents: read
 
 jobs:
-  deploy:
+  certify-release-input:
+    name: Certify release inputs only
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: npm install -g wrangler
-      - name: Deploy kabuby/ → Cloudflare Pages
+        with:
+          fetch-depth: 0
+      - name: Require an explicit promotion decision
         run: |
-          wrangler pages deploy kabuby/ --project-name=kabuby --commit-dirty=true
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          test "${{ inputs.explicit_production_promotion }}" = "true"
+          git cat-file -e "${{ inputs.source_commit }}^{commit}"
+          test -n "${{ inputs.approved_preview_url }}"
+      - name: Stop before deployment
+        run: |
+          echo "No Cloudflare Pages deployment is performed by GitHub Actions."
+          echo "The authoritative Pages integration requires separately verified CI gating and explicit production promotion."
