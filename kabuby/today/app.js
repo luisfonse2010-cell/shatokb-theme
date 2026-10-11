@@ -112,7 +112,10 @@ function setProjectionStatus(next) {
 async function loadProjection() {
   setProjectionStatus('loading');
   try {
-    const response = await fetch(PHYSICAL_PROJECTION_PATH, { method:'GET', credentials:'same-origin', headers:{ Accept:'application/json' } });
+    // The protected API is deliberately cross-origin from Pages. `include`
+    // presents an already-established Cloudflare Access session; this app
+    // neither creates nor stores a token.
+    const response = await fetch(PHYSICAL_PROJECTION_PATH, { method:'GET', credentials:'include', headers:{ Accept:'application/json' } });
     if (!response.ok) throw new Error(`PROJECTION_HTTP_${response.status}`);
     const payload = await response.json();
     if (!payload || typeof payload !== 'object' || payload.commercial_authority !== 'NONE' || payload.commercial_actions_enabled !== false) throw new Error('PROJECTION_CONTRACT_DENIED');
