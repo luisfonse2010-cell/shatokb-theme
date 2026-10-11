@@ -32,7 +32,7 @@ a { color: inherit; }
 .sidebar { position: sticky; top: 0; display: flex; flex-direction: column; gap: 18px; height: 100vh; overflow: hidden; padding: 18px 9px 14px; background: linear-gradient(180deg, rgba(3,15,26,.98), rgba(3,13,24,.94)); border-right: 1px solid var(--line); }
 .sidebar::after { content:""; position:absolute; inset:auto -60px 0 -90px; height: 280px; opacity:.28; pointer-events:none; background: radial-gradient(ellipse at 55% 88%, #286091 0 2%, transparent 2.5%), linear-gradient(152deg, transparent 35%, #264969 35.5% 43%, transparent 43.5%), linear-gradient(24deg, transparent 30%, #39536d 30.5% 39%, transparent 39.5%); }
 .brand { position: relative; z-index: 1; display:flex; align-items:center; gap:9px; padding: 3px 12px 13px; text-decoration: none; }
-.brand-mark { flex: 0 0 38px; width:38px; height:38px; fill: var(--gold); filter: drop-shadow(0 5px 12px rgba(255,200,91,.18)); }
+.brand-mark { flex: 0 0 42px; width:42px; height:40px; object-fit:contain; mix-blend-mode:lighten; filter: drop-shadow(0 5px 12px rgba(255,200,91,.18)); }
 .brand-word { display:grid; line-height:1; gap:5px; }
 .brand-word b { font-size: 31px; letter-spacing:-.055em; font-weight: 780; }
 .brand-word small { color: #b8c9dc; font-size: 10px; letter-spacing: .01em; }
@@ -68,7 +68,11 @@ main { min-width:0; }
 .owner-avatar { display:grid; place-items:center; width:45px; height:45px; border-radius:50%; background:linear-gradient(135deg,#073b64,#0b2443); border:1px solid rgba(79,176,252,.35); color:#fff; font-size:21px; box-shadow:0 0 0 4px rgba(32,112,190,.13); }
 .owner-profile span:last-child { display:grid; gap:3px; } .owner-profile small{color:#c9d8e8;font-size:10px}.owner-profile b{font-size:14px}
 #app { max-width: 1540px; margin:0 auto; padding: 14px 22px 44px; }
-.visual-hero { position:relative; display:grid; grid-template-columns:minmax(0,1fr) 292px; min-height:395px; overflow:hidden; border:1px solid rgba(103,177,236,.34); border-radius:13px; background: radial-gradient(circle at 52% 0%, rgba(255,197,95,.98), rgba(246,126,51,.56) 12%, transparent 32%), radial-gradient(ellipse at 50% 20%, rgba(111,168,219,.4), transparent 52%), linear-gradient(180deg,#112c45 0%,#09223b 49%,#061525 100%); box-shadow:var(--shadow); }
+.app-shell[data-daypart="morning"] { --today-daypart-image: url('./assets/dayparts/morning-owner-reference.png'); }
+.app-shell[data-daypart="afternoon"] { --today-daypart-image: url('./assets/dayparts/afternoon-owner-reference.png'); }
+.app-shell[data-daypart="evening"] { --today-daypart-image: url('./assets/dayparts/evening-owner-reference.png'); }
+.app-shell[data-daypart="night"] { --today-daypart-image: url('./assets/dayparts/night-owner-reference.png'); }
+.visual-hero { position:relative; display:grid; grid-template-columns:minmax(0,1fr) 292px; min-height:395px; overflow:hidden; border:1px solid rgba(103,177,236,.34); border-radius:13px; background:linear-gradient(90deg,rgba(3,15,26,.70) 0%,rgba(3,15,26,.20) 53%,rgba(3,15,26,.08) 100%),var(--today-daypart-image) 50% 50%/cover no-repeat,#0b1d2d; box-shadow:var(--shadow); }
 .visual-hero::before { content:""; position:absolute; z-index:0; inset:35% -2% 0; opacity:.96; background: linear-gradient(143deg, transparent 0 22%, #172c3f 22.3% 33%, transparent 33.3%), linear-gradient(32deg, transparent 5% 22%, #263b4a 22.4% 38%, transparent 38.4%), linear-gradient(155deg, transparent 27% 40%, #101f31 40.4% 58%, transparent 58.4%), linear-gradient(29deg, transparent 35% 50%, #345064 50.4% 62%, transparent 62.4%), linear-gradient(168deg, transparent 48% 61%, #112432 61.4% 70%, transparent 70.4%); clip-path:polygon(0 45%, 7% 32%,14% 47%,23% 24%,34% 58%,47% 20%,57% 56%,68% 28%,79% 48%,89% 22%,100% 48%,100% 100%,0 100%); }
 .visual-hero::after { content:""; position:absolute; z-index:0; inset:66% 0 0; background:linear-gradient(0deg,rgba(1,13,20,.86),rgba(1,13,20,.18)); }
 .hero-content { position:relative; z-index:1; display:flex; flex-direction:column; justify-content:space-between; padding:29px 30px 23px; }
@@ -100,7 +104,7 @@ main { min-width:0; }
   :root { --side: 238px; }
   .sidebar { padding: 21px 10px 18px; gap: 16px; background:linear-gradient(180deg,#04101a 0%,#03111d 63%,#061d2d 100%); }
   .brand { gap: 10px; padding: 2px 14px 18px; }
-  .brand-mark { width: 40px; height: 40px; flex-basis: 40px; filter: drop-shadow(0 5px 12px rgba(255,200,91,.22)); }
+  .brand-mark { width: 42px; height: 40px; flex-basis: 42px; filter: drop-shadow(0 5px 12px rgba(255,200,91,.22)); }
   .brand-word b { font-size: 32px; font-weight: 800; letter-spacing: -.065em; }
   .brand-word small { font-size: 10px; color:#bed0e2; }
   .sidebar nav { gap: 2px; }
@@ -116,7 +120,7 @@ main { min-width:0; }
   .dashboard-grid { display:grid; grid-template-columns:minmax(0,1fr) 291px; gap:17px; max-width:1280px; margin:0 auto; }
   .center-workspace { min-width:0; display:grid; align-content:start; gap:12px; }
   .right-intelligence-rail { display:grid; align-content:start; gap:12px; min-width:0; }
-  .visual-hero { display:block; min-height: 178px; border-radius: 0; border:0; box-shadow:none; overflow:hidden; background:linear-gradient(90deg,rgba(3,15,26,.68) 0%,rgba(3,15,26,.18) 49%,rgba(3,15,26,.08) 100%),url('./assets/mountain-sunrise-hero-v1.png') 50% 56%/cover no-repeat,#0b1d2d; }
+  .visual-hero { display:block; min-height: 178px; border-radius: 0; border:0; box-shadow:none; overflow:hidden; background:linear-gradient(90deg,rgba(3,15,26,.68) 0%,rgba(3,15,26,.18) 49%,rgba(3,15,26,.08) 100%),var(--today-daypart-image) 50% 50%/cover no-repeat,#0b1d2d; }
   .visual-hero::before { inset:0; opacity:1; clip-path:none; background:linear-gradient(90deg,rgba(1,12,22,.62),rgba(1,12,22,.12) 62%,rgba(1,12,22,.05)); }
   .visual-hero::after { inset:49% 0 0; background:linear-gradient(0deg,rgba(2,14,23,.94),rgba(3,16,27,.05)); }
   .hero-content { min-height:178px; padding: 15px 12px 14px; }

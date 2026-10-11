@@ -20,8 +20,10 @@ test('Pages Today is an executable Intelligence OS route with canonical Physical
   assert.equal(manifest.projection.credentials, 'include');
   assert.equal(manifest.visual_reference.sha256, 'da406ca7d5e559c5f69ac29d0635f0d90342be09d65c15537e42abacbd3a2a49');
   assert.equal(manifest.visual_reference.dimensions, '1536x1024');
-  assert.equal(manifest.visual_assets.canonical_geometric_k, './assets/kabuby-geometric-k.svg');
-  assert.equal(manifest.visual_assets.hero_environment.role, 'VISUAL_ONLY_NO_PRODUCTION_DATA');
+  assert.equal(manifest.visual_assets.owner_reference_logo_mark.path, './assets/kabuby-reference-logo-mark-v1.png');
+  assert.equal(manifest.visual_assets.owner_reference_logo_mark.sha256, '06c278b04a4addc637a931e4c93e4346440b33959ba46abb4203ee5abb087680');
+  assert.equal(manifest.visual_assets.owner_daypart_reference_images.selection, 'LOCAL_DAYPART_ONLY');
+  assert.equal(Object.keys(manifest.visual_assets.owner_daypart_reference_images.crops).length, 4);
 });
 
 test('Today is browser-safe, authenticated read-only presentation with explicit evidence states', () => {
@@ -55,9 +57,10 @@ test('Today preserves the required navigation, localization, accessibility, and 
   assert.match(css, /pulse-rail/);
   assert.match(css, /dashboard-grid/);
   assert.match(css, /right-intelligence-rail/);
-  assert.match(css, /mountain-sunrise-hero-v1\.png/);
+  for (const asset of ['morning-owner-reference.png', 'afternoon-owner-reference.png', 'evening-owner-reference.png', 'night-owner-reference.png']) assert.match(css, new RegExp(asset));
+  assert.match(css, /data-daypart=\"morning\"/);
   assert.match(css, /@media \(min-width: 861px\)/);
-  assert.match(html, /assets\/kabuby-geometric-k\.svg/);
+  assert.match(html, /assets\/kabuby-reference-logo-mark-v1\.png/);
 });
 
 test('Today keeps the approved desktop geometry when evidence is unavailable', () => {
