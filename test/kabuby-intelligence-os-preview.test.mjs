@@ -5,11 +5,11 @@ import test from 'node:test';
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const sha256 = value => createHash('sha256').update(value).digest('hex');
-const html = read('today/index.html');
-const app = read('today/app.js');
-const data = read('today/data.js');
-const css = read('today/styles.css');
-const manifest = JSON.parse(read('today/manifest.json'));
+const html = read('kabuby/today/index.html');
+const app = read('kabuby/today/app.js');
+const data = read('kabuby/today/data.js');
+const css = read('kabuby/today/styles.css');
+const manifest = JSON.parse(read('kabuby/today/manifest.json'));
 
 test('Pages Today is an executable Intelligence OS route with canonical Physical lineage', () => {
   assert.match(html, /Kabuby Intelligence OS/);

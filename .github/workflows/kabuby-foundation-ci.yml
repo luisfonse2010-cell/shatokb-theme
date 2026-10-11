@@ -3,7 +3,7 @@ name: Kabuby Pages foundation certification
 on:
   pull_request:
     paths:
-      - 'today/**'
+      - 'kabuby/today/**'
       - 'kabuby/**'
       - 'test/**'
       - '.github/workflows/kabuby-foundation-ci.yml'
@@ -11,7 +11,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'today/**'
+      - 'kabuby/today/**'
       - 'kabuby/**'
       - 'test/**'
       - '.github/workflows/kabuby-foundation-ci.yml'
