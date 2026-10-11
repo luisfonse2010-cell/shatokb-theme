@@ -35,9 +35,9 @@
         </form>
         <div class="topbar-actions">
           <span id="system-status" class="system-status" aria-live="polite"><i></i><span data-i18n="status.loading">Loading certified intelligence</span></span>
-          <button id="locale-button" class="locale-button" type="button" aria-label="Change language">EN</button>
+          <div class="locale-control"><button id="locale-button" class="locale-button" type="button" aria-label="Change language" aria-haspopup="menu" aria-expanded="false">AUTO</button><div id="locale-menu" class="locale-menu" role="menu" hidden><button type="button" data-locale="auto" role="menuitem">AUTO</button><button type="button" data-locale="en" role="menuitem">EN</button><button type="button" data-locale="es" role="menuitem">ES</button><button type="button" data-locale="pt" role="menuitem">PT</button></div></div>
           <button id="notification-button" class="icon-button" type="button" aria-label="Notifications">♧</button>
-          <div class="owner-profile"><span class="owner-avatar">K</span><span><small data-i18n="owner.greeting">Intelligence OS</small><b data-i18n="owner.name">Owner view</b></span></div>
+          <button id="owner-account" class="owner-profile" type="button" aria-label="Open account"><span class="owner-avatar">K</span><span><small data-i18n="owner.greeting">Intelligence OS</small><b data-i18n="owner.name">Owner view</b></span></button>
         </div>
       </header>
       <div id="app" aria-live="polite" aria-busy="true"></div>

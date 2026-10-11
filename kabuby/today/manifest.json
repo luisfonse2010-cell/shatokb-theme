@@ -43,11 +43,36 @@
       "source": "OWNER_SUPPLIED_DAYPART_REFERENCE_2026-10-11",
       "selection": "LOCAL_DAYPART_ONLY",
       "crops": {
-        "morning": { "path": "./assets/dayparts/morning-owner-reference.png", "sha256": "473a66de57d37e1e79584927699d0756be4c4cbe441dcf2166d7815f65e272ea" },
-        "afternoon": { "path": "./assets/dayparts/afternoon-owner-reference.png", "sha256": "25daa55929a7a93e31ac08aad3f96eeb59073d06bdc1a13d02a676468883465c" },
-        "evening": { "path": "./assets/dayparts/evening-owner-reference.png", "sha256": "e3aa2d10f70b1e35826dc9136f31ac1b719b8e8ea64a128e217b92c41699a147" },
-        "night": { "path": "./assets/dayparts/night-owner-reference.png", "sha256": "75e5154bb29c220d20826762aa3dfa1f94cc6d5f0e0576a60a695cb43aff4fe3" }
+        "morning": {
+          "path": "./assets/dayparts/morning-owner-reference.png",
+          "sha256": "473a66de57d37e1e79584927699d0756be4c4cbe441dcf2166d7815f65e272ea"
+        },
+        "afternoon": {
+          "path": "./assets/dayparts/afternoon-owner-reference.png",
+          "sha256": "25daa55929a7a93e31ac08aad3f96eeb59073d06bdc1a13d02a676468883465c"
+        },
+        "evening": {
+          "path": "./assets/dayparts/evening-owner-reference.png",
+          "sha256": "e3aa2d10f70b1e35826dc9136f31ac1b719b8e8ea64a128e217b92c41699a147"
+        },
+        "night": {
+          "path": "./assets/dayparts/night-owner-reference.png",
+          "sha256": "75e5154bb29c220d20826762aa3dfa1f94cc6d5f0e0576a60a695cb43aff4fe3"
+        }
       }
     }
+  },
+  "interaction_inventory": {
+    "path": "./interaction-inventory.json",
+    "rule": "ZERO_DEAD_CONTROLS",
+    "authenticated_projection_states": [
+      "AUTHENTICATED",
+      "AUTH_REQUIRED",
+      "SESSION_EXPIRED",
+      "ACCESS_DENIED",
+      "PROJECTION_UNAVAILABLE",
+      "NETWORK_ERROR"
+    ],
+    "commercial_controls": "DISABLED_WITH_EXPLICIT_REASON"
   }
 }
