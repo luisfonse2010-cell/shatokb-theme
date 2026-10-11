@@ -19,6 +19,8 @@ test('Pages Today is an executable Intelligence OS route with canonical Physical
   assert.equal(manifest.projection.commercial_authority, 'NONE');
   assert.equal(manifest.visual_reference.sha256, 'da406ca7d5e559c5f69ac29d0635f0d90342be09d65c15537e42abacbd3a2a49');
   assert.equal(manifest.visual_reference.dimensions, '1536x1024');
+  assert.equal(manifest.visual_assets.canonical_geometric_k, './assets/kabuby-geometric-k.svg');
+  assert.equal(manifest.visual_assets.hero_environment.role, 'VISUAL_ONLY_NO_PRODUCTION_DATA');
 });
 
 test('Today is browser-safe, authenticated read-only presentation with explicit evidence states', () => {
@@ -49,6 +51,19 @@ test('Today preserves the required navigation, localization, accessibility, and 
   assert.match(css, /prefers-reduced-motion/);
   assert.match(css, /visual-hero/);
   assert.match(css, /pulse-rail/);
+  assert.match(css, /dashboard-grid/);
+  assert.match(css, /right-intelligence-rail/);
+  assert.match(css, /mountain-sunrise-hero-v1\.png/);
+  assert.match(css, /@media \(min-width: 861px\)/);
+  assert.match(html, /assets\/kabuby-geometric-k\.svg/);
+});
+
+test('Today keeps the approved desktop geometry when evidence is unavailable', () => {
+  assert.match(app, /top-opportunity-empty/);
+  assert.match(app, /chart-empty/);
+  assert.doesNotMatch(app, /<path d="M0,78 C80,72/);
+  assert.match(app, /WAITING_FOR_EVIDENCE/);
+  assert.match(app, /commercial_actions_enabled !== false/);
 });
 
 test('Scout remains byte-identical and is only linked as the protected existing surface', () => {

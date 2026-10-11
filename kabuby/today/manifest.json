@@ -30,5 +30,14 @@
     "NO_BROWSER_PROVIDER_INTEGRATIONS",
     "NO_COMMERCIAL_ACTIONS",
     "NO_RAW_PROVIDER_PAYLOADS"
-  ]
+  ],
+  "visual_assets": {
+    "canonical_geometric_k": "./assets/kabuby-geometric-k.svg",
+    "canonical_favicon": "./favicon.svg",
+    "hero_environment": {
+      "path": "./assets/mountain-sunrise-hero-v1.png",
+      "sha256": "c0fadd6a8051311df28285f0db687897995ae911291b5cd9ecb8f9be082482fa",
+      "role": "VISUAL_ONLY_NO_PRODUCTION_DATA"
+    }
+  }
 }
