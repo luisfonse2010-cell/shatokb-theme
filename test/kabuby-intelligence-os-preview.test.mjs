@@ -46,6 +46,8 @@ test('Today is browser-safe, authenticated read-only presentation with explicit 
   assert.match(app, /BLOCKED/);
   assert.doesNotMatch(`${html}\n${app}\n${data}`, /KIL4B_REAL_VALIDATED_SNAPSHOT|18,427|\$4,289|\$2,450/);
   assert.doesNotMatch(`${html}\n${app}\n${data}`, /dataforseo|keepa|sociavault|ebay.*fetch|mercado.*fetch|shopify.*fetch/i);
+  assert.match(app, /const ownerStateSummary=\[commandState,opportunityState,supplyState\]\.map\(stateLabel\)\.join/);
+  assert.doesNotMatch(app, /\$\{esc\(`\$\{commandState\}; \$\{opportunityState\}; \$\{supplyState\}`\)\}/);
 });
 
 test('Today preserves the required navigation, localization, accessibility, and responsive visual composition', () => {
