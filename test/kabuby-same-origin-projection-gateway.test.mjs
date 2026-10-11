@@ -59,8 +59,8 @@ test('gateway forwards only the Access assertion to a fixed private service targ
   assert.deepEqual(JSON.parse(text), { ok: true, data: { physical: certifiedPhysical } });
 });
 
-test('gateway preserves Access failure states and fails closed for unavailable or malformed projection data', async () => {
-  for (const [status, code] of [[401, 'AUTH_REQUIRED'], [419, 'SESSION_EXPIRED'], [403, 'ACCESS_DENIED'], [500, 'PROJECTION_UNAVAILABLE']]) {
+test('gateway preserves private upstream Access failure states and fails closed for unavailable or malformed projection data', async () => {
+  for (const [status, code] of [[401, 'UPSTREAM_AUTH_REQUIRED'], [419, 'SESSION_EXPIRED'], [403, 'ACCESS_DENIED'], [500, 'PROJECTION_UNAVAILABLE']]) {
     const result = await handlePhysicalProjectionGateway({ request: request(), binding: { fetch: async () => new Response('ignored', { status }) } });
     assert.equal(result.status, status === 500 ? 503 : status);
     assert.equal((await result.json()).error.code, code);

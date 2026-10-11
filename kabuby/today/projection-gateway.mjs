@@ -20,7 +20,10 @@ const json = (body, status) => new Response(JSON.stringify(body), {
 const error = (status, code) => json({ ok: false, error: { code } }, status);
 
 function safeUpstreamStatus(status) {
-  if (status === 401) return ['AUTH_REQUIRED', 401];
+  // Keep the browser-facing HTTP state unchanged while preserving the
+  // fail-closed distinction between a missing Pages Access assertion and a
+  // private upstream that declined an otherwise authenticated request.
+  if (status === 401) return ['UPSTREAM_AUTH_REQUIRED', 401];
   if (status === 419) return ['SESSION_EXPIRED', 419];
   if (status === 403) return ['ACCESS_DENIED', 403];
   return ['PROJECTION_UNAVAILABLE', 503];
