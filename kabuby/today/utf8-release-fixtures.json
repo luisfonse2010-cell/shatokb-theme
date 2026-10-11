@@ -1,0 +1,20 @@
+{
+  "schema_version": "kabuby-today-utf8-release-fixtures/v1",
+  "spanish": [
+    "Módulos",
+    "Predicción",
+    "Conexión",
+    "Configuración",
+    "Economía",
+    "Atención",
+    "Suministro",
+    "Operaciones"
+  ],
+  "portuguese": [
+    "Projeção",
+    "Configuração",
+    "Atenção",
+    "Operações"
+  ],
+  "forbidden_mojibake": ["MÃ³dulos", "PredicciÃ³n", "ConexiÃ³n"]
+}

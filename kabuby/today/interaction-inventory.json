@@ -3,35 +3,191 @@
   "surface": "KABUBY_INTELLIGENCE_OS_PREVIEW",
   "rule": "ZERO_DEAD_CONTROLS",
   "authenticated_projection": {
-    "dependency": "GET https://api.kabuby.com/api/v1/intelligence/physical via Cloudflare Access",
-    "states": ["AUTHENTICATED", "AUTH_REQUIRED", "SESSION_EXPIRED", "ACCESS_DENIED", "PROJECTION_UNAVAILABLE", "NETWORK_ERROR"],
+    "dependency": "GET same-origin /api/v1/intelligence/physical through Cloudflare Access and a private Pages service binding",
+    "states": [
+      "AUTHENTICATED",
+      "AUTH_REQUIRED",
+      "SESSION_EXPIRED",
+      "ACCESS_DENIED",
+      "PROJECTION_UNAVAILABLE",
+      "NETWORK_ERROR"
+    ],
     "credential_handling": "CLOUDFLARE_ACCESS_BROWSER_SESSION_ONLY"
   },
   "elements": [
-    {"id":"brand","surface":"shell","behavior":"route_today","state":"FUNCTIONAL"},
-    {"id":"nav-today","surface":"shell","behavior":"route_today","state":"FUNCTIONAL"},
-    {"id":"nav-opportunities","surface":"shell","behavior":"route_opportunities","state":"FUNCTIONAL"},
-    {"id":"nav-scout","surface":"shell","behavior":"open_existing_protected_scout_route","state":"FUNCTIONAL"},
-    {"id":"nav-supply","surface":"shell","behavior":"route_supply","state":"FUNCTIONAL"},
-    {"id":"nav-economics","surface":"shell","behavior":"route_economics","state":"FUNCTIONAL"},
-    {"id":"nav-operations","surface":"shell","behavior":"route_marketplace_operations","state":"FUNCTIONAL"},
-    {"id":"nav-portfolio","surface":"shell","behavior":"route_portfolio","state":"FUNCTIONAL"},
-    {"id":"nav-learning","surface":"shell","behavior":"route_learning","state":"FUNCTIONAL"},
-    {"id":"nav-settings","surface":"shell","behavior":"route_settings_policies","state":"FUNCTIONAL"},
-    {"id":"help","surface":"shell","behavior":"route_help_with_privacy_terms","state":"FUNCTIONAL"},
-    {"id":"account","surface":"shell","behavior":"route_account_and_access_signin","state":"FUNCTIONAL"},
-    {"id":"language","surface":"topbar","behavior":"persist_auto_en_es_pt_preference","state":"FUNCTIONAL"},
-    {"id":"ask-kabuby","surface":"topbar","behavior":"search_existing_certified_read_models_only","state":"FUNCTIONAL"},
-    {"id":"notifications","surface":"topbar","behavior":"route_owner_attention","state":"FUNCTIONAL"},
-    {"id":"projection-access","surface":"today","behavior":"open_cloudflare_access_signin_or_retry","state":"FUNCTIONAL"},
-    {"id":"quick-actions","surface":"today","behavior":"route_or_focus_read_only_sections","state":"FUNCTIONAL"},
-    {"id":"top-opportunity-why","surface":"today","behavior":"focus_provenance_evidence_unknowns","state":"FUNCTIONAL"},
-    {"id":"owner-attention","surface":"today","behavior":"route_owner_attention_when_packages_exist","state":"FUNCTIONAL_OR_INFORMATIONAL"},
-    {"id":"time-range","surface":"today","behavior":"select_7d_30d_90d_1y_without_inventing_data","state":"FUNCTIONAL"},
-    {"id":"recent-activity","surface":"today","behavior":"route_learning","state":"FUNCTIONAL"},
-    {"id":"opportunity-tabs","surface":"opportunities","behavior":"route_radar_specialized_paths","state":"FUNCTIONAL"},
-    {"id":"operations-tabs","surface":"operations","behavior":"route_sales_publication_shadow_exceptions","state":"FUNCTIONAL"},
-    {"id":"commercial-actions","surface":"all","behavior":"disabled_reason_commercial_authority_none","state":"DISABLED_WITH_EXPLICIT_REASON"}
+    {
+      "id": "brand",
+      "surface": "shell",
+      "behavior": "route_today",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "nav-today",
+      "surface": "shell",
+      "behavior": "route_today",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "nav-opportunities",
+      "surface": "shell",
+      "behavior": "route_opportunities",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "nav-scout",
+      "surface": "shell",
+      "behavior": "open_existing_scout_route",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "nav-supply",
+      "surface": "shell",
+      "behavior": "route_supply",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "nav-economics",
+      "surface": "shell",
+      "behavior": "route_economics",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "nav-operations",
+      "surface": "shell",
+      "behavior": "route_marketplace_operations",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "nav-portfolio",
+      "surface": "shell",
+      "behavior": "route_portfolio",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "nav-learning",
+      "surface": "shell",
+      "behavior": "route_learning",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "nav-settings",
+      "surface": "shell",
+      "behavior": "route_settings_policies",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "help",
+      "surface": "shell",
+      "behavior": "route_help_with_privacy_terms",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "account",
+      "surface": "shell",
+      "behavior": "route_account_and_access_signin",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "language",
+      "surface": "topbar",
+      "behavior": "persist_auto_en_es_pt_preference",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "ask-kabuby",
+      "surface": "topbar",
+      "behavior": "search_existing_certified_read_models_only",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "notifications",
+      "surface": "topbar",
+      "behavior": "route_owner_attention",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "projection-access",
+      "surface": "today",
+      "behavior": "open_cloudflare_access_signin_or_retry",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "quick-actions",
+      "surface": "today",
+      "behavior": "route_or_focus_read_only_sections",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "top-opportunity-why",
+      "surface": "today",
+      "behavior": "focus_provenance_evidence_unknowns",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "owner-attention",
+      "surface": "today",
+      "behavior": "route_owner_attention_when_packages_exist",
+      "state": "FUNCTIONAL_OR_INFORMATIONAL"
+    },
+    {
+      "id": "time-range",
+      "surface": "today",
+      "behavior": "select_7d_30d_90d_1y_without_inventing_data",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "recent-activity",
+      "surface": "today",
+      "behavior": "route_learning",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "opportunity-tabs",
+      "surface": "opportunities",
+      "behavior": "route_distinct_radar_amazon_ebay_amazon_meli_product_discovery_and_owner_workspace_views",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "operations-tabs",
+      "surface": "operations",
+      "behavior": "route_distinct_sales_publication_shadow_repricing_fulfillment_and_exception_views",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "commercial-actions",
+      "surface": "all",
+      "behavior": "disabled_reason_commercial_authority_none",
+      "state": "DISABLED_WITH_EXPLICIT_REASON"
+    },
+    {
+      "id": "supply-tabs",
+      "surface": "supply",
+      "behavior": "route_sources_availability_cost_freshness_monitor_and_exception_views",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "economics-tabs",
+      "surface": "economics",
+      "behavior": "route_economic_truth_kil8_tac_cost_protection_stress_and_risk_views",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "learning-tabs",
+      "surface": "learning",
+      "behavior": "route_outcomes_counterfactuals_calibration_and_change_views",
+      "state": "FUNCTIONAL"
+    },
+    {
+      "id": "settings-tabs",
+      "surface": "settings",
+      "behavior": "route_read_only_profile_policy_authority_language_and_timezone_views",
+      "state": "FUNCTIONAL"
+    }
   ],
-  "prohibited": ["FAKE_AI", "BROWSER_PROVIDER_CALLS", "COMMERCIAL_MUTATIONS", "SCOUT_CHANGES"]
+  "prohibited": [
+    "FAKE_AI",
+    "BROWSER_PROVIDER_CALLS",
+    "COMMERCIAL_MUTATIONS",
+    "SCOUT_CHANGES"
+  ]
 }
