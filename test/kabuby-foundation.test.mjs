@@ -50,3 +50,11 @@ test('release governance keeps legacy MeLi refresh archival and records the sing
 test('i18n foundation is loaded without changing protected Scout source',()=>{
   assert.match(html,/<script type="module" src="\.\/i18n\.js"><\/script>/);
 });
+
+
+test('locked Physical product requirements retain specialized Amazon paths and actionable Pages administration steps',()=>{
+  const requirements=readFileSync(new URL('../development/frontend-foundation/KABUBY_PHYSICAL_PRODUCT_REQUIREMENTS_V1.md',import.meta.url),'utf8');
+  const runbook=readFileSync(new URL('../development/frontend-foundation/KABUBY_PAGES_ADMIN_RUNBOOK_V1.md',import.meta.url),'utf8');
+  assert.match(requirements,/Amazon → eBay/);assert.match(requirements,/Amazon → Mercado Libre/);assert.match(requirements,/AUTONOMOUS_PRODUCT_DISCOVERY_24X7 = REQUIRED/);
+  assert.match(runbook,/Workers & Pages → Pages/);assert.match(runbook,/Builds & deployments/);assert.match(runbook,/Git integration/);assert.match(runbook,/Deployments/);assert.match(runbook,/Promote/);
+});
