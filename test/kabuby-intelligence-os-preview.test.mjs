@@ -78,12 +78,14 @@ test('Today keeps the approved desktop geometry when evidence is unavailable', (
   assert.match(app, /commercial_actions_enabled !== false/);
 });
 
-test('Scout remains byte-identical and is only linked as the protected existing surface', () => {
+test('Scout remains byte-identical and is linked without engineering-governance UI', () => {
   assert.equal(sha256(read('index.html')), '5b7fae2262c409021d7d251c5feca89abde9f7794c7a93eb7d043af525ad55eb');
   assert.equal(sha256(read('kabuby/index.html')), 'ee811b37c804f2cd7c397037c442ee608dc15f865e54ef7b3f2a0f5d9fb9664f');
   assert.equal(manifest.scout.state, 'PRESERVE_AS_IS_PROTECTED');
   assert.equal(manifest.scout.route, '/');
   assert.match(app, /href="\/"/);
+  assert.doesNotMatch(app, /PRESERVE_AS_IS_PROTECTED|PROTECTED CONTRACT|nav-lock/);
+  assert.doesNotMatch(app, /<dt>Projection<\/dt>/);
   assert.equal(manifest.scout.source_changes, 0);
   assert.equal(manifest.scout.chrome_extension_changes, 0);
 });

@@ -19,6 +19,8 @@
     "gateway": {
       "type": "PAGES_FUNCTION_PRIVATE_WORKER_SERVICE_BINDING",
       "binding": "PHYSICAL_PROJECTION",
+      "service": "shato-meli-connector",
+      "configuration": "../wrangler.toml",
       "user_authentication": "CLOUDFLARE_ACCESS_ASSERTION_AT_KABUBY_ORIGIN",
       "browser_secrets": "NONE",
       "raw_provider_payloads": "DENIED"

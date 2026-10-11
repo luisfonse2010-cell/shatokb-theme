@@ -1,0 +1,7 @@
+name = "kabuby"
+pages_build_output_dir = "."
+compatibility_date = "2026-10-11"
+
+[[services]]
+binding = "PHYSICAL_PROJECTION"
+service = "shato-meli-connector"

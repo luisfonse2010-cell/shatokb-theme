@@ -1,0 +1,34 @@
+{
+  "schema_version": "kabuby-pages-production-release-baseline/v1",
+  "captured_at": "2026-10-11T18:35:10Z",
+  "pages_project": "kabuby",
+  "authoritative_repository": "luisfonse2010-cell/shatokb-theme",
+  "production_branch": "main",
+  "current_production": {
+    "deployment_id": "2271e15a-d80d-4349-8106-9ac4e0963aae",
+    "source_commit": "2b8d5e1",
+    "content_identity": "cloudflare-pages:2271e15a-d80d-4349-8106-9ac4e0963aae:2b8d5e1",
+    "deployment_url": "https://2271e15a.kabuby.pages.dev",
+    "custom_domain_url": "https://kabuby.com"
+  },
+  "rollback": {
+    "target_deployment_id": "2271e15a-d80d-4349-8106-9ac4e0963aae",
+    "target_source_commit": "2b8d5e1",
+    "procedure": "In Cloudflare Dashboard: Pages > kabuby > Deployments, promote deployment 2271e15a-d80d-4349-8106-9ac4e0963aae back to Production. Validate https://kabuby.com/today/ and its same-origin API route before declaring rollback complete.",
+    "verification": "The retained Production deployment is listed by the authenticated Cloudflare Pages deployment inventory."
+  },
+  "required_pre_promotion_gates": {
+    "kabuby_com_cloudflare_access": "REQUIRED",
+    "same_origin_physical_projection_service_binding": "REQUIRED",
+    "authenticated_browser_projection_smoke": "REQUIRED",
+    "scout_user_access_smoke": "REQUIRED"
+  },
+  "recorded_observation": {
+    "kabuby_com_today_status": 200,
+    "kabuby_com_projection_status": 200,
+    "kabuby_com_projection_content_type": "text/html; charset=utf-8",
+    "promotion_permitted_at_capture": false,
+    "reason": "The custom domain did not issue a Cloudflare Access challenge and its intended same-origin API path resolved to static HTML."
+  },
+  "commercial_authority": "NONE"
+}

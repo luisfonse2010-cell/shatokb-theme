@@ -77,3 +77,23 @@ test('Pages Function keeps the binding server-side and exposes no arbitrary prox
   assert.doesNotMatch(source, /api\.kabuby\.com|Authorization|Cookie|secret|token/i);
   assert.match(source, /onRequestGet/);
 });
+
+
+test('Pages configuration declares only the fixed private Physical service binding', () => {
+  const config = readFileSync(new URL('../kabuby/wrangler.toml', import.meta.url), 'utf8');
+  assert.match(config, /^name = "kabuby"$/m);
+  assert.match(config, /^pages_build_output_dir = "\."$/m);
+  assert.match(config, /^binding = "PHYSICAL_PROJECTION"$/m);
+  assert.match(config, /^service = "shato-meli-connector"$/m);
+  assert.doesNotMatch(config, /routes|workers_dev|vars|secrets|token/i);
+});
+
+
+test('production rollback baseline records the retained production deployment and unmet security gates', () => {
+  const baseline = JSON.parse(readFileSync(new URL('../kabuby/today/production-release-baseline.json', import.meta.url), 'utf8'));
+  assert.equal(baseline.current_production.deployment_id, '2271e15a-d80d-4349-8106-9ac4e0963aae');
+  assert.equal(baseline.rollback.target_deployment_id, baseline.current_production.deployment_id);
+  assert.equal(baseline.recorded_observation.promotion_permitted_at_capture, false);
+  assert.equal(baseline.required_pre_promotion_gates.kabuby_com_cloudflare_access, 'REQUIRED');
+  assert.equal(baseline.commercial_authority, 'NONE');
+});

@@ -12,19 +12,21 @@ parameters, missing assertions, unconfigured bindings, upstream errors, and
 payloads that do not retain `commercial_authority: NONE` and
 `commercial_actions_enabled: false`.
 
-## Required Cloudflare configuration before an end-to-end preview
+## Required configuration before production promotion
 
-1. Protect the chosen `kabuby.com` preview hostname and `/today/*` with the
-   existing human Cloudflare Access application/audience used by the physical
-   projection. The Access login return target must remain the original Kabuby
-   URL.
-2. Add the Pages service binding `PHYSICAL_PROJECTION` to the existing
-   certified physical Worker (`shato-meli-connector`). No secret, service
-   token, public route, or browser configuration is required.
-3. Deploy this branch only to an Access-protected custom preview hostname.
-   `*.kabuby.pages.dev` is deliberately not a substitute because it is a
-   different browser origin and is not covered by the Kabuby Access boundary.
+1. Configure the existing Cloudflare Access application to protect `kabuby.com`
+   and the Today route. The Access login return target must remain the original
+   Kabuby URL.
+2. The source-managed Pages configuration lives in `kabuby/wrangler.toml`. It
+   declares the fixed private `PHYSICAL_PROJECTION` service binding to the
+   certified `shato-meli-connector` Worker. It has no public route, variable,
+   secret, or browser-visible configuration.
+3. Publish this configuration only after the rollback baseline in
+   `production-release-baseline.json` is refreshed and the custom domain is
+   Access-protected. `*.kabuby.pages.dev` is deliberately not a substitute
+   because it is a different browser origin and is not covered by the Kabuby
+   Access boundary.
 
 The binding must be verified with an authenticated browser request before any
-production promotion. This repository change does not alter production,
-Cloudflare Access policy, Worker bindings, or traffic.
+production promotion. This source change does not alter production, Cloudflare
+Access policy, Worker bindings, or traffic.
