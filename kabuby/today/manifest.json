@@ -28,8 +28,10 @@
     "commercial_authority": "NONE"
   },
   "scout": {
-    "state": "PRESERVE_AS_IS_PROTECTED",
-    "route": "/scout/",
+    "state": "INTEGRATED_OWNER_SURFACE_COMPATIBILITY_RUNTIME_PRESERVED",
+    "owner_route": "#scout",
+    "compatibility_route": "/scout/",
+    "owner_data_access": "AUTHENTICATED_READ_ONLY_LOCAL_COMPATIBILITY_ADAPTER",
     "source_changes": 0,
     "contract_changes": 0,
     "chrome_extension_changes": 0

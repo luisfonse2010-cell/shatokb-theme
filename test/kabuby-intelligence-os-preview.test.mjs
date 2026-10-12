@@ -81,11 +81,14 @@ test('Today keeps the approved desktop geometry when evidence is unavailable', (
   assert.match(app, /commercial_actions_enabled !== false/);
 });
 
-test('Scout remains byte-identical and is linked without engineering-governance UI', () => {
+test('Scout runtime remains byte-identical while its owner surface is integrated in Intelligence OS', () => {
   assert.equal(sha256(read('index.html')), '5b7fae2262c409021d7d251c5feca89abde9f7794c7a93eb7d043af525ad55eb');
-  assert.equal(manifest.scout.state, 'PRESERVE_AS_IS_PROTECTED');
-  assert.equal(manifest.scout.route, '/scout/');
-  assert.match(app, /href="\/scout\/"/);
+  assert.equal(manifest.scout.state, 'INTEGRATED_OWNER_SURFACE_COMPATIBILITY_RUNTIME_PRESERVED');
+  assert.equal(manifest.scout.owner_route, '#scout');
+  assert.equal(manifest.scout.compatibility_route, '/scout/');
+  assert.match(app, /readScoutOwnerSnapshot/);
+  assert.match(app, /href="#\$\{key\}"/);
+  assert.doesNotMatch(app, /href="\/scout\/"/);
   assert.doesNotMatch(app, /PRESERVE_AS_IS_PROTECTED|PROTECTED CONTRACT|nav-lock/);
   assert.doesNotMatch(app, /<dt>Projection<\/dt>/);
   assert.doesNotMatch(app, /COMMAND_CENTER_PROJECTION_CONTRACT|PROJECTION_UI_CONTRACT|GATE1_CF_ACCESS/);

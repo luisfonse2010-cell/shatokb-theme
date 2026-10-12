@@ -36,7 +36,7 @@
     {
       "id": "nav-scout",
       "surface": "shell",
-      "behavior": "open_existing_scout_route",
+      "behavior": "route_integrated_scout_owner_surface_with_read_only_compatibility_adapter",
       "state": "FUNCTIONAL"
     },
     {
@@ -188,6 +188,7 @@
     "FAKE_AI",
     "BROWSER_PROVIDER_CALLS",
     "COMMERCIAL_MUTATIONS",
-    "SCOUT_CHANGES"
+    "SCOUT_RUNTIME_CONTRACT_CHANGES",
+    "SCOUT_CHROME_EXTENSION_CONTRACT_CHANGES"
   ]
 }

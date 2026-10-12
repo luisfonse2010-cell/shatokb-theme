@@ -1,4 +1,5 @@
 import { DAYPARTS, NAVIGATION, PHYSICAL_PROJECTION_PATH } from './data.js';
+import { readScoutOwnerSnapshot, SCOUT_COMPATIBILITY } from './scout-owner.js';
 
 const app = document.querySelector('#app');
 const nav = document.querySelector('#primary-navigation');
@@ -69,9 +70,7 @@ function route() { const [page = 'today', query = ''] = location.hash.replace(/^
 function go(page, params = {}) { const query = new URLSearchParams(params).toString(); location.hash = `#${page}${query ? `?${query}` : ''}`; }
 
 function createNavigation() {
-  nav.innerHTML = NAVIGATION.map(([key, label, icon]) => key === 'scout'
-    ? `<a class="scout-route" href="/scout/" data-page="scout"><span aria-hidden="true">${icon}</span><span>${esc(t(label))}</span></a>`
-    : `<a href="#${key}" data-page="${key}"><span aria-hidden="true">${icon}</span><span>${esc(t(label))}</span></a>`).join('');
+  nav.innerHTML = NAVIGATION.map(([key, label, icon]) => `<a href="#${key}" data-page="${key}"><span aria-hidden="true">${icon}</span><span>${esc(t(label))}</span></a>`).join('');
 }
 function updateStaticCopy() {
   document.documentElement.lang = activeLocale();
@@ -217,7 +216,32 @@ function surfaceTabs(page, requested) { const entries=SECONDARY_SURFACES[page] |
 function dataPage(page) { const m=model(); const {params}=route(); const surface=surfaceFor(page,params.get('view')); const titles={opportunities:t('nav.opportunities'),supply:t('nav.supply'),economics:t('nav.economics'),operations:t('nav.operations'),portfolio:t('nav.portfolio'),learning:t('nav.learning'),settings:t('nav.settings')}; const [id,label,description,rowSource,statusSource] = surface || ['overview',titles[page],t('page.noData'),() => [],() => 'UNKNOWN']; const rows=rowSource(m); const status=statusSource(m)||'UNKNOWN'; const lifecycle=page==='operations' && id==='sales' ? salesLifecycle() : ''; return `${authBanner()}<section class="page-head"><p class="eyebrow">${esc(titles[page])}</p><h1>${esc(label)}</h1><p>${esc(description)}</p>${surfaceTabs(page,id)}</section><section class="section"><div class="section-heading"><div><p>${esc(label)}</p><h2>${esc(stateLabel(status))}</h2></div>${badge(status)}</div><div class="detail-grid">${sectionRows(rows,label)}</div></section>${lifecycle}${lockedActions()}${technicalDetails(m,null)}`; }
 function salesLifecycle() { const stages=['SALE_RECEIVED','PURCHASE_REQUIRED','PURCHASED','INBOUND_IN_TRANSIT','RECEIVED_AT_HUB','INSPECTED','READY_FOR_OUTBOUND','SHIPPED_TO_CUSTOMER','DELIVERED','RECONCILED']; return `<section class="section"><div class="section-heading"><div><p>${esc(t('nav.operations'))}</p><h2>Sales lifecycle</h2></div></div><div class="detail-grid">${stages.map(stage => `<article class="detail-card"><span class="state-pill" data-state="UNKNOWN">${esc(stage)}</span><p>${esc(t('state.unknown'))}</p></article>`).join('')}</div></section>`; }
 function lockedActions() { return `<section class="section"><div class="section-heading"><div><p>${esc(t('label.authority'))}</p><h2>${esc(t('today.security'))}</h2></div></div><div class="locked-actions"><button disabled title="Commercial authority is NONE">BUY · BLOCKED</button><button disabled title="Commercial authority is NONE">PUBLISH · BLOCKED</button><button disabled title="Commercial authority is NONE">REPRICE · BLOCKED</button><button disabled title="Commercial authority is NONE">INVENTORY WRITE · BLOCKED</button></div></section>`; }
-function scoutView() { return `<section class="page-head"><p class="eyebrow">SCOUT</p><h1>${esc(t('page.scout'))}</h1><p>${esc(t('page.scoutCopy'))}</p><p><a class="primary-link" href="/scout/">${esc(t('page.scout'))}</a></p></section>`; }
+const SCOUT_VIEWS = Object.freeze([
+  ['dashboard', 'Dashboard'], ['pendientes', 'Pendientes'], ['despachos', 'Despachos'], ['inventario', 'Inventario'], ['categorias', 'Categorías'], ['configuracion', 'Configuración']
+]);
+function scoutRows(rows, empty, row) {
+  return rows.length ? `<div class="detail-grid">${rows.map(row).join('')}</div>` : noDataCard('No hay registros locales disponibles', empty);
+}
+function scoutView() {
+  const { params } = route();
+  const requested = params.get('view') || 'dashboard';
+  const view = SCOUT_VIEWS.some(([id]) => id === requested) ? requested : 'dashboard';
+  const snapshot = authState === 'AUTHENTICATED' ? readScoutOwnerSnapshot() : null;
+  const tabs = `<nav class="surface-tabs" aria-label="Scout views">${SCOUT_VIEWS.map(([id, label]) => `<a href="#scout?view=${id}"${id === view ? ' aria-current="page"' : ''}>${label}</a>`).join('')}</nav>`;
+  const auth = authBanner();
+  const unavailable = `<section class="section"><div class="section-heading"><div><p>SCOUT</p><h2>Acceso autenticado requerido</h2></div>${badge(authState)}</div>${noDataCard('Scout protege sus registros locales', 'Inicia la sesión de Cloudflare Access de Kabuby para ver el estado de Scout sin usar una segunda contraseña.')}</section>`;
+  if (!snapshot) return `${auth}<section class="page-head"><p class="eyebrow">SCOUT · INTEGRADO</p><h1>Scout dentro de Kabuby Intelligence OS</h1><p>La navegación y la sesión del propietario son las del portal canónico. El runtime de compatibilidad de la extensión permanece aislado.</p>${tabs}</section>${unavailable}`;
+  const productCard = item => `<article class="detail-card scout-record"><span>${esc(item.status)}</span><h3>${esc(item.title || item.asin || item.id)}</h3><p>ASIN: ${esc(item.asin || 'UNKNOWN')} · ${esc(item.category || 'UNKNOWN')}</p></article>`;
+  const dispatchCard = item => `<article class="detail-card scout-record"><span>${esc(item.status)}</span><h3>${esc(item.id || 'Despacho')}</h3><p>Canal: ${esc(item.channel || 'UNKNOWN')}</p></article>`;
+  const dashboard = `<section class="section scout-summary"><div class="section-heading"><div><p>SCOUT · PANEL INTEGRADO</p><h2>Estado local compatible</h2></div>${badge(snapshot.state)}</div><div class="metric-grid"><article class="metric"><small>Pendientes</small><strong>${number(snapshot.counts.pending)}</strong><span>intake existente</span></article><article class="metric"><small>Inventario</small><strong>${number(snapshot.counts.inventory)}</strong><span>sin escritura habilitada</span></article><article class="metric"><small>Despachos</small><strong>${number(snapshot.counts.dispatches)}</strong><span>solo lectura</span></article><article class="metric"><small>Categorías</small><strong>${number(snapshot.categories.length)}</strong><span>derivadas de intake</span></article></div></section>`;
+  const content = view === 'dashboard' ? `${dashboard}${scoutRows(snapshot.products.slice(0, 6), 'Los productos recibidos por el intake existente aparecerán aquí.', productCard)}`
+    : view === 'pendientes' ? scoutRows(snapshot.products.filter(item => item.status.toLowerCase() === 'pending'), 'No hay productos pendientes en el store existente.', productCard)
+    : view === 'despachos' ? scoutRows(snapshot.dispatches, 'No hay despachos locales disponibles.', dispatchCard)
+    : view === 'inventario' ? scoutRows(snapshot.products.filter(item => !['pending', 'rejected'].includes(item.status.toLowerCase())), 'No hay inventario local disponible.', productCard)
+    : view === 'categorias' ? scoutRows(snapshot.categories.map(category => ({ category })), 'No hay categorías derivadas del intake local.', item => `<article class="detail-card scout-record"><span>CATEGORÍA</span><h3>${esc(item.category)}</h3><p>Derivada de productos existentes; no se infiere demanda.</p></article>`)
+    : `<section class="section"><div class="section-heading"><div><p>SCOUT</p><h2>Configuración</h2></div>${badge(snapshot.configuration.available ? 'AVAILABLE' : 'UNKNOWN')}</div>${noDataCard('Configuración protegida', snapshot.configuration.available ? 'Existe configuración local. Sus valores, tokens y credenciales no se muestran en Kabuby Intelligence OS.' : 'No hay configuración local disponible para presentar.')}</section>`;
+  return `${auth}<section class="page-head"><p class="eyebrow">SCOUT · INTEGRADO</p><h1>Scout dentro de Kabuby Intelligence OS</h1><p>Dashboard, intake, inventario y despachos usan únicamente el store existente en modo lectura. Las acciones comerciales permanecen bloqueadas.</p>${tabs}</section>${content}<section class="section scout-compatibility"><div class="section-heading"><div><p>COMPATIBILIDAD</p><h2>Runtime y extensión preservados</h2></div>${badge('AVAILABLE')}</div><div class="detail-grid"><article class="detail-card"><h3>Chrome Extension</h3><p>Los contratos ${esc(SCOUT_COMPATIBILITY.contracts.join(', '))} continúan en la ruta de compatibilidad sin cambios de schema.</p></article><article class="detail-card"><h3>Product intake</h3><p>Los productos recibidos se conservan en el store existente y aparecen aquí cuando la sesión canónica está autenticada.</p></article><article class="detail-card"><h3>Autoridad comercial</h3><p>Compra, publicación, precios, inventario y fulfillment no se habilitan desde Scout integrado.</p></article></div></section>${lockedActions()}`;
+}
 function capabilityStatus(m, value) { return state(value || (m.isAvailable ? 'WAITING_FOR_EVIDENCE' : authState)); }
 function capabilityInventory(m) {
   const rows = [
