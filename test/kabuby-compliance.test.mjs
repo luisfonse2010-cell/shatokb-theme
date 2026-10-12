@@ -3,15 +3,17 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const home = await readFile(new URL('../kabuby/index.html', import.meta.url), 'utf8');
+const portalApp = await readFile(new URL('../kabuby/app.js', import.meta.url), 'utf8');
 const privacy = await readFile(new URL('../kabuby/privacy.html', import.meta.url), 'utf8');
 const terms = await readFile(new URL('../kabuby/terms.html', import.meta.url), 'utf8');
 const css = await readFile(new URL('../kabuby/compliance.css', import.meta.url), 'utf8');
 
-test('home exposes public privacy, terms and independent YouTube disclosure', () => {
-  assert.match(home, /href="\/privacy"[^>]*>Privacy Policy/);
-  assert.match(home, /href="\/terms"[^>]*>Terms of Service/);
-  assert.match(home, /YouTube is one independent public-data source/);
-  assert.match(home, /not endorsed by YouTube or Google/);
+test('portal keeps public privacy and terms reachable from Help while disclosures remain in policy documents', () => {
+  assert.match(home, /Kabuby Intelligence OS/);
+  assert.match(portalApp, /href="\/privacy\.html"/);
+  assert.match(portalApp, /href="\/terms\.html"/);
+  assert.match(privacy, /YouTube API Services as one independent source of public-data research/);
+  assert.match(privacy, /not endorsed or approved by YouTube or Google/);
 });
 
 test('privacy policy states the exact current read-only YouTube boundary', () => {
