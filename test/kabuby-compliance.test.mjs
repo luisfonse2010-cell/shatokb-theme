@@ -7,6 +7,7 @@ const portalApp = await readFile(new URL('../kabuby/app.js', import.meta.url), '
 const privacy = await readFile(new URL('../kabuby/privacy.html', import.meta.url), 'utf8');
 const terms = await readFile(new URL('../kabuby/terms.html', import.meta.url), 'utf8');
 const css = await readFile(new URL('../kabuby/compliance.css', import.meta.url), 'utf8');
+const redirects = await readFile(new URL('../kabuby/_redirects', import.meta.url), 'utf8');
 
 test('portal keeps public privacy and terms reachable from Help while disclosures remain in policy documents', () => {
   assert.match(home, /Kabuby Intelligence OS/);
@@ -49,4 +50,10 @@ test('compliance pages are responsive and contain no credential-shaped material'
     assert.doesNotMatch(document, /AIza[0-9A-Za-z_-]{30,}/);
     assert.doesNotMatch(document, /(?:api[_-]?key|client[_-]?secret|authorization|password)\s*[:=]\s*["'][^"']+/i);
   }
+});
+
+test('legacy /kabuby paths redirect to the canonical portal before relative assets can break', () => {
+  assert.match(redirects, /^\/kabuby\s+\/\s+301$/m);
+  assert.match(redirects, /^\/kabuby\/\s+\/\s+301$/m);
+  assert.match(redirects, /^\/kabuby\/\*\s+\/\s+301$/m);
 });

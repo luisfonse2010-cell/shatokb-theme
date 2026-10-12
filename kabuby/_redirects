@@ -1,0 +1,6 @@
+# Legacy portal location.  The portal is canonically served from the origin
+# root; redirect rather than serving its root-relative asset bundle below
+# /kabuby/.
+/kabuby  /  301
+/kabuby/  /  301
+/kabuby/*  /  301
