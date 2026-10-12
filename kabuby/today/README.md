@@ -2,7 +2,7 @@
 
 This Pages route is the deployable, browser-safe presentation of the certified
 Kabuby Physical read model. It is intentionally isolated from the existing
-Scout surface: `/` continues to serve Scout unchanged, while `/today/` reads
+Scout surface: `/scout/` serves Scout byte-for-byte unchanged, while the portal routes read
 only `GET https://api.kabuby.com/api/v1/intelligence/physical` through the
 existing Gate1 / Cloudflare Access boundary.
 

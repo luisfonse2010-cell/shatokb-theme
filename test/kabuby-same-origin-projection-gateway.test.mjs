@@ -91,7 +91,8 @@ test('Pages configuration declares only the fixed private Physical service bindi
 
 test('production rollback baseline records the retained production deployment and unmet security gates', () => {
   const baseline = JSON.parse(readFileSync(new URL('../kabuby/today/production-release-baseline.json', import.meta.url), 'utf8'));
-  assert.equal(baseline.current_production.deployment_id, '2271e15a-d80d-4349-8106-9ac4e0963aae');
+  assert.equal(baseline.current_production.deployment_id, 'f777e9e9-4fc6-42a9-b0d8-377b66fd3e93');
+  assert.equal(baseline.current_production.source_commit, 'e1d43d6');
   assert.equal(baseline.rollback.target_deployment_id, baseline.current_production.deployment_id);
   assert.equal(baseline.recorded_observation.promotion_permitted_at_capture, false);
   assert.equal(baseline.required_pre_promotion_gates.kabuby_com_cloudflare_access, 'REQUIRED');

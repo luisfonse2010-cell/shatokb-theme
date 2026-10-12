@@ -48,7 +48,7 @@ does not alter root `kabuby.com`. The exact owner-only configuration is:
 
 Expected verification: an unauthenticated `GET` to the preview hostname is
 challenged by Access; after login, its same-origin projection returns a
-sanitized read-only payload. Root `kabuby.com`, Scout, and existing API Access
+sanitized read-only payload. The retained Scout surface and existing API Access
 applications remain unchanged.
 
 ## Product information architecture

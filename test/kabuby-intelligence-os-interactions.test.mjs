@@ -36,10 +36,10 @@ test('authenticated projection and evidence are separate semantic states', () =>
 
 test('all safe shell controls have a concrete read-only destination', () => {
   for (const id of ['today','opportunities','supply','economics','operations','portfolio','learning','settings']) assert.match(data, new RegExp(`\\['${id}'`));
-  assert.match(app, /href="\/"/); // Scout remains the existing user surface.
+  assert.match(app, /href="\/scout\/"/); // Scout opens its preserved user surface.
   assert.match(app, /go\('attention'\)/);
   assert.match(app, /go\('account'\)/);
-  assert.match(app, /href="#learning"/);
+  assert.match(app, /href="#learning\?view=changes"/);
   assert.match(app, /function surfaceTabs\(page, requested\)/);
   assert.match(app, /function searchView\(query\)/);
 });

@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <!-- Fondo -->
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0f1a35"/>
+      <stop offset="100%" stop-color="#0b1120"/>
+    </radialGradient>
+    <!-- Gradiente azul eléctrico para el camello -->
+    <linearGradient id="camelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8ba8ff"/>
+      <stop offset="50%" stop-color="#6c8eff"/>
+      <stop offset="100%" stop-color="#4a6fe8"/>
+    </linearGradient>
+    <!-- Gradiente de brillo en borde -->
+    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6c8eff" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#4a6fe8" stop-opacity="0.2"/>
+    </linearGradient>
+    <!-- Filtro glow -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fondo circular -->
+  <circle cx="100" cy="100" r="100" fill="url(#bgGrad)"/>
+
+  <!-- Brillo de fondo suave detrás del camello -->
+  <ellipse cx="105" cy="115" rx="65" ry="50" fill="#6c8eff" fill-opacity="0.06"/>
+
+  <!-- ═══════════════════════════════════════════
+       CAMELLO GEOMÉTRICO (low-poly / facetas)
+       Vista lateral derecha, estilo moderno
+       ═══════════════════════════════════════════ -->
+
+  <!-- PATAS traseras -->
+  <polygon points="70,152 78,152 76,175 68,175" fill="#3a58cc" opacity="0.9"/>
+  <polygon points="80,150 88,150 87,175 79,175" fill="#4a6fe8" opacity="0.9"/>
+
+  <!-- PATAS delanteras -->
+  <polygon points="112,148 120,148 119,172 111,172" fill="#3a58cc" opacity="0.9"/>
+  <polygon points="122,147 130,147 129,172 121,172" fill="#4a6fe8" opacity="0.9"/>
+
+  <!-- CUERPO principal - polígono grande -->
+  <polygon points="62,148 70,120 85,110 100,108 125,108 140,115 148,130 148,148 125,152 100,153 80,152"
+           fill="url(#camelGrad)" filter="url(#glow)"/>
+
+  <!-- FACETAS del cuerpo - efecto low-poly -->
+  <polygon points="62,148 70,120 80,135" fill="#5070dc" opacity="0.7"/>
+  <polygon points="70,120 85,110 80,135" fill="#7a9aff" opacity="0.5"/>
+  <polygon points="85,110 100,108 90,130" fill="#8ba8ff" opacity="0.4"/>
+  <polygon points="100,108 125,108 112,125" fill="#6c8eff" opacity="0.6"/>
+  <polygon points="125,108 140,115 132,128" fill="#5070dc" opacity="0.6"/>
+  <polygon points="140,115 148,130 138,138" fill="#4a6fe8" opacity="0.7"/>
+  <polygon points="148,130 148,148 138,138" fill="#3a58cc" opacity="0.8"/>
+
+  <!-- JOROBA(S) - característica distintiva del camello -->
+  <!-- Joroba trasera -->
+  <polygon points="82,110 92,85 103,82 108,110" fill="url(#camelGrad)" filter="url(#glow)"/>
+  <polygon points="82,110 92,85 86,100" fill="#8ba8ff" opacity="0.4"/>
+  <polygon points="92,85 103,82 95,95" fill="#7a9aff" opacity="0.5"/>
+  <polygon points="103,82 108,110 97,98" fill="#6c8eff" opacity="0.5"/>
+
+  <!-- Joroba delantera (más pequeña) -->
+  <polygon points="108,110 116,88 124,85 128,110" fill="url(#camelGrad)" filter="url(#glow)"/>
+  <polygon points="108,110 116,88 112,100" fill="#8ba8ff" opacity="0.4"/>
+  <polygon points="116,88 124,85 119,97" fill="#7a9aff" opacity="0.5"/>
+  <polygon points="124,85 128,110 120,98" fill="#6c8eff" opacity="0.5"/>
+
+  <!-- CUELLO -->
+  <polygon points="128,110 138,90 148,85 150,110 140,115" fill="url(#camelGrad)" filter="url(#glow)"/>
+  <polygon points="128,110 138,90 133,102" fill="#7a9aff" opacity="0.5"/>
+  <polygon points="138,90 148,85 142,96" fill="#8ba8ff" opacity="0.4"/>
+
+  <!-- CABEZA -->
+  <polygon points="148,85 158,75 170,78 175,90 165,100 150,100 142,92"
+           fill="url(#camelGrad)" filter="url(#glow)"/>
+  <!-- Facetas de la cabeza -->
+  <polygon points="148,85 158,75 153,86" fill="#8ba8ff" opacity="0.5"/>
+  <polygon points="158,75 170,78 163,83" fill="#7a9aff" opacity="0.45"/>
+  <polygon points="170,78 175,90 168,87" fill="#6c8eff" opacity="0.5"/>
+  <polygon points="175,90 165,100 170,94" fill="#5070dc" opacity="0.6"/>
+  <polygon points="165,100 150,100 157,94" fill="#6c8eff" opacity="0.5"/>
+
+  <!-- HOCICO / Jeta del camello -->
+  <polygon points="165,95 175,92 178,100 170,105 162,103" fill="#4a6fe8"/>
+  <polygon points="165,95 175,92 169,98" fill="#7a9aff" opacity="0.4"/>
+
+  <!-- OREJA -->
+  <polygon points="155,73 160,62 166,70 160,75" fill="#6c8eff" filter="url(#glow)"/>
+  <line x1="155" y1="73" x2="166" y2="70" stroke="#8ba8ff" stroke-width="1" opacity="0.8"/>
+
+  <!-- OJO - acento verde eléctrico ✨ -->
+  <circle cx="163" cy="84" r="5" fill="#34d399" filter="url(#softGlow)"/>
+  <circle cx="163" cy="84" r="3" fill="#0b1120"/>
+  <circle cx="163" cy="84" r="1.5" fill="#34d399"/>
+  <!-- Destello del ojo -->
+  <circle cx="161" cy="82" r="0.8" fill="white" opacity="0.9"/>
+
+  <!-- COLA (pequeño detalle geométrico) -->
+  <polygon points="62,140 52,135 50,145 58,148" fill="#4a6fe8" opacity="0.8"/>
+  <line x1="62" y1="140" x2="50" y2="140" stroke="#6c8eff" stroke-width="1.5" opacity="0.6"/>
+
+  <!-- ═══════════════════════════════════════════
+       LÍNEAS DE BORDE - efecto wireframe sutil
+       ═══════════════════════════════════════════ -->
+
+  <!-- Contorno del cuerpo -->
+  <polyline points="62,148 70,120 85,110 82,110 92,85 103,82 108,110 116,88 124,85 128,110 138,90 148,85"
+            fill="none" stroke="#6c8eff" stroke-width="0.8" stroke-opacity="0.4"/>
+
+  <!-- Líneas de facetas internas del cuerpo -->
+  <line x1="80" y1="135" x2="70" y2="120" stroke="#8ba8ff" stroke-width="0.6" opacity="0.3"/>
+  <line x1="80" y1="135" x2="85" y2="110" stroke="#8ba8ff" stroke-width="0.6" opacity="0.3"/>
+  <line x1="90" y1="130" x2="100" y2="108" stroke="#8ba8ff" stroke-width="0.6" opacity="0.3"/>
+  <line x1="112" y1="125" x2="125" y2="108" stroke="#8ba8ff" stroke-width="0.6" opacity="0.3"/>
+  <line x1="132" y1="128" x2="140" y2="115" stroke="#8ba8ff" stroke-width="0.6" opacity="0.3"/>
+  <line x1="138" y1="138" x2="148" y2="130" stroke="#8ba8ff" stroke-width="0.6" opacity="0.3"/>
+
+  <!-- Líneas de la cabeza -->
+  <line x1="153" y1="86" x2="158" y2="75" stroke="#8ba8ff" stroke-width="0.7" opacity="0.35"/>
+  <line x1="163" y1="83" x2="170" y2="78" stroke="#8ba8ff" stroke-width="0.7" opacity="0.35"/>
+  <line x1="168" y1="87" x2="175" y2="90" stroke="#8ba8ff" stroke-width="0.7" opacity="0.35"/>
+
+  <!-- ═══════════════════════════════════════════
+       DETALLES FINALES DE BRANDING
+       ═══════════════════════════════════════════ -->
+
+  <!-- Partícula de luz 1 -->
+  <circle cx="45" cy="55" r="2" fill="#34d399" opacity="0.6" filter="url(#softGlow)"/>
+  <circle cx="45" cy="55" r="1" fill="#34d399" opacity="0.9"/>
+
+  <!-- Partícula de luz 2 -->
+  <circle cx="165" cy="38" r="1.5" fill="#6c8eff" opacity="0.7" filter="url(#softGlow)"/>
+
+  <!-- Partícula de luz 3 -->
+  <circle cx="30" cy="130" r="1.2" fill="#6c8eff" opacity="0.5"/>
+
+  <!-- Partícula de luz 4 -->
+  <circle cx="170" cy="155" r="1.8" fill="#34d399" opacity="0.4" filter="url(#softGlow)"/>
+
+  <!-- Línea decorativa inferior - "horizonte del desierto" -->
+  <line x1="30" y1="180" x2="170" y2="180" stroke="#6c8eff" stroke-width="0.5" stroke-opacity="0.25"/>
+
+  <!-- Punto de luz en la joroba delantera (destello) -->
+  <circle cx="119" cy="87" r="2" fill="white" opacity="0.4"/>
+  <circle cx="119" cy="87" r="1" fill="white" opacity="0.7"/>
+
+</svg>

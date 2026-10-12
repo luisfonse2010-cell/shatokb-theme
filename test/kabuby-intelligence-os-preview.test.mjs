@@ -46,7 +46,7 @@ test('Today is browser-safe, authenticated read-only presentation with explicit 
   assert.match(app, /BLOCKED/);
   assert.doesNotMatch(`${html}\n${app}\n${data}`, /KIL4B_REAL_VALIDATED_SNAPSHOT|18,427|\$4,289|\$2,450/);
   assert.doesNotMatch(`${html}\n${app}\n${data}`, /dataforseo|keepa|sociavault|ebay.*fetch|mercado.*fetch|shopify.*fetch/i);
-  assert.match(app, /const ownerStateSummary=\[commandState,opportunityState,supplyState\]\.map\(stateLabel\)\.join/);
+  assert.match(app, /const ownerStateSummary=\[memoryState,opportunityState,supplyState\]\.map\(stateLabel\)\.join/);
   assert.match(app, /no\.\*\(canonical\|reviewed\|executive\|supply\|intelligence\)/);
   assert.doesNotMatch(app, /\$\{esc\(`\$\{commandState\}; \$\{opportunityState\}; \$\{supplyState\}`\)\}/);
 });
@@ -83,13 +83,13 @@ test('Today keeps the approved desktop geometry when evidence is unavailable', (
 
 test('Scout remains byte-identical and is linked without engineering-governance UI', () => {
   assert.equal(sha256(read('index.html')), '5b7fae2262c409021d7d251c5feca89abde9f7794c7a93eb7d043af525ad55eb');
-  assert.equal(sha256(read('kabuby/index.html')), 'ee811b37c804f2cd7c397037c442ee608dc15f865e54ef7b3f2a0f5d9fb9664f');
   assert.equal(manifest.scout.state, 'PRESERVE_AS_IS_PROTECTED');
-  assert.equal(manifest.scout.route, '/');
-  assert.match(app, /href="\/"/);
+  assert.equal(manifest.scout.route, '/scout/');
+  assert.match(app, /href="\/scout\/"/);
   assert.doesNotMatch(app, /PRESERVE_AS_IS_PROTECTED|PROTECTED CONTRACT|nav-lock/);
   assert.doesNotMatch(app, /<dt>Projection<\/dt>/);
   assert.doesNotMatch(app, /COMMAND_CENTER_PROJECTION_CONTRACT|PROJECTION_UI_CONTRACT|GATE1_CF_ACCESS/);
+  assert.equal(sha256(readFileSync(new URL('../kabuby/scout/index.html', import.meta.url))), 'ee811b37c804f2cd7c397037c442ee608dc15f865e54ef7b3f2a0f5d9fb9664f');
   assert.equal(manifest.scout.source_changes, 0);
   assert.equal(manifest.scout.chrome_extension_changes, 0);
 });
