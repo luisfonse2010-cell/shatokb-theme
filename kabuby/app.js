@@ -1,4 +1,5 @@
 import { DAYPARTS, NAVIGATION, PHYSICAL_PROJECTION_PATH } from './data.js';
+import { embeddedScoutSource, isExtensionProductMessage, routeWithScoutImport, scoutImportFromSearch } from './scout-intake-bridge.js';
 
 const app = document.querySelector('#app');
 const nav = document.querySelector('#primary-navigation');
@@ -40,6 +41,10 @@ let projection = null;
 let authState = 'LOADING';
 let lastError = null;
 let selectedPeriod = '30D';
+// The Chrome extension has historically delivered its one-shot product import
+// through this query. Keep it available only until the same-origin Scout frame
+// starts; Scout remains the only runtime that parses and persists the product.
+let pendingScoutImport = scoutImportFromSearch(location.search);
 
 const AUTH_COPY = Object.freeze({
   AUTHENTICATED: ['available', 'Certified read model available'],
@@ -65,7 +70,7 @@ function relativeDate(value) { if (!value || !Number.isFinite(Date.parse(value))
 function daypart() { let hour = new Date().getHours(); try { hour = Number(new Intl.DateTimeFormat(undefined, { hour:'numeric', hourCycle:'h23' }).format(new Date())); } catch {} if (hour >= DAYPARTS.MORNING.start && hour <= DAYPARTS.MORNING.end) return 'morning'; if (hour >= DAYPARTS.AFTERNOON.start && hour <= DAYPARTS.AFTERNOON.end) return 'afternoon'; if (hour >= DAYPARTS.EVENING.start && hour <= DAYPARTS.EVENING.end) return 'evening'; return 'night'; }
 function daypartGreeting() { return t(`hero.${daypart()}`, { name:'Luis' }); }
 function tell(message) { notice.textContent = message; notice.classList.add('visible'); clearTimeout(tell.timer); tell.timer = setTimeout(() => notice.classList.remove('visible'), 4200); }
-function route() { const [page = 'today', query = ''] = location.hash.replace(/^#/, '').split('?'); return { page: page || 'today', params: new URLSearchParams(query) }; }
+function route() { return routeWithScoutImport(location.hash, pendingScoutImport); }
 function go(page, params = {}) { const query = new URLSearchParams(params).toString(); location.hash = `#${page}${query ? `?${query}` : ''}`; }
 
 function createNavigation() {
@@ -227,7 +232,9 @@ function scoutView() {
     return `${authBanner()}<section class="page-head"><p class="eyebrow">SCOUT · INTEGRADO</p><h1>Scout dentro de Kabuby Intelligence OS</h1><p>La sesión canónica de Kabuby protege el Scout original sin usar una segunda contraseña.</p>${tabs}</section><section class="section"><div class="section-heading"><div><p>SCOUT</p><h2>Acceso autenticado requerido</h2></div>${badge(authState)}</div>${noDataCard('Scout protege sus operaciones existentes', 'Inicia la sesión de Cloudflare Access de Kabuby para abrir el Scout funcional dentro de este portal.')}</section>`;
   }
   const legacyView = view === 'categorias' ? 'dashboard' : view === 'configuracion' ? 'config' : view;
-  return `${authBanner()}<section class="page-head"><p class="eyebrow">SCOUT · INTEGRADO</p><h1>Scout dentro de Kabuby Intelligence OS</h1><p>Se carga el runtime funcional existente de Scout en el shell actual. Sus contratos, almacenamiento y handoffs permanecen sin cambios.</p>${tabs}</section><section class="section scout-runtime"><div class="section-heading"><div><p>SCOUT FUNCIONAL</p><h2>${esc(SCOUT_VIEWS.find(([id]) => id === view)?.[1] || 'Dashboard')}</h2></div>${badge('AVAILABLE')}</div><iframe id="scout-runtime-frame" class="scout-runtime-frame" title="Kabuby Scout" data-scout-view="${esc(legacyView)}" src="/scout/?embedded=1" referrerpolicy="same-origin"></iframe></section>`;
+  const importActive = Boolean(pendingScoutImport);
+  const source = embeddedScoutSource(pendingScoutImport);
+  return `${authBanner()}<section class="page-head"><p class="eyebrow">SCOUT · INTEGRADO</p><h1>Scout dentro de Kabuby Intelligence OS</h1><p>Se carga el runtime funcional existente de Scout en el shell actual. Sus contratos, almacenamiento y handoffs permanecen sin cambios.</p>${tabs}</section><section class="section scout-runtime"><div class="section-heading"><div><p>SCOUT FUNCIONAL</p><h2>${esc(SCOUT_VIEWS.find(([id]) => id === view)?.[1] || 'Dashboard')}</h2></div>${badge('AVAILABLE')}</div><iframe id="scout-runtime-frame" class="scout-runtime-frame" title="Kabuby Scout" data-scout-view="${esc(legacyView)}" data-scout-import="${importActive ? '1' : '0'}" src="${esc(source)}" referrerpolicy="same-origin"></iframe></section>`;
 }
 function capabilityStatus(m, value) { return state(value || (m.isAvailable ? 'WAITING_FOR_EVIDENCE' : authState)); }
 function capabilityInventory(m) {
@@ -267,7 +274,13 @@ function wireRenderedControls() {
   app.querySelectorAll('[data-route]').forEach(button => button.addEventListener('click', () => go(button.dataset.route)));
   app.querySelectorAll('[data-period]').forEach(button => button.addEventListener('click', () => { selectedPeriod=button.dataset.period; render(); tell(`Read-only range: ${selectedPeriod}`); }));
   const scoutFrame = app.querySelector('#scout-runtime-frame');
-  if (scoutFrame) scoutFrame.addEventListener('load', () => scoutFrame.contentWindow?.postMessage({ type:'KABUBY_SCOUT_OWNER_SESSION', view:scoutFrame.dataset.scoutView }, location.origin));
+  if (scoutFrame) scoutFrame.addEventListener('load', () => {
+    scoutFrame.contentWindow?.postMessage({ type:'KABUBY_SCOUT_OWNER_SESSION', view:scoutFrame.dataset.scoutView }, location.origin);
+    if (scoutFrame.dataset.scoutImport === '1' && pendingScoutImport) {
+      pendingScoutImport = null;
+      history.replaceState({}, document.title, `${location.pathname}#scout?view=pendientes`);
+    }
+  });
   app.querySelectorAll('[data-action]').forEach(control => control.addEventListener('click', event => { const action=control.dataset.action; if(action==='reload-projection') { loadProjection().finally(render); return; } if(action==='connect-access') { window.location.assign(`${window.location.pathname}${window.location.search}${window.location.hash}`); return; } if(action==='attention') return go('attention'); if(action==='summary') return focusSummary(); if(action==='explain-evidence') { document.querySelector('.technical-details')?.setAttribute('open',''); document.querySelector('.technical-details')?.scrollIntoView({behavior:'smooth',block:'start'}); return; } }));
 }
 function cycleLocale() { locale = locale==='auto'?'en':locale==='en'?'es':locale==='es'?'pt':'auto'; try { localStorage.setItem('kabuby-intelligence-locale',locale); } catch {} createNavigation(); updateStaticCopy(); render(); }
@@ -279,4 +292,10 @@ document.querySelectorAll('[data-locale]').forEach(button=>button.addEventListen
 document.querySelector('#notification-button').addEventListener('click',()=>go('attention'));
 document.querySelector('#owner-account').addEventListener('click',()=>go('account'));
 window.addEventListener('hashchange',render);
+window.addEventListener('message', event => {
+  if (!isExtensionProductMessage(event, location.origin)) return;
+  const scoutFrame = app.querySelector('#scout-runtime-frame');
+  if (!scoutFrame?.contentWindow) return;
+  scoutFrame.contentWindow.postMessage(event.data, location.origin);
+});
 createNavigation(); updateStaticCopy(); render(); loadProjection().finally(render);
