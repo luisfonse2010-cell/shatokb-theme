@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import { embeddedScoutSource, isExtensionProductMessage, routeWithScoutImport, scoutImportFromSearch } from '../kabuby/scout-intake-bridge.js';
+import { decodeScoutImportPayload, embeddedScoutSource, isExtensionProductMessage, isScoutProductReceipt, restoreScoutImport, routeWithScoutImport, scoutImportFromSearch, scoutImportSnapshot } from '../kabuby/scout-intake-bridge.js';
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const app = read('kabuby/app.js');
@@ -39,6 +39,29 @@ test('query imports force the integrated Scout pending view and retain only the 
   assert.equal(pending.get('shato_data'), 'synthetic-payload');
   assert.deepEqual(routeWithScoutImport('#today', pending), { page: 'scout', params: new URLSearchParams({ view: 'pendientes' }) });
   assert.equal(embeddedScoutSource(pending), '/scout/?embedded=1&shato_import=1&shato_data=synthetic-payload');
+});
+
+
+test('an import survives an Access return only as a bounded, ephemeral query snapshot', () => {
+  const encoded = btoa(JSON.stringify({ asin:'SYNTHETIC', title:'Synthetic product' }));
+  const snapshot = scoutImportSnapshot(`?shato_import=1&shato_data=${encodeURIComponent(encoded)}&t=1`, 1_000);
+  assert.deepEqual(snapshot, { createdAt:1_000, search:`?shato_import=1&shato_data=${encodeURIComponent(encoded)}` });
+  assert.equal(restoreScoutImport(snapshot, 1_001)?.get('shato_import'), '1');
+  assert.equal(restoreScoutImport(snapshot, 1_000 + 600_001), null);
+  assert.deepEqual(decodeScoutImportPayload(restoreScoutImport(snapshot, 1_001)), { asin:'SYNTHETIC', title:'Synthetic product' });
+});
+
+test('the owner shell keeps the import until the original Scout runtime acknowledges canonical receipt', () => {
+  const bridge = read('kabuby/scout-intake-bridge.js');
+  assert.match(app, /SCOUT_IMPORT_SESSION_KEY/);
+  assert.match(app, /rememberPendingScoutImport\(\)/);
+  assert.match(app, /restorePendingScoutImport\(\)/);
+  assert.match(app, /isScoutProductReceipt/);
+  assert.match(app, /clearPendingScoutImport\(\)/);
+  assert.match(bridge, /SHATO_PRODUCT_RECEIVED/);
+  const frame = {};
+  assert.equal(isScoutProductReceipt({ origin:'https://kabuby.com', source:frame, data:{ type:'SHATO_PRODUCT_RECEIVED', ok:true } }, 'https://kabuby.com', frame), true);
+  assert.equal(isScoutProductReceipt({ origin:'https://kabuby.com', source:frame, data:{ type:'SHATO_PRODUCT_RECEIVED', ok:false } }, 'https://kabuby.com', frame), false);
 });
 
 test('ordinary hash routing remains unchanged and marker-only compatibility imports remain supported', () => {

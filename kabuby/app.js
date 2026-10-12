@@ -1,5 +1,5 @@
 import { DAYPARTS, NAVIGATION, PHYSICAL_PROJECTION_PATH } from './data.js';
-import { embeddedScoutSource, isExtensionProductMessage, routeWithScoutImport, scoutImportFromSearch } from './scout-intake-bridge.js';
+import { decodeScoutImportPayload, embeddedScoutSource, isExtensionProductMessage, isScoutProductReceipt, restoreScoutImport, routeWithScoutImport, scoutImportFromSearch, scoutImportSnapshot } from './scout-intake-bridge.js';
 
 const app = document.querySelector('#app');
 const nav = document.querySelector('#primary-navigation');
@@ -42,9 +42,29 @@ let authState = 'LOADING';
 let lastError = null;
 let selectedPeriod = '30D';
 // The Chrome extension has historically delivered its one-shot product import
-// through this query. Keep it available only until the same-origin Scout frame
-// starts; Scout remains the only runtime that parses and persists the product.
-let pendingScoutImport = scoutImportFromSearch(location.search);
+// through this query. Preserve only the existing query contract in session
+// storage across an Access redirect; Scout remains the only runtime that
+// normalizes and persists the product.
+const SCOUT_IMPORT_SESSION_KEY = 'kabuby:scout-import:pending:v1';
+const SCOUT_IMPORT_TTL_MS = 10 * 60 * 1000;
+const scoutImportFrames = new WeakSet();
+function rememberPendingScoutImport(search = location.search) {
+  const snapshot = scoutImportSnapshot(search);
+  if (!snapshot) return null;
+  try { sessionStorage.setItem(SCOUT_IMPORT_SESSION_KEY, JSON.stringify(snapshot)); } catch {}
+  return scoutImportFromSearch(snapshot.search);
+}
+function restorePendingScoutImport() {
+  const fromQuery = rememberPendingScoutImport();
+  if (fromQuery) return fromQuery;
+  try { return restoreScoutImport(JSON.parse(sessionStorage.getItem(SCOUT_IMPORT_SESSION_KEY) || 'null'), Date.now(), SCOUT_IMPORT_TTL_MS); } catch { return null; }
+}
+function clearPendingScoutImport() {
+  pendingScoutImport = null;
+  try { sessionStorage.removeItem(SCOUT_IMPORT_SESSION_KEY); } catch {}
+  history.replaceState({}, document.title, `${location.pathname}#scout?view=pendientes`);
+}
+let pendingScoutImport = restorePendingScoutImport();
 
 const AUTH_COPY = Object.freeze({
   AUTHENTICATED: ['available', 'Certified read model available'],
@@ -276,12 +296,13 @@ function wireRenderedControls() {
   const scoutFrame = app.querySelector('#scout-runtime-frame');
   if (scoutFrame) scoutFrame.addEventListener('load', () => {
     scoutFrame.contentWindow?.postMessage({ type:'KABUBY_SCOUT_OWNER_SESSION', view:scoutFrame.dataset.scoutView }, location.origin);
-    if (scoutFrame.dataset.scoutImport === '1' && pendingScoutImport) {
-      pendingScoutImport = null;
-      history.replaceState({}, document.title, `${location.pathname}#scout?view=pendientes`);
+    if (scoutFrame.dataset.scoutImport === '1' && pendingScoutImport && !scoutImportFrames.has(scoutFrame)) {
+      scoutImportFrames.add(scoutFrame);
+      const product = decodeScoutImportPayload(pendingScoutImport);
+      if (product) scoutFrame.contentWindow?.postMessage({ type:'SHATO_AMAZON_PRODUCT', product }, location.origin);
     }
   });
-  app.querySelectorAll('[data-action]').forEach(control => control.addEventListener('click', event => { const action=control.dataset.action; if(action==='reload-projection') { loadProjection().finally(render); return; } if(action==='connect-access') { window.location.assign(`${window.location.pathname}${window.location.search}${window.location.hash}`); return; } if(action==='attention') return go('attention'); if(action==='summary') return focusSummary(); if(action==='explain-evidence') { document.querySelector('.technical-details')?.setAttribute('open',''); document.querySelector('.technical-details')?.scrollIntoView({behavior:'smooth',block:'start'}); return; } }));
+  app.querySelectorAll('[data-action]').forEach(control => control.addEventListener('click', event => { const action=control.dataset.action; if(action==='reload-projection') { loadProjection().finally(render); return; } if(action==='connect-access') { if (pendingScoutImport) rememberPendingScoutImport(); window.location.assign(`${window.location.pathname}${window.location.search}${window.location.hash}`); return; } if(action==='attention') return go('attention'); if(action==='summary') return focusSummary(); if(action==='explain-evidence') { document.querySelector('.technical-details')?.setAttribute('open',''); document.querySelector('.technical-details')?.scrollIntoView({behavior:'smooth',block:'start'}); return; } }));
 }
 function cycleLocale() { locale = locale==='auto'?'en':locale==='en'?'es':locale==='es'?'pt':'auto'; try { localStorage.setItem('kabuby-intelligence-locale',locale); } catch {} createNavigation(); updateStaticCopy(); render(); }
 function setLocale(next) { locale=next; try { localStorage.setItem('kabuby-intelligence-locale',locale); } catch {} createNavigation(); updateStaticCopy(); render(); document.querySelector('#locale-menu').hidden=true; }
@@ -293,9 +314,15 @@ document.querySelector('#notification-button').addEventListener('click',()=>go('
 document.querySelector('#owner-account').addEventListener('click',()=>go('account'));
 window.addEventListener('hashchange',render);
 window.addEventListener('message', event => {
-  if (!isExtensionProductMessage(event, location.origin)) return;
   const scoutFrame = app.querySelector('#scout-runtime-frame');
+  if (scoutFrame && pendingScoutImport && isScoutProductReceipt(event, location.origin, scoutFrame.contentWindow)) {
+    clearPendingScoutImport();
+    return;
+  }
+  if (!isExtensionProductMessage(event, location.origin)) return;
   if (!scoutFrame?.contentWindow) return;
+  rememberPendingScoutImport();
+  pendingScoutImport = restorePendingScoutImport();
   scoutFrame.contentWindow.postMessage(event.data, location.origin);
 });
 createNavigation(); updateStaticCopy(); render(); loadProjection().finally(render);
