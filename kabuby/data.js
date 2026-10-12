@@ -15,7 +15,7 @@ export const PROJECTION_UI_CONTRACT = Object.freeze({
   provider_calls: 0,
   commercial_mutations: 0,
   raw_provider_payloads_exposed: false,
-  scout_boundary: 'INTEGRATED_OWNER_SURFACE_COMPATIBILITY_RUNTIME_PRESERVED'
+  scout_boundary: 'INTEGRATED_FUNCTIONAL_OWNER_SURFACE_COMPATIBILITY_RUNTIME_PRESERVED'
 });
 
 export const NAVIGATION = Object.freeze([

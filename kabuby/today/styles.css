@@ -209,3 +209,8 @@ main { min-width:0; }
 .capability-card dd { color: #cfdae8; font-size: 12px; line-height: 1.35; margin: 3px 0 0; }
 @media(max-width:860px) { .capability-grid { grid-template-columns: 1fr; } }
 @media(max-width:620px) { .capability-card dl { grid-template-columns: 1fr; } }
+
+/* Scout runs inside the canonical owner shell; its legacy sidebar and login are hidden only in its authenticated embedded mode. */
+.scout-runtime { overflow: hidden; }
+.scout-runtime-frame { display:block; width:100%; min-height:1120px; border:0; background:#0b1120; }
+@media (max-width:620px) { .scout-runtime-frame { min-height:1320px; } }

@@ -19,11 +19,12 @@ test('Kabuby.com is the Intelligence OS portal and retains the reviewed visual e
   assert.match(portalApp, /commercial_authority !== 'NONE'/);
 });
 
-test('Scout runtime remains byte-identical while the owner route stays in Intelligence OS', () => {
-  assert.equal(hash('kabuby/scout/index.html'), 'ee811b37c804f2cd7c397037c442ee608dc15f865e54ef7b3f2a0f5d9fb9664f');
+test('Scout functional runtime is retained with a constrained embedded presentation adapter while the owner route stays in Intelligence OS', () => {
+  assert.equal(hash('kabuby/scout/index.html'), 'e9320a045dd8c19a3ecab2041c607d52b1869c628940eab028aefb711dbc39e2');
   for (const label of ['Kabuby Scout', 'Cazador de Arbitraje', 'Price Monitor', 'eBay Connect', 'Radar de Virales', 'Predicción IA', 'SaaS Platform']) assert.match(scout, new RegExp(label));
   assert.match(portalApp, /href="#\$\{key\}"/);
-  assert.match(portalApp, /readScoutOwnerSnapshot/);
+  assert.match(portalApp, /scout-runtime-frame/);
+  assert.match(portalApp, /KABUBY_SCOUT_OWNER_SESSION/);
   assert.doesNotMatch(portalApp, /href="\/scout\/"/);
 });
 

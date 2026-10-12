@@ -48,9 +48,8 @@ does not alter root `kabuby.com`. The exact owner-only configuration is:
 
 Expected verification: an unauthenticated `GET` to the preview hostname is
 challenged by Access; after login, its same-origin projection returns a
-sanitized read-only payload. The owner-facing Scout route remains inside the Intelligence OS through a
-read-only compatibility adapter. The retained `/scout/` runtime and existing API
-Access applications remain unchanged.
+sanitized read-only payload. The owner-facing Scout route remains inside the Intelligence OS through its original functional runtime in authenticated embedded mode. The retained `/scout/` compatibility route and existing API Access
+applications remain available; only authenticated embedded presentation hides its legacy shell.
 
 ## Product information architecture
 

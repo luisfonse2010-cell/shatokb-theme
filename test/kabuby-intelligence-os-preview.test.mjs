@@ -81,18 +81,20 @@ test('Today keeps the approved desktop geometry when evidence is unavailable', (
   assert.match(app, /commercial_actions_enabled !== false/);
 });
 
-test('Scout runtime remains byte-identical while its owner surface is integrated in Intelligence OS', () => {
+test('Scout functional runtime is retained with a constrained embedded presentation adapter while its owner surface is integrated in Intelligence OS', () => {
   assert.equal(sha256(read('index.html')), '5b7fae2262c409021d7d251c5feca89abde9f7794c7a93eb7d043af525ad55eb');
-  assert.equal(manifest.scout.state, 'INTEGRATED_OWNER_SURFACE_COMPATIBILITY_RUNTIME_PRESERVED');
+  assert.equal(manifest.scout.state, 'INTEGRATED_FUNCTIONAL_OWNER_SURFACE_COMPATIBILITY_RUNTIME_PRESERVED');
   assert.equal(manifest.scout.owner_route, '#scout');
   assert.equal(manifest.scout.compatibility_route, '/scout/');
-  assert.match(app, /readScoutOwnerSnapshot/);
+  assert.equal(manifest.scout.embedded_runtime, '/scout/?embedded=1');
+  assert.equal(manifest.scout.functional_core_changes, 0);
+  assert.match(app, /scout-runtime-frame/);
+  assert.match(app, /KABUBY_SCOUT_OWNER_SESSION/);
   assert.match(app, /href="#\$\{key\}"/);
   assert.doesNotMatch(app, /href="\/scout\/"/);
   assert.doesNotMatch(app, /PRESERVE_AS_IS_PROTECTED|PROTECTED CONTRACT|nav-lock/);
   assert.doesNotMatch(app, /<dt>Projection<\/dt>/);
   assert.doesNotMatch(app, /COMMAND_CENTER_PROJECTION_CONTRACT|PROJECTION_UI_CONTRACT|GATE1_CF_ACCESS/);
-  assert.equal(sha256(readFileSync(new URL('../kabuby/scout/index.html', import.meta.url))), 'ee811b37c804f2cd7c397037c442ee608dc15f865e54ef7b3f2a0f5d9fb9664f');
-  assert.equal(manifest.scout.source_changes, 0);
+  assert.equal(sha256(readFileSync(new URL('../kabuby/scout/index.html', import.meta.url))), 'e9320a045dd8c19a3ecab2041c607d52b1869c628940eab028aefb711dbc39e2');
   assert.equal(manifest.scout.chrome_extension_changes, 0);
 });

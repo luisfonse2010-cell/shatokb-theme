@@ -36,7 +36,7 @@
     {
       "id": "nav-scout",
       "surface": "shell",
-      "behavior": "route_integrated_scout_owner_surface_with_read_only_compatibility_adapter",
+      "behavior": "route_integrated_original_scout_runtime_with_same_origin_access_handshake",
       "state": "FUNCTIONAL"
     },
     {

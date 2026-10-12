@@ -28,11 +28,13 @@
     "commercial_authority": "NONE"
   },
   "scout": {
-    "state": "INTEGRATED_OWNER_SURFACE_COMPATIBILITY_RUNTIME_PRESERVED",
+    "state": "INTEGRATED_FUNCTIONAL_OWNER_SURFACE_COMPATIBILITY_RUNTIME_PRESERVED",
     "owner_route": "#scout",
     "compatibility_route": "/scout/",
-    "owner_data_access": "AUTHENTICATED_READ_ONLY_LOCAL_COMPATIBILITY_ADAPTER",
-    "source_changes": 0,
+    "embedded_runtime": "/scout/?embedded=1",
+    "owner_data_access": "CLOUDFLARE_ACCESS_GATED_SAME_ORIGIN_EMBED_HANDSHAKE",
+    "functional_core_changes": 0,
+    "legacy_shell_changes": "EMBED_MODE_ONLY",
     "contract_changes": 0,
     "chrome_extension_changes": 0
   },

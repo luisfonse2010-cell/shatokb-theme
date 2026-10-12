@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kabuby Scout — Portal de Importación v3</title>
+<script>
+(function () {
+  try {
+    if (new URLSearchParams(location.search).get('embedded') === '1') document.documentElement.dataset.scoutEmbedded = '1';
+  } catch (_) {}
+})();
+</script>
 <!-- BUILD: 2026-09-04 v7.7.1 — Umbrales demanda LATAM reales, margen con % + ROI real por fase, score recalibrado -->
 <!-- CF-CACHE-BUST: 1788547584488-v771-ROI-MARGEN-REAL -->
 <!-- ── FAVICON & ICONS ──────────────────────────────────── -->
@@ -42,6 +49,17 @@ body {
   min-height: 100vh;
   font-size: 14px;
 }
+
+
+/* The existing Scout runtime is embedded only after the canonical Kabuby owner
+   session has been established by the parent portal. The compatibility route
+   keeps its historical shell and extension behavior unchanged. */
+html[data-scout-embedded="1"] .sidebar,
+html[data-scout-embedded="1"] .topbar { display:none !important; }
+html[data-scout-embedded="1"] .main { margin-left:0; min-height:100vh; }
+html[data-scout-embedded="1"] .content { padding:18px; }
+html[data-scout-embedded="1"] #login-screen::before { content:'Verificando la sesión segura de Kabuby…'; color:var(--text2); font-size:13px; }
+html[data-scout-embedded="1"] #login-screen .login-box { display:none; }
 
 /* ── LOGIN ──────────────────────────────────────────────── */
 #login-screen {
@@ -2666,6 +2684,29 @@ const SUBCATEGORIAS = {
 
 const KBEAUTY_KEYWORDS = ['beauty','skin care','skincare','serum','moisturizer','cleanser','toner','spf','sunscreen','essence','ampoule','korean','k-beauty','facial','face cream','eye cream','mask','exfoliant'];
 
+// ── EMBEDDED OWNER SESSION ──────────────────────────────────────
+// The integrated route is only activated by the same-origin Kabuby shell after
+// its canonical Cloudflare Access projection check succeeds. The historic
+// /scout/ route retains its existing compatibility auth behavior for extension
+// and legacy links.
+const SCOUT_EMBED_MODE = document.documentElement.dataset.scoutEmbedded === '1';
+let scoutEmbeddedStarted = false;
+function startEmbeddedOwnerSession(view) {
+  if (!SCOUT_EMBED_MODE || scoutEmbeddedStarted) return;
+  scoutEmbeddedStarted = true;
+  sessionStorage.setItem('shato_auth', '1');
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  initApp();
+  const target = view === 'dashboard' || view === 'pendientes' || view === 'despachos' || view === 'inventario' || view === 'config' ? view : 'dashboard';
+  setTimeout(() => showTab(target), 0);
+}
+window.addEventListener('message', function(event) {
+  if (!SCOUT_EMBED_MODE || window.parent === window) return;
+  if (event.origin !== location.origin || event.source !== window.parent) return;
+  if (event.data?.type === 'KABUBY_SCOUT_OWNER_SESSION') startEmbeddedOwnerSession(event.data.view);
+});
+
 // ── AUTH ───────────────────────────────────────────────────────
 function doLogin() {
   const pass = document.getElementById('login-pass').value;
@@ -2714,7 +2755,7 @@ function doLogout() {
 })();
 
 // Auto-login si ya hay sesión
-if (sessionStorage.getItem('shato_auth')) {
+if (!SCOUT_EMBED_MODE && sessionStorage.getItem('shato_auth')) {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   // initApp se llama al cargar DOM
@@ -5316,7 +5357,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (window.location.search.includes('preview=1')) {
     sessionStorage.setItem('shato_auth', '1');
   }
-  if (sessionStorage.getItem('shato_auth')) {
+  if (!SCOUT_EMBED_MODE && sessionStorage.getItem('shato_auth')) {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
     initApp();
