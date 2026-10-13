@@ -82,7 +82,7 @@ test('Today keeps the approved desktop geometry when evidence is unavailable', (
 });
 
 test('Amazon-to-eBay uses the existing authenticated projection to render fail-closed economics dossiers', () => {
-  for (const label of ['Owner-visible economics dossiers', 'Amazon observed price', 'eBay active price evidence', 'Known costs', 'Break-even price', 'Material unknowns', 'RESEARCH ONLY · COMMERCIAL ACTIONS BLOCKED']) assert.match(app, new RegExp(label));
+  for (const label of ['Owner-visible economics dossiers', 'Amazon observed price', 'eBay active price evidence', 'Known costs', 'Packaging policy', 'Outbound shipping', 'Promotion scenarios', 'Break-even price', 'Material unknowns', 'RESEARCH ONLY · COMMERCIAL ACTIONS BLOCKED']) assert.match(app, new RegExp(label));
   assert.match(app, /amazon_ebay_candidates/);
   assert.match(app, /id==='amazon-ebay'/);
   assert.doesNotMatch(app, /api\.kabuby\.com|fetch\([^)]*ebay/i);
