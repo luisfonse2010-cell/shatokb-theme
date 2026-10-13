@@ -41,6 +41,8 @@ test('all safe shell controls have a concrete read-only destination', () => {
   assert.match(app, /go\('attention'\)/);
   assert.match(app, /go\('account'\)/);
   assert.match(app, /href="#learning\?view=changes"/);
+  assert.match(app, /function createNavigation\(\)/);
+  assert.match(app, /href="#\$\{key\}" data-page="\$\{key\}"/);
   assert.match(app, /function surfaceTabs\(page, requested\)/);
   assert.match(app, /function searchView\(query\)/);
 });
