@@ -48,7 +48,7 @@ test('Today is browser-safe, authenticated read-only presentation with explicit 
   assert.doesNotMatch(`${html}\n${app}\n${data}`, /dataforseo|keepa|sociavault|ebay.*fetch|mercado.*fetch|shopify.*fetch/i);
   assert.match(app, /const ownerStateSummary=\[memoryState,opportunityState,supplyState\]\.map\(stateLabel\)\.join/);
   assert.match(app, /no\.\*\(canonical\|reviewed\|executive\|supply\|intelligence\)/);
-  assert.doesNotMatch(app, /\$\{esc\(`\$\{commandState\}; \$\{opportunityState\}; \$\{supplyState\}`\)\}/);
+  assert.doesNotMatch(app, /\$\{esc\(`\$\{memoryState\}; \$\{opportunityState\}; \$\{supplyState\}`\)\}/);
 });
 
 test('Today preserves the required navigation, localization, accessibility, and responsive visual composition', () => {
@@ -79,6 +79,13 @@ test('Today keeps the approved desktop geometry when evidence is unavailable', (
   assert.doesNotMatch(app, /<path d="M0,78 C80,72/);
   assert.match(app, /WAITING_FOR_EVIDENCE/);
   assert.match(app, /commercial_actions_enabled !== false/);
+});
+
+test('Amazon-to-eBay uses the existing authenticated projection to render fail-closed economics dossiers', () => {
+  for (const label of ['Owner-visible economics dossiers', 'Amazon observed price', 'eBay active price evidence', 'Known costs', 'Break-even price', 'Material unknowns', 'RESEARCH ONLY · COMMERCIAL ACTIONS BLOCKED']) assert.match(app, new RegExp(label));
+  assert.match(app, /amazon_ebay_candidates/);
+  assert.match(app, /id==='amazon-ebay'/);
+  assert.doesNotMatch(app, /api\.kabuby\.com|fetch\([^)]*ebay/i);
 });
 
 test('Scout runtime remains byte-identical while its owner surface is integrated in Intelligence OS', () => {
