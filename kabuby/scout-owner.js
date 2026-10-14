@@ -7,6 +7,18 @@ const PRODUCT_KEY = 'shato_products';
 const DISPATCH_KEY = 'shato_despachos';
 const CONFIG_KEY = 'shato_config';
 
+// The Chrome extension sends an import to the public owner route.  Only the
+// established legacy Scout runtime is allowed to consume and persist it; the
+// Intelligence OS is deliberately a read-only projection.
+export function legacyScoutImportTarget(currentHref) {
+  const current = new URL(currentHref);
+  if (current.searchParams.get('shato_import') !== '1') return null;
+  const target = new URL('/scout/', current.origin);
+  target.search = current.search;
+  target.hash = '#pendientes';
+  return target.toString();
+}
+
 const text = (value, limit = 180) => typeof value === 'string' ? value.trim().slice(0, limit) : '';
 const list = (storage, key) => {
   try {

@@ -1,6 +1,6 @@
 {
   "gate": "CERTIFIED_EXISTING_SURFACE_PRODUCTION_REGRESSION_GATE",
-  "version": 1,
+  "version": 2,
   "deployment_rule": "A Kabuby Pages production deployment is not certified until every applicable already-certified owner surface has a production smoke result. Source hashes and local tests are necessary but never sufficient.",
   "surfaces": [
     {
@@ -18,7 +18,7 @@
       "owner_route": "#scout",
       "compatibility_route": "/scout/",
       "data_contract": "SAME_ORIGIN_LOCAL_STORAGE_SHATO_PRODUCTS_READ_ONLY",
-      "required": ["authenticated owner surface renders", "existing local records are visible when present", "legacy compatibility route loads", "Chrome extension handoff contracts remain unchanged"]
+      "required": ["authenticated owner surface renders", "existing local records are visible when present", "legacy compatibility route loads", "Chrome extension handoff contracts remain unchanged", "extension import is handed to the same-origin legacy runtime before the read-only owner projection loads"]
     },
     {
       "id": "SUPPLY",
@@ -32,5 +32,6 @@
     }
   ],
   "failure_policy": "Any failed applicable production smoke result blocks certification and requires diagnosis before unrelated UI expansion.",
-  "data_safety": "The gate never initializes, migrates, deletes, or writes Scout browser storage."
+  "data_safety": "The gate never initializes, migrates, deletes, or writes Scout browser storage.",
+  "scout_owner_data_path_verification": "RUNTIME_AVAILABLE and OWNER_DATA_PATH_VERIFIED are separate results. OWNER_DATA_PATH_VERIFIED requires the owner browser profile, the same origin used by the extension and legacy runtime, and a production visual confirmation; it is not a seeded, synthetic, alternate-origin, or automated-browser localStorage result."
 }

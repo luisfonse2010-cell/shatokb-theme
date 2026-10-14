@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { readScoutOwnerSnapshot, SCOUT_COMPATIBILITY } from '../kabuby/scout-owner.js';
+import { legacyScoutImportTarget, readScoutOwnerSnapshot, SCOUT_COMPATIBILITY } from '../kabuby/scout-owner.js';
 
 function storage(values) {
   const reads = [];
@@ -37,4 +37,10 @@ test('Scout compatibility contracts retain the legacy endpoint while the owner u
   assert.equal(SCOUT_COMPATIBILITY.route, '/scout/');
   assert.equal(SCOUT_COMPATIBILITY.owner_surface, '#scout');
   assert.deepEqual(SCOUT_COMPATIBILITY.contracts, ['SHATO_AMAZON_PRODUCT', 'chrome.storage.local', 'productConsumed', 'Pendientes handoff']);
+});
+
+test('extension imports are deterministically handed to the same-origin legacy runtime', () => {
+  const target = legacyScoutImportTarget('https://kabuby.com/?shato_import=1&t=123&shato_data=opaque#scout');
+  assert.equal(target, 'https://kabuby.com/scout/?shato_import=1&t=123&shato_data=opaque#pendientes');
+  assert.equal(legacyScoutImportTarget('https://kabuby.com/#scout'), null);
 });

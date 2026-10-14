@@ -1,5 +1,5 @@
 import { DAYPARTS, NAVIGATION, PHYSICAL_PROJECTION_PATH } from './data.js';
-import { readScoutOwnerSnapshot, SCOUT_COMPATIBILITY } from './scout-owner.js';
+import { legacyScoutImportTarget, readScoutOwnerSnapshot, SCOUT_COMPATIBILITY } from './scout-owner.js';
 
 const app = document.querySelector('#app');
 const nav = document.querySelector('#primary-navigation');
@@ -7,6 +7,7 @@ const shell = document.querySelector('.app-shell');
 const notice = document.querySelector('#notice');
 const localeButton = document.querySelector('#locale-button');
 const systemStatus = document.querySelector('#system-status');
+const legacyImportTarget = legacyScoutImportTarget(window.location.href);
 const icons = Object.freeze({ today: '⌂', opportunities: '◇', scout: '⌁', supply: '▣', economics: '⌁', operations: '⌘', portfolio: '◇', learning: '◎', settings: '⚙' });
 
 const COPY = Object.freeze({
@@ -388,10 +389,14 @@ function wireRenderedControls() {
 function cycleLocale() { locale = locale==='auto'?'en':locale==='en'?'es':locale==='es'?'pt':'auto'; try { localStorage.setItem('kabuby-intelligence-locale',locale); } catch {} createNavigation(); updateStaticCopy(); render(); }
 function setLocale(next) { locale=next; try { localStorage.setItem('kabuby-intelligence-locale',locale); } catch {} createNavigation(); updateStaticCopy(); render(); document.querySelector('#locale-menu').hidden=true; }
 
-document.querySelector('#ask-kabuby').addEventListener('submit', event => { event.preventDefault(); const query=document.querySelector('#ask-input').value.trim(); go('search',query?{q:query}:{}); });
-localeButton.addEventListener('click', () => { const menu=document.querySelector('#locale-menu'); menu.hidden=!menu.hidden; });
-document.querySelectorAll('[data-locale]').forEach(button=>button.addEventListener('click',()=>setLocale(button.dataset.locale)));
-document.querySelector('#notification-button').addEventListener('click',()=>go('attention'));
-document.querySelector('#owner-account').addEventListener('click',()=>go('account'));
-window.addEventListener('hashchange',render);
-createNavigation(); updateStaticCopy(); render(); loadProjection().finally(render);
+if (legacyImportTarget) {
+  window.location.replace(legacyImportTarget);
+} else {
+  document.querySelector('#ask-kabuby').addEventListener('submit', event => { event.preventDefault(); const query=document.querySelector('#ask-input').value.trim(); go('search',query?{q:query}:{}); });
+  localeButton.addEventListener('click', () => { const menu=document.querySelector('#locale-menu'); menu.hidden=!menu.hidden; });
+  document.querySelectorAll('[data-locale]').forEach(button=>button.addEventListener('click',()=>setLocale(button.dataset.locale)));
+  document.querySelector('#notification-button').addEventListener('click',()=>go('attention'));
+  document.querySelector('#owner-account').addEventListener('click',()=>go('account'));
+  window.addEventListener('hashchange',render);
+  createNavigation(); updateStaticCopy(); render(); loadProjection().finally(render);
+}
