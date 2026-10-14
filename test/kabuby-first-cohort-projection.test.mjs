@@ -13,6 +13,7 @@ test('the production root is wired to the same certified first-cohort read-only 
   assert.match(app, /amazon_ebay_candidates/);
   assert.match(app, /cohortSummary/);
   assert.match(app, /base_official_fee_scenario_economics_complete/);
+  assert.match(app, /economics_reassessment/);
 });
 
 test('the root projects canonical cohort states without a browser economics engine', () => {
@@ -20,6 +21,7 @@ test('the root projects canonical cohort states without a browser economics engi
   for (const label of ['Products evaluated', 'Economics complete', 'First cohort dossiers', 'ACTIVE LISTING PRICE SCENARIO', 'NOT SOLD PRICE', 'DEMAND UNPROVEN', 'PRE-TAX', 'OFFICIAL EBAY FEE', 'OWNER POLICY']) assert.match(app, new RegExp(label));
   assert.match(app, /data-cohort-filter/);
   assert.match(app, /cohortFilter/);
+  assert.match(app, /usdMinor/);
   assert.doesNotMatch(app, /api\.ebay|keepa|dataforseo|calculateCommercialScenario|createKil8/);
 });
 

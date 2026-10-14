@@ -126,6 +126,12 @@ function cohortCandidates(m) {
 function cohortDecision(candidate) {
   const raw = state(candidate?.decision || candidate?.economics, 'UNKNOWN');
   if (raw === 'REJECTED_ECONOMICS') return 'REJECTED_ECONOMICS';
+  // The API stores this canonical, already-calculated base scenario alongside
+  // the candidate.  Some legacy candidate rows retained their pre-economics
+  // VALIDATE state; use the persisted canonical outcome instead of deriving
+  // a new calculation in the browser.
+  const reassessment = object(candidate?.economics_reassessment);
+  if (reassessment.base_official_fee_scenario_economics_complete === true && Number(reassessment.net_profit) < 0) return 'REJECTED_ECONOMICS';
   if (raw === 'VALIDATE' || raw === 'VALIDATE_WHITE_SPACE') return 'VALIDATE';
   if (raw === 'BLOCKED_EBAY_FEE_CATEGORY_UNRESOLVED' || (raw.startsWith('BLOCKED') && arr(candidate?.unknown_costs).includes('EBAY_FEE_CATEGORY_UNRESOLVED'))) return 'BLOCKED_EBAY_FEE_CATEGORY_UNRESOLVED';
   return raw;
@@ -142,6 +148,9 @@ function cohortSummary(m) {
 }
 function usd(value) {
   return Number.isFinite(value) ? `USD ${Number(value).toFixed(2)}` : 'UNKNOWN';
+}
+function usdMinor(value) {
+  return Number.isFinite(value) ? usd(Number(value) / 100) : 'UNKNOWN';
 }
 function bps(value) {
   return Number.isInteger(value) ? `${(value / 100).toFixed(2)}%` : 'UNKNOWN';
@@ -230,6 +239,8 @@ function amazonEbayDossiers(m) {
     const policy = object(candidate.economic_input_policy);
     const fee = object(policy.ebay_fee);
     const shipping = object(candidate.outbound_shipping_policy);
+    const reassessment = object(candidate.economics_reassessment);
+    const tac = object(candidate.tac);
     const scenarios = scenarioRows(candidate);
     const activeRange = Number.isFinite(active.low) ? `${usd(active.low)} / ${usd(active.median)} / ${usd(active.high)} · ACTIVE LISTING PRICE SCENARIO · NOT SOLD PRICE` : 'UNKNOWN';
     const weight = object(candidate.package_weight);
@@ -246,8 +257,8 @@ function amazonEbayDossiers(m) {
       <div><dt>Active listing range / competition</dt><dd>${esc(`${activeRange} · ${candidate.ebay_competition || 'UNKNOWN'} · ${candidate.exact_active_listings ?? 'UNKNOWN'} listings`)}</dd></div>
       <div><dt>Demand / white space</dt><dd>${esc(`${candidate.ebay_demand || 'DEMAND UNPROVEN'} · ${candidate.white_space || 'UNKNOWN'}`)}</dd></div>
       <div><dt>Organic / promoted scenarios</dt><dd>${esc(scenarios.join('; ') || 'UNKNOWN')}</dd></div>
-      <div><dt>Break-even / target price / TAC</dt><dd>${esc(`${String(candidate.break_even_price || 'UNKNOWN')} · ${String(candidate.target_price || 'UNKNOWN')} · ${String(candidate.tac || 'UNKNOWN')} · PRE-TAX`)}</dd></div>
-      <div><dt>Pre-tax profit / margin / ROI</dt><dd>${esc(`${String(candidate.net_profit || 'UNKNOWN')} · ${String(candidate.margin || 'UNKNOWN')} · ${String(candidate.roi || 'UNKNOWN')}`)}</dd></div>
+      <div><dt>Break-even / target price / TAC</dt><dd>${esc(`${usdMinor(reassessment.break_even_price ?? candidate.break_even_price)} · ${usdMinor(reassessment.target_price ?? candidate.target_price)} · ${usdMinor(tac.conservative_minor ?? tac.base_minor)} · PRE-TAX`)}</dd></div>
+      <div><dt>Pre-tax profit / margin / ROI</dt><dd>${esc(`${usdMinor(reassessment.net_profit ?? candidate.net_profit)} · ${bps(reassessment.margin ?? candidate.margin)} · ${bps(reassessment.roi ?? candidate.roi)}`)}</dd></div>
       <div><dt>Exact remaining blocker / confidence</dt><dd>${esc(`${arr(candidate.unknown_costs).join(', ') || 'NONE_RECORDED'} · ${cost.price_confidence || 'UNKNOWN'}`)}</dd></div>
     </dl><span class="authority-badge">READ ONLY · COMMERCIAL ACTIONS BLOCKED</span></article>`;
   }).join('') : noDataCard('No dossier matches this certified filter.', 'No product state was changed by filtering.');
