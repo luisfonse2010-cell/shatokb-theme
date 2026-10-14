@@ -27,6 +27,18 @@ test('privacy policy states the exact current read-only YouTube boundary', () =>
   ]) assert.match(privacy, new RegExp(statement.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 });
 
+test('privacy policy discloses the exact current eBay read-only OAuth boundary', () => {
+  for (const statement of [
+    'eBay OAuth',
+    'read-only eBay Sell Account and Sell Finances scopes',
+    'does not receive, request, or store the owner’s eBay password',
+    'OAuth access and refresh tokens are stored only in Kabuby’s server-side credential storage',
+    'does not persist raw eBay responses, buyer personal information, or order identifiers',
+    'does not use this connection to publish listings, change prices or inventory, place orders, fulfill orders'
+  ]) assert.match(privacy, new RegExp(statement.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  assert.match(privacy, /Effective October 14, 2026/);
+});
+
 test('official YouTube and Google policy links are present', () => {
   for (const document of [privacy, terms]) {
     assert.match(document, /https:\/\/www\.youtube\.com\/t\/terms/);
