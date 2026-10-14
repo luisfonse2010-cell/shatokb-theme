@@ -104,4 +104,7 @@ test('Scout runtime remains byte-identical while its owner surface is integrated
   assert.equal(sha256(readFileSync(new URL('../kabuby/scout/index.html', import.meta.url))), 'ee811b37c804f2cd7c397037c442ee608dc15f865e54ef7b3f2a0f5d9fb9664f');
   assert.equal(manifest.scout.source_changes, 0);
   assert.equal(manifest.scout.chrome_extension_changes, 0);
+  assert.equal(manifest.production_regression_gate.id, 'CERTIFIED_EXISTING_SURFACE_PRODUCTION_REGRESSION_GATE');
+  assert.equal(manifest.production_regression_gate.path, '../production-surface-regression-gate.json');
+  assert.equal(manifest.production_regression_gate.enforcement, 'PRODUCTION_SMOKE_REQUIRED_BEFORE_CERTIFICATION');
 });

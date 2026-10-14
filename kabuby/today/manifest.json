@@ -36,6 +36,11 @@
     "contract_changes": 0,
     "chrome_extension_changes": 0
   },
+  "production_regression_gate": {
+    "id": "CERTIFIED_EXISTING_SURFACE_PRODUCTION_REGRESSION_GATE",
+    "path": "../production-surface-regression-gate.json",
+    "enforcement": "PRODUCTION_SMOKE_REQUIRED_BEFORE_CERTIFICATION"
+  },
   "truth_guards": [
     "NO_DESIGN_MOCK_NUMBERS_AS_PRODUCTION_TRUTH",
     "EXPLICIT_UNKNOWN_PARTIAL_STALE_BLOCKED_WAITING_STATES",
