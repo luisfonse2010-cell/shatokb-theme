@@ -14,6 +14,7 @@ test('the production root is wired to the same certified first-cohort read-only 
   assert.match(app, /cohortSummary/);
   assert.match(app, /base_official_fee_scenario_economics_complete/);
   assert.match(app, /economics_reassessment/);
+  assert.match(app, /Number\(reassessment\.net_profit\) < 0/);
 });
 
 test('the root projects canonical cohort states without a browser economics engine', () => {
@@ -22,6 +23,7 @@ test('the root projects canonical cohort states without a browser economics engi
   assert.match(app, /data-cohort-filter/);
   assert.match(app, /cohortFilter/);
   assert.match(app, /usdMinor/);
+  assert.match(app, /tac\.conservative_minor/);
   assert.doesNotMatch(app, /api\.ebay|keepa|dataforseo|calculateCommercialScenario|createKil8/);
 });
 
