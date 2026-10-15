@@ -27,6 +27,11 @@ test('the root projects canonical cohort states without a browser economics engi
   assert.doesNotMatch(app, /api\.ebay|keepa|dataforseo|calculateCommercialScenario|createKil8/);
 });
 
+test('the Engine B certification cohort cannot promote economics, active listings, or white space into a top commercial opportunity', () => {
+  for (const marker of ['ENGINE B CERTIFICATION COHORT', 'commercial_opportunity_state === \'VALIDATED\'', 'MARGIN_ONLY_RESEARCH_CANDIDATE', 'Economic scenarios are not commercial opportunities', 'Economic validation never validates commercial demand.', 'NOT VALIDATED commercially · DO NOT BUY']) assert.match(app, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  assert.doesNotMatch(app, /find\(row => cohortDecision\(row\) === 'VALIDATE'\)/);
+});
+
 test('the root preserves commercial and Scout boundaries', () => {
   for (const label of ['BUY · BLOCKED', 'PUBLISH · BLOCKED', 'REPRICE · BLOCKED', 'INVENTORY WRITE · BLOCKED']) assert.match(app, new RegExp(label));
   assert.doesNotMatch(app, /access_token|refresh_token|KABUBY_COMMERCE_DB|INSERT |UPDATE |DELETE /);

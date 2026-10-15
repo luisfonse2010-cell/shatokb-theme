@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import { ROOT, readBaseline, validateGoldenContract, validateScopeException } from '../scripts/scout-protection-gate.mjs';
 
 test('SCOUT_CANONICAL_PRODUCTION_BASELINE_V1 pins the owner-approved native runtime and routing contract', () => {
@@ -17,7 +18,7 @@ test('SCOUT_CANONICAL_PRODUCTION_BASELINE_V1 pins the owner-approved native runt
 
 test('Scout scope exceptions fail closed unless every protected change is explicit and content-addressed', () => {
   const baseline = readBaseline(ROOT);
-  const base = 'c0a4339df14d06dbc2341aface9fd9b8276cbe94';
+  const base = JSON.parse(readFileSync(new URL('../kabuby/scout-scope-exception.json', import.meta.url), 'utf8')).base_commit;
   assert.throws(() => validateScopeException({ root: ROOT, baseline, base, changedFiles: ['kabuby/styles.css'] }), /SCOUT_SCOPE_EXCEPTION_FILE_MISSING/);
   assert.deepEqual(validateScopeException({ root: ROOT, baseline, base, changedFiles: ['kabuby/data.js'] }), { status: 'PASS', protected_changes: [] });
 });
