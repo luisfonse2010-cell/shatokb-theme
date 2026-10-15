@@ -37,6 +37,7 @@ function installStyles() {
   style.id = 'b0006-owner-decision-dossier-styles';
   style.textContent = [
     '.b0006-hidden-for-dedicated-view{display:none!important}',
+    '#app:has(.b0006-dedicated-section)>.page-head{display:none!important}',
     '.b0006-dedicated-section{max-width:none!important;width:100%!important}',
     '.b0006-dedicated-section>.section-heading,.b0006-dedicated-section>.interactive-cohort-filters{display:none!important}',
     '.b0006-dedicated-section>.detail-grid{display:block!important;max-width:none!important;width:100%!important}',
