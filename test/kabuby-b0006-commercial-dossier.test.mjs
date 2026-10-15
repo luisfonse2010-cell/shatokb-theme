@@ -9,6 +9,7 @@ test('B0006 uses an isolated dedicated dossier view instead of the cohort grid',
   for (const marker of ['DEDICATED_OWNER_DECISION_VIEW', 'b0006-dedicated-section', 'b0006-hidden-for-dedicated-view', 'b0006-owner-decision-card', '← Volver a oportunidades', "params.delete('asin')", "params.delete('focus')"]) assert.ok(source.includes(marker), marker);
   assert.match(source, /node\.hidden = node !== card/);
   assert.match(source, /querySelector\('\.page-head'\).*b0006-hidden-for-dedicated-view/);
+  assert.match(source, /#app:has\(.b0006-dedicated-section\)>\.page-head/);
   assert.match(source, /max-width:none!important/);
 });
 
