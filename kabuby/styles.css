@@ -209,3 +209,10 @@ main { min-width:0; }
 .capability-card dd { color: #cfdae8; font-size: 12px; line-height: 1.35; margin: 3px 0 0; }
 @media(max-width:860px) { .capability-grid { grid-template-columns: 1fr; } }
 @media(max-width:620px) { .capability-card dl { grid-template-columns: 1fr; } }
+
+
+/* Scout parity recovery: host the existing same-origin functional runtime, not a reduced card projection. */
+.scout-runtime-head { margin-bottom: 12px; }
+.scout-runtime-host { max-width: 1280px; min-height: 780px; margin: 0 auto 28px; overflow: hidden; border: 1px solid rgba(83,157,220,.32); border-radius: 14px; background: #0b1120; box-shadow: var(--shadow); }
+.scout-legacy-runtime { display: block; width: 100%; min-height: 1040px; border: 0; background: #0b1120; }
+@media (max-width: 860px) { .scout-runtime-host { min-height: 920px; border-radius: 10px; } .scout-legacy-runtime { min-height: 1180px; } }

@@ -1,34 +1,55 @@
 {
   "gate": "CERTIFIED_EXISTING_SURFACE_PRODUCTION_REGRESSION_GATE",
-  "version": 2,
+  "version": 3,
   "deployment_rule": "A Kabuby Pages production deployment is not certified until every applicable already-certified owner surface has a production smoke result. Source hashes and local tests are necessary but never sufficient.",
   "surfaces": [
     {
       "id": "HOME",
       "route": "/",
-      "required": ["authenticated shell renders", "commercial controls remain blocked"]
+      "required": [
+        "authenticated shell renders",
+        "commercial controls remain blocked"
+      ]
     },
     {
       "id": "OPPORTUNITIES",
       "route": "#opportunities",
-      "required": ["authenticated projection renders", "existing evidence remains visible"]
+      "required": [
+        "authenticated projection renders",
+        "existing evidence remains visible"
+      ]
     },
     {
       "id": "SCOUT",
       "owner_route": "#scout",
       "compatibility_route": "/scout/",
       "data_contract": "SAME_ORIGIN_LOCAL_STORAGE_SHATO_PRODUCTS_READ_ONLY",
-      "required": ["authenticated owner surface renders", "existing local records are visible when present", "legacy compatibility route loads", "Chrome extension handoff contracts remain unchanged", "extension import is handed to the same-origin legacy runtime before the read-only owner projection loads"]
+      "required": [
+        "authenticated owner shell hosts the functional legacy runtime",
+        "existing local records are visible when present",
+        "product cards retain image, pricing, metadata and status fields supplied by existing records",
+        "detail, edit, category and established handoff flows remain available in the legacy runtime",
+        "legacy compatibility route loads",
+        "Chrome extension handoff contracts remain unchanged",
+        "extension import is handed to the same-origin legacy runtime before the owner shell loads"
+      ],
+      "owner_runtime": "SAME_ORIGIN_LEGACY_FUNCTIONAL_RUNTIME_EMBED"
     },
     {
       "id": "SUPPLY",
       "route": "#supply",
-      "required": ["authenticated projection renders", "unknowns remain explicit"]
+      "required": [
+        "authenticated projection renders",
+        "unknowns remain explicit"
+      ]
     },
     {
       "id": "ECONOMICS_RISK",
       "route": "#economics",
-      "required": ["authenticated projection renders", "commercial controls remain blocked"]
+      "required": [
+        "authenticated projection renders",
+        "commercial controls remain blocked"
+      ]
     }
   ],
   "failure_policy": "Any failed applicable production smoke result blocks certification and requires diagnosis before unrelated UI expansion.",

@@ -95,9 +95,10 @@ test('Scout runtime remains byte-identical while its owner surface is integrated
   assert.equal(manifest.scout.state, 'INTEGRATED_OWNER_SURFACE_COMPATIBILITY_RUNTIME_PRESERVED');
   assert.equal(manifest.scout.owner_route, '#scout');
   assert.equal(manifest.scout.compatibility_route, '/scout/');
-  assert.match(app, /readScoutOwnerSnapshot/);
-  assert.match(app, /href="#\$\{key\}"/);
-  assert.doesNotMatch(app, /href="\/scout\/"/);
+  assert.equal(manifest.scout.owner_data_access, 'SAME_ORIGIN_LEGACY_FUNCTIONAL_RUNTIME_EMBED');
+  assert.match(app, /id="scout-legacy-runtime"/);
+  assert.match(app, /const runtime = `\/scout\/#\$\{encodeURIComponent\(view\)\}`/);
+  assert.doesNotMatch(app, /const productCard = item/);
   assert.doesNotMatch(app, /PRESERVE_AS_IS_PROTECTED|PROTECTED CONTRACT|nav-lock/);
   assert.doesNotMatch(app, /<dt>Projection<\/dt>/);
   assert.doesNotMatch(app, /COMMAND_CENTER_PROJECTION_CONTRACT|PROJECTION_UI_CONTRACT|GATE1_CF_ACCESS/);

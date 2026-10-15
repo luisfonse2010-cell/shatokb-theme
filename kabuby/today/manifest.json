@@ -31,7 +31,7 @@
     "state": "INTEGRATED_OWNER_SURFACE_COMPATIBILITY_RUNTIME_PRESERVED",
     "owner_route": "#scout",
     "compatibility_route": "/scout/",
-    "owner_data_access": "AUTHENTICATED_READ_ONLY_LOCAL_COMPATIBILITY_ADAPTER",
+    "owner_data_access": "SAME_ORIGIN_LEGACY_FUNCTIONAL_RUNTIME_EMBED",
     "source_changes": 0,
     "contract_changes": 0,
     "chrome_extension_changes": 0
