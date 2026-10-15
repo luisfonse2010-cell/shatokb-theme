@@ -1,11 +1,7 @@
 /*
- * B0006N5S1C owner dossier presentation.
- *
- * This layer only reorganizes the existing certified browser read model for
- * one owner-approved product. It does not fetch content, calculate economics,
- * mutate decisions, or touch Scout.
+ * B0006N5S1C owner-decision dossier: a presentation-only dedicated view
+ * over the certified browser read model. It performs no I/O or mutation.
  */
-
 const PRODUCT_ASIN = 'B0006N5S1C';
 const app = document.querySelector('#app');
 let queued = false;
@@ -14,48 +10,64 @@ function route() {
   const [page = 'today', query = ''] = location.hash.replace(/^#/, '').split('?');
   return { page: page || 'today', params: new URLSearchParams(query) };
 }
-
-function valueFor(card, label) {
-  const definition = Array.from(card.querySelectorAll('dt')).find(node => node.textContent?.trim() === label)?.parentElement;
-  return definition?.querySelector('dd')?.textContent?.trim() || 'UNKNOWN';
+function esc(value) {
+  return String(value ?? 'UNKNOWN').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
 }
-
+function valueFor(card, label) {
+  const row = Array.from(card.querySelectorAll('dt')).find(node => node.textContent?.trim() === label)?.parentElement;
+  return row?.querySelector('dd')?.textContent?.trim() || 'UNKNOWN';
+}
+function first(value) { return String(value || 'UNKNOWN').split(' · ')[0].trim() || 'UNKNOWN'; }
+function part(value, index) { return String(value || 'UNKNOWN').split(' · ')[index]?.trim() || 'UNKNOWN'; }
+function marketMedian(value) {
+  const values = first(value).split('/').map(entry => entry.trim()).filter(Boolean);
+  return values[1] || values[0] || 'UNKNOWN';
+}
 function installStyles() {
-  if (document.querySelector('#b0006-commercial-dossier-styles')) return;
+  if (document.querySelector('#b0006-owner-decision-dossier-styles')) return;
   const style = document.createElement('style');
-  style.id = 'b0006-commercial-dossier-styles';
-  style.textContent = `
-    .b0006-commercial-dossier{border-color:rgba(255,198,91,.55)!important;background:linear-gradient(145deg,rgba(6,27,44,.98),rgba(2,17,29,.98))!important}.b0006-commercial-dossier .interactive-dossier-content{padding:0}.commercial-dossier{display:grid;gap:16px;padding:16px}.commercial-product-header{display:grid;grid-template-columns:minmax(190px,260px) minmax(0,1fr);gap:18px;align-items:stretch;padding:17px;border:1px solid rgba(255,198,91,.34);border-radius:12px;background:linear-gradient(115deg,rgba(7,35,56,.98),rgba(4,20,33,.88))}.commercial-image-unavailable{display:grid;place-items:center;min-height:190px;padding:20px;border:1px dashed rgba(132,184,224,.42);border-radius:10px;background:linear-gradient(145deg,rgba(8,37,60,.76),rgba(2,16,28,.94));color:#c4d7e8;text-align:center}.commercial-image-unavailable span{display:block;margin-bottom:9px;color:#ffc65b;font-size:28px}.commercial-image-unavailable small{max-width:23ch;line-height:1.45}.commercial-header-copy{display:grid;align-content:start;gap:10px;min-width:0}.commercial-header-copy p{margin:0;color:#93b3cf;font-size:11px;line-height:1.45}.commercial-header-copy h2{margin:0;color:#f6f9ff;font-size:clamp(21px,2.35vw,32px);line-height:1.07;letter-spacing:-.035em}.commercial-asin{display:inline-flex;width:max-content;padding:5px 8px;border:1px solid rgba(116,190,241,.28);border-radius:99px;color:#8ac8f3;font:800 10px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace}.commercial-decision-line{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.commercial-confidence{color:#b9cfdf!important}.commercial-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:3px}.commercial-actions a,.commercial-actions button{display:inline-flex;align-items:center;justify-content:center;min-height:37px;padding:9px 12px;border:1px solid rgba(126,190,238,.5);border-radius:8px;color:#e7f4ff;background:rgba(4,25,42,.72);font-size:11px;font-weight:800;text-decoration:none;cursor:pointer}.commercial-actions a.primary{border-color:#ffc65b;background:linear-gradient(135deg,#ffc95f,#e99f32);color:#101a24}.commercial-actions a:hover,.commercial-actions a:focus-visible,.commercial-actions button:hover,.commercial-actions button:focus-visible{outline:0;border-color:#ffc65b;color:#ffc65b}.commercial-actions a.primary:hover,.commercial-actions a.primary:focus-visible{color:#101a24;filter:brightness(1.07)}.commercial-summary{display:grid;gap:10px;padding:16px;border:1px solid rgba(94,170,228,.26);border-radius:12px;background:rgba(3,20,33,.78)}.commercial-summary-head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:8px}.commercial-summary h3,.commercial-decision-panel h3,.commercial-section h3{margin:0;color:#f5f9ff;font-size:16px}.commercial-summary-head p,.commercial-decision-panel>p,.commercial-section>p{margin:0;color:#9fb8cd;font-size:11px;line-height:1.45}.commercial-profit-strip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}.commercial-profit-strip div{display:grid;gap:5px;min-width:0;padding:11px;border:1px solid rgba(100,176,230,.16);border-radius:8px;background:rgba(5,29,47,.78)}.commercial-profit-strip small,.commercial-costs th,.commercial-costs td small{color:#8ba8bf;font-size:9px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}.commercial-profit-strip strong{color:#eaf5ff;font-size:15px;line-height:1.15;overflow-wrap:anywhere}.commercial-profit-strip .scenario strong{color:#ffc65b}.commercial-decision-panel{display:grid;gap:10px;padding:16px;border:1px solid rgba(69,206,168,.32);border-radius:12px;background:linear-gradient(135deg,rgba(4,44,51,.68),rgba(4,27,43,.92))}.commercial-decision-panel dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0}.commercial-decision-panel div{padding:10px;border-radius:8px;background:rgba(3,19,30,.48)}.commercial-decision-panel dt{color:#7ed9c1;font-size:9px;font-weight:800;letter-spacing:.09em}.commercial-decision-panel dd{margin:5px 0 0;color:#e3f1f7;font-size:12px;line-height:1.4}.commercial-grid{display:grid;grid-template-columns:1.06fr .94fr;gap:14px}.commercial-section{display:grid;gap:12px;padding:16px;border:1px solid rgba(92,169,226,.22);border-radius:12px;background:rgba(3,20,33,.76)}.commercial-costs{width:100%;border-collapse:collapse}.commercial-costs th,.commercial-costs td{padding:9px 6px;border-bottom:1px solid rgba(105,177,232,.14);text-align:left;vertical-align:top}.commercial-costs th{width:37%;color:#c5d9e9;font-size:11px}.commercial-costs td{color:#edf6fc;font-size:11px;line-height:1.4}.truth-factual{color:#77d5fe}.truth-policy{color:#ffc65b}.truth-scenario{color:#a7cbff}.truth-unknown{color:#ffbdc7}.commercial-scenarios{display:grid;gap:8px}.commercial-scenario{padding:11px;border:1px solid rgba(100,176,230,.16);border-radius:8px;background:rgba(5,29,47,.7)}.commercial-scenario h4{margin:0 0 5px;color:#dceeff;font-size:11px}.commercial-scenario p{margin:0;color:#adc5d8;font-size:10px;line-height:1.45}.commercial-risk-list{display:grid;gap:8px;margin:0;padding:0;list-style:none}.commercial-risk-list li{padding:10px;border-left:3px solid #f0a646;border-radius:0 8px 8px 0;background:rgba(64,41,20,.29);color:#d8e6f1;font-size:11px;line-height:1.4}.commercial-risk-list strong{display:block;color:#ffc65b;font-size:10px;letter-spacing:.06em}.commercial-advanced{border:1px solid rgba(106,181,232,.23);border-radius:10px;background:rgba(3,17,29,.72)}.commercial-advanced>summary{padding:13px 15px;color:#cde9ff;cursor:pointer;font-size:11px;font-weight:800}.commercial-advanced-body{padding:0 16px 16px}.commercial-advanced .interactive-dossier-sections{gap:10px}.commercial-advanced .authority-badge{display:inline-flex;margin-top:10px}
-    @media(max-width:860px){.commercial-product-header{grid-template-columns:1fr}.commercial-image-unavailable{min-height:120px}.commercial-profit-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.commercial-grid{grid-template-columns:1fr}.commercial-decision-panel dl{grid-template-columns:1fr}}@media(max-width:520px){.commercial-profit-strip{grid-template-columns:1fr}.commercial-costs th{width:43%}.commercial-actions>*{width:100%}}
-  `;
+  style.id = 'b0006-owner-decision-dossier-styles';
+  style.textContent = [
+    '.b0006-hidden-for-dedicated-view{display:none!important}',
+    '.b0006-dedicated-section{max-width:none!important;width:100%!important}',
+    '.b0006-dedicated-section>.section-heading,.b0006-dedicated-section>.interactive-cohort-filters{display:none!important}',
+    '.b0006-dedicated-section>.detail-grid{display:block!important;max-width:none!important;width:100%!important}',
+    '.b0006-dedicated-section>.detail-grid>.cohort-dossier{display:none!important}',
+    '.b0006-dedicated-section>.detail-grid>.cohort-dossier.b0006-owner-decision-card{display:block!important;max-width:none!important;width:100%!important;min-width:0!important;margin:0!important;border:0!important;background:transparent!important;overflow:visible!important}',
+    '.b0006-owner-decision-card>.interactive-dossier-summary{display:none!important}.b0006-owner-decision-card>.interactive-dossier-content{display:block!important;padding:0!important}',
+    '.b0006-owner-decision{display:grid;gap:18px;max-width:1360px;margin:0 auto;padding:8px 0 36px;min-width:0}',
+    '.b0006-back{justify-self:start;padding:0;border:0;background:transparent;color:#9ed8ff;font:800 12px/1.3 system-ui,sans-serif;cursor:pointer}.b0006-back:hover,.b0006-back:focus-visible{color:#ffc65b;outline:0}',
+    '.b0006-hero{display:grid;grid-template-columns:minmax(180px,240px) minmax(0,1fr);gap:24px;padding:24px;border:1px solid rgba(255,198,91,.42);border-radius:16px;background:linear-gradient(135deg,rgba(8,35,57,.98),rgba(2,17,29,.98));min-width:0}',
+    '.b0006-image-state{display:grid;place-items:center;min-height:214px;padding:22px;border:1px dashed rgba(144,196,234,.38);border-radius:12px;background:linear-gradient(145deg,rgba(6,37,59,.82),rgba(2,16,28,.95));text-align:center;color:#c5d7e6}.b0006-image-state strong{display:block;margin:10px 0 7px;color:#edf6fd;font-size:14px}.b0006-image-state small{max-width:24ch;line-height:1.5}.b0006-image-mark{color:#ffc65b;font-size:32px}',
+    '.b0006-hero-copy{display:grid;align-content:start;gap:12px;min-width:0}.b0006-eyebrow{margin:0;color:#8fc9ef;font-size:10px;font-weight:900;letter-spacing:.14em}.b0006-hero h1{margin:0;color:#f8fbff;font-size:clamp(28px,3.25vw,48px);line-height:1.05;letter-spacing:-.045em;overflow-wrap:anywhere;word-break:normal}.b0006-asin{color:#9fcae8;font:800 11px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace}.b0006-decision{display:inline-flex;align-items:center;width:max-content;gap:8px;padding:7px 10px;border:1px solid rgba(91,217,176,.52);border-radius:99px;color:#91efd0;background:rgba(5,71,65,.42);font-size:11px;font-weight:900;letter-spacing:.07em}',
+    '.b0006-hero-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:2px}.b0006-hero-actions a,.b0006-evidence-button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:10px 14px;border:1px solid rgba(132,199,241,.5);border-radius:9px;background:rgba(3,25,42,.78);color:#eaf6ff;font-size:12px;font-weight:850;text-decoration:none;cursor:pointer}.b0006-hero-actions a.primary{border-color:#ffc65b;background:linear-gradient(135deg,#ffd06b,#e99b30);color:#15202a}.b0006-hero-actions a:hover,.b0006-hero-actions a:focus-visible,.b0006-evidence-button:hover,.b0006-evidence-button:focus-visible{outline:0;border-color:#ffc65b;color:#ffc65b}.b0006-hero-actions a.primary:hover,.b0006-hero-actions a.primary:focus-visible{color:#15202a;filter:brightness(1.06)}',
+    '.b0006-commercial-hero{display:grid;gap:14px;padding:20px;border:1px solid rgba(100,182,233,.27);border-radius:15px;background:rgba(3,20,33,.83)}.b0006-commercial-hero>div:first-child{display:flex;align-items:end;justify-content:space-between;gap:12px}.b0006-commercial-hero h2,.b0006-owner-section h2{margin:0;color:#f4f9fd;font-size:19px}.b0006-commercial-hero p,.b0006-owner-section>p{margin:4px 0 0;color:#9db7cc;font-size:12px;line-height:1.5}',
+    '.b0006-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.b0006-metric{display:grid;gap:5px;min-width:0;padding:14px;border:1px solid rgba(113,187,234,.2);border-radius:10px;background:rgba(6,30,48,.88)}.b0006-metric small,.b0006-pricing small{color:#8cacc5;font-size:9px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}.b0006-metric strong{color:#eff8ff;font-size:clamp(17px,1.65vw,23px);line-height:1.1;overflow-wrap:anywhere}.b0006-metric.market strong{color:#ffcc67}.b0006-pricing{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.b0006-pricing div{padding:11px;border-left:3px solid #2f91e3;background:rgba(8,38,60,.62)}.b0006-pricing strong{display:block;margin-top:4px;color:#dff1ff;font-size:15px;overflow-wrap:anywhere}.b0006-scenario-note{margin:0!important;padding:10px 12px;border-radius:9px;background:rgba(91,65,22,.24);color:#ffe0a3!important}',
+    '.b0006-owner-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:16px}.b0006-owner-section{display:grid;gap:13px;padding:19px;border:1px solid rgba(96,172,222,.24);border-radius:14px;background:rgba(3,20,33,.8);min-width:0}.b0006-why,.b0006-risks{display:grid;gap:8px;margin:0;padding:0;list-style:none}.b0006-why li{padding:11px 12px;border-left:3px solid #48c8a7;border-radius:0 8px 8px 0;background:rgba(6,58,61,.34);color:#d7e9f4;font-size:12px;line-height:1.48}.b0006-why strong{color:#a6efdc}.b0006-risks li{padding:11px 12px;border-left:3px solid #edac4d;border-radius:0 8px 8px 0;background:rgba(81,48,19,.29);color:#dbe9f4;font-size:12px;line-height:1.45}.b0006-risks strong{display:block;color:#ffcb6b}',
+    '.b0006-cost-stack{width:100%;border-collapse:collapse}.b0006-cost-stack th,.b0006-cost-stack td{padding:9px 7px;border-bottom:1px solid rgba(112,180,226,.15);text-align:left;vertical-align:top}.b0006-cost-stack th{width:43%;color:#c9dcea;font-size:11px}.b0006-cost-stack td{color:#eff8ff;font-size:11px;line-height:1.4}.b0006-factual{color:#83d7ff}.b0006-policy{color:#ffcb6b}.b0006-scenario{color:#a9c8ff}.b0006-unknown{color:#ffbdc6}',
+    '.b0006-scenarios{display:grid;gap:8px}.b0006-scenario-row{padding:11px;border:1px solid rgba(108,178,226,.18);border-radius:9px;background:rgba(6,31,49,.72)}.b0006-scenario-row strong{color:#e4f2fb;font-size:12px}.b0006-scenario-row p{margin:5px 0 0;color:#afc6d8;font-size:11px}.b0006-advanced{border:1px solid rgba(105,181,231,.25);border-radius:12px;background:rgba(3,17,29,.75)}.b0006-advanced summary{padding:15px 17px;color:#d7efff;font-size:12px;font-weight:900;cursor:pointer}.b0006-advanced-body{padding:0 17px 17px}.b0006-advanced .interactive-dossier-sections{gap:10px}',
+    '@media(max-width:960px){.b0006-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.b0006-owner-grid{grid-template-columns:1fr}}@media(max-width:680px){.b0006-hero{grid-template-columns:1fr;padding:16px}.b0006-image-state{min-height:130px}.b0006-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.b0006-pricing{grid-template-columns:1fr}.b0006-owner-decision{gap:13px}.b0006-hero h1{font-size:29px}.b0006-hero-actions>*{width:100%}}@media(max-width:420px){.b0006-metrics{grid-template-columns:1fr}.b0006-owner-section,.b0006-commercial-hero{padding:14px}.b0006-cost-stack th{width:47%}}'
+  ].join('');
   document.head.append(style);
 }
-
-function truthClass(value) {
-  const text = String(value || '');
-  if (/UNKNOWN|UNPROVEN|UNRESOLVED/.test(text)) return 'truth-unknown';
-  if (/OWNER POLICY|CONFIGURED/.test(text)) return 'truth-policy';
-  if (/SCENARIO|ACTIVE LISTING/.test(text)) return 'truth-scenario';
-  return 'truth-factual';
+function costRow(label, value, state) {
+  const name = state === 'factual' ? 'FACTUAL' : state === 'policy' ? 'OWNER POLICY' : state === 'scenario' ? 'SCENARIO' : 'UNKNOWN';
+  return '<tr><th>' + esc(label) + '</th><td>' + esc(value) + '<br><small class="b0006-' + state + '">' + name + '</small></td></tr>';
 }
-
-function costRow(label, value, truth) {
-  return `<tr><th>${label}</th><td>${value}<br><small class="${truthClass(truth)}">${truth}</small></td></tr>`;
+function restoreCohort() {
+  const { params } = route();
+  params.delete('asin');
+  params.delete('focus');
+  const query = params.toString();
+  location.hash = '#opportunities?' + (query || 'view=amazon-ebay');
 }
-
-function scenarioCard(name, content) {
-  return `<article class="commercial-scenario"><h4>${name}</h4><p>${content === 'UNKNOWN' ? 'UNKNOWN — no certified scenario row is available in this dossier.' : content}</p></article>`;
-}
-
-function commercialPresentation(card) {
+function dedicatedPresentation(card) {
   const existing = card.querySelector('.interactive-dossier-content');
-  if (!existing || existing.dataset.commercialPresentation === 'true') return;
+  if (!existing || existing.dataset.ownerDecisionDossier === 'true') return;
   const title = card.querySelector('h3')?.textContent?.trim() || PRODUCT_ASIN;
   const decision = card.querySelector('.state-pill')?.dataset.state || 'VALIDATE';
-  const strategic = valueFor(card, 'Decision / strategic potential');
   const acquisition = valueFor(card, 'Amazon purchasable acquisition price');
   const amazonShipping = valueFor(card, 'Amazon shipping / tax / landed cost');
-  const history = valueFor(card, 'Amazon price history / confidence');
   const outbound = valueFor(card, 'Outbound shipping / packaging / handling');
   const returns = valueFor(card, 'Returns reserve');
   const ebayFee = valueFor(card, 'eBay category / official fee');
@@ -64,78 +76,83 @@ function commercialPresentation(card) {
   const scenarios = valueFor(card, 'Organic / promoted scenarios');
   const economics = valueFor(card, 'Pre-tax profit / margin / ROI');
   const pricing = valueFor(card, 'Break-even / target price / TAC');
-  const blockers = valueFor(card, 'Exact remaining blocker / confidence');
-  const previous = document.createElement('div');
-  previous.className = 'commercial-advanced-body';
-  while (existing.firstChild) previous.append(existing.firstChild);
-  const amazonUrl = `https://www.amazon.com/dp/${PRODUCT_ASIN}`;
-  const ebaySearch = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(title)}`;
-  const product = document.createElement('div');
-  // Keep the host class expected by the existing progressive-dossier layer so
-  // a later DOM refresh continues to treat this as the same read-only card.
-  product.className = 'commercial-dossier interactive-dossier-content';
-  product.innerHTML = `
-    <section class="commercial-product-header" aria-label="B0006N5S1C product overview">
-      <div class="commercial-image-unavailable"><div><span aria-hidden="true">◇</span><strong>Primary image unavailable</strong><small>No factual primary image is present in the certified dossier. Kabuby did not fetch or generate one.</small></div></div>
-      <div class="commercial-header-copy"><p>AMAZON → EBAY · CERTIFIED READ-ONLY DOSSIER</p><h2>${title}</h2><span class="commercial-asin">ASIN ${PRODUCT_ASIN}</span><div class="commercial-decision-line"><span class="state-pill" data-state="${decision}">${decision}</span><span class="state-pill" data-state="SCENARIO">ACTIVE LISTING SCENARIO</span></div><p class="commercial-confidence">Market state: ${market}<br>Evidence confidence: ${history}</p><div class="commercial-actions"><a class="primary" href="${amazonUrl}" target="_blank" rel="noopener noreferrer">Ver en Amazon</a><a href="${ebaySearch}" target="_blank" rel="noopener noreferrer">Revisar mercado eBay</a><button type="button" data-commercial-evidence>Ver evidencia detallada</button><button type="button" data-commercial-back>Volver a oportunidades</button></div></div>
-    </section>
-    <section class="commercial-summary"><div class="commercial-summary-head"><div><p>COMMERCIAL SUMMARY · CERTIFIED SCENARIO</p><h3>Cost → market → potential profit</h3></div><span class="state-pill" data-state="SCENARIO">PRE-TAX</span></div><div class="commercial-profit-strip"><div><small>Amazon purchase</small><strong>${acquisition.split(' · ')[0] || 'UNKNOWN'}</strong></div><div><small>eBay reference price</small><strong class="scenario">${market.split(' · ')[0] || 'UNKNOWN'}</strong></div><div><small>Pre-tax profit</small><strong>${economics.split(' · ')[0] || 'UNKNOWN'}</strong></div><div><small>Margin / ROI</small><strong>${economics.split(' · ').slice(1).join(' · ') || 'UNKNOWN'}</strong></div><div><small>Break-even / target / TAC</small><strong>${pricing}</strong></div></div><p>ACTIVE LISTING PRICE — NOT SOLD PRICE. This is a <strong>PRE-TAX SCENARIO</strong>, not a guaranteed profit or demand claim.</p></section>
-    <section class="commercial-decision-panel"><p>KABUBY DECISION</p><h3>${decision}</h3><dl><div><dt>WHY</dt><dd>${strategic}. The existing economics scenario is positive; owner review remains required.</dd></div><div><dt>COMPETITION</dt><dd>${market}</dd></div><div><dt>DEMAND</dt><dd>${demand}. Demand is not inferred from listings.</dd></div><div><dt>NEXT STEP</dt><dd>Review the certified dossier and validate the remaining factual unknowns before any commercial action.</dd></div></dl></section>
-    <div class="commercial-grid"><section class="commercial-section"><p>COST STACK · READ ONLY</p><h3>What the scenario includes</h3><table class="commercial-costs"><tbody>${costRow('Amazon acquisition', acquisition, 'FACTUAL · existing purchasable offer')}${costRow('Amazon shipping / purchase tax', amazonShipping, 'FACTUAL where observed · UNKNOWN preserved')}${costRow('Outbound shipping / packaging / handling', outbound, 'OWNER POLICY / configured shipping estimate')}${costRow('Returns reserve', returns, 'OWNER POLICY')}${costRow('eBay base fee / fixed order fee', ebayFee, 'FACTUAL · OFFICIAL EBAY FEE')}${costRow('Promotion', scenarios, 'SCENARIO · UNKNOWN when not certified')}</tbody></table></section><section class="commercial-section"><p>ECONOMICS · PROGRESSIVE DISCLOSURE</p><h3>Available scenario views</h3><div class="commercial-scenarios">${scenarioCard('Organic', scenarios)}${scenarioCard('Promoted 8%', scenarios)}${scenarioCard('Promoted 10%', scenarios)}</div><p>Scenario rows are shown only from the existing dossier. UNKNOWN is not converted into an estimate.</p></section></div>
-    <section class="commercial-section"><p>RISK / EVIDENCE</p><h3>What still needs proof</h3><ul class="commercial-risk-list"><li><strong>Amazon purchase tax</strong>UNKNOWN</li><li><strong>Demand</strong>UNPROVEN — active listings are not sales.</li><li><strong>Seller performance surcharge</strong>UNKNOWN</li><li><strong>Remaining canonical blockers</strong>${blockers}</li></ul></section>
-    <details class="commercial-advanced"><summary>Ver evidencia detallada</summary></details>
-  `;
-  const advanced = product.querySelector('.commercial-advanced');
-  advanced.append(previous);
+  const strategic = valueFor(card, 'Decision / strategic potential');
+  const advanced = document.createElement('div');
+  advanced.className = 'b0006-advanced-body';
+  while (existing.firstChild) advanced.append(existing.firstChild);
+  const product = document.createElement('article');
+  product.className = 'b0006-owner-decision interactive-dossier-content';
+  const scenarioText = scenarios === 'UNKNOWN' ? 'UNKNOWN — no certified scenario is available.' : scenarios;
+  product.innerHTML =
+    '<button class="b0006-back" type="button" data-owner-decision-back>← Volver a oportunidades</button>' +
+    '<section class="b0006-hero"><div class="b0006-image-state"><div><span class="b0006-image-mark" aria-hidden="true">◇</span><strong>Primary image unavailable</strong><small>No factual image exists in Kabuby’s certified read model, Scout intake, persisted marketplace metadata, or cached assets. No provider was called.</small></div></div>' +
+    '<div class="b0006-hero-copy"><p class="b0006-eyebrow">AMAZON → EBAY · OWNER DECISION DOSSIER</p><h1>' + esc(title) + '</h1><span class="b0006-asin">ASIN ' + PRODUCT_ASIN + '</span><span class="b0006-decision">' + esc(decision) + ' · OWNER REVIEW REQUIRED</span>' +
+    '<div class="b0006-hero-actions"><a class="primary" href="https://www.amazon.com/dp/' + PRODUCT_ASIN + '" target="_blank" rel="noopener noreferrer">Ver en Amazon</a><a href="https://www.ebay.com/sch/i.html?_nkw=' + encodeURIComponent(title) + '" target="_blank" rel="noopener noreferrer">Revisar mercado eBay</a><button class="b0006-evidence-button" type="button" data-owner-decision-evidence>Ver evidencia técnica</button></div></div></section>' +
+    '<section class="b0006-commercial-hero"><div><div><p class="b0006-eyebrow">COMMERCIAL SCENARIO · PRE-TAX</p><h2>What the current evidence supports</h2></div><span class="b0006-decision">' + esc(decision) + '</span></div>' +
+    '<div class="b0006-metrics"><div class="b0006-metric"><small>Amazon cost</small><strong>' + esc(first(acquisition)) + '</strong></div><div class="b0006-metric market"><small>eBay reference</small><strong>' + esc(marketMedian(market)) + '</strong></div><div class="b0006-metric"><small>Pre-tax profit</small><strong>' + esc(first(economics)) + '</strong></div><div class="b0006-metric"><small>Margin</small><strong>' + esc(part(economics, 1)) + '</strong></div><div class="b0006-metric"><small>ROI</small><strong>' + esc(part(economics, 2)) + '</strong></div></div>' +
+    '<div class="b0006-pricing"><div><small>Break-even</small><strong>' + esc(first(pricing)) + '</strong></div><div><small>Target price</small><strong>' + esc(part(pricing, 1)) + '</strong></div><div><small>TAC</small><strong>' + esc(part(pricing, 2)) + '</strong></div></div><p class="b0006-scenario-note"><strong>ACTIVE LISTING PRICE SCENARIO · NOT SOLD PRICE · DEMAND UNPROVEN.</strong> ' + esc(market) + '</p></section>' +
+    '<div class="b0006-owner-grid"><section class="b0006-owner-section"><p class="b0006-eyebrow">WHY KABUBY SAYS VALIDATE</p><h2>Positive scenario, with proof still required</h2><ul class="b0006-why"><li><strong>Economics:</strong> The certified pre-tax scenario shows ' + esc(first(economics)) + ' profit, ' + esc(part(economics, 1)) + ' margin, and ' + esc(part(economics, 2)) + ' ROI.</li><li><strong>Competition:</strong> ' + esc(market) + ' This is active-listing context, never a sold-price claim.</li><li><strong>Market evidence:</strong> ' + esc(demand) + ' Kabuby does not convert listings into demand.</li><li><strong>Decision:</strong> ' + esc(strategic) + ' Owner review and factual validation are the next permitted steps.</li></ul></section>' +
+    '<section class="b0006-owner-section"><p class="b0006-eyebrow">COST STACK</p><h2>Inputs behind the scenario</h2><table class="b0006-cost-stack"><tbody>' +
+    costRow('Amazon purchase', acquisition, 'factual') + costRow('Amazon shipping / purchase tax', amazonShipping, 'unknown') + costRow('Outbound shipping / packaging / handling', outbound, 'policy') + costRow('Returns reserve', returns, 'policy') + costRow('eBay fee / fixed order fee', ebayFee, 'factual') + costRow('Promotion', scenarios, 'scenario') +
+    '</tbody></table></section></div>' +
+    '<div class="b0006-owner-grid"><section class="b0006-owner-section"><p class="b0006-eyebrow">WHAT STILL NEEDS PROOF</p><h2>Material uncertainties</h2><ul class="b0006-risks"><li><strong>Amazon purchase tax</strong>It remains unknown and is not added to the scenario.</li><li><strong>Demand</strong>It is unproven; active listings are not sales.</li><li><strong>Seller performance surcharge</strong>Account-specific surcharge remains unknown.</li><li><strong>Buyer-collected shipping</strong>It remains unknown and is not represented as revenue.</li></ul></section>' +
+    '<section class="b0006-owner-section"><p class="b0006-eyebrow">ECONOMICS</p><h2>Certified scenario availability</h2><div class="b0006-scenarios"><div class="b0006-scenario-row"><strong>Organic</strong><p>' + esc(scenarioText) + '</p></div><div class="b0006-scenario-row"><strong>Promoted 8%</strong><p>' + esc(scenarioText) + '</p></div><div class="b0006-scenario-row"><strong>Promoted 10%</strong><p>' + esc(scenarioText) + '</p></div></div></section></div>' +
+    '<details class="b0006-advanced"><summary>Ver evidencia técnica</summary></details>';
+  product.querySelector('.b0006-advanced').append(advanced);
   existing.replaceWith(product);
-  product.dataset.commercialPresentation = 'true';
+  product.dataset.ownerDecisionDossier = 'true';
 }
-
+function isolateDedicatedView(card) {
+  const section = card.closest('section.section');
+  if (!section) return;
+  app.querySelectorAll('section.section').forEach(node => {
+    if (node !== section) node.classList.add('b0006-hidden-for-dedicated-view');
+  });
+  section.classList.add('b0006-dedicated-section');
+  section.querySelectorAll('.cohort-dossier').forEach(node => {
+    node.hidden = node !== card;
+    node.classList.toggle('b0006-owner-decision-card', node === card);
+  });
+}
 function enhance() {
   queued = false;
   if (!app) return;
   installStyles();
   const { page, params } = route();
   if (page !== 'opportunities' || params.get('view') !== 'amazon-ebay' || params.get('asin') !== PRODUCT_ASIN) return;
-  const card = app.querySelector(`.cohort-dossier[data-dossier-asin="${PRODUCT_ASIN}"][data-dossier-open="true"]`);
+  const card = app.querySelector('.cohort-dossier[data-dossier-asin="' + PRODUCT_ASIN + '"][data-dossier-open="true"]');
   if (!card) return;
-  card.classList.add('b0006-commercial-dossier');
-  commercialPresentation(card);
+  isolateDedicatedView(card);
+  dedicatedPresentation(card);
 }
-
 function enqueue() {
   if (queued) return;
   queued = true;
   queueMicrotask(enhance);
 }
-
 if (app) {
   app.addEventListener('click', event => {
-    const evidence = event.target.closest('[data-commercial-evidence]');
-    if (evidence) {
+    if (event.target.closest('[data-owner-decision-back]')) {
       event.preventDefault();
-      const details = app.querySelector('.b0006-commercial-dossier .commercial-advanced');
+      restoreCohort();
+    } else if (event.target.closest('[data-owner-decision-evidence]')) {
+      event.preventDefault();
+      const details = app.querySelector('.b0006-owner-decision .b0006-advanced');
       details?.setAttribute('open', '');
       details?.scrollIntoView({ block: 'start', behavior: 'smooth' });
-      return;
-    }
-    if (event.target.closest('[data-commercial-back]')) {
-      event.preventDefault();
-      location.hash = '#opportunities?view=amazon-ebay&cohort=VALIDATE';
     }
   }, true);
   new MutationObserver(enqueue).observe(app, { childList: true, subtree: true });
   window.addEventListener('hashchange', enqueue);
   enqueue();
 }
-
-export const B0006_COMMERCIAL_DOSSIER_CONTRACT = Object.freeze({
+export const B0006_OWNER_DECISION_DOSSIER_V2_CONTRACT = Object.freeze({
   asin: PRODUCT_ASIN,
+  view: 'DEDICATED_OWNER_DECISION_VIEW',
   source: 'CERTIFIED_BROWSER_READ_MODEL_ONLY',
   primary_image: 'UNAVAILABLE_NO_FACTUAL_ASSET',
-  amazon_navigation: 'DETERMINISTIC_ASIN_ONLY',
-  ebay_navigation: 'CERTIFIED_IDENTITY_SEARCH_REVIEW_ONLY',
-  heavy_content_calls: 0,
+  primary_image_source: 'NO_EXISTING_CERTIFIED_ASSET',
+  existing_provider_image_mechanism: 'KEEPA_PRODUCT_LOOKUP_REQUIRES_SEPARATE_PROVIDER_CALL',
   provider_calls: 0,
   commercial_mutations: 0,
   scout_runtime: 'UNTOUCHED'
