@@ -10,7 +10,7 @@ const scout = read('kabuby/scout/index.html');
 
 test('CERTIFIED_EXISTING_SURFACE_PRODUCTION_REGRESSION_GATE covers the certified owner surfaces', () => {
   assert.equal(gate.gate, 'CERTIFIED_EXISTING_SURFACE_PRODUCTION_REGRESSION_GATE');
-  assert.equal(gate.version, 5);
+  assert.equal(gate.version, 6);
   assert.match(gate.deployment_rule, /never sufficient/);
   assert.match(gate.failure_policy, /blocks certification/);
   assert.deepEqual(gate.surfaces.map(surface => surface.id), ['HOME', 'OPPORTUNITIES', 'SCOUT', 'SUPPLY', 'ECONOMICS_RISK']);
@@ -27,8 +27,10 @@ test('Scout owner host and compatibility route retain the functional runtime con
   assert.match(portal, /KABUBY_SCOUT_MODULE_HEIGHT/);
   assert.doesNotMatch(portal, /scout-product-card/);
   assert.doesNotMatch(portal, /readScoutOwnerSnapshot/);
-  assert.match(portal, /legacyScoutImportTarget/);
-  assert.match(portal, /window\.location\.replace\(legacyImportTarget\)/);
+  assert.match(portal, /integratedScoutImportTarget/);
+  assert.match(portal, /window\.location\.replace\(postCaptureTarget\)/);
+  assert.match(portal, /source\.searchParams\.set\('shato_import', '1'\)/);
+  assert.match(portal, /history\.replaceState/);
   assert.match(adapter, /const PRODUCT_KEY = 'shato_products'/);
   assert.match(adapter, /const DISPATCH_KEY = 'shato_despachos'/);
   assert.match(adapter, /owner_surface: '#scout'/);

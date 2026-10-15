@@ -1,5 +1,5 @@
 import { DAYPARTS, NAVIGATION, PHYSICAL_PROJECTION_PATH } from './data.js';
-import { legacyScoutImportTarget } from './scout-owner.js';
+import { integratedScoutImportTarget } from './scout-owner.js';
 
 const app = document.querySelector('#app');
 const nav = document.querySelector('#primary-navigation');
@@ -7,7 +7,7 @@ const shell = document.querySelector('.app-shell');
 const notice = document.querySelector('#notice');
 const localeButton = document.querySelector('#locale-button');
 const systemStatus = document.querySelector('#system-status');
-const legacyImportTarget = legacyScoutImportTarget(window.location.href);
+const postCaptureTarget = integratedScoutImportTarget(window.location.href);
 const icons = Object.freeze({ today: '⌂', opportunities: '◇', scout: '⌁', supply: '▣', economics: '⌁', operations: '⌘', portfolio: '◇', learning: '◎', settings: '⚙' });
 
 const COPY = Object.freeze({
@@ -323,18 +323,27 @@ function lockedActions() { return `<section class="section"><div class="section-
 const SCOUT_VIEWS = Object.freeze([
   ['dashboard', 'Dashboard'], ['pendientes', 'Pendientes'], ['despachos', 'Despachos'], ['inventario', 'Inventario'], ['categorias', 'Categorías'], ['config', 'Configuración']
 ]);
-function scoutModuleSource(view) {
+function scoutModuleSource(view, params) {
   const source = new URL('/scout/', window.location.origin);
   source.searchParams.set('integrated', '1');
   source.searchParams.set('view', view);
+  if (params.get('shato_import') === '1') {
+    source.searchParams.set('shato_import', '1');
+    for (const key of ['t', 'shato_data']) {
+      const value = params.get(key);
+      if (value) source.searchParams.set(key, value);
+    }
+  }
   return source.pathname + source.search;
 }
 function scoutView() {
   const { params } = route();
   const requested = params.get('view') || 'pendientes';
   const view = SCOUT_VIEWS.some(([id]) => id === requested) ? requested : 'pendientes';
+  const postCaptureImport = params.get('shato_import') === '1';
   const tabs = `<nav class="surface-tabs scout-module-tabs" aria-label="Scout module navigation">${SCOUT_VIEWS.map(([id, label]) => `<a href="#scout?view=${id}"${id === view ? ' aria-current="page"' : ''}>${label}</a>`).join('')}</nav>`;
-  return `${authBanner()}<section class="page-head scout-module-heading"><p class="eyebrow">SCOUT</p><h1>Scout</h1><p>El módulo funcional existente se ejecuta dentro de la sesión autenticada de Kabuby. La ruta directa de compatibilidad conserva su límite de autenticación independiente.</p>${tabs}</section><section class="scout-module-host" aria-label="Scout functional workspace"><iframe id="scout-functional-module" class="scout-module-frame" title="Scout" src="${esc(scoutModuleSource(view))}" data-scout-module="functional-runtime" referrerpolicy="same-origin"></iframe></section>`;
+  if (postCaptureImport) queueMicrotask(() => history.replaceState({}, document.title, `${location.pathname}${location.search}#scout?view=pendientes`));
+  return `${authBanner()}<section class="page-head scout-module-heading"><p class="eyebrow">SCOUT</p><h1>Scout</h1><p>El módulo funcional existente se ejecuta dentro de la sesión autenticada de Kabuby. La ruta directa de compatibilidad conserva su límite de autenticación independiente.</p>${tabs}</section><section class="scout-module-host" aria-label="Scout functional workspace"><iframe id="scout-functional-module" class="scout-module-frame" title="Scout" src="${esc(scoutModuleSource(view, params))}" data-scout-module="functional-runtime" referrerpolicy="same-origin"></iframe></section>`;
 }
 function receiveScoutModuleMessage(event) {
   if (event.origin !== window.location.origin || event.data?.type !== 'KABUBY_SCOUT_MODULE_HEIGHT') return;
@@ -388,8 +397,8 @@ function wireRenderedControls() {
 function cycleLocale() { locale = locale==='auto'?'en':locale==='en'?'es':locale==='es'?'pt':'auto'; try { localStorage.setItem('kabuby-intelligence-locale',locale); } catch {} createNavigation(); updateStaticCopy(); render(); }
 function setLocale(next) { locale=next; try { localStorage.setItem('kabuby-intelligence-locale',locale); } catch {} createNavigation(); updateStaticCopy(); render(); document.querySelector('#locale-menu').hidden=true; }
 
-if (legacyImportTarget) {
-  window.location.replace(legacyImportTarget);
+if (postCaptureTarget) {
+  window.location.replace(postCaptureTarget);
 } else {
   document.querySelector('#ask-kabuby').addEventListener('submit', event => { event.preventDefault(); const query=document.querySelector('#ask-input').value.trim(); go('search',query?{q:query}:{}); });
   localeButton.addEventListener('click', () => { const menu=document.querySelector('#locale-menu'); menu.hidden=!menu.hidden; });

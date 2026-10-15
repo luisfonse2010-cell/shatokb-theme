@@ -1,6 +1,6 @@
 {
   "gate": "CERTIFIED_EXISTING_SURFACE_PRODUCTION_REGRESSION_GATE",
-  "version": 5,
+  "version": 6,
   "deployment_rule": "A Kabuby Pages production deployment is not certified until every applicable already-certified owner surface has a production smoke result. Source hashes and local tests are necessary but never sufficient.",
   "surfaces": [
     {
@@ -31,7 +31,7 @@
         "product images, pricing metadata, detail, edit, category, inventory, and dispatch flows remain owned by the existing runtime",
         "legacy compatibility route remains available for the Chrome extension and retains its independent authentication boundary when opened directly",
         "Chrome extension handoff contracts remain unchanged",
-        "extension import is handed to the same-origin legacy runtime before the owner module host loads"
+        "extension import stays in the authenticated owner shell and is handed to the same-origin native module host"
       ],
       "owner_runtime": "NATIVE_SCOUT_FUNCTIONAL_MODULE_HOST"
     },

@@ -1,21 +1,28 @@
 // Owner-facing Scout presentation adapter.
 //
 // This module deliberately reads the established Scout browser stores without
-// writing to them. The legacy runtime at /scout/ remains the compatibility
-// endpoint for the Chrome extension and its SHATO_* contracts.
+// writing to them. The legacy runtime at /scout/ remains available as a
+// direct compatibility endpoint. Owner-facing extension captures enter the
+// authenticated Intelligence OS and are consumed by that same native runtime
+// in its same-origin module host.
 const PRODUCT_KEY = 'shato_products';
 const DISPATCH_KEY = 'shato_despachos';
 const CONFIG_KEY = 'shato_config';
 
-// The Chrome extension sends an import to the public owner route.  Only the
-// established legacy Scout runtime is allowed to consume and persist it; the
-// Intelligence OS is deliberately a read-only projection.
-export function legacyScoutImportTarget(currentHref) {
+// The Chrome extension sends an import to the public owner route. Preserve
+// the established payload contract, but keep the owner in the authenticated
+// Intelligence OS so the existing native Scout module can consume it without
+// opening the legacy owner shell or its independent login boundary.
+export function integratedScoutImportTarget(currentHref) {
   const current = new URL(currentHref);
   if (current.searchParams.get('shato_import') !== '1') return null;
-  const target = new URL('/scout/', current.origin);
-  target.search = current.search;
-  target.hash = '#pendientes';
+  const target = new URL('/', current.origin);
+  const params = new URLSearchParams({ view: 'pendientes', shato_import: '1' });
+  for (const key of ['t', 'shato_data']) {
+    const value = current.searchParams.get(key);
+    if (value) params.set(key, value);
+  }
+  target.hash = `scout?${params}`;
   return target.toString();
 }
 
@@ -79,6 +86,7 @@ export function readScoutOwnerSnapshot(storage = globalThis.localStorage) {
 
 export const SCOUT_COMPATIBILITY = Object.freeze({
   route: '/scout/',
+  post_capture_owner_route: '#scout?view=pendientes',
   contracts: Object.freeze(['SHATO_AMAZON_PRODUCT', 'chrome.storage.local', 'productConsumed', 'Pendientes handoff']),
   owner_surface: '#scout'
 });
