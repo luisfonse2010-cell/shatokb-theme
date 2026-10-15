@@ -3,6 +3,8 @@
  * GET /api/v1/intelligence/physical; this file intentionally contains no
  * operational snapshot, fallback metrics, opportunity, or marketplace data.
  */
+import './home-opportunities-interactive.js';
+
 export const PHYSICAL_PROJECTION_PATH = '/api/v1/intelligence/physical';
 export const PROJECTION_UI_CONTRACT = Object.freeze({
   source: 'CERTIFIED_PHYSICAL_READ_ONLY_PROJECTION',
