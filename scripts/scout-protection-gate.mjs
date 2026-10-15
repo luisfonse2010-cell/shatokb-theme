@@ -13,6 +13,17 @@ const digest = value => createHash('sha256').update(value).digest('hex');
 const fileHash = (root, relativePath) => digest(readFileSync(path.join(root, relativePath)));
 const readJson = (root, relativePath) => JSON.parse(readFileSync(path.join(root, relativePath), 'utf8'));
 const git = (root, ...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
+const scopeExceptionAllowsCurrentHash = (root, baseline, relativePath) => {
+  const exceptionPath = path.join(root, SCOPE_EXCEPTION_PATH);
+  if (!existsSync(exceptionPath)) return false;
+  try {
+    const exception = readJson(root, SCOPE_EXCEPTION_PATH);
+    return baseline.scope_exception.required_fields.every(field => exception[field]) &&
+      Array.isArray(exception.files_contracts_affected) &&
+      exception.files_contracts_affected.includes(relativePath) &&
+      exception.source_fingerprints?.[relativePath] === fileHash(root, relativePath);
+  } catch { return false; }
+};
 
 export function readBaseline(root = ROOT) {
   const baseline = readJson(root, BASELINE_PATH);
@@ -26,7 +37,7 @@ export function readBaseline(root = ROOT) {
 export function validateGoldenContract(root = ROOT, baseline = readBaseline(root)) {
   for (const [relativePath, expectedHash] of Object.entries(baseline.asset_hashes || {})) {
     must(existsSync(path.join(root, relativePath)), `SCOUT_BASELINE_FILE_MISSING:${relativePath}`);
-    must(fileHash(root, relativePath) === expectedHash, `SCOUT_BASELINE_HASH_DRIFT:${relativePath}`);
+    must(fileHash(root, relativePath) === expectedHash || scopeExceptionAllowsCurrentHash(root, baseline, relativePath), `SCOUT_BASELINE_HASH_DRIFT:${relativePath}`);
   }
   const portal = readFileSync(path.join(root, 'kabuby/app.js'), 'utf8');
   const runtime = readFileSync(path.join(root, 'kabuby/scout/index.html'), 'utf8');
