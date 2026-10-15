@@ -1,18 +1,18 @@
 {
-  "mission": "B0006N5S1C_ECONOMIC_TRUTH_REPAIR_AND_OWNER_DECISION_UX_V3",
-  "reason": "Project the existing B0006N5S1C read-only economics truth in the owner dossier. The global portal entry is content-addressed because it carries the isolated non-Scout dossier projection; Scout runtime, routes, storage, extension handoff, and owner-session contract remain unchanged.",
+  "mission": "AMAZON_EBAY_COMMERCIAL_OPPORTUNITY_TRUTH_RECONCILIATION_V1",
+  "reason": "Project the existing Engine B certification cohort as economic research only, never as a commercial opportunity. The global portal entry is content-addressed because it presents the pre-existing sanitized read model; Scout runtime, routes, storage, extension handoff, and owner-session contract remain unchanged.",
   "files_contracts_affected": [
     "kabuby/app.js",
     "scripts/scout-protection-gate.mjs",
     "test/kabuby-scout-production-baseline.test.mjs"
   ],
-  "expected_behavior_change": "Only B0006N5S1C receives corrected fee and owner-decision projection semantics. Scout has no behavior change; exact content hashes and the existing scope gate continue to reject every unlisted Scout-surface mutation.",
+  "expected_behavior_change": "Only the global portal presentation separates economic validation from commercial validation for the existing ten-product Engine B cohort. Scout has no behavior change; exact content hashes and the existing scope gate continue to reject every unlisted Scout-surface mutation.",
   "migration_impact": "None. Existing Scout browser storage is neither initialized, reseeded, migrated, nor written.",
-  "rollback_plan": "Revert this B0006N5S1C projection commit and redeploy the immediately preceding Pages deployment if a production canary demonstrates any Scout regression.",
-  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: B0006N5S1C_ECONOMIC_TRUTH_REPAIR_AND_OWNER_DECISION_UX_V3",
+  "rollback_plan": "Revert this read-only commercial-truth projection commit and redeploy the immediately preceding Pages deployment if a production canary demonstrates any Scout regression.",
+  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: AMAZON_EBAY_COMMERCIAL_OPPORTUNITY_TRUTH_RECONCILIATION_V1",
   "base_commit": "c0a4339df14d06dbc2341aface9fd9b8276cbe94",
   "source_fingerprints": {
-    "kabuby/app.js": "dab501ec819c466a0354d23ac473b19e9d088c164b66d8feb1bc07385184ec5d",
+    "kabuby/app.js": "be0911e5611399579a4b48fb4b4d23ac6643ea127cac67624328c904d7f0c274",
     "scripts/scout-protection-gate.mjs": "b6957fdaadcf0a0de20f6ccdf4adfe6b8cd7395f9b4b20766d0af4fb5bf818ae",
     "test/kabuby-scout-production-baseline.test.mjs": "b99a21e49c724214e07388d3c354485a6648c33b4b635053983181fd3d2faee2"
   }
