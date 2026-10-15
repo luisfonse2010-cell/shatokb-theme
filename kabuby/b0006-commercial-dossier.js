@@ -23,6 +23,14 @@ function marketMedian(value) {
   const values = first(value).split('/').map(entry => entry.trim()).filter(Boolean);
   return values[1] || values[0] || 'UNKNOWN';
 }
+function plainDemand(value) {
+  return /UNPROVEN/i.test(value) ? 'Demand remains unproven. Active listings are not sales.' : String(value || 'UNKNOWN');
+}
+function plainDecision(value) {
+  return /VALIDATE/i.test(value) ? 'The current certified scenario merits validation; it is not ready for commercial execution.' : String(value || 'UNKNOWN');
+}
+function shortFee(value) { return [part(value, 0), part(value, 1)].filter(item => item !== 'UNKNOWN').join(' · ') || 'UNKNOWN'; }
+function shortShipping(value) { return [part(value, 0), part(value, 1), part(value, 2)].join(' · '); }
 function installStyles() {
   if (document.querySelector('#b0006-owner-decision-dossier-styles')) return;
   const style = document.createElement('style');
@@ -91,9 +99,9 @@ function dedicatedPresentation(card) {
     '<section class="b0006-commercial-hero"><div><div><p class="b0006-eyebrow">COMMERCIAL SCENARIO · PRE-TAX</p><h2>What the current evidence supports</h2></div><span class="b0006-decision">' + esc(decision) + '</span></div>' +
     '<div class="b0006-metrics"><div class="b0006-metric"><small>Amazon cost</small><strong>' + esc(first(acquisition)) + '</strong></div><div class="b0006-metric market"><small>eBay reference</small><strong>' + esc(marketMedian(market)) + '</strong></div><div class="b0006-metric"><small>Pre-tax profit</small><strong>' + esc(first(economics)) + '</strong></div><div class="b0006-metric"><small>Margin</small><strong>' + esc(part(economics, 1)) + '</strong></div><div class="b0006-metric"><small>ROI</small><strong>' + esc(part(economics, 2)) + '</strong></div></div>' +
     '<div class="b0006-pricing"><div><small>Break-even</small><strong>' + esc(first(pricing)) + '</strong></div><div><small>Target price</small><strong>' + esc(part(pricing, 1)) + '</strong></div><div><small>TAC</small><strong>' + esc(part(pricing, 2)) + '</strong></div></div><p class="b0006-scenario-note"><strong>ACTIVE LISTING PRICE SCENARIO · NOT SOLD PRICE · DEMAND UNPROVEN.</strong> ' + esc(market) + '</p></section>' +
-    '<div class="b0006-owner-grid"><section class="b0006-owner-section"><p class="b0006-eyebrow">WHY KABUBY SAYS VALIDATE</p><h2>Positive scenario, with proof still required</h2><ul class="b0006-why"><li><strong>Economics:</strong> The certified pre-tax scenario shows ' + esc(first(economics)) + ' profit, ' + esc(part(economics, 1)) + ' margin, and ' + esc(part(economics, 2)) + ' ROI.</li><li><strong>Competition:</strong> ' + esc(market) + ' This is active-listing context, never a sold-price claim.</li><li><strong>Market evidence:</strong> ' + esc(demand) + ' Kabuby does not convert listings into demand.</li><li><strong>Decision:</strong> ' + esc(strategic) + ' Owner review and factual validation are the next permitted steps.</li></ul></section>' +
+    '<div class="b0006-owner-grid"><section class="b0006-owner-section"><p class="b0006-eyebrow">WHY KABUBY SAYS VALIDATE</p><h2>Positive scenario, with proof still required</h2><ul class="b0006-why"><li><strong>Economics:</strong> The certified pre-tax scenario shows ' + esc(first(economics)) + ' profit, ' + esc(part(economics, 1)) + ' margin, and ' + esc(part(economics, 2)) + ' ROI.</li><li><strong>Competition:</strong> ' + esc(first(market)) + '. This is active-listing context, never a sold-price claim.</li><li><strong>Market evidence:</strong> ' + esc(plainDemand(demand)) + '</li><li><strong>Decision:</strong> ' + esc(plainDecision(strategic)) + '</li></ul></section>' +
     '<section class="b0006-owner-section"><p class="b0006-eyebrow">COST STACK</p><h2>Inputs behind the scenario</h2><table class="b0006-cost-stack"><tbody>' +
-    costRow('Amazon purchase', acquisition, 'factual') + costRow('Amazon shipping / purchase tax', amazonShipping, 'unknown') + costRow('Outbound shipping / packaging / handling', outbound, 'policy') + costRow('Returns reserve', returns, 'policy') + costRow('eBay fee / fixed order fee', ebayFee, 'factual') + costRow('Promotion', scenarios, 'scenario') +
+    costRow('Amazon purchase', first(acquisition), 'factual') + costRow('Amazon shipping / purchase tax', shortShipping(amazonShipping), 'unknown') + costRow('Outbound shipping / packaging / handling', first(outbound) + ' · packaging USD 0.75 · handling USD 0.00', 'policy') + costRow('Returns reserve', first(returns), 'policy') + costRow('eBay fee / fixed order fee', shortFee(ebayFee), 'factual') + costRow('Promotion', scenarios, 'scenario') +
     '</tbody></table></section></div>' +
     '<div class="b0006-owner-grid"><section class="b0006-owner-section"><p class="b0006-eyebrow">WHAT STILL NEEDS PROOF</p><h2>Material uncertainties</h2><ul class="b0006-risks"><li><strong>Amazon purchase tax</strong>It remains unknown and is not added to the scenario.</li><li><strong>Demand</strong>It is unproven; active listings are not sales.</li><li><strong>Seller performance surcharge</strong>Account-specific surcharge remains unknown.</li><li><strong>Buyer-collected shipping</strong>It remains unknown and is not represented as revenue.</li></ul></section>' +
     '<section class="b0006-owner-section"><p class="b0006-eyebrow">ECONOMICS</p><h2>Certified scenario availability</h2><div class="b0006-scenarios"><div class="b0006-scenario-row"><strong>Organic</strong><p>' + esc(scenarioText) + '</p></div><div class="b0006-scenario-row"><strong>Promoted 8%</strong><p>' + esc(scenarioText) + '</p></div><div class="b0006-scenario-row"><strong>Promoted 10%</strong><p>' + esc(scenarioText) + '</p></div></div></section></div>' +
@@ -124,6 +132,7 @@ function enhance() {
   if (!card) return;
   isolateDedicatedView(card);
   dedicatedPresentation(card);
+  requestAnimationFrame(() => card.scrollIntoView({ block: 'start', behavior: 'auto' }));
 }
 function enqueue() {
   if (queued) return;
