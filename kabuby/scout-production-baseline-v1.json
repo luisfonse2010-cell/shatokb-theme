@@ -1,0 +1,62 @@
+{
+  "baseline_id": "SCOUT_CANONICAL_PRODUCTION_BASELINE_V1",
+  "owner_accepted": true,
+  "baseline_commit": "84db665ab3d6f9f5dbbd2595df767b42aa63882d",
+  "baseline_deployment": "81d08b94-ff8f-4f5f-b0c2-26eb49642e1a",
+  "baseline_origin": "https://kabuby.com",
+  "owner_verified_at": "2026-10-14T21:12:42-04:00",
+  "asset_hashes": {
+    "kabuby/index.html": "bd2a532fa0c3e7eee91343c4b2917d4780c8ccacec01ca7c9e144eda1ae5ea2d",
+    "kabuby/app.js": "9a5a7be28ca0322dccf2638fbf26816030c8e1de6956ac30f141ff84b5c799d5",
+    "kabuby/scout/index.html": "caabd6dd4c7362bad53a0c1219ba4900ceaf2b21ff3089b0593993b4b33a4e7f",
+    "kabuby/scout-owner.js": "c87f94d1d7a839bdb5528fb1530216d6a6af130b477213ce52693134227984de",
+    "kabuby/styles.css": "a157950c759981ac5e69cd0864df8cbd2b1de0935f2bd0615498041eb0a3186a"
+  },
+  "protected_files": [
+    "kabuby/index.html",
+    "kabuby/app.js",
+    "kabuby/styles.css",
+    "kabuby/scout/index.html",
+    "kabuby/scout-owner.js",
+    "kabuby/_headers",
+    "kabuby/_redirects",
+    "kabuby/production-surface-regression-gate.json",
+    "kabuby/scout-production-baseline-v1.json",
+    "scripts/scout-protection-gate.mjs",
+    "test/kabuby-scout-production-baseline.test.mjs",
+    "test/kabuby-production-surface-regression-gate.test.mjs",
+    "test/scout-owner.test.mjs",
+    ".github/workflows/kabuby-foundation-ci.yml"
+  ],
+  "routes": {
+    "owner_shell": "/#scout?view=pendientes",
+    "integrated_runtime": "/scout/?integrated=1&view=pendientes",
+    "legacy_compatibility": "/scout/"
+  },
+  "storage_contract": ["shato_products", "shato_despachos", "shato_config"],
+  "extension_contract": ["SHATO_AMAZON_PRODUCT", "chrome.storage.local", "productConsumed", "Pendientes handoff"],
+  "invariants": {
+    "global_shell_count": 1,
+    "global_navigation_count": 1,
+    "owner_session_count": 1,
+    "second_login_required": false,
+    "extension_capture": "PASS",
+    "post_capture_destination": "/#scout?view=pendientes",
+    "legacy_owner_redirect": false,
+    "existing_storage_destructive_mutation": "FORBIDDEN"
+  },
+  "production_canary": {
+    "required_after_every_production_deployment": true,
+    "requires_authenticated_owner_browser": true,
+    "required_observations": ["origin", "deployment", "owner route", "storage provenance", "extension contract", "post-capture target"],
+    "failure_action": "ROLL_BACK_TO_LAST_KNOWN_GOOD_BEFORE_CONTINUING"
+  },
+  "scope_exception": {
+    "path": "kabuby/scout-scope-exception.json",
+    "required_fields": ["mission", "reason", "files_contracts_affected", "expected_behavior_change", "migration_impact", "rollback_plan", "owner_authorization", "base_commit", "source_fingerprints"]
+  },
+  "last_known_good": {
+    "commit": "84db665ab3d6f9f5dbbd2595df767b42aa63882d",
+    "deployment": "81d08b94-ff8f-4f5f-b0c2-26eb49642e1a"
+  }
+}

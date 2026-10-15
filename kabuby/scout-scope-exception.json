@@ -1,0 +1,21 @@
+{
+  "mission": "KABUBY_SCOUT_IMMUTABLE_PRODUCTION_BASELINE_V1",
+  "reason": "Establish the owner-approved immutable Scout production baseline, its content-addressed protected surface, and the mandatory CI scope gate without changing Scout runtime behavior.",
+  "files_contracts_affected": [
+    ".github/workflows/kabuby-foundation-ci.yml",
+    "kabuby/scout-production-baseline-v1.json",
+    "scripts/scout-protection-gate.mjs",
+    "test/kabuby-scout-production-baseline.test.mjs"
+  ],
+  "expected_behavior_change": "Future changes to the protected Scout surface fail CI unless a mission-specific, owner-authorized, content-addressed scope exception is present. Current owner-facing Scout behavior is unchanged.",
+  "migration_impact": "None. Existing Scout browser storage is neither initialized, reseeded, migrated, nor written by this baseline gate.",
+  "rollback_plan": "Revert this baseline-protection commit and redeploy the preceding known-good Pages deployment only if the new certification gate itself blocks a valid owner-authorized Scout repair.",
+  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: KABUBY_SCOUT_IMMUTABLE_PRODUCTION_BASELINE_V1",
+  "base_commit": "84db665ab3d6f9f5dbbd2595df767b42aa63882d",
+  "source_fingerprints": {
+    ".github/workflows/kabuby-foundation-ci.yml": "bfa3247697f41f0d518e5cb3f2795dd90d8cb7f314c53be85e67d1da4758359f",
+    "kabuby/scout-production-baseline-v1.json": "9227107b1a0652dd37c8c2e404eb3d99ab7593eff6adb0f4266187bca91c9c2a",
+    "scripts/scout-protection-gate.mjs": "90da510cc4be047b319dcfbf85c0307491b571dfded188ad5fe599b5233ac5c8",
+    "test/kabuby-scout-production-baseline.test.mjs": "fb9d3562917f4784344bc783517c48c449fbfa9125cdc8e85148420eb1e285d4"
+  }
+}

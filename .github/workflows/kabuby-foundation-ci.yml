@@ -26,10 +26,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '24.12.0'
+      - name: Enforce immutable Scout baseline and scope boundary
+        env:
+          SCOUT_GATE_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: node scripts/scout-protection-gate.mjs --base "$SCOUT_GATE_BASE"
       - name: Run static frontend certification
         run: node --test test/*.test.mjs
       - name: Reject whitespace errors
