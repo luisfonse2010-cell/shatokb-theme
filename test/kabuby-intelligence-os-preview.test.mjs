@@ -7,6 +7,7 @@ const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8'
 const sha256 = value => createHash('sha256').update(value).digest('hex');
 const html = read('kabuby/today/index.html');
 const app = read('kabuby/today/app.js');
+const scoutApp = read('kabuby/app.js');
 const data = read('kabuby/today/data.js');
 const css = read('kabuby/today/styles.css');
 const manifest = JSON.parse(read('kabuby/today/manifest.json'));
@@ -90,21 +91,22 @@ test('Amazon-to-eBay uses the existing authenticated projection to render fail-c
   assert.doesNotMatch(app, /api\.kabuby\.com|fetch\([^)]*ebay/i);
 });
 
-test('Scout compatibility runtime remains byte-identical while the owner surface stays integrated', () => {
-  assert.equal(sha256(read('index.html')), '5b7fae2262c409021d7d251c5feca89abde9f7794c7a93eb7d043af525ad55eb');
-  assert.equal(manifest.scout.state, 'INTEGRATED_OWNER_SURFACE_COMPATIBILITY_RUNTIME_PRESERVED');
+test('Scout hosts the preserved functional runtime with a same-origin integration boundary', () => {
+  assert.equal(manifest.scout.state, 'INTEGRATED_NATIVE_SCOUT_MODULE_HOST_RUNTIME_PRESERVED');
   assert.equal(manifest.scout.owner_route, '#scout');
   assert.equal(manifest.scout.compatibility_route, '/scout/');
-  assert.equal(manifest.scout.owner_data_access, 'INTEGRATED_RICH_READ_ONLY_SCOUT_PROJECTION');
-  assert.match(app, /scout-product-card/);
-  assert.match(app, /readScoutOwnerSnapshot/);
-  assert.doesNotMatch(app, /scout-legacy-runtime/);
-  assert.doesNotMatch(app, /PRESERVE_AS_IS_PROTECTED|PROTECTED CONTRACT|nav-lock/);
-  assert.doesNotMatch(app, /<dt>Projection<\/dt>/);
-  assert.doesNotMatch(app, /COMMAND_CENTER_PROJECTION_CONTRACT|PROJECTION_UI_CONTRACT|GATE1_CF_ACCESS/);
-  assert.equal(sha256(readFileSync(new URL('../kabuby/scout/index.html', import.meta.url))), 'ee811b37c804f2cd7c397037c442ee608dc15f865e54ef7b3f2a0f5d9fb9664f');
-  assert.equal(manifest.scout.source_changes, 0);
+  assert.equal(manifest.scout.owner_data_access, 'SAME_ORIGIN_LEGACY_FUNCTIONAL_RUNTIME_MODULE_HOST');
+  assert.equal(manifest.scout.legacy_runtime_business_logic_changes, 0);
   assert.equal(manifest.scout.chrome_extension_changes, 0);
+  assert.match(scoutApp, /scout-functional-module/);
+  assert.match(scoutApp, /KABUBY_SCOUT_MODULE_HEIGHT/);
+  assert.doesNotMatch(scoutApp, /scout-product-card/);
+  assert.doesNotMatch(scoutApp, /readScoutOwnerSnapshot/);
+  const scout = read('kabuby/scout/index.html');
+  assert.match(scout, /window\.self !== window\.top/);
+  assert.match(scout, /window\.top\.location\.origin === window\.location\.origin/);
+  assert.match(scout, /body\.scout-module-host \.sidebar/);
+  assert.match(scout, /body\.scout-module-host #login-screen/);
   assert.equal(manifest.production_regression_gate.id, 'CERTIFIED_EXISTING_SURFACE_PRODUCTION_REGRESSION_GATE');
   assert.equal(manifest.production_regression_gate.path, '../production-surface-regression-gate.json');
   assert.equal(manifest.production_regression_gate.enforcement, 'PRODUCTION_SMOKE_REQUIRED_BEFORE_CERTIFICATION');

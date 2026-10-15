@@ -1,5 +1,5 @@
 import { DAYPARTS, NAVIGATION, PHYSICAL_PROJECTION_PATH } from './data.js';
-import { legacyScoutImportTarget, readScoutOwnerSnapshot, SCOUT_COMPATIBILITY } from './scout-owner.js';
+import { legacyScoutImportTarget } from './scout-owner.js';
 
 const app = document.querySelector('#app');
 const nav = document.querySelector('#primary-navigation');
@@ -321,32 +321,29 @@ function dataPage(page) { const m=model(); const {params}=route(); const surface
 function salesLifecycle() { const stages=['SALE_RECEIVED','PURCHASE_REQUIRED','PURCHASED','INBOUND_IN_TRANSIT','RECEIVED_AT_HUB','INSPECTED','READY_FOR_OUTBOUND','SHIPPED_TO_CUSTOMER','DELIVERED','RECONCILED']; return `<section class="section"><div class="section-heading"><div><p>${esc(t('nav.operations'))}</p><h2>Sales lifecycle</h2></div></div><div class="detail-grid">${stages.map(stage => `<article class="detail-card"><span class="state-pill" data-state="UNKNOWN">${esc(stage)}</span><p>${esc(t('state.unknown'))}</p></article>`).join('')}</div></section>`; }
 function lockedActions() { return `<section class="section"><div class="section-heading"><div><p>${esc(t('label.authority'))}</p><h2>${esc(t('today.security'))}</h2></div></div><div class="locked-actions"><button disabled title="Commercial authority is NONE">BUY · BLOCKED</button><button disabled title="Commercial authority is NONE">PUBLISH · BLOCKED</button><button disabled title="Commercial authority is NONE">REPRICE · BLOCKED</button><button disabled title="Commercial authority is NONE">INVENTORY WRITE · BLOCKED</button></div></section>`; }
 const SCOUT_VIEWS = Object.freeze([
-  ['dashboard', 'Dashboard'], ['pendientes', 'Pendientes'], ['despachos', 'Despachos'], ['inventario', 'Inventario'], ['categorias', 'Categorías']
+  ['dashboard', 'Dashboard'], ['pendientes', 'Pendientes'], ['despachos', 'Despachos'], ['inventario', 'Inventario'], ['categorias', 'Categorías'], ['config', 'Configuración']
 ]);
-function scoutMoney(value) { return Number.isFinite(value) ? `USD ${value.toFixed(2)}` : 'UNKNOWN'; }
-function scoutMetric(label, value) { return `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`; }
-function scoutProductCard(item) {
-  const image = item.image ? `<img class="scout-product-image" src="${esc(item.image)}" alt="" loading="lazy" onerror="this.closest('.scout-product-media').classList.add('image-unavailable')">` : '';
-  const status = item.status || 'UNKNOWN';
-  return `<article class="scout-product-card"><div class="scout-product-media">${image}<span aria-hidden="true">◇</span></div><div class="scout-product-copy"><div class="scout-product-kicker"><span class="state-pill" data-state="${esc(status)}">${esc(status)}</span><span>${esc(item.category || item.niche || 'UNKNOWN')}</span></div><h2>${esc(item.title || item.asin || item.id || 'UNKNOWN')}</h2><p class="scout-product-asin">ASIN · ${esc(item.asin || 'UNKNOWN')}</p><dl class="scout-product-prices">${scoutMetric('Amazon', scoutMoney(item.priceAmazon))}${scoutMetric('Store', scoutMoney(item.priceStore))}${scoutMetric('Shipping', scoutMoney(item.shipping))}</dl><details class="scout-product-details"><summary>Ver detalle</summary><dl>${scoutMetric('Categoría', item.category || 'UNKNOWN')}${scoutMetric('Nicho', item.niche || 'UNKNOWN')}${scoutMetric('Stock', Number.isFinite(item.stock) ? number(item.stock) : 'UNKNOWN')}${scoutMetric('Unidades vendidas', Number.isFinite(item.sold) ? number(item.sold) : 'UNKNOWN')}${scoutMetric('Creado', item.createdAt || 'UNKNOWN')}${item.description ? scoutMetric('Descripción', item.description) : ''}</dl></details></div></article>`;
+function scoutModuleSource(view) {
+  const source = new URL('/scout/', window.location.origin);
+  source.searchParams.set('integrated', '1');
+  source.searchParams.set('view', view);
+  return source.pathname + source.search;
 }
-function scoutRows(rows, empty) { return rows.length ? `<div class="scout-product-grid">${rows.map(scoutProductCard).join('')}</div>` : noDataCard('No hay registros de Scout disponibles', empty); }
 function scoutView() {
   const { params } = route();
-  const requested = params.get('view') || 'dashboard';
-  const view = SCOUT_VIEWS.some(([id]) => id === requested) ? requested : 'dashboard';
-  const snapshot = authState === 'AUTHENTICATED' ? readScoutOwnerSnapshot() : null;
-  const tabs = `<nav class="surface-tabs" aria-label="Scout views">${SCOUT_VIEWS.map(([id, label]) => `<a href="#scout?view=${id}"${id === view ? ' aria-current="page"' : ''}>${label}</a>`).join('')}</nav>`;
-  if (!snapshot) return `${authBanner()}<section class="page-head"><p class="eyebrow">SCOUT</p><h1>Scout</h1><p>Scout aparece en Kabuby Intelligence OS mediante la sesión existente de Cloudflare Access.</p>${tabs}</section>${noDataCard('Acceso autenticado requerido', 'Conecta la sesión de Kabuby Intelligence para ver los registros existentes de Scout. No se solicita una segunda credencial de Scout.')}`;
-  const products = snapshot.products;
-  const dashboard = `<section class="section scout-summary"><div class="section-heading"><div><p>SCOUT · REGISTROS EXISTENTES</p><h2>Productos recibidos</h2></div>${badge(snapshot.state)}</div><div class="metric-grid"><article class="metric"><small>Productos</small><strong>${number(snapshot.counts.products)}</strong><span>store existente</span></article><article class="metric"><small>Pendientes</small><strong>${number(snapshot.counts.pending)}</strong><span>sin inferencias</span></article><article class="metric"><small>Inventario</small><strong>${number(snapshot.counts.inventory)}</strong><span>campos existentes</span></article><article class="metric"><small>Categorías</small><strong>${number(snapshot.categories.length)}</strong><span>clasificación existente</span></article></div></section>`;
-  const content = view === 'dashboard' ? `${dashboard}${scoutRows(products, 'Los productos recibidos por el intake existente aparecerán aquí.')}`
-    : view === 'pendientes' ? scoutRows(products.filter(item => item.status.toLowerCase() === 'pending'), 'No hay productos pendientes en el store existente.')
-    : view === 'inventario' ? scoutRows(products.filter(item => !['pending', 'rejected'].includes(item.status.toLowerCase())), 'No hay inventario local disponible.')
-    : view === 'categorias' ? `<div class="detail-grid">${snapshot.categories.length ? snapshot.categories.map(category => `<article class="detail-card scout-record"><span>CATEGORÍA</span><h3>${esc(category)}</h3><p>${number(products.filter(item => item.category === category).length)} producto(s) existente(s).</p></article>`).join('') : noDataCard('No hay categorías disponibles', 'Las categorías aparecen cuando existen en los registros de Scout.')}</div>`
-    : scoutRows(snapshot.dispatches, 'No hay despachos locales disponibles.');
-  return `${authBanner()}<section class="page-head"><p class="eyebrow">SCOUT</p><h1>Scout</h1><p>Productos, precios, imágenes y metadatos provienen exclusivamente del store existente de Scout. La vista es integrada y de solo lectura; no requiere un segundo login.</p>${tabs}</section>${content}<section class="section scout-compatibility"><div class="section-heading"><div><p>COMPATIBILIDAD</p><h2>Intake y contratos preservados</h2></div>${badge('AVAILABLE')}</div><div class="detail-grid"><article class="detail-card"><h3>Chrome Extension</h3><p>Los contratos ${esc(SCOUT_COMPATIBILITY.contracts.join(', '))} permanecen sin cambios.</p></article><article class="detail-card"><h3>Autoridad comercial</h3><p>Compra, publicación, precio, inventario y fulfillment siguen bloqueados desde Kabuby Intelligence OS.</p></article></div></section>${lockedActions()}`;
+  const requested = params.get('view') || 'pendientes';
+  const view = SCOUT_VIEWS.some(([id]) => id === requested) ? requested : 'pendientes';
+  const tabs = `<nav class="surface-tabs scout-module-tabs" aria-label="Scout module navigation">${SCOUT_VIEWS.map(([id, label]) => `<a href="#scout?view=${id}"${id === view ? ' aria-current="page"' : ''}>${label}</a>`).join('')}</nav>`;
+  return `${authBanner()}<section class="page-head scout-module-heading"><p class="eyebrow">SCOUT</p><h1>Scout</h1><p>El módulo funcional existente se ejecuta dentro de la sesión autenticada de Kabuby. La ruta directa de compatibilidad conserva su límite de autenticación independiente.</p>${tabs}</section><section class="scout-module-host" aria-label="Scout functional workspace"><iframe id="scout-functional-module" class="scout-module-frame" title="Scout" src="${esc(scoutModuleSource(view))}" data-scout-module="functional-runtime" referrerpolicy="same-origin"></iframe></section>`;
 }
+function receiveScoutModuleMessage(event) {
+  if (event.origin !== window.location.origin || event.data?.type !== 'KABUBY_SCOUT_MODULE_HEIGHT') return;
+  const frame = document.querySelector('#scout-functional-module');
+  if (!frame || event.source !== frame.contentWindow) return;
+  const height = Number(event.data.height);
+  if (Number.isFinite(height) && height >= 640 && height <= 20000) frame.style.height = `${Math.ceil(height)}px`;
+}
+window.addEventListener('message', receiveScoutModuleMessage);
 
 function capabilityStatus(m, value) { return state(value || (m.isAvailable ? 'WAITING_FOR_EVIDENCE' : authState)); }
 function capabilityInventory(m) {

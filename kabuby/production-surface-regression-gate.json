@@ -1,6 +1,6 @@
 {
   "gate": "CERTIFIED_EXISTING_SURFACE_PRODUCTION_REGRESSION_GATE",
-  "version": 4,
+  "version": 5,
   "deployment_rule": "A Kabuby Pages production deployment is not certified until every applicable already-certified owner surface has a production smoke result. Source hashes and local tests are necessary but never sufficient.",
   "surfaces": [
     {
@@ -23,17 +23,17 @@
       "id": "SCOUT",
       "owner_route": "#scout",
       "compatibility_route": "/scout/",
-      "data_contract": "SAME_ORIGIN_LOCAL_STORAGE_SHATO_PRODUCTS_READ_ONLY",
+      "data_contract": "SAME_ORIGIN_LEGACY_SCOUT_RUNTIME_AND_BROWSER_STORAGE",
       "required": [
-        "authenticated owner shell renders rich read-only cards from the existing Scout store",
-        "existing local records are visible when present without a second Scout login",
-        "product cards retain image, pricing, metadata and status fields supplied by existing records",
-        "read-only detail and category views retain all permitted existing fields",
-        "legacy compatibility route remains available for the Chrome extension",
+        "one authenticated Kabuby shell and one owner session",
+        "native Scout functional runtime renders without its legacy global shell or login screen",
+        "existing seven local records remain visible when present through the unmodified Scout renderer",
+        "product images, pricing metadata, detail, edit, category, inventory, and dispatch flows remain owned by the existing runtime",
+        "legacy compatibility route remains available for the Chrome extension and retains its independent authentication boundary when opened directly",
         "Chrome extension handoff contracts remain unchanged",
-        "extension import is handed to the same-origin legacy runtime before the owner projection loads"
+        "extension import is handed to the same-origin legacy runtime before the owner module host loads"
       ],
-      "owner_runtime": "INTEGRATED_RICH_READ_ONLY_SCOUT_PROJECTION"
+      "owner_runtime": "NATIVE_SCOUT_FUNCTIONAL_MODULE_HOST"
     },
     {
       "id": "SUPPLY",

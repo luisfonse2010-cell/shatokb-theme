@@ -10,22 +10,23 @@ const scout = read('kabuby/scout/index.html');
 
 test('CERTIFIED_EXISTING_SURFACE_PRODUCTION_REGRESSION_GATE covers the certified owner surfaces', () => {
   assert.equal(gate.gate, 'CERTIFIED_EXISTING_SURFACE_PRODUCTION_REGRESSION_GATE');
-  assert.equal(gate.version, 4);
+  assert.equal(gate.version, 5);
   assert.match(gate.deployment_rule, /never sufficient/);
   assert.match(gate.failure_policy, /blocks certification/);
   assert.deepEqual(gate.surfaces.map(surface => surface.id), ['HOME', 'OPPORTUNITIES', 'SCOUT', 'SUPPLY', 'ECONOMICS_RISK']);
 });
 
-test('Scout owner and compatibility surfaces retain the same read-only browser-store contract', () => {
+test('Scout owner host and compatibility route retain the functional runtime contract', () => {
   const scoutGate = gate.surfaces.find(surface => surface.id === 'SCOUT');
   assert.equal(scoutGate.owner_route, '#scout');
   assert.equal(scoutGate.compatibility_route, '/scout/');
-  assert.equal(scoutGate.data_contract, 'SAME_ORIGIN_LOCAL_STORAGE_SHATO_PRODUCTS_READ_ONLY');
-  assert.equal(scoutGate.owner_runtime, 'INTEGRATED_RICH_READ_ONLY_SCOUT_PROJECTION');
-  assert.match(scoutGate.required.join(' '), /product cards retain image, pricing, metadata/);
-  assert.match(portal, /scout-product-card/);
-  assert.match(portal, /readScoutOwnerSnapshot/);
-  assert.doesNotMatch(portal, /scout-legacy-runtime/);
+  assert.equal(scoutGate.data_contract, 'SAME_ORIGIN_LEGACY_SCOUT_RUNTIME_AND_BROWSER_STORAGE');
+  assert.equal(scoutGate.owner_runtime, 'NATIVE_SCOUT_FUNCTIONAL_MODULE_HOST');
+  assert.match(scoutGate.required.join(' '), /one authenticated Kabuby shell/);
+  assert.match(portal, /scout-functional-module/);
+  assert.match(portal, /KABUBY_SCOUT_MODULE_HEIGHT/);
+  assert.doesNotMatch(portal, /scout-product-card/);
+  assert.doesNotMatch(portal, /readScoutOwnerSnapshot/);
   assert.match(portal, /legacyScoutImportTarget/);
   assert.match(portal, /window\.location\.replace\(legacyImportTarget\)/);
   assert.match(adapter, /const PRODUCT_KEY = 'shato_products'/);
@@ -35,6 +36,8 @@ test('Scout owner and compatibility surfaces retain the same read-only browser-s
   assert.match(scout, /localStorage\.getItem\('shato_despachos'\)/);
   assert.match(scout, /SHATO_AMAZON_PRODUCT/);
   assert.match(scout, /productConsumed/);
+  assert.match(scout, /window\.self !== window\.top/);
+  assert.match(scout, /window\.top\.location\.origin === window\.location\.origin/);
   assert.doesNotMatch(adapter, /setItem\(|removeItem\(/);
 });
 

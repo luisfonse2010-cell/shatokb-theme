@@ -1453,6 +1453,18 @@ tr:hover td { background: rgba(108,142,255,0.08); }
 .arb-divider{height:1px;background:#1e3a5f;margin:12px 0}
 .arb-note-ta{width:100%;background:#162445;border:1px solid #26406a;border-radius:8px;padding:8px 12px;color:#e8f0fe;font-size:11px;font-family:inherit;resize:vertical;min-height:48px;outline:none}
 .arb-note-ta:focus{border-color:#6c8eff}
+
+/* ── INTEGRATED KABUBY MODULE HOST ─────────────────────────────
+   Only enabled after a same-origin parent embeds this document. The direct
+   /scout/ compatibility route retains its legacy shell and login boundary. */
+body.scout-module-host { background:transparent; min-height:0; }
+body.scout-module-host #login-screen,
+body.scout-module-host .sidebar,
+body.scout-module-host .topbar { display:none !important; }
+body.scout-module-host #app { display:block !important; min-height:0 !important; }
+body.scout-module-host .main { margin-left:0 !important; min-height:0 !important; display:block !important; }
+body.scout-module-host .content { padding:0 !important; }
+body.scout-module-host .tab-content { padding-bottom:0; }
 </style>
 <link rel="stylesheet" href="./kabuby-today.css">
 </head>
@@ -2666,6 +2678,35 @@ const SUBCATEGORIAS = {
 
 const KBEAUTY_KEYWORDS = ['beauty','skin care','skincare','serum','moisturizer','cleanser','toner','spf','sunscreen','essence','ampoule','korean','k-beauty','facial','face cream','eye cream','mask','exfoliant'];
 
+// ── INTEGRATED MODULE BOUNDARY ─────────────────────────────────
+// A query string alone is never sufficient.  This mode only activates inside
+// the same-origin Kabuby owner shell; direct /scout/ visitors retain the
+// existing Scout session gate and legacy compatibility route.
+const INTEGRATED_MODULE_HOST = (() => {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('integrated') === '1' && window.self !== window.top && window.top.location.origin === window.location.origin;
+  } catch (_) {
+    return false;
+  }
+})();
+const INTEGRATED_MODULE_VIEW = (() => {
+  const view = new URLSearchParams(window.location.search).get('view');
+  return ['dashboard', 'pendientes', 'despachos', 'inventario', 'categorias', 'config'].includes(view) ? view : 'pendientes';
+})();
+if (INTEGRATED_MODULE_HOST) document.body.classList.add('scout-module-host');
+function notifyIntegratedModuleHost() {
+  if (!INTEGRATED_MODULE_HOST) return;
+  window.parent.postMessage({ type: 'KABUBY_SCOUT_MODULE_HEIGHT', height: Math.max(document.documentElement.scrollHeight, document.body.scrollHeight, 640) }, window.location.origin);
+}
+function showIntegratedModuleView() {
+  if (!INTEGRATED_MODULE_HOST) return;
+  // The native dashboard contains the existing category summary and routes to
+  // the unmodified category renderer; no category data is duplicated here.
+  showTab(INTEGRATED_MODULE_VIEW === 'categorias' ? 'dashboard' : INTEGRATED_MODULE_VIEW);
+  requestAnimationFrame(notifyIntegratedModuleHost);
+}
+
 // ── AUTH ───────────────────────────────────────────────────────
 function doLogin() {
   const pass = document.getElementById('login-pass').value;
@@ -2714,10 +2755,11 @@ function doLogout() {
 })();
 
 // Auto-login si ya hay sesión
-if (sessionStorage.getItem('shato_auth')) {
+if (sessionStorage.getItem('shato_auth') || INTEGRATED_MODULE_HOST) {
   document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
-  // initApp se llama al cargar DOM
+  document.getElementById('app').style.display = INTEGRATED_MODULE_HOST ? 'block' : 'flex';
+  // initApp se llama al cargar DOM. The integrated mode is only available to
+  // the same-origin authenticated Kabuby shell defined above.
 }
 
 // ── INIT ───────────────────────────────────────────────────────
@@ -2889,6 +2931,7 @@ function showTab(tab) {
     var navArb = document.getElementById('nav-mod-arbitrage');
     if (navArb) navArb.classList.add('active');
   }
+  if (INTEGRATED_MODULE_HOST) requestAnimationFrame(notifyIntegratedModuleHost);
 }
 
 function goHome() {
@@ -2988,6 +3031,7 @@ function showNicho(nicho) {
   document.getElementById('nicho-sub').textContent   = 'Todos los productos de este nicho';
   document.getElementById('topbarTitle').textContent = n.emoji + ' ' + n.label;
   renderNicho(nicho);
+  if (INTEGRATED_MODULE_HOST) requestAnimationFrame(notifyIntegratedModuleHost);
 }
 
 function globalSearchFn(query) {
@@ -5316,14 +5360,17 @@ document.addEventListener('DOMContentLoaded', function() {
   if (window.location.search.includes('preview=1')) {
     sessionStorage.setItem('shato_auth', '1');
   }
-  if (sessionStorage.getItem('shato_auth')) {
+  if (sessionStorage.getItem('shato_auth') || INTEGRATED_MODULE_HOST) {
     document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
+    document.getElementById('app').style.display = INTEGRATED_MODULE_HOST ? 'block' : 'flex';
     initApp();
+    if (INTEGRATED_MODULE_HOST) showIntegratedModuleView();
     if (window._shatoAutoTab) {
-      setTimeout(function() { showTab(window._shatoAutoTab); window._shatoAutoTab = null; }, 300);
+      setTimeout(function() { showTab(window._shatoAutoTab); window._shatoAutoTab = null; notifyIntegratedModuleHost(); }, 300);
     }
   }
+  if (INTEGRATED_MODULE_HOST && 'ResizeObserver' in window) new ResizeObserver(notifyIntegratedModuleHost).observe(document.body);
+  if (INTEGRATED_MODULE_HOST) setTimeout(notifyIntegratedModuleHost, 80);
   setTimeout(checkChromeStoragePendingProduct, 500);
 });
 </script>
