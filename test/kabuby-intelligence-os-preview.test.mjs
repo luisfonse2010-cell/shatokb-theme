@@ -90,15 +90,15 @@ test('Amazon-to-eBay uses the existing authenticated projection to render fail-c
   assert.doesNotMatch(app, /api\.kabuby\.com|fetch\([^)]*ebay/i);
 });
 
-test('Scout runtime remains byte-identical while its owner surface is integrated in Intelligence OS', () => {
+test('Scout compatibility runtime remains byte-identical while the owner surface stays integrated', () => {
   assert.equal(sha256(read('index.html')), '5b7fae2262c409021d7d251c5feca89abde9f7794c7a93eb7d043af525ad55eb');
   assert.equal(manifest.scout.state, 'INTEGRATED_OWNER_SURFACE_COMPATIBILITY_RUNTIME_PRESERVED');
   assert.equal(manifest.scout.owner_route, '#scout');
   assert.equal(manifest.scout.compatibility_route, '/scout/');
-  assert.equal(manifest.scout.owner_data_access, 'SAME_ORIGIN_LEGACY_FUNCTIONAL_RUNTIME_EMBED');
-  assert.match(app, /id="scout-legacy-runtime"/);
-  assert.match(app, /const runtime = `\/scout\/#\$\{encodeURIComponent\(view\)\}`/);
-  assert.doesNotMatch(app, /const productCard = item/);
+  assert.equal(manifest.scout.owner_data_access, 'INTEGRATED_RICH_READ_ONLY_SCOUT_PROJECTION');
+  assert.match(app, /scout-product-card/);
+  assert.match(app, /readScoutOwnerSnapshot/);
+  assert.doesNotMatch(app, /scout-legacy-runtime/);
   assert.doesNotMatch(app, /PRESERVE_AS_IS_PROTECTED|PROTECTED CONTRACT|nav-lock/);
   assert.doesNotMatch(app, /<dt>Projection<\/dt>/);
   assert.doesNotMatch(app, /COMMAND_CENTER_PROJECTION_CONTRACT|PROJECTION_UI_CONTRACT|GATE1_CF_ACCESS/);

@@ -19,14 +19,14 @@ test('Kabuby.com is the Intelligence OS portal and retains the reviewed visual e
   assert.match(portalApp, /commercial_authority !== 'NONE'/);
 });
 
-test('Scout owner route hosts the byte-identical functional legacy runtime', () => {
+test('Scout owner route projects rich existing fields without embedding the legacy workspace', () => {
   assert.equal(hash('kabuby/scout/index.html'), 'ee811b37c804f2cd7c397037c442ee608dc15f865e54ef7b3f2a0f5d9fb9664f');
   for (const label of ['Kabuby Scout', 'Cazador de Arbitraje', 'Price Monitor', 'eBay Connect', 'Radar de Virales', 'Predicción IA', 'SaaS Platform']) assert.match(scout, new RegExp(label));
   for (const runtimeCapability of ['product-card-img', 'price-amazon', 'editProduct', 'f-category-amazon', 'publishToShopify', 'SHATO_AMAZON_PRODUCT', 'shato_import']) assert.match(scout, new RegExp(runtimeCapability));
   assert.match(portalApp, /href="#\$\{key\}"/);
-  assert.match(portalApp, /id="scout-legacy-runtime"/);
-  assert.match(portalApp, /const runtime = `\/scout\/#\$\{encodeURIComponent\(view\)\}`/);
-  assert.doesNotMatch(portalApp, /const productCard = item/);
+  assert.match(portalApp, /scout-product-card/);
+  assert.match(portalApp, /readScoutOwnerSnapshot/);
+  assert.doesNotMatch(portalApp, /scout-legacy-runtime/);
 });
 
 test('portal capability inventory is read-only and does not manufacture evidence', () => {

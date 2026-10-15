@@ -16,7 +16,7 @@ function storage(values) {
 test('Scout owner adapter reads only the existing sanitized compatibility stores', () => {
   const local = storage({
     shato_products: JSON.stringify([
-      { id: 'p-1', asin: 'B012345678', titleAmazon: 'Verified product', status: 'pending', categoryAmazon: 'Skin care', buyerName: 'private', apiToken: 'private' },
+      { id: 'p-1', asin: 'B012345678', titleAmazon: 'Verified product', status: 'pending', categoryAmazon: 'Skin care', image: 'https://example.test/image.png', priceAmazon: '12.50', priceStore: 24, shipping: 3, stock: 4, sold: 2, buyerName: 'private', apiToken: 'private' },
       { id: 'p-2', titleStore: 'Store product', status: 'approved', nicho: 'Beauty' }
     ]),
     shato_despachos: JSON.stringify([{ id: 'd-1', status: 'queued', channel: 'shopify', customerEmail: 'private' }]),
@@ -26,6 +26,10 @@ test('Scout owner adapter reads only the existing sanitized compatibility stores
   assert.equal(snapshot.state, 'LOCAL_COMPATIBILITY_READ_ONLY');
   assert.deepEqual(snapshot.counts, { products: 2, pending: 1, inventory: 1, dispatches: 1 });
   assert.deepEqual(snapshot.categories, ['Beauty', 'Skin care']);
+  assert.equal(snapshot.products[0].image, 'https://example.test/image.png');
+  assert.equal(snapshot.products[0].priceAmazon, 12.5);
+  assert.equal(snapshot.products[0].priceStore, 24);
+  assert.equal(snapshot.products[0].shipping, 3);
   assert.equal(snapshot.products[0].buyerName, undefined);
   assert.equal(snapshot.products[0].apiToken, undefined);
   assert.equal(snapshot.dispatches[0].customerEmail, undefined);

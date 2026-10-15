@@ -32,9 +32,26 @@ const object = (storage, key) => {
     return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   } catch { return {}; }
 };
+const numeric = value => {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+};
+const firstImage = value => Array.isArray(value?.images) ? value.images.find(entry => typeof entry === 'string' && entry.trim()) : '';
 const product = value => ({
-  id: text(value?.id, 80), asin: text(value?.asin, 32), title: text(value?.titleStore || value?.titleAmazon || value?.title),
-  status: text(value?.status, 48) || 'UNKNOWN', category: text(value?.categoryAmazon || value?.nicho, 96), createdAt: text(value?.createdAt, 48)
+  id: text(value?.id, 80),
+  asin: text(value?.asin, 32),
+  title: text(value?.titleStore || value?.titleAmazon || value?.title),
+  status: text(value?.status, 48) || 'UNKNOWN',
+  category: text(value?.categoryAmazon || value?.nicho, 96),
+  niche: text(value?.nicho, 64),
+  image: text(value?.image || firstImage(value), 600),
+  priceAmazon: numeric(value?.priceAmazon),
+  priceStore: numeric(value?.priceStore),
+  shipping: numeric(value?.shipping),
+  stock: numeric(value?.stock),
+  sold: numeric(value?.sold),
+  description: text(value?.description || value?.desc, 600),
+  createdAt: text(value?.createdAt, 48)
 });
 const dispatch = value => ({
   id: text(value?.id || value?.orderId, 80), status: text(value?.status, 48) || 'UNKNOWN', channel: text(value?.channel, 48), createdAt: text(value?.createdAt || value?.dispatchedAt, 48)
