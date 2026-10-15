@@ -113,6 +113,7 @@ function dedicatedPresentation(card) {
 function isolateDedicatedView(card) {
   const section = card.closest('section.section');
   if (!section) return;
+  app.querySelector('.page-head')?.classList.add('b0006-hidden-for-dedicated-view');
   app.querySelectorAll('section.section').forEach(node => {
     if (node !== section) node.classList.add('b0006-hidden-for-dedicated-view');
   });
