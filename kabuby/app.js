@@ -221,9 +221,15 @@ function cohortOverview(m) {
   return `<section class="section cohort-overview"><div class="section-heading"><div><p>AMAZON → EBAY · FIXED FIRST COHORT</p><h2>Certified economics summary</h2></div>${badge('AVAILABLE')}</div><p>All values are existing server-side read-model facts. PRE-TAX, ACTIVE LISTING PRICE SCENARIO, NOT SOLD PRICE, and DEMAND UNPROVEN remain explicit.</p><div class="metric-grid">${metrics.map(([label,value,detail]) => `<article class="metric"><small>${esc(label)}</small><strong>${number(value)}</strong><span>${esc(detail)}</span></article>`).join('')}</div><p class="cohort-first-complete">First complete product: <strong>B0006N5S1C</strong> · decision is visible only as the existing canonical server decision.</p></section>`;
 }
 function scenarioRows(candidate) {
-  return arr(candidate.active_market_scenarios).filter(row => row?.position === 'MEDIAN').slice(0, 6).map(row => {
+  const rows = arr(candidate.active_market_scenarios).filter(row => row?.position === 'ACTIVE_MEDIAN_PRICE_SCENARIO');
+  if (candidate.asin === 'B0006N5S1C') {
+    const owner = object(object(candidate.economics_reassessment).owner_decision_economics);
+    const headline = object(owner.headline_scenario);
+    return headline.promotion_id ? [`${headline.promotion_id} · ${headline.returns_scenario_id} · PRE-TAX · ACTIVE LISTING SCENARIO · NOT SOLD PRICE`] : [];
+  }
+  return rows.slice(0, 6).map(row => {
     const economics = object(row.economics);
-    return `${row.promotion_id || 'UNKNOWN'} · ${row.returns_scenario_id || 'UNKNOWN'} · break-even ${usd(economics.minimum_viable_selling_price_minor / 100)} · target ${usd(economics.target_price_minor / 100)} · profit ${usd(economics.contribution_profit_minor / 100)} · margin ${bps(economics.contribution_margin_basis_points)} · ROI ${bps(economics.markup_basis_points)}`;
+    return `${row.promotion_id || 'UNKNOWN'} · ${row.returns_scenario_id || 'UNKNOWN'} · minimum viable price ${usd(economics.minimum_viable_selling_price_minor / 100)} · profit ${usd(economics.contribution_profit_minor / 100)} · margin ${bps(economics.contribution_margin_basis_points)} · ROI ${bps(economics.markup_basis_points)}`;
   });
 }
 function amazonEbayDossiers(m) {
@@ -241,8 +247,14 @@ function amazonEbayDossiers(m) {
     const fee = object(policy.ebay_fee);
     const shipping = object(candidate.outbound_shipping_policy);
     const reassessment = object(candidate.economics_reassessment);
+    const ownerDecision = candidate.asin === 'B0006N5S1C' ? object(reassessment.owner_decision_economics) : {};
     const tac = object(candidate.tac);
     const scenarios = scenarioRows(candidate);
+    const headline = object(ownerDecision.headline_scenario);
+    const ownerFee = Number.isInteger(ownerDecision.fixed_order_fee_minor) ? ownerDecision.fixed_order_fee_minor : fee.fixed_order_fee_minor;
+    const feeDisplay = candidate.asin === 'B0006N5S1C'
+      ? `${bps(ownerDecision.ebay_percentage_fee_rate_basis_points ?? fee.rate_basis_points)} / ${usdMinor(Math.round((active.median ?? 0) * 100 * (ownerDecision.ebay_percentage_fee_rate_basis_points ?? fee.rate_basis_points ?? 0) / 10000))} · fixed order fee ${usdMinor(ownerFee)} · OFFICIAL EBAY STARTER STORE FEE POLICY`
+      : `${candidate.ebay_category?.name || 'UNKNOWN'} · ${bps(fee.rate_basis_points)} + ${usd((fee.fixed_order_fee_minor ?? 0) / 100)} · OFFICIAL EBAY FEE · ${fee.state || 'UNKNOWN'}`;
     const activeRange = Number.isFinite(active.low) ? `${usd(active.low)} / ${usd(active.median)} / ${usd(active.high)} · ACTIVE LISTING PRICE SCENARIO · NOT SOLD PRICE` : 'UNKNOWN';
     const weight = object(candidate.package_weight);
     const dimensions = object(candidate.package_dimensions);
@@ -254,12 +266,13 @@ function amazonEbayDossiers(m) {
       <div><dt>Package weight / dimensions</dt><dd>${esc(`${weight.ounces ?? 'UNKNOWN'} oz · ${dimensions.length_inches ?? 'UNKNOWN'} × ${dimensions.width_inches ?? 'UNKNOWN'} × ${dimensions.height_inches ?? 'UNKNOWN'} in`)}</dd></div>
       <div><dt>Outbound shipping / packaging / handling</dt><dd>${esc(`${usd(shipping.amount)} · ${shipping.state || 'UNKNOWN'} · packaging USD 0.75 · handling USD 0.00 · OWNER POLICY`)}</dd></div>
       <div><dt>Returns reserve</dt><dd>${esc(`${bps(policy.returns_reserve?.base_rate_basis_points)} base / ${bps(policy.returns_reserve?.stress_rate_basis_points)} stress · OWNER POLICY`)}</dd></div>
-      <div><dt>eBay category / official fee</dt><dd>${esc(`${candidate.ebay_category?.name || 'UNKNOWN'} · ${bps(fee.rate_basis_points)} + ${usd((fee.fixed_order_fee_minor ?? 0) / 100)} · OFFICIAL EBAY FEE · ${fee.state || 'UNKNOWN'}`)}</dd></div>
+      <div><dt>eBay category / official fee</dt><dd>${esc(feeDisplay)}</dd></div>
+      ${candidate.asin === 'B0006N5S1C' ? `<div><dt>Headline scenario</dt><dd>${esc(`${headline.promotion_id || 'UNKNOWN'} · ${headline.returns_scenario_id || 'UNKNOWN'} · PRE-TAX · ACTIVE LISTING SCENARIO · NOT SOLD PRICE`)}</dd></div><div><dt>Minimum viable price</dt><dd>${esc(`${usdMinor(ownerDecision.minimum_viable_price_minor)} · 20% minimum-margin floor · dynamic returns treatment`)}</dd></div><div><dt>True break-even</dt><dd>${esc(ownerDecision.true_break_even_price || 'NOT CURRENTLY CERTIFIED')}</dd></div><div><dt>Target acquisition cost</dt><dd>${esc(`${usdMinor(ownerDecision.target_acquisition_cost_minor)} · 30% target margin`)}</dd></div><div><dt>Maximum viable acquisition cost</dt><dd>${esc(`${usdMinor(ownerDecision.maximum_viable_acquisition_cost_minor)} · 20% minimum margin`)}</dd></div>` : ''}
       <div><dt>Active listing range / competition</dt><dd>${esc(`${activeRange} · ${candidate.ebay_competition || 'UNKNOWN'} · ${candidate.exact_active_listings ?? 'UNKNOWN'} listings`)}</dd></div>
       <div><dt>Demand / white space</dt><dd>${esc(`${candidate.ebay_demand || 'DEMAND UNPROVEN'} · ${candidate.white_space || 'UNKNOWN'}`)}</dd></div>
       <div><dt>Organic / promoted scenarios</dt><dd>${esc(scenarios.join('; ') || 'UNKNOWN')}</dd></div>
-      <div><dt>Break-even / target price / TAC</dt><dd>${esc(`${usdMinor(reassessment.break_even_price ?? candidate.break_even_price)} · ${usdMinor(reassessment.target_price ?? candidate.target_price)} · ${usdMinor(tac.conservative_minor ?? tac.base_minor)} · PRE-TAX`)}</dd></div>
-      <div><dt>Pre-tax profit / margin / ROI</dt><dd>${esc(`${usdMinor(reassessment.net_profit ?? candidate.net_profit)} · ${bps(reassessment.margin ?? candidate.margin)} · ${bps(reassessment.roi ?? candidate.roi)}`)}</dd></div>
+      ${candidate.asin === 'B0006N5S1C' ? '' : `<div><dt>Break-even / target price / TAC</dt><dd>${esc(`${usdMinor(reassessment.break_even_price ?? candidate.break_even_price)} · ${usdMinor(reassessment.target_price ?? candidate.target_price)} · ${usdMinor(tac.conservative_minor ?? tac.base_minor)} · PRE-TAX`)}</dd></div>`}
+      <div><dt>Pre-tax profit / margin / ROI</dt><dd>${esc(`${usdMinor(reassessment.net_profit ?? candidate.net_profit)} · ${bps(reassessment.margin ?? candidate.margin)} · ${bps(reassessment.roi ?? candidate.roi)}${candidate.asin === 'B0006N5S1C' ? ' · ROI basis: Amazon purchase + packaging USD 4.75' : ''}`)}</dd></div>
       <div><dt>Exact remaining blocker / confidence</dt><dd>${esc(`${arr(candidate.unknown_costs).join(', ') || 'NONE_RECORDED'} · ${cost.price_confidence || 'UNKNOWN'}`)}</dd></div>
     </dl><span class="authority-badge">READ ONLY · COMMERCIAL ACTIONS BLOCKED</span></article>`;
   }).join('') : noDataCard('No dossier matches this certified filter.', 'No product state was changed by filtering.');

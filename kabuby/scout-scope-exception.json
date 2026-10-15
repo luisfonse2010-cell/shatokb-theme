@@ -1,21 +1,19 @@
 {
-  "mission": "KABUBY_SCOUT_IMMUTABLE_PRODUCTION_BASELINE_V1",
-  "reason": "Establish the owner-approved immutable Scout production baseline, its content-addressed protected surface, and the mandatory CI scope gate without changing Scout runtime behavior.",
+  "mission": "B0006N5S1C_ECONOMIC_TRUTH_REPAIR_AND_OWNER_DECISION_UX_V3",
+  "reason": "Project the existing B0006N5S1C read-only economics truth in the owner dossier. The global portal entry is content-addressed because it carries the isolated non-Scout dossier projection; Scout runtime, routes, storage, extension handoff, and owner-session contract remain unchanged.",
   "files_contracts_affected": [
-    ".github/workflows/kabuby-foundation-ci.yml",
-    "kabuby/scout-production-baseline-v1.json",
+    "kabuby/app.js",
     "scripts/scout-protection-gate.mjs",
     "test/kabuby-scout-production-baseline.test.mjs"
   ],
-  "expected_behavior_change": "Future changes to the protected Scout surface fail CI unless a mission-specific, owner-authorized, content-addressed scope exception is present. Current owner-facing Scout behavior is unchanged.",
-  "migration_impact": "None. Existing Scout browser storage is neither initialized, reseeded, migrated, nor written by this baseline gate.",
-  "rollback_plan": "Revert this baseline-protection commit and redeploy the preceding known-good Pages deployment only if the new certification gate itself blocks a valid owner-authorized Scout repair.",
-  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: KABUBY_SCOUT_IMMUTABLE_PRODUCTION_BASELINE_V1",
-  "base_commit": "84db665ab3d6f9f5dbbd2595df767b42aa63882d",
+  "expected_behavior_change": "Only B0006N5S1C receives corrected fee and owner-decision projection semantics. Scout has no behavior change; exact content hashes and the existing scope gate continue to reject every unlisted Scout-surface mutation.",
+  "migration_impact": "None. Existing Scout browser storage is neither initialized, reseeded, migrated, nor written.",
+  "rollback_plan": "Revert this B0006N5S1C projection commit and redeploy the immediately preceding Pages deployment if a production canary demonstrates any Scout regression.",
+  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: B0006N5S1C_ECONOMIC_TRUTH_REPAIR_AND_OWNER_DECISION_UX_V3",
+  "base_commit": "c0a4339df14d06dbc2341aface9fd9b8276cbe94",
   "source_fingerprints": {
-    ".github/workflows/kabuby-foundation-ci.yml": "bfa3247697f41f0d518e5cb3f2795dd90d8cb7f314c53be85e67d1da4758359f",
-    "kabuby/scout-production-baseline-v1.json": "9227107b1a0652dd37c8c2e404eb3d99ab7593eff6adb0f4266187bca91c9c2a",
-    "scripts/scout-protection-gate.mjs": "90da510cc4be047b319dcfbf85c0307491b571dfded188ad5fe599b5233ac5c8",
-    "test/kabuby-scout-production-baseline.test.mjs": "fb9d3562917f4784344bc783517c48c449fbfa9125cdc8e85148420eb1e285d4"
+    "kabuby/app.js": "dab501ec819c466a0354d23ac473b19e9d088c164b66d8feb1bc07385184ec5d",
+    "scripts/scout-protection-gate.mjs": "b6957fdaadcf0a0de20f6ccdf4adfe6b8cd7395f9b4b20766d0af4fb5bf818ae",
+    "test/kabuby-scout-production-baseline.test.mjs": "b99a21e49c724214e07388d3c354485a6648c33b4b635053983181fd3d2faee2"
   }
 }
