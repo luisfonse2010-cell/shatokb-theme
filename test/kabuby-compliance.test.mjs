@@ -64,8 +64,11 @@ test('compliance pages are responsive and contain no credential-shaped material'
   }
 });
 
-test('legacy /kabuby paths redirect to the canonical portal before relative assets can break', () => {
-  assert.match(redirects, /^\/kabuby\s+\/\s+301$/m);
-  assert.match(redirects, /^\/kabuby\/\s+\/\s+301$/m);
-  assert.match(redirects, /^\/kabuby\/\*\s+\/\s+301$/m);
+test('legacy /kabuby paths rewrite to the root shell without a redirect loop', () => {
+  assert.match(redirects, /^\/kabuby\s+\/index\.html\s+200$/m);
+  assert.match(redirects, /^\/kabuby\/\s+\/index\.html\s+200$/m);
+  assert.match(redirects, /^\/kabuby\/\*\s+\/index\.html\s+200$/m);
+  for (const asset of ['/favicon.png', '/styles.css', '/assets/kabuby-reference-logo-mark-v1.png', '/app.js']) {
+    assert.match(home, new RegExp(`(?:href|src)="${asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`));
+  }
 });

@@ -1,6 +1,8 @@
-# Legacy portal location.  The portal is canonically served from the origin
-# root; redirect rather than serving its root-relative asset bundle below
-# /kabuby/.
-/kabuby  /  301
-/kabuby/  /  301
-/kabuby/*  /  301
+# Preserve the legacy portal path without another redirect.  Cloudflare Page
+# Rules previously sent the root to /kabuby/; a redirect here formed a loop.
+# The root shell uses origin-absolute assets, so this rewrite is safe for both
+# the canonical root and the legacy URL, including browsers with that old
+# permanent redirect cached.
+/kabuby  /index.html  200
+/kabuby/  /index.html  200
+/kabuby/*  /index.html  200

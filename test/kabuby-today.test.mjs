@@ -11,7 +11,7 @@ const scout = read('kabuby/scout/index.html');
 
 test('Kabuby.com is the Intelligence OS portal and retains the reviewed visual entry point', () => {
   assert.match(portal, /Kabuby Intelligence OS/);
-  assert.match(portal, /\.\/app\.js/);
+  assert.match(portal, /src="\/app\.js"/);
   assert.match(portal, /assets\/kabuby-reference-logo-mark-v1\.png/);
   assert.match(portalApp, /Kabuby Capabilities/);
   assert.match(portalApp, /Opportunity Radar/);
