@@ -1,6 +1,11 @@
 {
   "mission": "KABUBY_PRODUCTION_PARITY_AND_GLOBAL_RELEASE_SAFETY_CLOSURE_V1",
-  "allowed_change_scope": ["OPPORTUNITIES_UI", "API_PROJECTION", "RELEASE_SAFETY"],
+  "allowed_change_scope": [
+    "OPPORTUNITIES_UI",
+    "API_PROJECTION",
+    "RELEASE_SAFETY",
+    "HOME"
+  ],
   "files_contracts_affected": [
     "kabuby/app.js",
     "kabuby/scout-scope-exception.json",
@@ -9,7 +14,8 @@
     "scripts/production-safety-envelope-gate.mjs",
     "test/kabuby-first-cohort-projection.test.mjs",
     "test/production-safety-envelope.test.mjs",
-    ".github/workflows/kabuby-foundation-ci.yml"
+    ".github/workflows/kabuby-foundation-ci.yml",
+    "kabuby/index.html"
   ],
-  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: KABUBY_PRODUCTION_PARITY_AND_GLOBAL_RELEASE_SAFETY_CLOSURE_V1"
+  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: KABUBY_PRODUCTION_PARITY_AND_GLOBAL_RELEASE_SAFETY_CLOSURE_V1; ASSET_CACHE_INVALIDATION_MINIMUM_REPAIR"
 }
