@@ -1,0 +1,15 @@
+{
+  "mission": "KABUBY_PRODUCTION_PARITY_AND_GLOBAL_RELEASE_SAFETY_CLOSURE_V1",
+  "allowed_change_scope": ["OPPORTUNITIES_UI", "API_PROJECTION", "RELEASE_SAFETY"],
+  "files_contracts_affected": [
+    "kabuby/app.js",
+    "kabuby/scout-scope-exception.json",
+    "kabuby/production-safety-envelope-v1.json",
+    "kabuby/release-scope-declaration.json",
+    "scripts/production-safety-envelope-gate.mjs",
+    "test/kabuby-first-cohort-projection.test.mjs",
+    "test/production-safety-envelope.test.mjs",
+    ".github/workflows/kabuby-foundation-ci.yml"
+  ],
+  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: KABUBY_PRODUCTION_PARITY_AND_GLOBAL_RELEASE_SAFETY_CLOSURE_V1"
+}

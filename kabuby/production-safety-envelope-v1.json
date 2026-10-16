@@ -1,0 +1,37 @@
+{
+  "release_contract": "KABUBY_PRODUCTION_SAFETY_ENVELOPE_V1",
+  "version": 1,
+  "immutable_artifact_principle": "A preview and production promotion must use the same content-addressed Pages artifact. A post-preview rebuild is not certifiable.",
+  "last_known_good": {
+    "frontend_commit": "d4ed487f988da87eec2b5fa4fdcdfa1d93d353f4",
+    "frontend_deployment": "1333389e-3343-44e1-a3f1-c1e3fce55743",
+    "api_version": "463bc685-6841-40b3-b0c6-cd8df21b0072",
+    "executor_version": "fa66546e-f0c8-4fdc-88a6-a11588d917f3",
+    "scout_baseline": "SCOUT_CANONICAL_PRODUCTION_BASELINE_V1",
+    "rollback_schema_compatible": "PASS_EXPAND_ONLY_MIGRATIONS"
+  },
+  "protected_surfaces": [
+    "AUTH_ACCESS", "ROOT_ROUTING", "HOME", "TODAY", "OPPORTUNITIES", "PRODUCT_DOSSIERS", "SCOUT", "SCOUT_CHROME_HANDOFF", "ASK_KABUBY", "API_READ_MODEL", "PRIVATE_EXECUTOR_CONTROL_PLANE", "D1_SCHEMA_COMPATIBILITY", "V2_SPECIALIZED_ISOLATION", "COMMERCIAL_MUTATION_FIREWALL"
+  ],
+  "required_preproduction_gates": [
+    "CANONICAL_SOURCE", "CI", "FULL_REGRESSION", "MISSION_CONTROL", "SCOPE_GATE", "MIGRATION_GATE", "AUTH", "ROUTING", "HOME", "TODAY", "OPPORTUNITIES", "DOSSIERS", "SCOUT", "CHROME_HANDOFF", "API", "V2_ISOLATION", "COMMERCIAL_FIREWALL", "PREVIEW_SMOKE", "ARTIFACT_FINGERPRINT"
+  ],
+  "critical_contracts": {
+    "AUTH_ACCESS": "same-origin Access projection only; private routes fail closed",
+    "ROOT_ROUTING": "root and legacy /kabuby routes resolve without loops",
+    "HOME_TODAY_OPPORTUNITIES": "consume the same authenticated Physical projection and never calculate commercial truth in the browser",
+    "PRODUCT_DOSSIERS": "display server-projected identity, decision and unknowns only",
+    "SCOUT": "SCOUT_CANONICAL_PRODUCTION_BASELINE_V1 and its scope exception gate",
+    "SCOUT_CHROME_HANDOFF": "owner capture target remains /#scout?view=pendientes with one owner session",
+    "API_READ_MODEL": "GET-only fixed /api/v1/intelligence/physical projection",
+    "PRIVATE_EXECUTOR_CONTROL_PLANE": "no public executor route or caller-selected provider input",
+    "D1_SCHEMA_COMPATIBILITY": "EXPAND -> compatible code -> migrate/use -> verify -> contract later",
+    "COMMERCIAL_MUTATION_FIREWALL": "commercial_authority NONE and commercial_mutations 0"
+  },
+  "rollback": {
+    "automatic": false,
+    "on_critical_canary_failure": "ROLLBACK_REQUIRED",
+    "pointer_source": "last_known_good",
+    "reason": "Cloudflare Pages Git integration has no safe repository-owned artifact-promotion rollback primitive. An immutable deployment pointer is required."
+  }
+}
