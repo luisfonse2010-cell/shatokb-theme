@@ -243,60 +243,92 @@ function scenarioRows(candidate) {
     return `${row.promotion_id || 'UNKNOWN'} · ${row.returns_scenario_id || 'UNKNOWN'} · minimum viable price ${usd(economics.minimum_viable_selling_price_minor / 100)} · profit ${usd(economics.contribution_profit_minor / 100)} · margin ${bps(economics.contribution_margin_basis_points)} · ROI ${bps(economics.markup_basis_points)}`;
   });
 }
+function ownerCommercialState(candidate) {
+  if (candidate.asin === 'B0CRC8MQZL') return 'REJECTED';
+  if (candidate.asin === 'B0CRCB4FTM') return 'REJECTED';
+  if (candidate.asin === 'B0CKTZ2PDF' || candidate.commercial_opportunity_state === 'HOLD') return 'HOLD';
+  return 'CONTINUE_RESEARCH';
+}
+function ownerPath(candidate) {
+  return candidate.white_space === 'VERIFIED_EBAY_WHITE_SPACE'
+    ? { id:'PATH_B', label:'Verified eBay supply gap', detail:'eBay demand still unproven.' }
+    : { id:'PATH_A', label:'Existing eBay market', detail:'Exact active listings are a supply observation, not sold-demand proof.' };
+}
+function ownerMaterialUnknowns(candidate) {
+  const labels = {
+    EBAY_DEMAND_UNPROVEN:'eBay demand not yet proven', EBAY_FEE_PROFILE_UNKNOWN:'eBay fee basis unresolved',
+    EBAY_FEE_CATEGORY_UNRESOLVED:'eBay fee basis unresolved', AMAZON_PURCHASE_TAX_UNKNOWN:'Amazon purchase tax not yet resolved',
+    ACCOUNT_PERFORMANCE_SURCHARGE_UNKNOWN:'Seller performance surcharge unknown'
+  };
+  return [...new Set(arr(candidate.unknown_costs).map(value => labels[value]).filter(Boolean))];
+}
+function ownerNarrative(candidate, state) {
+  if (candidate.asin === 'B0CRC8MQZL') return 'Strong Amazon product, but observed eBay pricing does not support viable Amazon→eBay economics.';
+  if (candidate.asin === 'B0CRCB4FTM') return 'No sold results returned in the owner-observed official eBay Product Research searches during the selected 90-day window.';
+  if (candidate.asin === 'B0CKTZ2PDF') return 'eBay category conflict leaves the applicable fee unresolved. Further spending is stopped.';
+  return state === 'CONTINUE_RESEARCH' ? 'Amazon evidence is available, but material market or economic evidence still needs research.' : 'No further commercial spend is permitted for this product.';
+}
+function ownerNextStep(candidate, state) {
+  if (candidate.asin === 'B0CKTZ2PDF') return 'Hold — do not spend until the certified category conflict is resolved.';
+  if (candidate.asin === 'B0CRCB4FTM') return 'Rejected — do not resume without new certified market evidence.';
+  if (candidate.asin === 'B0CRC8MQZL') return 'Rejected — do not pursue under the observed economics.';
+  return 'Review the material evidence before any further permitted research.';
+}
+function ownerFilterDefinitions(candidates) {
+  const count = predicate => candidates.filter(predicate).length;
+  return [
+    ['ALL','All products',candidates.length],
+    ['CONTINUE_RESEARCH','Continue research',count(candidate => ownerCommercialState(candidate) === 'CONTINUE_RESEARCH')],
+    ['HOLD','Hold',count(candidate => ownerCommercialState(candidate) === 'HOLD')],
+    ['REJECTED','Rejected',count(candidate => ownerCommercialState(candidate) === 'REJECTED')],
+    ['PATH_A','Existing eBay market',count(candidate => ownerPath(candidate).id === 'PATH_A')],
+    ['PATH_B','Supply gap',count(candidate => ownerPath(candidate).id === 'PATH_B')],
+    ['AMAZON_STRENGTH_SUPPORTED','Amazon strength supported',count(candidate => candidate.amazon_commercial_strength === 'SUPPORTED')]
+  ];
+}
+function ownerMatchesFilter(candidate, filter) {
+  if (filter === 'ALL') return true;
+  if (filter === 'PATH_A' || filter === 'PATH_B') return ownerPath(candidate).id === filter;
+  if (filter === 'AMAZON_STRENGTH_SUPPORTED') return candidate.amazon_commercial_strength === 'SUPPORTED';
+  return ownerCommercialState(candidate) === filter;
+}
+function productImage(candidate) {
+  const image = object(candidate.primary_image);
+  if (image.state === 'AVAILABLE' && /^https:\/\/m\.media-amazon\.com\/images\/I\/[A-Za-z0-9._%-]+$/.test(image.url || '')) return `<img src="${esc(image.url)}" alt="${esc(candidate.title || candidate.asin)}" loading="lazy">`;
+  return `<div class="product-image-placeholder" aria-label="Image not yet available"><span>◇</span><small>Image not yet available</small></div>`;
+}
+function advancedEvidence(candidate) {
+  const raw = arr(candidate.unknown_costs).join(', ') || 'NONE_RECORDED';
+  return `<details class="advanced-technical-evidence"><summary>Advanced technical evidence</summary><dl><div><dt>Raw material blockers</dt><dd>${esc(raw)}</dd></div><div><dt>Canonical cohort state</dt><dd>${esc(candidate.candidate_state || 'UNKNOWN')}</dd></div><div><dt>Read-model lineage</dt><dd>${esc(candidate.commercial_lineage?.why_this_product || 'UNKNOWN')}</dd></div><div><dt>Image evidence state</dt><dd>${candidate.primary_image?.state === 'AVAILABLE' ? 'PERSISTED_PRIMARY_IMAGE' : 'IMAGE_ENRICHMENT_REQUIRED'}</dd></div></dl></details>`;
+}
 function amazonEbayDossiers(m) {
   const engine = object(object(m.states.discovery_engines).engine_b);
   const summary = cohortSummary(m);
-  const candidates = summary.candidates.filter(candidate => cohortFilter === 'ALL' || (cohortFilter === 'WHITE_SPACE' ? candidate.white_space === 'VERIFIED_EBAY_WHITE_SPACE' : cohortDecision(candidate) === cohortFilter));
   if (!summary.candidates.length) return noDataCard('No structured Amazon→eBay candidates are available.', 'The read model preserves this as a factual empty state.');
-  const filters = [['ALL','All'],['VALIDATE','Economic validate'],['REJECTED','Rejected research'],['HOLD','Hold / conflict'],['REJECTED_ECONOMICS','Rejected economics'],['BLOCKED_EBAY_FEE_CATEGORY_UNRESOLVED','Economics blocked'],['WHITE_SPACE','White space supply only']];
+  const allowedFilters = new Set(ownerFilterDefinitions(summary.candidates).map(([id]) => id));
+  const filter = allowedFilters.has(cohortFilter) ? cohortFilter : 'ALL';
+  const candidates = summary.candidates.filter(candidate => ownerMatchesFilter(candidate, filter));
+  const filters = ownerFilterDefinitions(summary.candidates);
   const cards = candidates.length ? candidates.map(candidate => {
+    const state = ownerCommercialState(candidate);
+    const path = ownerPath(candidate);
     const active = object(candidate.ebay_active_listing_price_evidence);
-    const cost = object(candidate.amazon_cost);
-    const offer = object(candidate.amazon_purchasable_offer);
-    const offerPrice = object(offer.offer_price);
-    const policy = object(candidate.economic_input_policy);
-    const fee = object(policy.ebay_fee);
-    const shipping = object(candidate.outbound_shipping_policy);
-    const reassessment = object(candidate.economics_reassessment);
-    const ownerDecision = candidate.asin === 'B0006N5S1C' ? object(reassessment.owner_decision_economics) : {};
-    const tac = object(candidate.tac);
-    const scenarios = scenarioRows(candidate);
-    const headline = object(ownerDecision.headline_scenario);
-    const ownerFee = Number.isInteger(ownerDecision.fixed_order_fee_minor) ? ownerDecision.fixed_order_fee_minor : fee.fixed_order_fee_minor;
-    const feeDisplay = candidate.asin === 'B0006N5S1C'
-      ? `${bps(ownerDecision.ebay_percentage_fee_rate_basis_points ?? fee.rate_basis_points)} / ${usdMinor(Math.round((active.median ?? 0) * 100 * (ownerDecision.ebay_percentage_fee_rate_basis_points ?? fee.rate_basis_points ?? 0) / 10000))} · fixed order fee ${usdMinor(ownerFee)} · OFFICIAL EBAY STARTER STORE FEE POLICY`
-      : `${candidate.ebay_category?.name || 'UNKNOWN'} · ${bps(fee.rate_basis_points)} + ${usd((fee.fixed_order_fee_minor ?? 0) / 100)} · OFFICIAL EBAY FEE · ${fee.state || 'UNKNOWN'}`;
-    const activeRange = Number.isFinite(active.low) ? `${usd(active.low)} / ${usd(active.median)} / ${usd(active.high)} · ACTIVE LISTING PRICE SCENARIO · NOT SOLD PRICE` : 'UNKNOWN';
-    const weight = object(candidate.package_weight);
-    const dimensions = object(candidate.package_dimensions);
+    const unknowns = ownerMaterialUnknowns(candidate);
     const ownerResearch = object(candidate.ebay_owner_assisted_product_research);
-    const ownerResearchStates = arr(ownerResearch.observations).map(row => row?.result_state).filter(Boolean);
-    const observedAmazonPrice = Number.isFinite(candidate.amazon_price) ? candidate.amazon_price : cost.listed_price?.value;
-    return `<article class="detail-card cohort-dossier"><p class="eyebrow">AMAZON → EBAY · ${esc(candidate.asin || 'ASIN UNKNOWN')} · ${esc(candidate.cohort_classification || summary.cohort)}</p><div class="dossier-title"><h3>${esc(candidate.title || candidate.asin)}</h3>${badge(candidate.commercial_opportunity_state || 'NOT_VALIDATED')}</div><p>${esc(candidate.brand || 'Brand UNKNOWN')} · ${esc(candidate.identity || 'IDENTITY UNKNOWN')} · primary image ${candidate.primary_image_url ? 'AVAILABLE' : 'PENDING AUTHORIZATION'}</p><dl>
-      <div><dt>Economic state</dt><dd>${esc(candidate.economic_validation_state || cohortDecision(candidate))} · ${esc(candidate.strategic_potential || candidate.risk || 'UNKNOWN')}</dd></div>
-      <div><dt>Commercial opportunity</dt><dd>${esc(candidate.commercial_opportunity_classification || 'INSUFFICIENT_EVIDENCE_CANDIDATE')} · ${esc(candidate.commercial_action || 'DO_NOT_BUY')}</dd></div>
-      <div><dt>Transferability / lineage</dt><dd>${esc(`${candidate.transferability_state || 'TRANSFERABILITY_NOT_VALIDATED'} · ${candidate.commercial_lineage?.why_this_product || 'UNKNOWN'}`)}</dd></div>
-      <div><dt>Amazon observed price</dt><dd>${esc(usd(observedAmazonPrice))} · ${esc(candidate.currency || 'UNKNOWN')} · ${esc(candidate.amazon_availability || 'UNKNOWN')}</dd></div>
-      <div><dt>Amazon commercial strength / provider estimate</dt><dd>${esc(`${candidate.amazon_commercial_strength || candidate.amazon_demand || 'UNKNOWN'} · monthly sold ${candidate.amazon_monthly_sold_estimate ?? 'UNKNOWN'} · PROVIDER ESTIMATE`)}</dd></div>
-      <div><dt>Amazon current rank / avg90 rank / price stability</dt><dd>${esc(`${candidate.amazon_sales_rank ?? 'UNKNOWN'} · ${candidate.amazon_avg90_rank ?? 'UNKNOWN'} · ${candidate.amazon_price_stability || cost.price_history?.volatility || 'UNKNOWN'}`)}</dd></div>
-      <div><dt>Amazon purchasable acquisition price</dt><dd>${esc(usd(offerPrice.value ?? cost.selected_acquisition_price?.value ?? cost.listed_price?.value))} · ${esc(offerPrice.truth_level || cost.truth_level || 'UNKNOWN')}</dd></div>
-      <div><dt>Amazon shipping / tax / landed cost</dt><dd>${esc(`${usd(cost.shipping?.value ?? offer.amazon_shipping?.value)} · ${usd(cost.tax?.value)} · ${usd(cost.estimated_landed_cost?.value)} · ${cost.truth_level || 'UNKNOWN'}`)}</dd></div>
-      <div><dt>Amazon price history / confidence</dt><dd>${esc(`${cost.price_source || 'UNKNOWN'} · ${cost.price_confidence || 'UNKNOWN'} · observed ${cost.price_observed_at || 'UNKNOWN'}`)}</dd></div>
-      <div><dt>Package weight / dimensions</dt><dd>${esc(`${weight.ounces ?? 'UNKNOWN'} oz · ${dimensions.length_inches ?? 'UNKNOWN'} × ${dimensions.width_inches ?? 'UNKNOWN'} × ${dimensions.height_inches ?? 'UNKNOWN'} in`)}</dd></div>
-      <div><dt>Outbound shipping / packaging / handling</dt><dd>${esc(`${usd(shipping.amount)} · ${shipping.state || 'UNKNOWN'} · packaging USD 0.75 · handling USD 0.00 · OWNER POLICY`)}</dd></div>
-      <div><dt>Returns reserve</dt><dd>${esc(`${bps(policy.returns_reserve?.base_rate_basis_points)} base / ${bps(policy.returns_reserve?.stress_rate_basis_points)} stress · OWNER POLICY`)}</dd></div>
-      <div><dt>eBay category / official fee</dt><dd>${esc(feeDisplay)}</dd></div>
-      ${candidate.asin === 'B0006N5S1C' ? `<div><dt>Headline scenario</dt><dd>${esc(`${headline.promotion_id || 'UNKNOWN'} · ${headline.returns_scenario_id || 'UNKNOWN'} · PRE-TAX · ACTIVE LISTING SCENARIO · NOT SOLD PRICE`)}</dd></div><div><dt>Minimum viable price</dt><dd>${esc(`${usdMinor(ownerDecision.minimum_viable_price_minor)} · 20% minimum-margin floor · dynamic returns treatment`)}</dd></div><div><dt>True break-even</dt><dd>${esc(ownerDecision.true_break_even_price || 'NOT CURRENTLY CERTIFIED')}</dd></div><div><dt>Target acquisition cost</dt><dd>${esc(`${usdMinor(ownerDecision.target_acquisition_cost_minor)} · 30% target margin`)}</dd></div><div><dt>Maximum viable acquisition cost</dt><dd>${esc(`${usdMinor(ownerDecision.maximum_viable_acquisition_cost_minor)} · 20% minimum margin`)}</dd></div>` : ''}
-      <div><dt>Active listing range / competition</dt><dd>${esc(`${activeRange} · ${candidate.ebay_competition || 'UNKNOWN'} · ${candidate.exact_active_listings ?? 'UNKNOWN'} listings`)}</dd></div>
-      <div><dt>Demand / white space</dt><dd>${esc(`${candidate.ebay_demand || 'DEMAND UNPROVEN'} · ${candidate.white_space || 'UNKNOWN'}`)}</dd></div>
-      ${candidate.ebay_demand === 'NOT_VALIDATED_OWNER_ASSISTED_NO_RESULTS' ? `<div><dt>Official eBay Product Research</dt><dd>${esc(`No sold results returned in the owner-observed official eBay Product Research searches during the selected 90-day window.${ownerResearchStates.length ? ` ${ownerResearchStates.join(', ')}` : ''}`)}</dd></div>` : ''}
-      <div><dt>Organic / promoted scenarios</dt><dd>${esc(scenarios.join('; ') || 'UNKNOWN')}</dd></div>
-      ${candidate.asin === 'B0006N5S1C' ? '' : `<div><dt>Break-even / target price / TAC</dt><dd>${esc(`${usdMinor(reassessment.break_even_price ?? candidate.break_even_price)} · ${usdMinor(reassessment.target_price ?? candidate.target_price)} · ${usdMinor(tac.conservative_minor ?? tac.base_minor)} · PRE-TAX`)}</dd></div>`}
-      <div><dt>Pre-tax profit / margin / ROI</dt><dd>${esc(`${usdMinor(reassessment.net_profit ?? candidate.net_profit)} · ${bps(reassessment.margin ?? candidate.margin)} · ${bps(reassessment.roi ?? candidate.roi)}${candidate.asin === 'B0006N5S1C' ? ' · ROI basis: Amazon purchase + packaging USD 4.75' : ''}`)}</dd></div>
-      <div><dt>Exact remaining blocker / confidence</dt><dd>${esc(`${arr(candidate.unknown_costs).join(', ') || 'NONE_RECORDED'} · ${cost.price_confidence || 'UNKNOWN'}`)}</dd></div>
-    </dl><span class="authority-badge">READ ONLY · COMMERCIAL ACTIONS BLOCKED</span></article>`;
-  }).join('') : noDataCard('No dossier matches this certified filter.', 'No product state was changed by filtering.');
-  return `${cohortOverview(m)}<section class="section"><div class="section-heading"><div><p>AMAZON → EBAY · READ-ONLY</p><h2>First cohort dossiers</h2></div>${badge(engine.state || 'UNKNOWN')}</div><div class="cohort-filters" role="group" aria-label="Certified cohort filters">${filters.map(([id,label]) => `<button type="button" class="${cohortFilter === id ? 'active' : ''}" data-cohort-filter="${id}" aria-pressed="${cohortFilter === id}">${esc(label)}</button>`).join('')}</div><div class="detail-grid">${cards}</div></section>`;
+    const marketRange = Number.isFinite(active.low) ? `${usd(active.low)} / ${usd(active.median)} / ${usd(active.high)} · active listings, not sold prices` : 'No factual active-price range available';
+    const strength = candidate.amazon_commercial_strength === 'SUPPORTED' ? 'SUPPORTED' : stateLabel(candidate.amazon_commercial_strength || 'UNKNOWN');
+    const economic = state === 'REJECTED' && candidate.asin === 'B0CRC8MQZL' ? 'ECONOMICS FAILED' : state === 'HOLD' ? 'BLOCKED' : stateLabel(candidate.economics || candidate.economic_validation_state);
+    const observedPrice = Number.isFinite(candidate.amazon_price) ? usd(candidate.amazon_price) : 'UNKNOWN';
+    const noResultCopy = candidate.asin === 'B0CRCB4FTM' ? '<p class="owner-assisted-evidence">No sold results returned in the owner-observed official eBay Product Research searches during the selected 90-day window.</p>' : '';
+    return `<article class="detail-card cohort-dossier owner-product-card" data-owner-state="${state}" data-owner-path="${path.id}" data-amazon-strength="${esc(candidate.amazon_commercial_strength || 'UNKNOWN')}">
+      <div class="owner-product-hero">${productImage(candidate)}<div><p class="eyebrow">${esc(path.label)}</p><h3>${esc(candidate.title || candidate.asin)}</h3><p>${esc(candidate.brand || 'Brand not available')} · ASIN ${esc(candidate.asin || 'UNKNOWN')}</p><div class="owner-state-row"><span class="owner-state owner-state-${state.toLowerCase()}">${esc(state.replaceAll('_',' '))}</span><span class="owner-path">${esc(path.label)}</span></div></div></div>
+      <p class="owner-why">${esc(ownerNarrative(candidate, state))}</p>${noResultCopy}
+      <dl class="owner-evidence-grid"><div><dt>Amazon strength</dt><dd>${esc(strength)}</dd></div><div><dt>Amazon price</dt><dd>${esc(observedPrice)}</dd></div><div><dt>Amazon demand estimate</dt><dd>${esc(candidate.amazon_monthly_sold_estimate ?? 'UNKNOWN')} · provider estimate</dd></div><div><dt>Current / Avg90 rank</dt><dd>${esc(`${candidate.amazon_sales_rank ?? 'UNKNOWN'} / ${candidate.amazon_avg90_rank ?? 'UNKNOWN'}`)}</dd></div><div><dt>Price stability</dt><dd>${esc(candidate.amazon_price_stability || candidate.amazon_cost?.price_history?.volatility || 'UNKNOWN')}</dd></div><div><dt>eBay exact active listings</dt><dd>${esc(candidate.exact_active_listings ?? 'UNKNOWN')}</dd></div><div><dt>eBay active price range</dt><dd>${esc(marketRange)}</dd></div><div><dt>Economic state</dt><dd>${esc(economic)}</dd></div></dl>
+      <div class="owner-material-risk"><strong>Material unknowns</strong><span>${esc(unknowns.length ? `Economics incomplete — ${unknowns.length} material input${unknowns.length === 1 ? '' : 's'} unresolved: ${unknowns.join('; ')}` : 'No additional owner-decision material unknowns recorded.')}</span></div>
+      <p class="owner-next"><strong>Next step</strong> ${esc(ownerNextStep(candidate, state))}</p>${advancedEvidence(candidate)}<span class="authority-badge">READ ONLY · COMMERCIAL ACTIONS BLOCKED</span>
+    </article>`;
+  }).join('') : noDataCard('No products match this current V3 filter.', 'Filtering changes no factual state.');
+  return `<section class="section owner-v3-overview"><div class="section-heading"><div><p>AMAZON → EBAY · CURRENT V3 · READ ONLY</p><h2>Product Finder V3 owner dossiers</h2></div>${badge(engine.state || 'UNKNOWN')}</div><p>Products remain research candidates unless a certified commercial gate says otherwise. Active eBay listings do not establish sales or demand.</p><div class="cohort-filters" role="group" aria-label="Current V3 product filters">${filters.map(([id,label,count]) => `<button type="button" class="${filter === id ? 'active' : ''}" data-cohort-filter="${id}" aria-pressed="${filter === id}">${esc(label)} (${number(count)})</button>`).join('')}</div><div class="detail-grid">${cards}</div></section>`;
 }
 
 const SECONDARY_SURFACES = Object.freeze({
@@ -419,7 +451,7 @@ function capabilityInventory(m) {
 function simpleView(page) { if(page==='account') return `${authBanner()}<section class="page-head"><p class="eyebrow">KABUBY INTELLIGENCE OS</p><h1>${esc(t('nav.account'))}</h1><p>Session management stays with Cloudflare Access. Kabuby does not collect credentials.</p><p><button type="button" class="primary-link" data-action="connect-access">Connect / sign in to Kabuby Intelligence</button></p></section>`; if(page==='help') { const m=model(); return `${authBanner()}<section class="page-head"><p class="eyebrow">KABUBY INTELLIGENCE OS</p><h1>${esc(t('nav.help'))}</h1><p>Today is a certified read-only presentation. Unknown, blocked, stale, and unavailable states are never positive business claims.</p><p><a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a> · <a href="#settings">Settings & Policies</a></p></section>${capabilityInventory(m)}`; } return `<section class="page-head"><h1>${esc(t('today.notAvailable'))}</h1><p>${esc(t('page.noData'))}</p></section>`; }
 function searchView(query) { const m=model(); const normalized=query.trim().toLowerCase(); const rows=[...arr(m.radar.rows),...arr(m.command.decision_packages),...arr(m.supply.rows),...arr(m.learning.rows)]; const matches=normalized ? rows.filter(row => JSON.stringify(row).toLowerCase().includes(normalized)) : []; return `<section class="page-head"><p class="eyebrow">READ-ONLY SEARCH</p><h1>Ask Kabuby</h1><p>${normalized ? `Results from existing certified read models for “${esc(query)}”.` : 'Enter a question to search the certified read models. Kabuby does not generate an ungrounded answer.'}</p></section><section class="section"><div class="section-heading"><div><p>Certified read-only data</p><h2>${esc(normalized ? `${matches.length} matching records` : 'Search ready')}</h2></div></div><div class="detail-grid">${normalized ? sectionRows(matches,'Result') : noDataCard('Ask Kabuby is search, not a fake assistant','Use a factual term present in certified projection data.')}</div></section>`; }
 function notificationView() { const m=model(); const rows=[...arr(m.command.decision_packages),...arr(m.memory.owner_attention)]; return `<section class="page-head"><p class="eyebrow">OWNER ATTENTION</p><h1>${esc(t('today.attention'))}</h1><p>Only certified decision packages and canonical evidence exceptions appear here. Empty means no canonical owner-attention item is available.</p></section><section class="section"><div class="section-heading"><div><p>CANONICAL OWNER ATTENTION</p><h2>${esc(stateLabel(m.memory.status||m.command.status))}</h2></div></div><div class="detail-grid">${sectionRows(rows,'Attention')}</div></section>`; }
-function render() { const {page,params}=route(); document.querySelectorAll('[data-page]').forEach(link => link.classList.toggle('active',link.dataset.page===page)); app.setAttribute('aria-busy',authState==='LOADING'?'true':'false'); app.innerHTML = page==='today'?todayView():page==='scout'?scoutView():page==='search'?searchView(params.get('q')||''):page==='attention'?notificationView():['opportunities','supply','economics','operations','portfolio','learning','settings'].includes(page)?dataPage(page):simpleView(page); wireRenderedControls(); }
+function render() { const {page,params}=route(); if (page === 'opportunities' && params.get('view') === 'amazon-ebay') cohortFilter = params.get('cohort') || 'ALL'; document.querySelectorAll('[data-page]').forEach(link => link.classList.toggle('active',link.dataset.page===page)); app.setAttribute('aria-busy',authState==='LOADING'?'true':'false'); app.innerHTML = page==='today'?todayView():page==='scout'?scoutView():page==='search'?searchView(params.get('q')||''):page==='attention'?notificationView():['opportunities','supply','economics','operations','portfolio','learning','settings'].includes(page)?dataPage(page):simpleView(page); wireRenderedControls(); }
 function focusSummary() { document.querySelector('.glance')?.scrollIntoView({behavior:'smooth',block:'start'}); }
 function wireRenderedControls() {
   app.querySelectorAll('[data-route]').forEach(button => button.addEventListener('click', () => go(button.dataset.route)));

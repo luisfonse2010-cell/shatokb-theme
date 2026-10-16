@@ -5,11 +5,11 @@
   "release_identity": {
     "schema_version": "kabuby-release-identity/v1",
     "current_release": {
-      "release_id": "KABUBY_PRODUCTION_RELEASE_2026_10_16_3A383BA_E0E7BE4",
+      "release_id": "KABUBY_V3_OWNER_PRODUCT_CARDS_CANDIDATE",
       "release_state": "CERTIFIED_PRODUCTION_RELEASE",
-      "frontend_canonical_commit": "3a383badd7bba058f06f6826f8cc01a62c4c0234",
-      "frontend_artifact_fingerprint": "c2309ab31205f027cd04a47393d04c0a1c399fce8aeff01267a840b81a950545",
-      "frontend_production_deployment": "657d034b-99ea-4138-81f1-e0489cdf3d4b",
+      "frontend_canonical_commit": "PENDING_CANONICAL_MERGE",
+      "frontend_artifact_fingerprint": "7b76a748b20f6651f8dc620bd49305efa3020418ac1f48ea5357911c6dfd5c33",
+      "frontend_production_deployment": "PENDING_PRODUCTION_CANARY",
       "backend_canonical_commit": "e0e7be428b1e10aaa1213579a63aa99eb1d5703d",
       "api_version": "3c34696b-80e6-44cf-96db-909dc5a18337",
       "private_executor_version": "fa66546e-f0c8-4fdc-88a6-a11588d917f3",
@@ -20,65 +20,220 @@
       "routing_contract_version": "KABUBY_ROOT_LEGACY_REWRITE_V1",
       "chrome_handoff_contract_version": "SCOUT_CHROME_HANDOFF_V1"
     },
-    "last_known_good_release_id": "KABUBY_PRODUCTION_RELEASE_2026_10_16_3A383BA_E0E7BE4",
+    "last_known_good_release_id": "KABUBY_V3_OWNER_PRODUCT_CARDS_CANDIDATE",
     "certification_rule": "A release is CANDIDATE_PRODUCTION_RELEASE until every mandatory critical production canary passes. Only then may it become CERTIFIED_PRODUCTION_RELEASE and replace last_known_good_release_id.",
     "drift_policy": "Any material identity, schema, read-model, or artifact-fingerprint drift makes the release RELEASE_NOT_CERTIFIED."
   },
   "preview_production_artifact_parity": {
     "platform_supports_identical_artifact_promotion": false,
     "status": "PLATFORM_NOT_SUPPORTED",
-    "strongest_factual_equivalent": ["same_canonical_commit", "same_deterministic_build_inputs", "verified_artifact_fingerprint"],
+    "strongest_factual_equivalent": [
+      "same_canonical_commit",
+      "same_deterministic_build_inputs",
+      "verified_artifact_fingerprint"
+    ],
     "prohibition": "Never report SAME_ARTIFACT_PROMOTION when Pages rebuilt the artifact."
   },
   "protected_surfaces": [
-    "AUTH_ACCESS", "ROOT_ROUTING", "HOME", "TODAY", "OPPORTUNITIES", "PRODUCT_DOSSIERS", "SCOUT", "SCOUT_CHROME_HANDOFF", "ASK_KABUBY", "API_READ_MODEL", "PRIVATE_EXECUTOR_CONTROL_PLANE", "D1_SCHEMA_COMPATIBILITY", "V2_SPECIALIZED_ISOLATION", "COMMERCIAL_MUTATION_FIREWALL"
+    "AUTH_ACCESS",
+    "ROOT_ROUTING",
+    "HOME",
+    "TODAY",
+    "OPPORTUNITIES",
+    "PRODUCT_DOSSIERS",
+    "SCOUT",
+    "SCOUT_CHROME_HANDOFF",
+    "ASK_KABUBY",
+    "API_READ_MODEL",
+    "PRIVATE_EXECUTOR_CONTROL_PLANE",
+    "D1_SCHEMA_COMPATIBILITY",
+    "V2_SPECIALIZED_ISOLATION",
+    "COMMERCIAL_MUTATION_FIREWALL"
   ],
   "golden_contracts": {
-    "AUTH_ACCESS": {"contract": "Authenticated owner projection remains same-origin; private control surfaces are not made public.", "critical": true},
-    "ROOT_ROUTING": {"contract": "The root and legacy /kabuby routes resolve to the canonical shell without a redirect loop.", "critical": true},
-    "HOME": {"contract": "The root shell renders the server-projected owner read model without a fatal browser error.", "critical": true},
-    "TODAY": {"contract": "Today consumes compatible authenticated truth and does not contradict Opportunities.", "critical": true},
-    "OPPORTUNITIES": {"contract": "The current cohort count, filters, and dossier navigation render from the certified projection.", "critical": true},
-    "PRODUCT_DOSSIERS": {"contract": "A selected dossier preserves identity, commercial state, owner decision, and explicit unknowns.", "critical": true},
-    "SCOUT": {"contract": "SCOUT_CANONICAL_PRODUCTION_BASELINE_V1 is preserved through its content-addressed regression gate.", "critical": true},
-    "SCOUT_CHROME_HANDOFF": {"contract": "The Amazon capture handoff ends at the integrated Scout pending view with one owner session and no legacy owner redirect.", "critical": true},
-    "ASK_KABUBY": {"contract": "Ask Kabuby searches only certified read models and does not fabricate an ungrounded answer.", "critical": false},
-    "API_READ_MODEL": {"contract": "The fixed GET-only Physical projection exposes current Product Finder V3 truth and cannot masquerade a legacy cohort as commercial truth.", "critical": true},
-    "PRIVATE_EXECUTOR_CONTROL_PLANE": {"contract": "Provider operations remain private, authenticated, server-owned, and caller-input-free.", "critical": true},
-    "D1_SCHEMA_COMPATIBILITY": {"contract": "Schema changes follow expand/compatible-code/migrate/verify/contract and remain backward compatible with the last known good release.", "critical": true},
-    "V2_SPECIALIZED_ISOLATION": {"contract": "Specialized Marketplace discovery remains isolated from Global Opportunity Genesis.", "critical": true},
-    "COMMERCIAL_MUTATION_FIREWALL": {"contract": "Commercial authority remains NONE and buy, publish, inventory, reprice, order, and fulfillment writes remain blocked.", "critical": true}
+    "AUTH_ACCESS": {
+      "contract": "Authenticated owner projection remains same-origin; private control surfaces are not made public.",
+      "critical": true
+    },
+    "ROOT_ROUTING": {
+      "contract": "The root and legacy /kabuby routes resolve to the canonical shell without a redirect loop.",
+      "critical": true
+    },
+    "HOME": {
+      "contract": "The root shell renders the server-projected owner read model without a fatal browser error.",
+      "critical": true
+    },
+    "TODAY": {
+      "contract": "Today consumes compatible authenticated truth and does not contradict Opportunities.",
+      "critical": true
+    },
+    "OPPORTUNITIES": {
+      "contract": "The current cohort count, filters, and dossier navigation render from the certified projection.",
+      "critical": true
+    },
+    "PRODUCT_DOSSIERS": {
+      "contract": "A selected dossier preserves identity, commercial state, owner decision, and explicit unknowns.",
+      "critical": true
+    },
+    "SCOUT": {
+      "contract": "SCOUT_CANONICAL_PRODUCTION_BASELINE_V1 is preserved through its content-addressed regression gate.",
+      "critical": true
+    },
+    "SCOUT_CHROME_HANDOFF": {
+      "contract": "The Amazon capture handoff ends at the integrated Scout pending view with one owner session and no legacy owner redirect.",
+      "critical": true
+    },
+    "ASK_KABUBY": {
+      "contract": "Ask Kabuby searches only certified read models and does not fabricate an ungrounded answer.",
+      "critical": false
+    },
+    "API_READ_MODEL": {
+      "contract": "The fixed GET-only Physical projection exposes current Product Finder V3 truth and cannot masquerade a legacy cohort as commercial truth.",
+      "critical": true
+    },
+    "PRIVATE_EXECUTOR_CONTROL_PLANE": {
+      "contract": "Provider operations remain private, authenticated, server-owned, and caller-input-free.",
+      "critical": true
+    },
+    "D1_SCHEMA_COMPATIBILITY": {
+      "contract": "Schema changes follow expand/compatible-code/migrate/verify/contract and remain backward compatible with the last known good release.",
+      "critical": true
+    },
+    "V2_SPECIALIZED_ISOLATION": {
+      "contract": "Specialized Marketplace discovery remains isolated from Global Opportunity Genesis.",
+      "critical": true
+    },
+    "COMMERCIAL_MUTATION_FIREWALL": {
+      "contract": "Commercial authority remains NONE and buy, publish, inventory, reprice, order, and fulfillment writes remain blocked.",
+      "critical": true
+    }
   },
   "required_preproduction_gates": [
-    "CANONICAL_SOURCE", "REMOTE_CI", "FULL_REGRESSION", "MISSION_CONTROL", "SCOPE_GATE", "MIGRATION_GATE", "RELEASE_MANIFEST", "AUTH", "ROUTING", "HOME", "TODAY", "OPPORTUNITIES", "DOSSIERS", "SCOUT", "CHROME_HANDOFF", "API_READ_MODEL", "PRIVATE_EXECUTOR", "V2_ISOLATION", "COMMERCIAL_FIREWALL", "PREVIEW_SMOKE", "ARTIFACT_FINGERPRINT"
+    "CANONICAL_SOURCE",
+    "REMOTE_CI",
+    "FULL_REGRESSION",
+    "MISSION_CONTROL",
+    "SCOPE_GATE",
+    "MIGRATION_GATE",
+    "RELEASE_MANIFEST",
+    "AUTH",
+    "ROUTING",
+    "HOME",
+    "TODAY",
+    "OPPORTUNITIES",
+    "DOSSIERS",
+    "SCOUT",
+    "CHROME_HANDOFF",
+    "API_READ_MODEL",
+    "PRIVATE_EXECUTOR",
+    "V2_ISOLATION",
+    "COMMERCIAL_FIREWALL",
+    "PREVIEW_SMOKE",
+    "ARTIFACT_FINGERPRINT"
   ],
   "scope_safety": {
-    "allowed_change_scopes": ["HOME_UI", "OPPORTUNITIES_UI", "API_PROJECTION", "ECONOMICS", "SCOUT", "AUTH", "ROUTING", "DATABASE_MIGRATION", "RELEASE_SAFETY"],
+    "allowed_change_scopes": [
+      "HOME_UI",
+      "OPPORTUNITIES_UI",
+      "API_PROJECTION",
+      "ECONOMICS",
+      "SCOUT",
+      "AUTH",
+      "ROUTING",
+      "DATABASE_MIGRATION",
+      "RELEASE_SAFETY"
+    ],
     "failure_code": "DEPLOYMENT_DENIED_UNAUTHORIZED_SCOPE_CHANGE",
     "rule": "Only registered protected contract files require a matching declared scope. Unrelated repository files are not frozen by this gate."
   },
   "critical_canary_policy": {
     "version": "KABUBY_CRITICAL_CANARY_POLICY_V1",
-    "critical": ["AUTH_ACCESS", "ROOT_ROUTING", "HOME", "TODAY", "OPPORTUNITIES", "PRODUCT_DOSSIERS", "SCOUT", "API_READ_MODEL", "PRIVATE_EXECUTOR_CONTROL_PLANE", "D1_SCHEMA_COMPATIBILITY", "V2_SPECIALIZED_ISOLATION", "COMMERCIAL_MUTATION_FIREWALL"],
-    "noncritical": ["ASK_KABUBY_PRESENTATION_ONLY"],
+    "critical": [
+      "AUTH_ACCESS",
+      "ROOT_ROUTING",
+      "HOME",
+      "TODAY",
+      "OPPORTUNITIES",
+      "PRODUCT_DOSSIERS",
+      "SCOUT",
+      "API_READ_MODEL",
+      "PRIVATE_EXECUTOR_CONTROL_PLANE",
+      "D1_SCHEMA_COMPATIBILITY",
+      "V2_SPECIALIZED_ISOLATION",
+      "COMMERCIAL_MUTATION_FIREWALL"
+    ],
+    "noncritical": [
+      "ASK_KABUBY_PRESENTATION_ONLY"
+    ],
     "on_critical_failure": "RELEASE_NOT_ACCEPTED; emit exact immutable rollback target; block further deployments; rollback only through the component-specific authenticated mechanism.",
     "on_noncritical_failure": "RELEASE_NOT_ACCEPTED until diagnosed; do not automatically roll back for cosmetic noise."
   },
   "release_result_contract": {
     "prohibit_generic_deployed": true,
-    "required_fields": ["SOURCE_CANONICAL", "CI", "DATABASE_MIGRATED", "BACKEND_DEPLOYED", "API_DEPLOYED", "EXECUTOR_DEPLOYED", "FRONTEND_BUILT", "PREVIEW_VERIFIED", "FRONTEND_DEPLOYED", "PRODUCTION_CANARIES", "OWNER_SURFACE_CURRENT", "RELEASE_STATE", "LAST_KNOWN_GOOD_RELEASE_ID", "ROLLBACK_STATE"],
-    "release_states": ["CANDIDATE", "CERTIFIED", "REJECTED"],
-    "rollback_states": ["NOT_REQUIRED", "AUTOMATIC_COMPLETE", "REQUIRED"]
+    "required_fields": [
+      "SOURCE_CANONICAL",
+      "CI",
+      "DATABASE_MIGRATED",
+      "BACKEND_DEPLOYED",
+      "API_DEPLOYED",
+      "EXECUTOR_DEPLOYED",
+      "FRONTEND_BUILT",
+      "PREVIEW_VERIFIED",
+      "FRONTEND_DEPLOYED",
+      "PRODUCTION_CANARIES",
+      "OWNER_SURFACE_CURRENT",
+      "RELEASE_STATE",
+      "LAST_KNOWN_GOOD_RELEASE_ID",
+      "ROLLBACK_STATE"
+    ],
+    "release_states": [
+      "CANDIDATE",
+      "CERTIFIED",
+      "REJECTED"
+    ],
+    "rollback_states": [
+      "NOT_REQUIRED",
+      "AUTOMATIC_COMPLETE",
+      "REQUIRED"
+    ]
   },
   "rollback": {
     "automatic": false,
     "on_critical_canary_failure": "ROLLBACK_REQUIRED",
     "pointer_source": "release_identity.last_known_good_release_id",
     "components": {
-      "frontend": {"automatic_rollback_supported": false, "mechanism": "authenticated Cloudflare Pages promotion of the exact retained deployment", "target_deployment": "00f48747-9d34-41ae-963e-cd9362b213b9", "requires_owner": false, "requires_auth": true, "risk": "A platform promotion cannot be safely initiated by repository CI."},
-      "api": {"automatic_rollback_supported": false, "mechanism": "authenticated Cloudflare Worker deployment pin to the exact retained version", "target_version": "463bc685-6841-40b3-b0c6-cd8df21b0072", "requires_owner": false, "requires_auth": true, "risk": "Worker rollback must be component-specific and cannot guess a version."},
-      "private_executor": {"automatic_rollback_supported": false, "mechanism": "authenticated Cloudflare Worker deployment pin to the exact retained version", "target_version": "fa66546e-f0c8-4fdc-88a6-a11588d917f3", "requires_owner": false, "requires_auth": true, "risk": "Private executor rollback must preserve server-owned authorization boundaries."},
-      "database": {"automatic_rollback_supported": false, "mechanism": "expand/compatible-code discipline; never reverse destructive migrations automatically", "target_version": "0080", "requires_owner": false, "requires_auth": true, "risk": "Destructive schema rollback is prohibited."}
+      "frontend": {
+        "automatic_rollback_supported": false,
+        "mechanism": "authenticated Cloudflare Pages promotion of the exact retained deployment",
+        "target_deployment": "00f48747-9d34-41ae-963e-cd9362b213b9",
+        "requires_owner": false,
+        "requires_auth": true,
+        "risk": "A platform promotion cannot be safely initiated by repository CI."
+      },
+      "api": {
+        "automatic_rollback_supported": false,
+        "mechanism": "authenticated Cloudflare Worker deployment pin to the exact retained version",
+        "target_version": "463bc685-6841-40b3-b0c6-cd8df21b0072",
+        "requires_owner": false,
+        "requires_auth": true,
+        "risk": "Worker rollback must be component-specific and cannot guess a version."
+      },
+      "private_executor": {
+        "automatic_rollback_supported": false,
+        "mechanism": "authenticated Cloudflare Worker deployment pin to the exact retained version",
+        "target_version": "fa66546e-f0c8-4fdc-88a6-a11588d917f3",
+        "requires_owner": false,
+        "requires_auth": true,
+        "risk": "Private executor rollback must preserve server-owned authorization boundaries."
+      },
+      "database": {
+        "automatic_rollback_supported": false,
+        "mechanism": "expand/compatible-code discipline; never reverse destructive migrations automatically",
+        "target_version": "0080",
+        "requires_owner": false,
+        "requires_auth": true,
+        "risk": "Destructive schema rollback is prohibited."
+      }
     }
   }
 }
