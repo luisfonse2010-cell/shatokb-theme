@@ -56,14 +56,25 @@ export function validateReleaseIdentity({ activeRoot = root, artifactFingerprint
   const envelope = json('kabuby/production-safety-envelope-v1.json', activeRoot);
   const identity = envelope.release_identity;
   if (identity?.schema_version !== 'kabuby-release-identity/v1') fail('RELEASE_IDENTITY_SCHEMA_INVALID');
-  const release = identity.current_release;
-  for (const key of ['release_id','frontend_canonical_commit','frontend_artifact_fingerprint','frontend_production_deployment','backend_canonical_commit','api_version','private_executor_version','d1_schema_version','read_model_version','scout_baseline_version','auth_contract_version','routing_contract_version','chrome_handoff_contract_version']) if (typeof release?.[key] !== 'string' || !release[key]) fail(`RELEASE_IDENTITY_FIELD_MISSING:${key}`);
-  if (release.release_state !== 'CERTIFIED_PRODUCTION_RELEASE') fail('CURRENT_RELEASE_NOT_CERTIFIED');
-  if (identity.last_known_good_release_id !== release.release_id) fail('LAST_KNOWN_GOOD_RELEASE_DRIFT');
-  if (release.frontend_artifact_fingerprint !== artifactFingerprint) fail('FRONTEND_ARTIFACT_FINGERPRINT_MISMATCH');
+  const required = ['release_id','frontend_canonical_commit','frontend_artifact_fingerprint','frontend_production_deployment','backend_canonical_commit','api_version','private_executor_version','d1_schema_version','read_model_version','scout_baseline_version','auth_contract_version','routing_contract_version','chrome_handoff_contract_version'];
+  const current = identity.current_release;
+  for (const key of required) if (typeof current?.[key] !== 'string' || !current[key]) fail(`RELEASE_IDENTITY_FIELD_MISSING:${key}`);
+  if (current.release_state !== 'CERTIFIED_PRODUCTION_RELEASE') fail('CURRENT_RELEASE_NOT_CERTIFIED');
+  if (identity.last_known_good_release_id !== current.release_id) fail('LAST_KNOWN_GOOD_RELEASE_DRIFT');
+  // Source changes before deployment are candidates, not production facts. A
+  // candidate may carry the current tree fingerprint while the immutable
+  // last-known-good production identity remains truthful and rollbackable.
+  const candidate = identity.candidate_release ?? null;
+  const artifactRelease = candidate ?? current;
+  if (candidate) {
+    for (const key of required) if (typeof candidate?.[key] !== 'string' || !candidate[key]) fail(`CANDIDATE_RELEASE_IDENTITY_FIELD_MISSING:${key}`);
+    if (candidate.release_state !== 'CERTIFIED_PREPRODUCTION_CANDIDATE') fail('CANDIDATE_RELEASE_STATE_INVALID');
+    if (candidate.frontend_production_deployment !== 'NOT_DEPLOYED') fail('CANDIDATE_PRODUCTION_DEPLOYMENT_INVALID');
+  }
+  if (artifactRelease.frontend_artifact_fingerprint !== artifactFingerprint) fail('FRONTEND_ARTIFACT_FINGERPRINT_MISMATCH');
   if (envelope.preview_production_artifact_parity?.status !== 'PLATFORM_NOT_SUPPORTED') fail('PREVIEW_PROMOTION_STATUS_INVALID');
   if (envelope.preview_production_artifact_parity?.platform_supports_identical_artifact_promotion !== false) fail('UNPROVEN_SAME_ARTIFACT_PROMOTION');
-  return Object.freeze({ status: 'PASS', release_id: release.release_id, artifact_fingerprint: artifactFingerprint, last_known_good_release_id: identity.last_known_good_release_id });
+  return Object.freeze({ status: 'PASS', release_id: current.release_id, candidate_release_id:candidate?.release_id ?? null, artifact_fingerprint: artifactFingerprint, last_known_good_release_id: identity.last_known_good_release_id });
 }
 
 export function validateScopeSafety({ activeRoot = root, base = null, changedFiles = null } = {}) {
@@ -118,7 +129,7 @@ export function validateProductionSafetyEnvelope({ activeRoot = root, base = nul
   const identity = validateReleaseIdentity({ activeRoot });
   const scope = validateScopeSafety({ activeRoot, base, changedFiles });
   const golden = validateGoldenContracts({ activeRoot });
-  return Object.freeze({ status: 'PASS', artifact_fingerprint: identity.artifact_fingerprint, release_id: identity.release_id, last_known_good_release_id: identity.last_known_good_release_id, scope, golden_contracts: golden.contracts, rollback: 'ROLLBACK_REQUIRED', protected_surfaces: envelope.protected_surfaces.length, release_result_contract: envelope.release_result_contract.required_fields });
+  return Object.freeze({ status: 'PASS', artifact_fingerprint: identity.artifact_fingerprint, release_id: identity.release_id, candidate_release_id:identity.candidate_release_id, last_known_good_release_id: identity.last_known_good_release_id, scope, golden_contracts: golden.contracts, rollback: 'ROLLBACK_REQUIRED', protected_surfaces: envelope.protected_surfaces.length, release_result_contract: envelope.release_result_contract.required_fields });
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

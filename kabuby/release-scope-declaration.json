@@ -1,5 +1,5 @@
 {
-  "mission": "V3_OWNER_PRODUCT_DOSSIER_CACHE_BUST_REPAIR",
+  "mission": "V3_COHORT_EVIDENCE_BRIDGE_V1_AND_PERMANENT_CAPABILITY_GUARD",
   "allowed_change_scope": [
     "OPPORTUNITIES_UI",
     "RELEASE_SAFETY"
@@ -16,7 +16,8 @@
     "kabuby/production-safety-envelope-v1.json",
     "test/kabuby-scout-production-baseline.test.mjs",
     "test/production-safety-envelope.test.mjs",
-    "kabuby/index.html"
+    "kabuby/index.html",
+    "scripts/production-safety-envelope-gate.mjs"
   ],
-  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: V3_OWNER_PRODUCT_DOSSIER_NAVIGATION_AND_AMAZON_EBAY_UI_CLEANUP"
+  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: V3_COHORT_EVIDENCE_BRIDGE_V1_AND_PERMANENT_CAPABILITY_GUARD"
 }

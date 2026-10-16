@@ -19,6 +19,7 @@ test('production safety envelope defines a complete system-level release identit
   assert.equal(result.status, 'PASS');
   assert.equal(result.protected_surfaces, requiredSurfaces.length);
   assert.equal(result.release_id, envelope.release_identity.current_release.release_id);
+  assert.equal(result.candidate_release_id, envelope.release_identity.candidate_release.release_id);
   assert.equal(result.last_known_good_release_id, result.release_id);
   assert.match(result.artifact_fingerprint, /^[a-f0-9]{64}$/);
   assert.equal(result.rollback, 'ROLLBACK_REQUIRED');
