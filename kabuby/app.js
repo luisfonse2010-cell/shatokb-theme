@@ -311,7 +311,9 @@ function productImage(candidate) {
 }
 function advancedEvidence(candidate) {
   const raw = arr(candidate.unknown_costs).join(', ') || 'NONE_RECORDED';
-  return `<details class="advanced-technical-evidence"><summary>${esc(v3('advanced'))}</summary><dl><div><dt>Raw material blockers</dt><dd>${esc(raw)}</dd></div><div><dt>Canonical cohort state</dt><dd>${esc(candidate.candidate_state || 'UNKNOWN')}</dd></div><div><dt>Read-model lineage</dt><dd>${esc(candidate.commercial_lineage?.why_this_product || 'UNKNOWN')}</dd></div><div><dt>Image evidence state</dt><dd>${candidate.primary_image?.state === 'AVAILABLE' ? 'PERSISTED_PRIMARY_IMAGE' : 'IMAGE_ENRICHMENT_REQUIRED'}</dd></div></dl></details>`;
+  const provenance = typeof candidate.provenance === 'string' && candidate.provenance ? candidate.provenance : 'NOT_AVAILABLE';
+  const freshness = typeof candidate.freshness === 'string' && candidate.freshness ? candidate.freshness : 'NOT_AVAILABLE';
+  return `<details class="advanced-technical-evidence"><summary>${esc(v3('advanced'))}</summary><dl><div><dt>Raw material blockers</dt><dd>${esc(raw)}</dd></div><div><dt>Canonical cohort state</dt><dd>${esc(candidate.candidate_state || 'UNKNOWN')}</dd></div><div><dt>Evidence provenance</dt><dd data-owner-evidence-provenance>${esc(provenance)}</dd></div><div><dt>Evidence observed at</dt><dd data-owner-evidence-freshness>${esc(freshness)}</dd></div><div><dt>Read-model lineage</dt><dd>${esc(candidate.commercial_lineage?.why_this_product || 'UNKNOWN')}</dd></div><div><dt>Image evidence state</dt><dd>${candidate.primary_image?.state === 'AVAILABLE' ? 'PERSISTED_PRIMARY_IMAGE' : 'IMAGE_ENRICHMENT_REQUIRED'}</dd></div></dl></details>`;
 }
 function ownerDossierParams(filter, asin) { return { view:'amazon-ebay', cohort:filter, asin }; }
 function exactV3Candidate(m, asin) {

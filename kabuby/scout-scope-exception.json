@@ -1,6 +1,6 @@
 {
-  "mission": "V3_BRIDGE_CANONICAL_MERGE_AND_PERMANENT_REGRESSION_GUARD",
-  "reason": "Preserve the current certified V3 owner-dossier contract while adding exact Amazon navigation and explicitly labeled eBay evidence/search navigation. Scout runtime, routes, storage, extension handoff, and owner-session contract remain unchanged.",
+  "mission": "KABUBY_PRODUCTION_TRUTH_RECONCILIATION",
+  "reason": "Restore factual V3 owner-dossier provenance and observation timestamp from the existing sanitized Product Finder read model. Scout runtime, routes, storage, extension handoff, and owner-session contract remain unchanged.",
   "files_contracts_affected": [
     "kabuby/index.html",
     "kabuby/app.js",
@@ -8,14 +8,14 @@
     "test/kabuby-scout-production-baseline.test.mjs",
     ".github/workflows/kabuby-foundation-ci.yml"
   ],
-  "expected_behavior_change": "Only the V3 owner dossier gains deterministic exact-ASIN Amazon navigation and exact-evidence or labeled exact-GTIN eBay navigation. Scout has no behavior change.",
+  "expected_behavior_change": "Only the V3 owner dossier renders already-persisted sanitized evidence provenance and observed-at freshness when supported. Scout has no behavior change.",
   "migration_impact": "None. Existing Scout browser storage is neither initialized, reseeded, migrated, nor written.",
-  "rollback_plan": "Revert the V3 canonical-decision projection commit and redeploy the retained prior Pages deployment if a production canary demonstrates a regression.",
-  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: V3_BRIDGE_CANONICAL_MERGE_AND_PERMANENT_REGRESSION_GUARD",
-  "base_commit": "b401e5822bfb321a27afafc7e9c64fdab5512511",
+  "rollback_plan": "Revert the V3 evidence-projection commits and redeploy the retained prior Pages deployment if a production canary demonstrates a regression.",
+  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: KABUBY_PRODUCTION_TRUTH_RECONCILIATION",
+  "base_commit": "f80228567302c7c45f8ac67685b5023dc49f4c4d",
   "source_fingerprints": {
-    "kabuby/index.html": "68f81659a7582e90871567da02e4b3ac10bf992ddd63e6e5c8e0ed4612f1d6ed",
-    "kabuby/app.js": "869b68c8041670dd3995b9db4f227d7d92072c1aab67bed97bcfc1b5418c20a2",
+    "kabuby/index.html": "6e133eaa81b44f8525c74d5bb87dc7967c0793f3ab4a975664098a4ad54e29ca",
+    "kabuby/app.js": "24c593ea91dd4b3160780e83af5f18948f77084ff0936535cb19ebe631c6bfb7",
     "kabuby/styles.css": "41360175dab87b787ce2bff744231c27a895b813dba0ba9c0388be18fd4f4794",
     "test/kabuby-scout-production-baseline.test.mjs": "0d4aead22b9e78ec8fe6238e9f18cecf605c20576b2bd13e0b1c1724deb7e8dd",
     ".github/workflows/kabuby-foundation-ci.yml": "e07e6f5cd9141a2094584017f68743271407e4911ddd1bb9b0e718f26da22ce2"
