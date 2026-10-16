@@ -31,13 +31,15 @@ test('primary V3 cards keep raw blockers in collapsed advanced evidence', () => 
   assert.doesNotMatch(app, /Exact remaining blocker \/ confidence/);
 });
 
-test('three closed product states have exact owner-safe language', () => {
+test('owner-facing state is derived from the canonical decision contract, not an ASIN list', () => {
   for (const label of [
-    'Strong Amazon product, but observed eBay pricing does not support viable Amazon→eBay economics.',
-    'No sold results returned in the owner-observed official eBay Product Research searches during the selected 90-day window.',
-    'eBay category conflict leaves the applicable fee unresolved. Further spending is stopped.',
-    'B0CRC8MQZL', 'B0CRCB4FTM', 'B0CKTZ2PDF'
+    "['VALIDATED','HOLD','REJECTED'].includes(candidate?.commercial_opportunity_state)",
+    'Certified category or fee evidence is unresolved. Further research spending is stopped.',
+    'Certified market evidence rejected this exact product. Do not resume without new certified evidence.'
   ]) assert.match(app, new RegExp(label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  assert.doesNotMatch(app, /candidate\.asin === 'B0CRC8MQZL'/);
+  assert.doesNotMatch(app, /candidate\.asin === 'B0CRCB4FTM'/);
+  assert.doesNotMatch(app, /candidate\.asin === 'B0CKTZ2PDF'/);
   assert.doesNotMatch(app, /ZERO SALES/);
 });
 

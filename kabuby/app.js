@@ -257,9 +257,7 @@ function scenarioRows(candidate) {
   });
 }
 function ownerCommercialState(candidate) {
-  if (candidate.asin === 'B0CRC8MQZL') return 'REJECTED';
-  if (candidate.asin === 'B0CRCB4FTM') return 'REJECTED';
-  if (candidate.asin === 'B0CKTZ2PDF' || candidate.commercial_opportunity_state === 'HOLD') return 'HOLD';
+  if (['VALIDATED','HOLD','REJECTED'].includes(candidate?.commercial_opportunity_state)) return candidate.commercial_opportunity_state;
   return 'CONTINUE_RESEARCH';
 }
 function ownerPath(candidate) {
@@ -276,15 +274,15 @@ function ownerMaterialUnknowns(candidate) {
   return [...new Set(arr(candidate.unknown_costs).map(value => labels[value]).filter(Boolean))];
 }
 function ownerNarrative(candidate, state) {
-  if (candidate.asin === 'B0CRC8MQZL') return 'Strong Amazon product, but observed eBay pricing does not support viable Amazon→eBay economics.';
-  if (candidate.asin === 'B0CRCB4FTM') return 'No sold results returned in the owner-observed official eBay Product Research searches during the selected 90-day window.';
-  if (candidate.asin === 'B0CKTZ2PDF') return 'eBay category conflict leaves the applicable fee unresolved. Further spending is stopped.';
-  return state === 'CONTINUE_RESEARCH' ? 'Amazon evidence is available, but material market or economic evidence still needs research.' : 'No further commercial spend is permitted for this product.';
+  if (state === 'HOLD') return 'Certified category or fee evidence is unresolved. Further research spending is stopped.';
+  if (state === 'REJECTED') return 'Certified market evidence rejected this exact product. Do not resume without new certified evidence.';
+  if (state === 'VALIDATED') return 'The certified decision contract admits this product for owner review; commercial actions remain blocked.';
+  return 'Amazon evidence is available, but material market or economic evidence still needs research.';
 }
 function ownerNextStep(candidate, state) {
-  if (candidate.asin === 'B0CKTZ2PDF') return 'Hold — do not spend until the certified category conflict is resolved.';
-  if (candidate.asin === 'B0CRCB4FTM') return 'Rejected — do not resume without new certified market evidence.';
-  if (candidate.asin === 'B0CRC8MQZL') return 'Rejected — do not pursue under the observed economics.';
+  if (state === 'HOLD') return 'Hold — do not spend until the certified category or fee evidence is resolved.';
+  if (state === 'REJECTED') return 'Rejected — do not resume without new certified market evidence.';
+  if (state === 'VALIDATED') return 'Review the certified decision evidence before any separately authorized commercial action.';
   return 'Review the material evidence before any further permitted research.';
 }
 function ownerFilterDefinitions(candidates) {
@@ -376,7 +374,7 @@ function amazonEbayDossiers(m) {
     const unknowns = ownerMaterialUnknowns(candidate);
     const marketRange = Number.isFinite(active.low) ? `${usd(active.low)} / ${usd(active.median)} / ${usd(active.high)} · ${v3('activeNotSold')}` : 'No factual active-price range available';
     const strength = candidate.amazon_commercial_strength === 'SUPPORTED' ? 'SUPPORTED' : stateLabel(candidate.amazon_commercial_strength || 'UNKNOWN');
-    const economic = state === 'REJECTED' && candidate.asin === 'B0CRC8MQZL' ? 'ECONOMICS FAILED' : state === 'HOLD' ? 'BLOCKED' : stateLabel(candidate.economics || candidate.economic_validation_state);
+    const economic = state === 'HOLD' ? 'BLOCKED' : stateLabel(candidate.economics || candidate.economic_validation_state);
     const observedPrice = Number.isFinite(candidate.amazon_price) ? usd(candidate.amazon_price) : 'UNKNOWN';
     return `<article class="detail-card cohort-dossier owner-product-card" role="link" tabindex="0" data-owner-dossier="${esc(candidate.asin)}" data-owner-state="${state}" data-owner-path="${path.id}" data-amazon-strength="${esc(candidate.amazon_commercial_strength || 'UNKNOWN')}" aria-label="${esc(`${candidate.title || candidate.asin} · ${candidate.asin}`)}"><div class="owner-product-hero">${productImage(candidate)}<div><p class="eyebrow">${esc(path.label)}</p><h3>${esc(candidate.title || candidate.asin)}</h3><p>${esc(candidate.brand || 'Brand not available')} · ASIN ${esc(candidate.asin || 'UNKNOWN')}${candidate.gtin ? ` · GTIN ${esc(candidate.gtin)}` : ''}</p><div class="owner-state-row"><span class="owner-state owner-state-${state.toLowerCase()}">${esc(state.replaceAll('_',' '))}</span><span class="owner-path">${esc(path.label)}</span></div></div></div><p class="owner-why">${esc(ownerNarrative(candidate, state))}</p><dl class="owner-evidence-grid"><div><dt>Amazon strength</dt><dd>${esc(strength)}</dd></div><div><dt>Amazon price</dt><dd>${esc(observedPrice)}</dd></div><div><dt>Amazon demand estimate</dt><dd>${esc(candidate.amazon_monthly_sold_estimate ?? 'UNKNOWN')} · provider estimate</dd></div><div><dt>eBay active price range</dt><dd>${esc(marketRange)}</dd></div><div><dt>Economic state</dt><dd>${esc(economic)}</dd></div></dl><div class="owner-material-risk"><strong>${esc(v3('materialUnknowns'))}</strong><span>${esc(unknowns.length ? `Economics incomplete — ${unknowns.length} material input${unknowns.length === 1 ? '' : 's'} unresolved: ${unknowns.join('; ')}` : 'No additional owner-decision material unknowns recorded.')}</span></div><p class="owner-next"><strong>${esc(v3('nextStep'))}</strong> ${esc(ownerNextStep(candidate, state))}</p><span class="owner-card-open">${esc(v3('dossier'))} →</span></article>`;
   }).join('') : noDataCard('No products match this current V3 filter.', 'Filtering changes no factual state.');
