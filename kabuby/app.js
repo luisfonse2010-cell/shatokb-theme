@@ -327,19 +327,29 @@ function ownerEvidenceRows(candidate) {
   const price = Number.isFinite(candidate.amazon_price) ? usd(candidate.amazon_price) : 'UNKNOWN';
   const activeRange = Number.isFinite(active.low) ? `${usd(active.low)} / ${usd(active.median)} / ${usd(active.high)} · ${v3('activeNotSold')}` : v3('unknown');
   const selected = object(cost.selected_acquisition_price);
+  const offer = object(candidate.amazon_purchasable_offer);
+  // Offers20 is projected only when it is a certified purchasable NEW offer.
+  // It is pre-tax and cannot replace tax, landed cost, or any missing charge.
+  const confirmedOffer = offer.state === 'PURCHASABLE_NEW_OFFER_CONFIRMED' ? offer : {};
+  const offerPreTax = object(confirmedOffer.pre_tax_acquisition_cost);
+  const offerShipping = object(confirmedOffer.amazon_shipping);
   const landed = object(cost.estimated_landed_cost);
   const amazonShipping = object(cost.shipping);
   const amount = value => Number.isFinite(value?.value) ? value.value : (Number.isFinite(value?.amount) ? value.amount : null);
+  const acquisitionPrice = Number.isFinite(amount(offerPreTax)) ? offerPreTax : selected;
+  const sourceShipping = Number.isFinite(amount(offerShipping)) ? offerShipping : amazonShipping;
   const amazonTax = object(cost.tax);
   const outbound = object(candidate.outbound_shipping_policy);
   const packaging = object(candidate.packaging_cost);
   const tac = object(candidate.tac);
   const economicsReady = economics.base_official_fee_scenario_economics_complete === true;
+  const minorOrUnknown = value => Number.isFinite(value) ? usdMinor(value) : v3('unknown');
+  const rateOrUnknown = value => Number.isFinite(value) ? `${(value / 100).toFixed(2)}%` : v3('unknown');
   return [
     [v3('identity'), candidate.gtin ? `${candidate.asin} · GTIN ${candidate.gtin}` : `${candidate.asin} · GTIN ${v3('unknown')}`, v3('factual')],
     [v3('amazonPrice'), price, v3('factual')],
-    [v3('acquisitionPrice'), Number.isFinite(amount(selected)) ? `${selected.currency || 'USD'} ${amount(selected)}` : v3('unknown'), Number.isFinite(amount(selected)) ? v3('factual') : v3('unknown')],
-    [v3('shippingTax'), `${Number.isFinite(amount(amazonShipping)) ? `${amazonShipping.currency || 'USD'} ${amount(amazonShipping)}` : v3('unknown')} · ${amazonTax.truth_level || v3('unknown')}`, amazonTax.truth_level === 'FACTUAL' ? v3('factual') : v3('unknown')],
+    [v3('acquisitionPrice'), Number.isFinite(amount(acquisitionPrice)) ? `${acquisitionPrice.currency || 'USD'} ${amount(acquisitionPrice)}` : v3('unknown'), Number.isFinite(amount(acquisitionPrice)) ? v3('factual') : v3('unknown')],
+    [v3('shippingTax'), `${Number.isFinite(amount(sourceShipping)) ? `${sourceShipping.currency || 'USD'} ${amount(sourceShipping)}` : v3('unknown')} · ${amazonTax.truth_level || v3('unknown')}`, Number.isFinite(amount(sourceShipping)) ? v3('factual') : v3('unknown')],
     [v3('demandEstimate'), `${candidate.amazon_monthly_sold_estimate ?? v3('unknown')} · provider estimate`, v3('estimate')],
     [v3('salesRank'), `${candidate.amazon_sales_rank ?? v3('unknown')} / Avg90 ${candidate.amazon_avg90_rank ?? v3('unknown')}`, v3('factual')],
     [v3('activeListings'), candidate.exact_active_listings ?? v3('unknown'), v3('factual')],
@@ -348,8 +358,8 @@ function ownerEvidenceRows(candidate) {
     [v3('ebayCategory'), candidate.ebay_category?.name || candidate.ebay_category_resolution?.state || v3('unknown'), candidate.ebay_category?.name ? v3('factual') : v3('unknown')],
     [v3('outboundPackaging'), `${Number.isFinite(amount(outbound)) ? `${outbound.currency || 'USD'} ${amount(outbound).toFixed(2)}` : v3('unknown')} · ${Number.isFinite(amount(packaging)) ? `${packaging.currency || 'USD'} ${amount(packaging).toFixed(2)}` : v3('unknown')}`, v3('scenario')],
     [v3('landedCost'), Number.isFinite(amount(landed)) ? `${landed.currency || 'USD'} ${amount(landed)}` : v3('unknown'), landed.truth_level || v3('unknown')],
-    [v3('breakEvenTarget'), `${candidate.break_even_price || v3('unknown')} · ${candidate.target_price || v3('unknown')}`, economicsReady ? v3('scenario') : v3('unknown')],
-    [v3('profitMarginRoi'), `${candidate.net_profit || v3('unknown')} · ${candidate.margin || v3('unknown')} · ${candidate.roi || v3('unknown')}`, economicsReady ? v3('scenario') : v3('unknown')],
+    [v3('breakEvenTarget'), `${minorOrUnknown(candidate.break_even_price)} · ${minorOrUnknown(candidate.target_price)}`, economicsReady ? v3('scenario') : v3('unknown')],
+    [v3('profitMarginRoi'), `${minorOrUnknown(candidate.net_profit)} · ${rateOrUnknown(candidate.margin)} · ${rateOrUnknown(candidate.roi)}`, economicsReady ? v3('scenario') : v3('unknown')],
     [v3('targetAcquisitionCost'), Number.isInteger(tac.conservative_minor) ? usdMinor(tac.conservative_minor) : v3('unknown'), economicsReady ? v3('scenario') : v3('unknown')]
   ];
 }

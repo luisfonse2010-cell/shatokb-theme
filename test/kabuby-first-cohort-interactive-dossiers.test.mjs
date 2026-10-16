@@ -34,9 +34,9 @@ test('V3 dossiers render owner-decision evidence with explicit truth states and 
   for (const marker of ['Current decision', 'Why this state', 'Amazon evidence', 'eBay evidence', 'Material unknowns', 'Risks', 'Next permitted research', 'Advanced technical evidence', 'FACTUAL', 'ESTIMATE', 'SCENARIO', 'UNKNOWN', 'READ ONLY · COMMERCIAL ACTIONS BLOCKED']) {
     assert.match(app, new RegExp(escaped(marker)));
   }
-  for (const marker of ['amazon_price', 'selected_acquisition_price', 'ebay_active_listing_price_evidence', 'outbound_shipping_policy', 'packaging_cost', 'estimated_landed_cost', 'tac']) assert.match(app, new RegExp(escaped(marker)));
+  for (const marker of ['amazon_price', 'selected_acquisition_price', 'amazon_purchasable_offer', 'PURCHASABLE_NEW_OFFER_CONFIRMED', 'pre_tax_acquisition_cost', 'ebay_active_listing_price_evidence', 'outbound_shipping_policy', 'packaging_cost', 'estimated_landed_cost', 'tac']) assert.match(app, new RegExp(escaped(marker)));
   assert.match(app, /activeNotSold/);
-  assert.match(app, /Number\.isFinite\(amount\(selected\)\) \? `\$\{selected\.currency/);
+  assert.match(app, /Number\.isFinite\(amount\(acquisitionPrice\)\) \? `\$\{acquisitionPrice\.currency/);
   assert.match(app, /UNKNOWN\|UNPROVEN\|NOT_PROVEN/);
 });
 
