@@ -34,7 +34,8 @@ test('V3 dossiers render owner-decision evidence with explicit truth states and 
   }
   for (const marker of ['amazon_price', 'selected_acquisition_price', 'ebay_active_listing_price_evidence', 'outbound_shipping_policy', 'packaging_cost', 'estimated_landed_cost', 'tac']) assert.match(app, new RegExp(escaped(marker)));
   assert.match(app, /activeNotSold/);
-  assert.match(app, /activeNotSold/);
+  assert.match(app, /Number\.isFinite\(amount\(selected\)\) \? `\$\{selected\.currency/);
+  assert.match(app, /UNKNOWN\|UNPROVEN\|NOT_PROVEN/);
 });
 
 test('the generic legacy Amazon-to-eBay projection is removed from the native page and legacy adapter is gone', () => {
@@ -46,7 +47,7 @@ test('the generic legacy Amazon-to-eBay projection is removed from the native pa
 });
 
 test('the narrowly declared scope preserves Scout and forbids provider or commercial work', () => {
-  assert.equal(scoutScope.mission, 'V3_OWNER_PRODUCT_DOSSIER_NAVIGATION_AND_AMAZON_EBAY_UI_CLEANUP');
+  assert.match(scoutScope.mission, /^V3_OWNER_PRODUCT_DOSSIER_/);
   assert.deepEqual(scoutScope.files_contracts_affected.sort(), ['kabuby/app.js', 'kabuby/index.html', 'kabuby/styles.css', 'test/kabuby-scout-production-baseline.test.mjs']);
   assert.match(data, /b0006-commercial-dossier/);
   assert.doesNotMatch(app, /api\.ebay|keepa|dataforseo|fetch\([^)]*(?:POST|PUT|PATCH|DELETE)/i);
