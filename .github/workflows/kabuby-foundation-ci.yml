@@ -34,6 +34,10 @@ jobs:
         env:
           SCOUT_GATE_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
         run: node scripts/scout-protection-gate.mjs --base "$SCOUT_GATE_BASE"
+      - name: Enforce production safety envelope and declared scope
+        env:
+          RELEASE_GATE_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: node scripts/production-safety-envelope-gate.mjs --base "$RELEASE_GATE_BASE"
       - name: Run static frontend certification
         run: node --test test/*.test.mjs
       - name: Reject whitespace errors

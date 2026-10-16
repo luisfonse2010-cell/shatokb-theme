@@ -1,18 +1,18 @@
 {
-  "mission": "AMAZON_EBAY_COMMERCIAL_OPPORTUNITY_TRUTH_RECONCILIATION_V1",
-  "reason": "Project the existing Engine B certification cohort as economic research only, never as a commercial opportunity. The global portal entry is content-addressed because it presents the pre-existing sanitized read model; Scout runtime, routes, storage, extension handoff, and owner-session contract remain unchanged.",
+  "mission": "KABUBY_PRODUCTION_PARITY_AND_GLOBAL_RELEASE_SAFETY_CLOSURE_V1",
+  "reason": "Project the existing Product Finder V3 cohort and its persisted HOLD/REJECTED evidence without treating research or economics as a commercial opportunity. The global portal entry is content-addressed because it presents the pre-existing sanitized read model; Scout runtime, routes, storage, extension handoff, and owner-session contract remain unchanged.",
   "files_contracts_affected": [
     "kabuby/app.js",
     "scripts/scout-protection-gate.mjs",
     "test/kabuby-scout-production-baseline.test.mjs"
   ],
-  "expected_behavior_change": "Only the global portal presentation separates economic validation from commercial validation for the existing ten-product Engine B cohort. Scout has no behavior change; exact content hashes and the existing scope gate continue to reject every unlisted Scout-surface mutation.",
+  "expected_behavior_change": "Only the global portal presentation labels the current Product Finder V3 cohort and its persisted research/HOLD states without creating an opportunity. Scout has no behavior change; exact content hashes and the existing scope gate continue to reject every unlisted Scout-surface mutation.",
   "migration_impact": "None. Existing Scout browser storage is neither initialized, reseeded, migrated, nor written.",
-  "rollback_plan": "Revert this read-only commercial-truth projection commit and redeploy the immediately preceding Pages deployment if a production canary demonstrates any Scout regression.",
-  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: AMAZON_EBAY_COMMERCIAL_OPPORTUNITY_TRUTH_RECONCILIATION_V1",
+  "rollback_plan": "Revert this read-only parity projection commit and redeploy the immediately preceding Pages deployment if a production canary demonstrates any Scout regression.",
+  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: KABUBY_PRODUCTION_PARITY_AND_GLOBAL_RELEASE_SAFETY_CLOSURE_V1",
   "base_commit": "fcc6a2a95645b2630545f48ab67fb393c9ec9c0f",
   "source_fingerprints": {
-    "kabuby/app.js": "be0911e5611399579a4b48fb4b4d23ac6643ea127cac67624328c904d7f0c274",
+    "kabuby/app.js": "6c46272719b905b4890889ffb528ae5a37a520d61ef25bd59d95e7419cd55de1",
     "scripts/scout-protection-gate.mjs": "b6957fdaadcf0a0de20f6ccdf4adfe6b8cd7395f9b4b20766d0af4fb5bf818ae",
     "test/kabuby-scout-production-baseline.test.mjs": "798f2f23eec6dadcedd6aff7f8cb0611f9444c52edc0a71295f3ff2a19ed0d89"
   }
