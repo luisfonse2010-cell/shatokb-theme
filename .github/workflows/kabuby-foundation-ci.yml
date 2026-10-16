@@ -38,6 +38,8 @@ jobs:
         env:
           RELEASE_GATE_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
         run: node scripts/production-safety-envelope-gate.mjs --base "$RELEASE_GATE_BASE"
+      - name: CERTIFIED_CAPABILITY_REGRESSION
+        run: node --test test/v3-capability-regression.test.mjs
       - name: Run static frontend certification
         run: node --test test/*.test.mjs
       - name: Reject whitespace errors

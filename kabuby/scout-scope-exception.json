@@ -1,21 +1,23 @@
 {
-  "mission": "V3_COHORT_EVIDENCE_BRIDGE_V1_AND_PERMANENT_CAPABILITY_GUARD",
-  "reason": "Project owner-dossier state only from the canonical V3 commercial decision contract. Scout runtime, routes, storage, extension handoff, and owner-session contract remain unchanged.",
+  "mission": "V3_BRIDGE_CANONICAL_MERGE_AND_PERMANENT_REGRESSION_GUARD",
+  "reason": "Preserve the current certified V3 owner-dossier contract while adding exact Amazon navigation and explicitly labeled eBay evidence/search navigation. Scout runtime, routes, storage, extension handoff, and owner-session contract remain unchanged.",
   "files_contracts_affected": [
     "kabuby/index.html",
     "kabuby/app.js",
     "kabuby/styles.css",
-    "test/kabuby-scout-production-baseline.test.mjs"
+    "test/kabuby-scout-production-baseline.test.mjs",
+    ".github/workflows/kabuby-foundation-ci.yml"
   ],
-  "expected_behavior_change": "Only V3 owner-dossier decision labels and explanations derive from canonical decision evidence instead of an ASIN-specific UI list. Scout has no behavior change.",
+  "expected_behavior_change": "Only the V3 owner dossier gains deterministic exact-ASIN Amazon navigation and exact-evidence or labeled exact-GTIN eBay navigation. Scout has no behavior change.",
   "migration_impact": "None. Existing Scout browser storage is neither initialized, reseeded, migrated, nor written.",
   "rollback_plan": "Revert the V3 canonical-decision projection commit and redeploy the retained prior Pages deployment if a production canary demonstrates a regression.",
-  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: V3_COHORT_EVIDENCE_BRIDGE_V1_AND_PERMANENT_CAPABILITY_GUARD",
+  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: V3_BRIDGE_CANONICAL_MERGE_AND_PERMANENT_REGRESSION_GUARD",
   "base_commit": "b401e5822bfb321a27afafc7e9c64fdab5512511",
   "source_fingerprints": {
-    "kabuby/index.html": "5d2bf7f3cf509c8ce561f319a4c7ecab414d2a03a7fb0c338b9b9d57d9db585e",
-    "kabuby/app.js": "9d4806abd65c4de28a4623a41731a790bce9957a92e5930cc65ad06c46fb9cc2",
-    "kabuby/styles.css": "cf468b2cdc5364b0210ebd65a199e15167eb7d2b1a9314c3acff979b32c4fe58",
-    "test/kabuby-scout-production-baseline.test.mjs": "0d4aead22b9e78ec8fe6238e9f18cecf605c20576b2bd13e0b1c1724deb7e8dd"
+    "kabuby/index.html": "68f81659a7582e90871567da02e4b3ac10bf992ddd63e6e5c8e0ed4612f1d6ed",
+    "kabuby/app.js": "869b68c8041670dd3995b9db4f227d7d92072c1aab67bed97bcfc1b5418c20a2",
+    "kabuby/styles.css": "41360175dab87b787ce2bff744231c27a895b813dba0ba9c0388be18fd4f4794",
+    "test/kabuby-scout-production-baseline.test.mjs": "0d4aead22b9e78ec8fe6238e9f18cecf605c20576b2bd13e0b1c1724deb7e8dd",
+    ".github/workflows/kabuby-foundation-ci.yml": "e07e6f5cd9141a2094584017f68743271407e4911ddd1bb9b0e718f26da22ce2"
   }
 }

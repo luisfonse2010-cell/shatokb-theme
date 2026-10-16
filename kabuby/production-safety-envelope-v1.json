@@ -24,7 +24,7 @@
       "release_id": "KABUBY_V3_COHORT_DECISION_CONTRACT_CANDIDATE",
       "release_state": "CERTIFIED_PREPRODUCTION_CANDIDATE",
       "frontend_canonical_commit": "PENDING_CANONICAL_MERGE",
-      "frontend_artifact_fingerprint": "39cb26f4dc71cec48bbeac36625108a739f2d0c180212a1b907e74cf625402f8",
+      "frontend_artifact_fingerprint": "7538db4b50e8b7211b4496d5bb9dcc7c5e30c647f939fcf342804262d8f77038",
       "frontend_production_deployment": "NOT_DEPLOYED",
       "backend_canonical_commit": "e0e7be428b1e10aaa1213579a63aa99eb1d5703d",
       "api_version": "3c34696b-80e6-44cf-96db-909dc5a18337",

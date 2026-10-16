@@ -1,5 +1,5 @@
 {
-  "mission": "V3_COHORT_EVIDENCE_BRIDGE_V1_AND_PERMANENT_CAPABILITY_GUARD",
+  "mission": "V3_BRIDGE_CANONICAL_MERGE_AND_PERMANENT_REGRESSION_GUARD",
   "allowed_change_scope": [
     "OPPORTUNITIES_UI",
     "RELEASE_SAFETY"
@@ -17,7 +17,9 @@
     "test/kabuby-scout-production-baseline.test.mjs",
     "test/production-safety-envelope.test.mjs",
     "kabuby/index.html",
-    "scripts/production-safety-envelope-gate.mjs"
+    "scripts/production-safety-envelope-gate.mjs",
+    "kabuby/v3-capability-contract.js",
+    "test/v3-capability-regression.test.mjs"
   ],
-  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: V3_COHORT_EVIDENCE_BRIDGE_V1_AND_PERMANENT_CAPABILITY_GUARD"
+  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: V3_BRIDGE_CANONICAL_MERGE_AND_PERMANENT_REGRESSION_GUARD"
 }
