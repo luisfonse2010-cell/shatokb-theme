@@ -68,7 +68,8 @@ test('legacy /kabuby paths rewrite to the root shell without a redirect loop', (
   assert.match(redirects, /^\/kabuby\s+\/index\.html\s+200$/m);
   assert.match(redirects, /^\/kabuby\/\s+\/index\.html\s+200$/m);
   assert.match(redirects, /^\/kabuby\/\*\s+\/index\.html\s+200$/m);
-  for (const asset of ['/favicon.png', '/styles.css', '/assets/kabuby-reference-logo-mark-v1.png', '/app.js']) {
+  for (const asset of ['/favicon.png', '/styles.css', '/assets/kabuby-reference-logo-mark-v1.png']) {
     assert.match(home, new RegExp(`(?:href|src)="${asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`));
   }
+  assert.match(home, /src="\/app\.js\?v=[a-f0-9]{64}"/);
 });

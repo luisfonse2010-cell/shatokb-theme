@@ -1,21 +1,23 @@
 {
   "mission": "KABUBY_PRODUCTION_PARITY_AND_GLOBAL_RELEASE_SAFETY_CLOSURE_V1",
-  "reason": "Project the existing Product Finder V3 cohort and its persisted HOLD/REJECTED evidence without treating research or economics as a commercial opportunity. The global portal entry is content-addressed because it presents the pre-existing sanitized read model; Scout runtime, routes, storage, extension handoff, and owner-session contract remain unchanged. The canonical workflow gains the same fail-closed production safety-envelope gate; it does not modify Scout runtime or deployment behavior. The same read-only projection now renders already-projected Amazon strength, price, rank, and owner-assisted official eBay search result states inside the existing dossier cards.",
+  "reason": "Project the existing Product Finder V3 cohort and its persisted HOLD/REJECTED evidence without treating research or economics as a commercial opportunity. The global portal entry is content-addressed because it presents the pre-existing sanitized read model; Scout runtime, routes, storage, extension handoff, and owner-session contract remain unchanged. The canonical workflow gains the same fail-closed production safety-envelope gate; it does not modify Scout runtime or deployment behavior. The same read-only projection now renders already-projected Amazon strength, price, rank, and owner-assisted official eBay search result states inside the existing dossier cards. The owner-facing module script now uses the exact content fingerprint as a query version, forcing the browser to fetch the tested current artifact after a Pages promotion.",
   "files_contracts_affected": [
     "kabuby/app.js",
     "scripts/scout-protection-gate.mjs",
     "test/kabuby-scout-production-baseline.test.mjs",
-    ".github/workflows/kabuby-foundation-ci.yml"
+    ".github/workflows/kabuby-foundation-ci.yml",
+    "kabuby/index.html"
   ],
-  "expected_behavior_change": "Only the global portal presentation labels the current Product Finder V3 cohort and its persisted research/HOLD states without creating an opportunity. Scout has no behavior change; exact content hashes and the existing scope gate continue to reject every unlisted Scout-surface mutation. The CI now rejects a scoped production promotion when the release safety envelope is invalid. Existing dossier cards now surface those sanitized factual fields and retain UNKNOWN where the read model lacks them.",
+  "expected_behavior_change": "Only the global portal presentation labels the current Product Finder V3 cohort and its persisted research/HOLD states without creating an opportunity. Scout has no behavior change; exact content hashes and the existing scope gate continue to reject every unlisted Scout-surface mutation. The CI now rejects a scoped production promotion when the release safety envelope is invalid. Existing dossier cards now surface those sanitized factual fields and retain UNKNOWN where the read model lacks them. This only invalidates stale browser cache for app.js; no Scout runtime or behavior changes.",
   "migration_impact": "None. Existing Scout browser storage is neither initialized, reseeded, migrated, nor written.",
   "rollback_plan": "Revert this read-only parity projection commit and redeploy the immediately preceding Pages deployment if a production canary demonstrates any Scout regression.",
   "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: KABUBY_PRODUCTION_PARITY_AND_GLOBAL_RELEASE_SAFETY_CLOSURE_V1",
-  "base_commit": "513b0caad4c7cce573fd863ef0bbab4bad765808",
+  "base_commit": "1386bd800b651c9a4983c2fc37cc6f1c897fca32",
   "source_fingerprints": {
     "kabuby/app.js": "11b286058822b101df66fe78e598c40e60caa6ec6e067edba2ff25efc0d9c038",
     "scripts/scout-protection-gate.mjs": "b6957fdaadcf0a0de20f6ccdf4adfe6b8cd7395f9b4b20766d0af4fb5bf818ae",
     "test/kabuby-scout-production-baseline.test.mjs": "798f2f23eec6dadcedd6aff7f8cb0611f9444c52edc0a71295f3ff2a19ed0d89",
-    ".github/workflows/kabuby-foundation-ci.yml": "8522baff0ec4dd38c0f4921ce3031e35f9b96da69ea26607de979a4fcfcfc206"
+    ".github/workflows/kabuby-foundation-ci.yml": "8522baff0ec4dd38c0f4921ce3031e35f9b96da69ea26607de979a4fcfcfc206",
+    "kabuby/index.html": "40fa083248da8bbec805bb9b5e3ad00a46d447fb0d00c6b58505ad3fa02933cc"
   }
 }
