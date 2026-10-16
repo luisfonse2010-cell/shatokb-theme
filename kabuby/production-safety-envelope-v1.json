@@ -5,10 +5,10 @@
   "release_identity": {
     "schema_version": "kabuby-release-identity/v1",
     "current_release": {
-      "release_id": "KABUBY_V3_OWNER_DOSSIER_NAVIGATION_CANDIDATE",
+      "release_id": "KABUBY_V3_OWNER_DOSSIER_TRUTH_LABEL_REPAIR_CANDIDATE",
       "release_state": "CERTIFIED_PRODUCTION_RELEASE",
       "frontend_canonical_commit": "PENDING_CANONICAL_MERGE",
-      "frontend_artifact_fingerprint": "838086afa328376809e6963686152f84d6bb05eb1e9beaaff0eb3ef22c41f217",
+      "frontend_artifact_fingerprint": "c244df2a3b27bd6727440a6ec0fac7cd5620c518a8b36c9fa62717d9ab39d6f1",
       "frontend_production_deployment": "PENDING_PRODUCTION_CANARY",
       "backend_canonical_commit": "e0e7be428b1e10aaa1213579a63aa99eb1d5703d",
       "api_version": "3c34696b-80e6-44cf-96db-909dc5a18337",
@@ -20,7 +20,7 @@
       "routing_contract_version": "KABUBY_ROOT_LEGACY_REWRITE_V1",
       "chrome_handoff_contract_version": "SCOUT_CHROME_HANDOFF_V1"
     },
-    "last_known_good_release_id": "KABUBY_V3_OWNER_DOSSIER_NAVIGATION_CANDIDATE",
+    "last_known_good_release_id": "KABUBY_V3_OWNER_DOSSIER_TRUTH_LABEL_REPAIR_CANDIDATE",
     "certification_rule": "A release is CANDIDATE_PRODUCTION_RELEASE until every mandatory critical production canary passes. Only then may it become CERTIFIED_PRODUCTION_RELEASE and replace last_known_good_release_id.",
     "drift_policy": "Any material identity, schema, read-model, or artifact-fingerprint drift makes the release RELEASE_NOT_CERTIFIED."
   },
