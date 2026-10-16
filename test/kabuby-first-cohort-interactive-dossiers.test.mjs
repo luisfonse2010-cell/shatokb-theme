@@ -2,24 +2,54 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
-const source = readFileSync(new URL('../kabuby/home-opportunities-interactive.js', import.meta.url), 'utf8');
-const app = readFileSync(new URL('../kabuby/app.js', import.meta.url), 'utf8');
-const baseline = JSON.parse(readFileSync(new URL('../kabuby/scout-production-baseline-v1.json', import.meta.url), 'utf8'));
+const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
+const app = read('kabuby/app.js');
+const data = read('kabuby/data.js');
+const scope = JSON.parse(read('kabuby/release-scope-declaration.json'));
+const scoutScope = JSON.parse(read('kabuby/scout-scope-exception.json'));
 
-test('V3 interaction preserves app.js as the current filter and dossier source', () => {
-  for (const marker of ['data-interactive-dossier-open', 'currentFilter()', 'CERTIFIED_BROWSER_READ_MODEL_ONLY', 'provider_calls:0', 'commercial_mutations:0']) assert.match(source, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-  assert.doesNotMatch(source, /cohort_size:/);
-  assert.doesNotMatch(source, /ECONOMICS_COMPLETE/);
-  assert.doesNotMatch(source, /REJECTED_ECONOMICS/);
+const escaped = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+test('each V3 card has a native exact-ASIN dossier route and keyboard-equivalent navigation', () => {
+  for (const marker of ['data-owner-dossier', 'role="link"', 'tabindex="0"', 'openOwnerDossier', "event.key === 'Enter'", "event.key === ' '", 'ownerDossierParams', "view:'amazon-ebay', cohort:filter, asin"]) {
+    assert.match(app, new RegExp(escaped(marker)));
+  }
+  assert.match(app, /exactV3Candidate\(m, asin\)/);
+  assert.match(app, /\^\[A-Z0-9\]\{10\}\$/);
+  assert.match(app, /candidate\?\.asin === exact/);
+  assert.doesNotMatch(app, /find\(candidate => candidate\?\.title/);
+  assert.doesNotMatch(app, /similarity|nearest|index ===/i);
 });
 
-test('interaction has no transport, economics engine, or Scout integration change', () => {
-  for (const forbidden of ['fetch(', 'XMLHttpRequest', 'api.ebay', 'keepa', 'localStorage.setItem', 'POST']) assert.equal(source.includes(forbidden), false, `forbidden interactive transport marker: ${forbidden}`);
-  assert.match(source, /scout_runtime:'UNTOUCHED'/);
-  assert.equal(source.includes('#scout'), false);
+test('the dedicated dossier preserves context and never reuses a generic card by position', () => {
+  for (const marker of ['data-owner-dossier-view', "params.get('asin')", "params.get('cohort')", "new URLSearchParams({ view:'amazon-ebay', cohort:filter })", 'ownerDossier(exact, filter)', 'noProduct']) {
+    assert.match(app, new RegExp(escaped(marker)));
+  }
+  assert.match(app, /requested \? \(exact \? ownerDossier\(exact, filter\)/);
 });
 
-test('Scout baseline source remains untouched', () => {
-  assert.equal(baseline.asset_hashes['kabuby/app.js'], '9a5a7be28ca0322dccf2638fbf26816030c8e1de6956ac30f141ff84b5c799d5');
-  assert.match(app, /const SCOUT_VIEWS/);
+test('V3 dossiers render owner-decision evidence with explicit truth states and collapsed technical material', () => {
+  for (const marker of ['Current decision', 'Why this state', 'Amazon evidence', 'eBay evidence', 'Material unknowns', 'Risks', 'Next permitted research', 'Advanced technical evidence', 'FACTUAL', 'ESTIMATE', 'SCENARIO', 'UNKNOWN', 'READ ONLY · COMMERCIAL ACTIONS BLOCKED']) {
+    assert.match(app, new RegExp(escaped(marker)));
+  }
+  for (const marker of ['amazon_price', 'selected_acquisition_price', 'ebay_active_listing_price_evidence', 'outbound_shipping_policy', 'packaging_cost', 'estimated_landed_cost', 'tac']) assert.match(app, new RegExp(escaped(marker)));
+  assert.match(app, /activeNotSold/);
+  assert.match(app, /activeNotSold/);
+});
+
+test('the generic legacy Amazon-to-eBay projection is removed from the native page and legacy adapter is gone', () => {
+  assert.doesNotMatch(data, /home-opportunities-interactive/);
+  assert.match(app, /if \(page === 'opportunities' && id === 'amazon-ebay'\)/);
+  assert.match(app, /return `\$\{authBanner\(\)\}.*\$\{content\}.*\$\{lockedActions\(\)\}/s);
+  assert.match(app, /return `\$\{authBanner\(\)\}.*\$\{sectionRows\(rows,label\)\}/s);
+  assert.match(scope.files_contracts_affected.join('\n'), /kabuby\/home-opportunities-interactive\.js/);
+});
+
+test('the narrowly declared scope preserves Scout and forbids provider or commercial work', () => {
+  assert.equal(scoutScope.mission, 'V3_OWNER_PRODUCT_DOSSIER_NAVIGATION_AND_AMAZON_EBAY_UI_CLEANUP');
+  assert.deepEqual(scoutScope.files_contracts_affected.sort(), ['kabuby/app.js', 'kabuby/index.html', 'kabuby/styles.css', 'test/kabuby-scout-production-baseline.test.mjs']);
+  assert.match(data, /b0006-commercial-dossier/);
+  assert.doesNotMatch(app, /api\.ebay|keepa|dataforseo|fetch\([^)]*(?:POST|PUT|PATCH|DELETE)/i);
+  assert.match(app, /BUY · BLOCKED/);
+  assert.match(app, /PUBLISH · BLOCKED/);
 });

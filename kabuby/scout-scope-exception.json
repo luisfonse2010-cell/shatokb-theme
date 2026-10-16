@@ -1,17 +1,21 @@
 {
-  "mission": "KABUBY_V3_OWNER_PRODUCT_CARDS_AND_IMAGE_PROJECTION_CLOSURE_V1",
-  "reason": "Refine only the existing Opportunities read-only V3 presentation. Scout runtime, routes, storage, extension handoff, and owner-session contract remain unchanged.",
+  "mission": "V3_OWNER_PRODUCT_DOSSIER_NAVIGATION_AND_AMAZON_EBAY_UI_CLEANUP",
+  "reason": "Replace the legacy generic Amazon\u2192eBay card adapter with exact-ASIN, native owner dossier navigation. Scout runtime, routes, storage, extension handoff, and owner-session contract remain unchanged.",
   "files_contracts_affected": [
+    "kabuby/index.html",
     "kabuby/app.js",
-    "kabuby/index.html"
+    "kabuby/styles.css",
+    "test/kabuby-scout-production-baseline.test.mjs"
   ],
-  "expected_behavior_change": "Only the global Opportunities surface changes its existing V3 card labels, filters, advanced disclosure, and cache-busted module reference. Scout has no behavior change.",
+  "expected_behavior_change": "Only Opportunities \u2192 Amazon\u2192eBay changes: each existing factual V3 card now opens its exact read-only dossier and the redundant generic row projection is removed. Scout has no behavior change.",
   "migration_impact": "None. Existing Scout browser storage is neither initialized, reseeded, migrated, nor written.",
-  "rollback_plan": "Revert the V3 owner-card presentation commit and redeploy the retained prior Pages deployment if a production canary demonstrates a regression.",
-  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: KABUBY_V3_OWNER_PRODUCT_CARDS_AND_IMAGE_PROJECTION_CLOSURE_V1",
-  "base_commit": "80cadd677634d540bcb1837894b0637415276606",
+  "rollback_plan": "Revert the native V3 dossier-navigation commit and redeploy the retained prior Pages deployment if a production canary demonstrates a regression.",
+  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: V3_OWNER_PRODUCT_DOSSIER_NAVIGATION_AND_AMAZON_EBAY_UI_CLEANUP",
+  "base_commit": "61cdf513f0b943652b8e352191e07532b3f27031",
   "source_fingerprints": {
-    "kabuby/app.js": "33b71337bb6358b75034a7cb64fc862f57223f5951965714d2d817985ebc837c",
-    "kabuby/index.html": "df9961b833f0096f659e5e8b933f40c92444c657f949a963dd91a548f349b4e8"
+    "kabuby/index.html": "df9961b833f0096f659e5e8b933f40c92444c657f949a963dd91a548f349b4e8",
+    "kabuby/app.js": "d4205039b0ec80cb90562829afc22941c767712065e1858c94418c8d7bf20a57",
+    "kabuby/styles.css": "cf468b2cdc5364b0210ebd65a199e15167eb7d2b1a9314c3acff979b32c4fe58",
+    "test/kabuby-scout-production-baseline.test.mjs": "0d4aead22b9e78ec8fe6238e9f18cecf605c20576b2bd13e0b1c1724deb7e8dd"
   }
 }

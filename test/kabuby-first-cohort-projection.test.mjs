@@ -27,7 +27,7 @@ test('primary V3 cards keep raw blockers in collapsed advanced evidence', () => 
   assert.match(app, /advanced-technical-evidence/);
   assert.match(app, /Raw material blockers/);
   assert.match(app, /Economics incomplete —/);
-  assert.match(app, /Image not yet available/);
+  assert.match(app, /imageUnavailable/);
   assert.doesNotMatch(app, /Exact remaining blocker \/ confidence/);
 });
 
