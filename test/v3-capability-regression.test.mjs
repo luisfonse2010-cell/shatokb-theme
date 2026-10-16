@@ -25,7 +25,7 @@ test('CERTIFIED_CAPABILITY_REGRESSION: eBay links remain exact evidence or expli
 });
 
 test('CERTIFIED_CAPABILITY_REGRESSION: owner dossier preserves exact routing, navigation, factual boundaries and read-only safety', () => {
-  for (const fragment of ['exactV3Candidate', 'ownerDossierParams', 'ownerEvidenceRows', 'ownerEvidenceNavigation', 'data-amazon-exact-navigation', 'data-ebay-navigation', 'navigation only, not listing evidence', 'commercial_opportunity_state', 'advanced-technical-evidence', 'READ ONLY · COMMERCIAL ACTIONS BLOCKED']) assert.match(app, new RegExp(fragment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  for (const fragment of ['exactV3Candidate', 'ownerDossierParams', 'ownerEvidenceRows', 'ownerEvidenceNavigation', 'data-amazon-exact-navigation', 'data-ebay-navigation', 'navigation only, not listing evidence', 'commercial_opportunity_state', 'advanced-technical-evidence', 'data-owner-evidence-provenance', 'data-owner-evidence-freshness', 'READ ONLY · COMMERCIAL ACTIONS BLOCKED']) assert.match(app, new RegExp(fragment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   assert.doesNotMatch(app, /candidate\.asin === 'B0CRC8MQZL'/);
   assert.match(styles, /owner-evidence-navigation/);
 });

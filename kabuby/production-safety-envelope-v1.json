@@ -21,10 +21,10 @@
       "chrome_handoff_contract_version": "SCOUT_CHROME_HANDOFF_V1"
     },
     "candidate_release": {
-      "release_id": "KABUBY_V3_COHORT_DECISION_CONTRACT_CANDIDATE",
+      "release_id": "KABUBY_V3_OWNER_EVIDENCE_PROJECTION_CANDIDATE",
       "release_state": "CERTIFIED_PREPRODUCTION_CANDIDATE",
       "frontend_canonical_commit": "PENDING_CANONICAL_MERGE",
-      "frontend_artifact_fingerprint": "7538db4b50e8b7211b4496d5bb9dcc7c5e30c647f939fcf342804262d8f77038",
+      "frontend_artifact_fingerprint": "e98b5751b70bf0b29810fca642465f00d9f9159cd5735f3f149b6cfc9838aa4d",
       "frontend_production_deployment": "NOT_DEPLOYED",
       "backend_canonical_commit": "e0e7be428b1e10aaa1213579a63aa99eb1d5703d",
       "api_version": "3c34696b-80e6-44cf-96db-909dc5a18337",
