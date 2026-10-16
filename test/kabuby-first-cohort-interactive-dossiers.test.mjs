@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import test from 'node:test';
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const app = read('kabuby/app.js');
 const data = read('kabuby/data.js');
+const index = read('kabuby/index.html');
 const scope = JSON.parse(read('kabuby/release-scope-declaration.json'));
 const scoutScope = JSON.parse(read('kabuby/scout-scope-exception.json'));
 
@@ -36,6 +38,11 @@ test('V3 dossiers render owner-decision evidence with explicit truth states and 
   assert.match(app, /activeNotSold/);
   assert.match(app, /Number\.isFinite\(amount\(selected\)\) \? `\$\{selected\.currency/);
   assert.match(app, /UNKNOWN\|UNPROVEN\|NOT_PROVEN/);
+});
+
+test('the root cache-bust reference is the exact V3 module bytes', () => {
+  const appHash = createHash('sha256').update(app).digest('hex');
+  assert.match(index, new RegExp(`/app\\.js\\?v=${appHash}`));
 });
 
 test('the generic legacy Amazon-to-eBay projection is removed from the native page and legacy adapter is gone', () => {
