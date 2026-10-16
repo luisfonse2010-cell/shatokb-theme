@@ -1,5 +1,5 @@
 {
-  "mission": "V3_OWNER_PRODUCT_DOSSIER_TRUTH_LABEL_REPAIR",
+  "mission": "V3_OWNER_PRODUCT_DOSSIER_CACHE_BUST_REPAIR",
   "allowed_change_scope": [
     "OPPORTUNITIES_UI",
     "RELEASE_SAFETY"
@@ -15,7 +15,8 @@
     "test/kabuby-first-cohort-interactive-dossiers.test.mjs",
     "kabuby/production-safety-envelope-v1.json",
     "test/kabuby-scout-production-baseline.test.mjs",
-    "test/production-safety-envelope.test.mjs"
+    "test/production-safety-envelope.test.mjs",
+    "kabuby/index.html"
   ],
   "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: V3_OWNER_PRODUCT_DOSSIER_NAVIGATION_AND_AMAZON_EBAY_UI_CLEANUP"
 }
