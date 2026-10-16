@@ -20,6 +20,22 @@
       "routing_contract_version": "KABUBY_ROOT_LEGACY_REWRITE_V1",
       "chrome_handoff_contract_version": "SCOUT_CHROME_HANDOFF_V1"
     },
+    "candidate_release": {
+      "release_id": "KABUBY_V3_COHORT_DECISION_CONTRACT_CANDIDATE",
+      "release_state": "CERTIFIED_PREPRODUCTION_CANDIDATE",
+      "frontend_canonical_commit": "PENDING_CANONICAL_MERGE",
+      "frontend_artifact_fingerprint": "7538db4b50e8b7211b4496d5bb9dcc7c5e30c647f939fcf342804262d8f77038",
+      "frontend_production_deployment": "NOT_DEPLOYED",
+      "backend_canonical_commit": "e0e7be428b1e10aaa1213579a63aa99eb1d5703d",
+      "api_version": "3c34696b-80e6-44cf-96db-909dc5a18337",
+      "private_executor_version": "fa66546e-f0c8-4fdc-88a6-a11588d917f3",
+      "d1_schema_version": "0080",
+      "read_model_version": "kabuby-physical-projection/v3",
+      "scout_baseline_version": "SCOUT_CANONICAL_PRODUCTION_BASELINE_V1",
+      "auth_contract_version": "KABUBY_ACCESS_SAME_ORIGIN_V1",
+      "routing_contract_version": "KABUBY_ROOT_LEGACY_REWRITE_V1",
+      "chrome_handoff_contract_version": "SCOUT_CHROME_HANDOFF_V1"
+    },
     "last_known_good_release_id": "KABUBY_V3_OWNER_DOSSIER_CACHE_BUST_REPAIR_CANDIDATE",
     "certification_rule": "A release is CANDIDATE_PRODUCTION_RELEASE until every mandatory critical production canary passes. Only then may it become CERTIFIED_PRODUCTION_RELEASE and replace last_known_good_release_id.",
     "drift_policy": "Any material identity, schema, read-model, or artifact-fingerprint drift makes the release RELEASE_NOT_CERTIFIED."

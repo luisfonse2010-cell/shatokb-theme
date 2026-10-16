@@ -10,7 +10,7 @@ const fail = code => { throw new Error(code); };
 const read = (file, activeRoot = root) => readFileSync(path.join(activeRoot, file), 'utf8');
 const json = (file, activeRoot = root) => JSON.parse(read(file, activeRoot));
 const hash = text => createHash('sha256').update(text).digest('hex');
-const artifactFiles = Object.freeze(['kabuby/index.html', 'kabuby/app.js', 'kabuby/styles.css', 'kabuby/_redirects', 'kabuby/functions/api/v1/intelligence/physical.js']);
+const artifactFiles = Object.freeze(['kabuby/index.html', 'kabuby/app.js', 'kabuby/styles.css', 'kabuby/_redirects', 'kabuby/functions/api/v1/intelligence/physical.js', 'kabuby/v3-capability-contract.js']);
 const requiredSurfaces = Object.freeze(['AUTH_ACCESS','ROOT_ROUTING','HOME','TODAY','OPPORTUNITIES','PRODUCT_DOSSIERS','SCOUT','SCOUT_CHROME_HANDOFF','ASK_KABUBY','API_READ_MODEL','PRIVATE_EXECUTOR_CONTROL_PLANE','D1_SCHEMA_COMPATIBILITY','V2_SPECIALIZED_ISOLATION','COMMERCIAL_MUTATION_FIREWALL']);
 const requiredGates = Object.freeze(['CANONICAL_SOURCE','REMOTE_CI','FULL_REGRESSION','MISSION_CONTROL','SCOPE_GATE','MIGRATION_GATE','RELEASE_MANIFEST','AUTH','ROUTING','HOME','TODAY','OPPORTUNITIES','DOSSIERS','SCOUT','CHROME_HANDOFF','API_READ_MODEL','PRIVATE_EXECUTOR','V2_ISOLATION','COMMERCIAL_FIREWALL','PREVIEW_SMOKE','ARTIFACT_FINGERPRINT']);
 
@@ -27,6 +27,7 @@ const protectedFileScopes = Object.freeze({
   'kabuby/today/projection-gateway.mjs': ['API_PROJECTION', 'AUTH'],
   'kabuby/scout/index.html': ['SCOUT'],
   'kabuby/scout-owner.js': ['SCOUT'],
+  'kabuby/v3-capability-contract.js': ['OPPORTUNITIES_UI'],
   'kabuby/production-safety-envelope-v1.json': ['RELEASE_SAFETY'],
   'kabuby/release-scope-declaration.json': ['RELEASE_SAFETY'],
   'scripts/production-safety-envelope-gate.mjs': ['RELEASE_SAFETY'],
@@ -56,14 +57,25 @@ export function validateReleaseIdentity({ activeRoot = root, artifactFingerprint
   const envelope = json('kabuby/production-safety-envelope-v1.json', activeRoot);
   const identity = envelope.release_identity;
   if (identity?.schema_version !== 'kabuby-release-identity/v1') fail('RELEASE_IDENTITY_SCHEMA_INVALID');
-  const release = identity.current_release;
-  for (const key of ['release_id','frontend_canonical_commit','frontend_artifact_fingerprint','frontend_production_deployment','backend_canonical_commit','api_version','private_executor_version','d1_schema_version','read_model_version','scout_baseline_version','auth_contract_version','routing_contract_version','chrome_handoff_contract_version']) if (typeof release?.[key] !== 'string' || !release[key]) fail(`RELEASE_IDENTITY_FIELD_MISSING:${key}`);
-  if (release.release_state !== 'CERTIFIED_PRODUCTION_RELEASE') fail('CURRENT_RELEASE_NOT_CERTIFIED');
-  if (identity.last_known_good_release_id !== release.release_id) fail('LAST_KNOWN_GOOD_RELEASE_DRIFT');
-  if (release.frontend_artifact_fingerprint !== artifactFingerprint) fail('FRONTEND_ARTIFACT_FINGERPRINT_MISMATCH');
+  const required = ['release_id','frontend_canonical_commit','frontend_artifact_fingerprint','frontend_production_deployment','backend_canonical_commit','api_version','private_executor_version','d1_schema_version','read_model_version','scout_baseline_version','auth_contract_version','routing_contract_version','chrome_handoff_contract_version'];
+  const current = identity.current_release;
+  for (const key of required) if (typeof current?.[key] !== 'string' || !current[key]) fail(`RELEASE_IDENTITY_FIELD_MISSING:${key}`);
+  if (current.release_state !== 'CERTIFIED_PRODUCTION_RELEASE') fail('CURRENT_RELEASE_NOT_CERTIFIED');
+  if (identity.last_known_good_release_id !== current.release_id) fail('LAST_KNOWN_GOOD_RELEASE_DRIFT');
+  // Source changes before deployment are candidates, not production facts. A
+  // candidate may carry the current tree fingerprint while the immutable
+  // last-known-good production identity remains truthful and rollbackable.
+  const candidate = identity.candidate_release ?? null;
+  const artifactRelease = candidate ?? current;
+  if (candidate) {
+    for (const key of required) if (typeof candidate?.[key] !== 'string' || !candidate[key]) fail(`CANDIDATE_RELEASE_IDENTITY_FIELD_MISSING:${key}`);
+    if (candidate.release_state !== 'CERTIFIED_PREPRODUCTION_CANDIDATE') fail('CANDIDATE_RELEASE_STATE_INVALID');
+    if (candidate.frontend_production_deployment !== 'NOT_DEPLOYED') fail('CANDIDATE_PRODUCTION_DEPLOYMENT_INVALID');
+  }
+  if (artifactRelease.frontend_artifact_fingerprint !== artifactFingerprint) fail('FRONTEND_ARTIFACT_FINGERPRINT_MISMATCH');
   if (envelope.preview_production_artifact_parity?.status !== 'PLATFORM_NOT_SUPPORTED') fail('PREVIEW_PROMOTION_STATUS_INVALID');
   if (envelope.preview_production_artifact_parity?.platform_supports_identical_artifact_promotion !== false) fail('UNPROVEN_SAME_ARTIFACT_PROMOTION');
-  return Object.freeze({ status: 'PASS', release_id: release.release_id, artifact_fingerprint: artifactFingerprint, last_known_good_release_id: identity.last_known_good_release_id });
+  return Object.freeze({ status: 'PASS', release_id: current.release_id, candidate_release_id:candidate?.release_id ?? null, artifact_fingerprint: artifactFingerprint, last_known_good_release_id: identity.last_known_good_release_id });
 }
 
 export function validateScopeSafety({ activeRoot = root, base = null, changedFiles = null } = {}) {
@@ -96,7 +108,7 @@ export function validateGoldenContracts({ activeRoot = root } = {}) {
   expectation(app, 'fetch(PHYSICAL_PROJECTION_PATH', 'HOME_READ_MODEL_FETCH_MISSING'); expectation(app, "credentials:'same-origin'", 'HOME_SAME_ORIGIN_MISSING'); pass('HOME', ['same-origin owner read model']);
   expectation(today, "credentials:'same-origin'", 'TODAY_SAME_ORIGIN_MISSING'); expectation(today, 'commercial_authority !== \'NONE\'', 'TODAY_FIREWALL_MISSING'); pass('TODAY', ['compatible read model', 'commercial authority check']);
   expectation(app, 'Product Finder V3 owner dossiers', 'OPPORTUNITIES_V3_CONTAINER_MISSING'); expectation(app, 'ownerFilterDefinitions', 'OPPORTUNITIES_CURRENT_FILTERS_MISSING'); expectation(app, 'data-cohort-filter', 'OPPORTUNITIES_FILTER_MISSING'); pass('OPPORTUNITIES', ['current V3 cohort', 'derived filters']);
-  expectation(app, 'owner-product-card', 'DOSSIER_CONTAINER_MISSING'); expectation(app, 'advanced-technical-evidence', 'DOSSIER_ADVANCED_EVIDENCE_MISSING'); expectation(app, 'ownerCommercialState', 'DOSSIER_OWNER_DECISION_MISSING'); pass('PRODUCT_DOSSIERS', ['product identity', 'owner decision', 'collapsed advanced evidence']);
+  expectation(app, 'owner-product-card', 'DOSSIER_CONTAINER_MISSING'); expectation(app, 'advanced-technical-evidence', 'DOSSIER_ADVANCED_EVIDENCE_MISSING'); expectation(app, 'ownerCommercialState', 'DOSSIER_OWNER_DECISION_MISSING'); expectation(app, 'data-amazon-exact-navigation', 'DOSSIER_AMAZON_NAVIGATION_MISSING'); expectation(app, 'data-ebay-navigation', 'DOSSIER_EBAY_NAVIGATION_MISSING'); expectation(app, 'navigation only, not listing evidence', 'DOSSIER_EBAY_NAVIGATION_SEMANTICS_MISSING'); pass('PRODUCT_DOSSIERS', ['product identity', 'owner decision', 'exact Amazon navigation', 'safe eBay navigation', 'collapsed advanced evidence']);
   validateScoutGoldenContract(activeRoot); pass('SCOUT', ['locked native runtime', 'content-addressed Scout baseline']);
   expectation(app, 'integratedScoutImportTarget', 'CHROME_HANDOFF_TARGET_MISSING'); expectation(app, 'window.location.replace(postCaptureTarget)', 'CHROME_HANDOFF_NAVIGATION_MISSING'); pass('SCOUT_CHROME_HANDOFF', ['integrated pending destination', 'single-session redirect']);
   expectation(app, 'Ask Kabuby is search, not a fake assistant', 'ASK_KABUBY_GROUNDED_CONTRACT_MISSING'); pass('ASK_KABUBY', ['read-model search only']);
@@ -118,7 +130,7 @@ export function validateProductionSafetyEnvelope({ activeRoot = root, base = nul
   const identity = validateReleaseIdentity({ activeRoot });
   const scope = validateScopeSafety({ activeRoot, base, changedFiles });
   const golden = validateGoldenContracts({ activeRoot });
-  return Object.freeze({ status: 'PASS', artifact_fingerprint: identity.artifact_fingerprint, release_id: identity.release_id, last_known_good_release_id: identity.last_known_good_release_id, scope, golden_contracts: golden.contracts, rollback: 'ROLLBACK_REQUIRED', protected_surfaces: envelope.protected_surfaces.length, release_result_contract: envelope.release_result_contract.required_fields });
+  return Object.freeze({ status: 'PASS', artifact_fingerprint: identity.artifact_fingerprint, release_id: identity.release_id, candidate_release_id:identity.candidate_release_id, last_known_good_release_id: identity.last_known_good_release_id, scope, golden_contracts: golden.contracts, rollback: 'ROLLBACK_REQUIRED', protected_surfaces: envelope.protected_surfaces.length, release_result_contract: envelope.release_result_contract.required_fields });
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

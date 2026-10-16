@@ -54,8 +54,8 @@ test('the generic legacy Amazon-to-eBay projection is removed from the native pa
 });
 
 test('the narrowly declared scope preserves Scout and forbids provider or commercial work', () => {
-  assert.match(scoutScope.mission, /^V3_OWNER_PRODUCT_DOSSIER_/);
-  assert.deepEqual(scoutScope.files_contracts_affected.sort(), ['kabuby/app.js', 'kabuby/index.html', 'kabuby/styles.css', 'test/kabuby-scout-production-baseline.test.mjs']);
+  assert.equal(scoutScope.mission, 'V3_BRIDGE_CANONICAL_MERGE_AND_PERMANENT_REGRESSION_GUARD');
+  assert.deepEqual(scoutScope.files_contracts_affected.sort(), ['.github/workflows/kabuby-foundation-ci.yml', 'kabuby/app.js', 'kabuby/index.html', 'kabuby/styles.css', 'test/kabuby-scout-production-baseline.test.mjs']);
   assert.match(data, /b0006-commercial-dossier/);
   assert.doesNotMatch(app, /api\.ebay|keepa|dataforseo|fetch\([^)]*(?:POST|PUT|PATCH|DELETE)/i);
   assert.match(app, /BUY · BLOCKED/);

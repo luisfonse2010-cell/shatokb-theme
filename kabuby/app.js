@@ -1,5 +1,6 @@
 import { DAYPARTS, NAVIGATION, PHYSICAL_PROJECTION_PATH } from './data.js';
 import { integratedScoutImportTarget } from './scout-owner.js';
+import { exactAmazonProductNavigation, ebayEvidenceNavigation } from './v3-capability-contract.js';
 
 const app = document.querySelector('#app');
 const nav = document.querySelector('#primary-navigation');
@@ -257,9 +258,7 @@ function scenarioRows(candidate) {
   });
 }
 function ownerCommercialState(candidate) {
-  if (candidate.asin === 'B0CRC8MQZL') return 'REJECTED';
-  if (candidate.asin === 'B0CRCB4FTM') return 'REJECTED';
-  if (candidate.asin === 'B0CKTZ2PDF' || candidate.commercial_opportunity_state === 'HOLD') return 'HOLD';
+  if (['VALIDATED','HOLD','REJECTED'].includes(candidate?.commercial_opportunity_state)) return candidate.commercial_opportunity_state;
   return 'CONTINUE_RESEARCH';
 }
 function ownerPath(candidate) {
@@ -276,15 +275,15 @@ function ownerMaterialUnknowns(candidate) {
   return [...new Set(arr(candidate.unknown_costs).map(value => labels[value]).filter(Boolean))];
 }
 function ownerNarrative(candidate, state) {
-  if (candidate.asin === 'B0CRC8MQZL') return 'Strong Amazon product, but observed eBay pricing does not support viable Amazon→eBay economics.';
-  if (candidate.asin === 'B0CRCB4FTM') return 'No sold results returned in the owner-observed official eBay Product Research searches during the selected 90-day window.';
-  if (candidate.asin === 'B0CKTZ2PDF') return 'eBay category conflict leaves the applicable fee unresolved. Further spending is stopped.';
-  return state === 'CONTINUE_RESEARCH' ? 'Amazon evidence is available, but material market or economic evidence still needs research.' : 'No further commercial spend is permitted for this product.';
+  if (state === 'HOLD') return 'Certified category or fee evidence is unresolved. Further research spending is stopped.';
+  if (state === 'REJECTED') return 'Certified market evidence rejected this exact product. Do not resume without new certified evidence.';
+  if (state === 'VALIDATED') return 'The certified decision contract admits this product for owner review; commercial actions remain blocked.';
+  return 'Amazon evidence is available, but material market or economic evidence still needs research.';
 }
 function ownerNextStep(candidate, state) {
-  if (candidate.asin === 'B0CKTZ2PDF') return 'Hold — do not spend until the certified category conflict is resolved.';
-  if (candidate.asin === 'B0CRCB4FTM') return 'Rejected — do not resume without new certified market evidence.';
-  if (candidate.asin === 'B0CRC8MQZL') return 'Rejected — do not pursue under the observed economics.';
+  if (state === 'HOLD') return 'Hold — do not spend until the certified category or fee evidence is resolved.';
+  if (state === 'REJECTED') return 'Rejected — do not resume without new certified market evidence.';
+  if (state === 'VALIDATED') return 'Review the certified decision evidence before any separately authorized commercial action.';
   return 'Review the material evidence before any further permitted research.';
 }
 function ownerFilterDefinitions(candidates) {
@@ -352,6 +351,13 @@ function ownerEvidenceRows(candidate) {
     [v3('targetAcquisitionCost'), Number.isInteger(tac.conservative_minor) ? usdMinor(tac.conservative_minor) : v3('unknown'), economicsReady ? v3('scenario') : v3('unknown')]
   ];
 }
+function ownerEvidenceNavigation(candidate) {
+  const amazon = exactAmazonProductNavigation(candidate.asin);
+  const ebay = ebayEvidenceNavigation(candidate);
+  const amazonLink = amazon ? `<a data-amazon-exact-navigation href="${esc(amazon)}" target="_blank" rel="noopener noreferrer">Open exact Amazon product</a>` : '';
+  const ebayLink = ebay ? `<a data-ebay-navigation data-ebay-navigation-kind="${esc(ebay.kind)}" href="${esc(ebay.url)}" target="_blank" rel="noopener noreferrer">${esc(ebay.label)}${ebay.kind === 'EXACT_GTIN_SEARCH_NAVIGATION' ? ' · navigation only, not listing evidence' : ''}</a>` : '';
+  return `<nav class="owner-evidence-navigation" aria-label="Exact marketplace navigation">${amazonLink}${ebayLink}</nav>`;
+}
 function ownerDossier(candidate, filter) {
   const state = ownerCommercialState(candidate);
   const path = ownerPath(candidate);
@@ -359,7 +365,7 @@ function ownerDossier(candidate, filter) {
   const evidence = ownerEvidenceRows(candidate);
   const economicState = candidate.economics || candidate.economic_validation_state || 'UNKNOWN';
   const next = ownerNextStep(candidate, state);
-  return `<section class="owner-dossier-page" data-owner-dossier-view="${esc(candidate.asin)}"><a class="owner-dossier-back" href="#opportunities?${new URLSearchParams({ view:'amazon-ebay', cohort:filter }).toString()}">← ${esc(v3('back'))}</a><article class="owner-dossier"><header class="owner-dossier-hero"><div class="owner-dossier-media">${productImage(candidate)}</div><div><p class="eyebrow">${esc(v3('dossier'))} · ${esc(v3('marketplace'))}</p><h1>${esc(candidate.title || candidate.asin)}</h1><p>${esc(candidate.brand || v3('brandUnknown'))} · ASIN ${esc(candidate.asin)}${candidate.gtin ? ` · GTIN ${esc(candidate.gtin)}` : ''}</p><div class="owner-state-row"><span class="owner-state owner-state-${state.toLowerCase()}">${esc(state.replaceAll('_',' '))}</span><span class="owner-path">${esc(path.label)}</span></div></div></header><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('currentDecision'))}</p><h2>${esc(state.replaceAll('_',' '))}</h2><p>${esc(ownerNarrative(candidate, state))}</p></section><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('why'))}</p><h2>${esc(path.label)}</h2><p>${esc(path.detail)}</p></section><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('amazonEvidence'))} · ${esc(v3('ebayEvidence'))} · ${esc(v3('economics'))}</p><div class="owner-dossier-evidence">${evidence.map(([label,value,truth]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd><small>${esc(truth)}</small></div>`).join('')}</div>${economicState === 'UNKNOWN_MATERIAL_COSTS' ? `<p class="owner-dossier-note">${esc(v3('noEconomicEvidence'))}</p>` : ''}</section><section class="owner-dossier-grid"><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('materialUnknowns'))}</p><h2>${esc(unknowns.length ? v3('unresolvedInputs', { count:unknowns.length }) : v3('noneRecorded'))}</h2><p>${esc(unknowns.length ? unknowns.join('; ') : v3('noAdditionalUnknowns'))}</p></section><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('risks'))}</p><h2>${esc(candidate.risk || 'UNKNOWN')}</h2><p>${esc(candidate.commercial_lineage?.risk_state || v3('noRiskNarrative'))}</p></section><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('nextStep'))}</p><h2>${esc(next)}</h2><p>${esc(v3('commercialBlocked'))}</p></section></section>${advancedEvidence(candidate)}<span class="authority-badge">READ ONLY · COMMERCIAL ACTIONS BLOCKED</span></article></section>`;
+  return `<section class="owner-dossier-page" data-owner-dossier-view="${esc(candidate.asin)}"><a class="owner-dossier-back" href="#opportunities?${new URLSearchParams({ view:'amazon-ebay', cohort:filter }).toString()}">← ${esc(v3('back'))}</a><article class="owner-dossier"><header class="owner-dossier-hero"><div class="owner-dossier-media">${productImage(candidate)}</div><div><p class="eyebrow">${esc(v3('dossier'))} · ${esc(v3('marketplace'))}</p><h1>${esc(candidate.title || candidate.asin)}</h1><p>${esc(candidate.brand || v3('brandUnknown'))} · ASIN ${esc(candidate.asin)}${candidate.gtin ? ` · GTIN ${esc(candidate.gtin)}` : ''}</p><div class="owner-state-row"><span class="owner-state owner-state-${state.toLowerCase()}">${esc(state.replaceAll('_',' '))}</span><span class="owner-path">${esc(path.label)}</span></div></div></header><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('currentDecision'))}</p><h2>${esc(state.replaceAll('_',' '))}</h2><p>${esc(ownerNarrative(candidate, state))}</p></section><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('why'))}</p><h2>${esc(path.label)}</h2><p>${esc(path.detail)}</p></section><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('amazonEvidence'))} · ${esc(v3('ebayEvidence'))} · ${esc(v3('economics'))}</p><div class="owner-dossier-evidence">${evidence.map(([label,value,truth]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd><small>${esc(truth)}</small></div>`).join('')}</div>${economicState === 'UNKNOWN_MATERIAL_COSTS' ? `<p class="owner-dossier-note">${esc(v3('noEconomicEvidence'))}</p>` : ''}</section><section class="owner-dossier-grid"><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('materialUnknowns'))}</p><h2>${esc(unknowns.length ? v3('unresolvedInputs', { count:unknowns.length }) : v3('noneRecorded'))}</h2><p>${esc(unknowns.length ? unknowns.join('; ') : v3('noAdditionalUnknowns'))}</p></section><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('risks'))}</p><h2>${esc(candidate.risk || 'UNKNOWN')}</h2><p>${esc(candidate.commercial_lineage?.risk_state || v3('noRiskNarrative'))}</p></section><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('nextStep'))}</p><h2>${esc(next)}</h2><p>${esc(v3('commercialBlocked'))}</p></section></section>${ownerEvidenceNavigation(candidate)}${advancedEvidence(candidate)}<span class="authority-badge">READ ONLY · COMMERCIAL ACTIONS BLOCKED</span></article></section>`;
 }
 function amazonEbayDossiers(m) {
   const engine = object(object(m.states.discovery_engines).engine_b);
@@ -376,7 +382,7 @@ function amazonEbayDossiers(m) {
     const unknowns = ownerMaterialUnknowns(candidate);
     const marketRange = Number.isFinite(active.low) ? `${usd(active.low)} / ${usd(active.median)} / ${usd(active.high)} · ${v3('activeNotSold')}` : 'No factual active-price range available';
     const strength = candidate.amazon_commercial_strength === 'SUPPORTED' ? 'SUPPORTED' : stateLabel(candidate.amazon_commercial_strength || 'UNKNOWN');
-    const economic = state === 'REJECTED' && candidate.asin === 'B0CRC8MQZL' ? 'ECONOMICS FAILED' : state === 'HOLD' ? 'BLOCKED' : stateLabel(candidate.economics || candidate.economic_validation_state);
+    const economic = state === 'HOLD' ? 'BLOCKED' : stateLabel(candidate.economics || candidate.economic_validation_state);
     const observedPrice = Number.isFinite(candidate.amazon_price) ? usd(candidate.amazon_price) : 'UNKNOWN';
     return `<article class="detail-card cohort-dossier owner-product-card" role="link" tabindex="0" data-owner-dossier="${esc(candidate.asin)}" data-owner-state="${state}" data-owner-path="${path.id}" data-amazon-strength="${esc(candidate.amazon_commercial_strength || 'UNKNOWN')}" aria-label="${esc(`${candidate.title || candidate.asin} · ${candidate.asin}`)}"><div class="owner-product-hero">${productImage(candidate)}<div><p class="eyebrow">${esc(path.label)}</p><h3>${esc(candidate.title || candidate.asin)}</h3><p>${esc(candidate.brand || 'Brand not available')} · ASIN ${esc(candidate.asin || 'UNKNOWN')}${candidate.gtin ? ` · GTIN ${esc(candidate.gtin)}` : ''}</p><div class="owner-state-row"><span class="owner-state owner-state-${state.toLowerCase()}">${esc(state.replaceAll('_',' '))}</span><span class="owner-path">${esc(path.label)}</span></div></div></div><p class="owner-why">${esc(ownerNarrative(candidate, state))}</p><dl class="owner-evidence-grid"><div><dt>Amazon strength</dt><dd>${esc(strength)}</dd></div><div><dt>Amazon price</dt><dd>${esc(observedPrice)}</dd></div><div><dt>Amazon demand estimate</dt><dd>${esc(candidate.amazon_monthly_sold_estimate ?? 'UNKNOWN')} · provider estimate</dd></div><div><dt>eBay active price range</dt><dd>${esc(marketRange)}</dd></div><div><dt>Economic state</dt><dd>${esc(economic)}</dd></div></dl><div class="owner-material-risk"><strong>${esc(v3('materialUnknowns'))}</strong><span>${esc(unknowns.length ? `Economics incomplete — ${unknowns.length} material input${unknowns.length === 1 ? '' : 's'} unresolved: ${unknowns.join('; ')}` : 'No additional owner-decision material unknowns recorded.')}</span></div><p class="owner-next"><strong>${esc(v3('nextStep'))}</strong> ${esc(ownerNextStep(candidate, state))}</p><span class="owner-card-open">${esc(v3('dossier'))} →</span></article>`;
   }).join('') : noDataCard('No products match this current V3 filter.', 'Filtering changes no factual state.');
