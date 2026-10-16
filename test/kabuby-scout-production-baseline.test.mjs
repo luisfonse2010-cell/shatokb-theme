@@ -19,6 +19,6 @@ test('SCOUT_CANONICAL_PRODUCTION_BASELINE_V1 pins the owner-approved native runt
 test('Scout scope exceptions fail closed unless every protected change is explicit and content-addressed', () => {
   const baseline = readBaseline(ROOT);
   const base = JSON.parse(readFileSync(new URL('../kabuby/scout-scope-exception.json', import.meta.url), 'utf8')).base_commit;
-  assert.throws(() => validateScopeException({ root: ROOT, baseline, base, changedFiles: ['kabuby/styles.css'] }), /SCOUT_SCOPE_EXCEPTION_FILE_MISSING/);
+  assert.throws(() => validateScopeException({ root: ROOT, baseline, base, changedFiles: ['kabuby/scout/index.html'] }), /SCOUT_SCOPE_EXCEPTION_FILE_MISSING/);
   assert.deepEqual(validateScopeException({ root: ROOT, baseline, base, changedFiles: ['kabuby/data.js'] }), { status: 'PASS', protected_changes: [] });
 });

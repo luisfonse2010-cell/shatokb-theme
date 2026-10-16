@@ -1,23 +1,21 @@
 {
-  "mission": "KABUBY_V3_OWNER_PRODUCT_CARDS_AND_IMAGE_PROJECTION_CLOSURE_V1",
+  "mission": "V3_OWNER_PRODUCT_DOSSIER_NAVIGATION_AND_AMAZON_EBAY_UI_CLEANUP",
   "allowed_change_scope": [
-    "HOME_UI",
     "OPPORTUNITIES_UI",
-    "API_PROJECTION",
     "RELEASE_SAFETY"
   ],
   "files_contracts_affected": [
     "kabuby/app.js",
+    "kabuby/data.js",
+    "kabuby/styles.css",
     "kabuby/home-opportunities-interactive.js",
-    "kabuby/index.html",
-    "kabuby/production-safety-envelope-v1.json",
     "kabuby/release-scope-declaration.json",
     "kabuby/scout-scope-exception.json",
-    "scripts/production-safety-envelope-gate.mjs",
     "test/kabuby-first-cohort-projection.test.mjs",
     "test/kabuby-first-cohort-interactive-dossiers.test.mjs",
-    "test/kabuby-b0006-commercial-dossier.test.mjs",
+    "kabuby/production-safety-envelope-v1.json",
+    "test/kabuby-scout-production-baseline.test.mjs",
     "test/production-safety-envelope.test.mjs"
   ],
-  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: KABUBY_V3_OWNER_PRODUCT_CARDS_AND_IMAGE_PROJECTION_CLOSURE_V1"
+  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: V3_OWNER_PRODUCT_DOSSIER_NAVIGATION_AND_AMAZON_EBAY_UI_CLEANUP"
 }
