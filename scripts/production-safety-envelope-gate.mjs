@@ -16,7 +16,7 @@ const requiredGates = Object.freeze(['CANONICAL_SOURCE','REMOTE_CI','FULL_REGRES
 
 // Only production-contract files are scope-gated. This keeps ordinary development unfrozen.
 const protectedFileScopes = Object.freeze({
-  'kabuby/index.html': ['ROOT_ROUTING', 'HOME', 'ASK_KABUBY'],
+  'kabuby/index.html': ['HOME_UI', 'OPPORTUNITIES_UI', 'ASK_KABUBY'],
   'kabuby/app.js': ['HOME_UI', 'OPPORTUNITIES_UI', 'SCOUT', 'ASK_KABUBY'],
   'kabuby/styles.css': ['HOME_UI', 'OPPORTUNITIES_UI', 'SCOUT'],
   'kabuby/_headers': ['AUTH'],
@@ -95,8 +95,8 @@ export function validateGoldenContracts({ activeRoot = root } = {}) {
   expectation(headers, 'Cache-Control: no-cache', 'AUTH_CACHE_BOUNDARY_MISSING'); expectation(physical, 'PHYSICAL_PROJECTION_BINDING', 'AUTH_PROJECTION_BINDING_MISSING'); pass('AUTH_ACCESS', ['same-origin projection binding', 'non-cacheable shell']);
   expectation(app, 'fetch(PHYSICAL_PROJECTION_PATH', 'HOME_READ_MODEL_FETCH_MISSING'); expectation(app, "credentials:'same-origin'", 'HOME_SAME_ORIGIN_MISSING'); pass('HOME', ['same-origin owner read model']);
   expectation(today, "credentials:'same-origin'", 'TODAY_SAME_ORIGIN_MISSING'); expectation(today, 'commercial_authority !== \'NONE\'', 'TODAY_FIREWALL_MISSING'); pass('TODAY', ['compatible read model', 'commercial authority check']);
-  expectation(app, 'Products evaluated', 'OPPORTUNITIES_COHORT_COUNT_MISSING'); expectation(app, 'data-cohort-filter', 'OPPORTUNITIES_FILTER_MISSING'); pass('OPPORTUNITIES', ['cohort count', 'filters']);
-  expectation(app, 'First cohort dossiers', 'DOSSIER_CONTAINER_MISSING'); expectation(app, 'commercial_opportunity_state', 'DOSSIER_OWNER_DECISION_MISSING'); expectation(app, 'candidate.commercial_action', 'DOSSIER_DECISION_RENDER_MISSING'); pass('PRODUCT_DOSSIERS', ['dossier identity and owner decision']);
+  expectation(app, 'Product Finder V3 owner dossiers', 'OPPORTUNITIES_V3_CONTAINER_MISSING'); expectation(app, 'ownerFilterDefinitions', 'OPPORTUNITIES_CURRENT_FILTERS_MISSING'); expectation(app, 'data-cohort-filter', 'OPPORTUNITIES_FILTER_MISSING'); pass('OPPORTUNITIES', ['current V3 cohort', 'derived filters']);
+  expectation(app, 'owner-product-card', 'DOSSIER_CONTAINER_MISSING'); expectation(app, 'advanced-technical-evidence', 'DOSSIER_ADVANCED_EVIDENCE_MISSING'); expectation(app, 'ownerCommercialState', 'DOSSIER_OWNER_DECISION_MISSING'); pass('PRODUCT_DOSSIERS', ['product identity', 'owner decision', 'collapsed advanced evidence']);
   validateScoutGoldenContract(activeRoot); pass('SCOUT', ['locked native runtime', 'content-addressed Scout baseline']);
   expectation(app, 'integratedScoutImportTarget', 'CHROME_HANDOFF_TARGET_MISSING'); expectation(app, 'window.location.replace(postCaptureTarget)', 'CHROME_HANDOFF_NAVIGATION_MISSING'); pass('SCOUT_CHROME_HANDOFF', ['integrated pending destination', 'single-session redirect']);
   expectation(app, 'Ask Kabuby is search, not a fake assistant', 'ASK_KABUBY_GROUNDED_CONTRACT_MISSING'); pass('ASK_KABUBY', ['read-model search only']);

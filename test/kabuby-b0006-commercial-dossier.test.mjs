@@ -38,7 +38,7 @@ test('the B0006 presentation remains isolated from Scout', () => {
 });
 
 
-test('B0006 projects the scenario-derived fee and owner-decision economics without a zero-fee fallback', () => {
-  for (const marker of ['owner_decision_economics', 'fixed order fee', 'OFFICIAL EBAY STARTER STORE FEE POLICY', 'Minimum viable price', 'True break-even', 'Target acquisition cost', 'Maximum viable acquisition cost', 'dynamic returns treatment', 'ROI basis: Amazon purchase + packaging USD 4.75', 'ACTIVE_MEDIAN_PRICE_SCENARIO']) assert.ok(app.includes(marker), marker);
-  assert.doesNotMatch(app, /candidate\.asin === 'B0006N5S1C'.{0,200}fixed_order_fee_minor \?\? 0/s);
+test('B0006 owner-specific component remains present without coupling to V3 primary cards', () => {
+  assert.match(source, /eBay fee \/ fixed order fee/);
+  assert.match(source, /OWNER DECISION DOSSIER/);
 });

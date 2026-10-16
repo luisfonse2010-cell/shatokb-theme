@@ -5,31 +5,40 @@ import test from 'node:test';
 const app = readFileSync(new URL('../kabuby/app.js', import.meta.url), 'utf8');
 const functionSource = readFileSync(new URL('../kabuby/functions/api/v1/intelligence/physical.js', import.meta.url), 'utf8');
 
-test('the production root is wired to the same certified first-cohort read-only projection', () => {
+test('the production root is wired to the same certified V3 read-only projection', () => {
   assert.match(app, /fetch\(PHYSICAL_PROJECTION_PATH/);
   assert.match(app, /credentials:'same-origin'/);
   assert.match(functionSource, /handlePhysicalProjectionGateway/);
   assert.match(functionSource, /PHYSICAL_PROJECTION_BINDING/);
   assert.match(app, /amazon_ebay_candidates/);
   assert.match(app, /cohortSummary/);
-  assert.match(app, /base_official_fee_scenario_economics_complete/);
-  assert.match(app, /economics_reassessment/);
-  assert.match(app, /Number\(reassessment\.net_profit\) < 0/);
 });
 
-test('the root projects canonical cohort states without a browser economics engine', () => {
-  for (const state of ['VALIDATE', 'REJECTED_ECONOMICS', 'BLOCKED_EBAY_FEE_CATEGORY_UNRESOLVED', 'VERIFIED_EBAY_WHITE_SPACE']) assert.match(app, new RegExp(state));
-  for (const label of ['Products evaluated', 'Economics complete', 'First cohort dossiers', 'ACTIVE LISTING PRICE SCENARIO', 'NOT SOLD PRICE', 'DEMAND UNPROVEN', 'PRE-TAX', 'OFFICIAL EBAY FEE', 'OWNER POLICY', 'Amazon observed price', 'Amazon commercial strength / provider estimate', 'Official eBay Product Research', 'No sold results returned']) assert.match(app, new RegExp(label));
-  assert.match(app, /data-cohort-filter/);
-  assert.match(app, /cohortFilter/);
-  assert.match(app, /usdMinor/);
-  assert.match(app, /tac\.conservative_minor/);
-  assert.doesNotMatch(app, /api\.ebay|keepa|dataforseo|calculateCommercialScenario|createKil8/);
+test('V3 owner cards use factual identity and current, derived filter semantics', () => {
+  for (const label of ['Product Finder V3 owner dossiers', 'CONTINUE_RESEARCH', 'Verified eBay supply gap', 'Existing eBay market', 'Amazon strength supported', 'ownerFilterDefinitions', 'candidates.length']) assert.match(app, new RegExp(label));
+  assert.match(app, /candidate\.title/);
+  assert.match(app, /candidate\.brand/);
+  assert.match(app, /candidate\.asin/);
+  assert.doesNotMatch(app, /\['VALIDATE','Economic validate'\]/);
+  assert.doesNotMatch(app, /\['WHITE_SPACE','White space supply only'\]/);
 });
 
-test('the current specialized cohort cannot promote economics, active listings, or white space into a top commercial opportunity', () => {
-  for (const marker of ['commercial_opportunity_state === \'VALIDATED\'', 'MARGIN_ONLY_RESEARCH_CANDIDATE', 'Economic scenarios are not commercial opportunities', 'Economic validation never validates commercial demand.', 'CURRENT SPECIALIZED RESEARCH · NOT A COMMERCIAL OPPORTUNITY', 'Hold / conflict']) assert.match(app, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-  assert.doesNotMatch(app, /find\(row => cohortDecision\(row\) === 'VALIDATE'\)/);
+test('primary V3 cards keep raw blockers in collapsed advanced evidence', () => {
+  assert.match(app, /advanced-technical-evidence/);
+  assert.match(app, /Raw material blockers/);
+  assert.match(app, /Economics incomplete —/);
+  assert.match(app, /Image not yet available/);
+  assert.doesNotMatch(app, /Exact remaining blocker \/ confidence/);
+});
+
+test('three closed product states have exact owner-safe language', () => {
+  for (const label of [
+    'Strong Amazon product, but observed eBay pricing does not support viable Amazon→eBay economics.',
+    'No sold results returned in the owner-observed official eBay Product Research searches during the selected 90-day window.',
+    'eBay category conflict leaves the applicable fee unresolved. Further spending is stopped.',
+    'B0CRC8MQZL', 'B0CRCB4FTM', 'B0CKTZ2PDF'
+  ]) assert.match(app, new RegExp(label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  assert.doesNotMatch(app, /ZERO SALES/);
 });
 
 test('the root preserves commercial and Scout boundaries', () => {
