@@ -19,7 +19,7 @@ test('the production root is wired to the same certified first-cohort read-only 
 
 test('the root projects canonical cohort states without a browser economics engine', () => {
   for (const state of ['VALIDATE', 'REJECTED_ECONOMICS', 'BLOCKED_EBAY_FEE_CATEGORY_UNRESOLVED', 'VERIFIED_EBAY_WHITE_SPACE']) assert.match(app, new RegExp(state));
-  for (const label of ['Products evaluated', 'Economics complete', 'First cohort dossiers', 'ACTIVE LISTING PRICE SCENARIO', 'NOT SOLD PRICE', 'DEMAND UNPROVEN', 'PRE-TAX', 'OFFICIAL EBAY FEE', 'OWNER POLICY']) assert.match(app, new RegExp(label));
+  for (const label of ['Products evaluated', 'Economics complete', 'First cohort dossiers', 'ACTIVE LISTING PRICE SCENARIO', 'NOT SOLD PRICE', 'DEMAND UNPROVEN', 'PRE-TAX', 'OFFICIAL EBAY FEE', 'OWNER POLICY', 'Amazon observed price', 'Amazon commercial strength / provider estimate', 'Official eBay Product Research', 'No sold results returned']) assert.match(app, new RegExp(label));
   assert.match(app, /data-cohort-filter/);
   assert.match(app, /cohortFilter/);
   assert.match(app, /usdMinor/);
