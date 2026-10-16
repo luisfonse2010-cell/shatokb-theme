@@ -19,7 +19,8 @@
     "kabuby/index.html",
     "scripts/production-safety-envelope-gate.mjs",
     "kabuby/v3-capability-contract.js",
-    "test/v3-capability-regression.test.mjs"
+    "test/v3-capability-regression.test.mjs",
+    ".github/workflows/kabuby-foundation-ci.yml"
   ],
   "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: V3_BRIDGE_CANONICAL_MERGE_AND_PERMANENT_REGRESSION_GUARD"
 }
