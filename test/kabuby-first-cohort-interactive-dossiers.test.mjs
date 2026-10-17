@@ -71,3 +71,12 @@ test('owner dossier keeps distinct source shipping, tax, rank, fee, and field-le
   assert.match(app, /No comprar: solo revisar si aparece evidencia nueva de costo, precio vendido o demanda/);
   assert.match(app, /Recargo por desempeño del vendedor desconocido/);
 });
+
+test('Spanish owner dossiers keep rank context and unresolved evidence readable without exposing codes', () => {
+  for (const marker of ['salesRankContext', 'No fue devuelto por la evidencia certificada', 'Conflicto de categoría exacta', 'Investigación asistida sin resultados certificados', 'SOLO LECTURA · ACCIONES COMERCIALES BLOQUEADAS']) {
+    assert.match(app, new RegExp(escaped(marker)));
+  }
+  assert.match(app, /activeMoney\(active\.median\)/);
+  assert.match(app, /UNKNOWN\|UNPROVEN\|NOT_PROVEN\|NOT_VALIDATED/);
+  assert.match(app, /ownerEvidenceValue\(candidate\.ebay_category/);
+});
