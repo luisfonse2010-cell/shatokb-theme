@@ -24,7 +24,7 @@
       "release_id": "AMAZON_EBAY_EVIDENCE_RECONCILIATION_CANDIDATE",
       "release_state": "CERTIFIED_PREPRODUCTION_CANDIDATE",
       "frontend_canonical_commit": "PENDING_CANONICAL_MERGE",
-      "frontend_artifact_fingerprint": "439c2491c8da085d374b43cce3764a518b798d5e6e35f32a0175c8709985d8cd",
+      "frontend_artifact_fingerprint": "d995e8b28d9af1d0554345533580c328ba67ebe86a78356b97bf13d8ece3bd1c",
       "frontend_production_deployment": "NOT_DEPLOYED",
       "backend_canonical_commit": "e0e7be428b1e10aaa1213579a63aa99eb1d5703d",
       "api_version": "3c34696b-80e6-44cf-96db-909dc5a18337",
