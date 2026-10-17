@@ -282,7 +282,12 @@ function ownerMaterialUnknowns(candidate) {
     ACCOUNT_PERFORMANCE_SURCHARGE_UNKNOWN:'Seller performance surcharge unknown', BUYER_COLLECTED_SHIPPING_UNKNOWN:'Buyer-collected shipping unknown',
     EBAY_ACTIVE_PRICE_NOT_SOLD_PRICE_SCENARIO_ONLY:'eBay active price is a scenario, not a sale', AMAZON_SELECTED_ACQUISITION_PRICE_UNKNOWN:'Amazon acquisition price unknown', AMAZON_TO_OWNER_SHIPPING_UNKNOWN:'Amazon-to-owner shipping unknown'
   };
-  return [...new Set(arr(candidate.unknown_costs).map(value => labels[value]).filter(Boolean))];
+  const unknowns = arr(candidate.unknown_costs).map(value => labels[value]).filter(Boolean);
+  const category = object(candidate.ebay_category_resolution);
+  const offer = object(candidate.amazon_purchasable_offer);
+  if (!candidate.ebay_category?.name && category.state === 'CATEGORY_UNAVAILABLE') unknowns.push(activeLocale() === 'es' ? 'No se obtuvo una categoría eBay factual para esta identidad exacta' : 'No factual eBay category was returned for this exact identity');
+  if (offer.state === 'NO_PURCHASABLE_NEW_OFFER_OBSERVED') unknowns.push(activeLocale() === 'es' ? 'No existe una oferta Amazon comprable certificada' : 'No certified purchasable Amazon offer exists');
+  return [...new Set(unknowns)];
 }
 function ownerNarrative(candidate, state) {
   const es=activeLocale() === 'es';
@@ -294,11 +299,16 @@ function ownerNarrative(candidate, state) {
 }
 function ownerNextStep(candidate, state) {
   const es=activeLocale() === 'es';
+  const category = object(candidate.ebay_category_resolution);
+  const offer = object(candidate.amazon_purchasable_offer);
+  if (offer.state === 'NO_PURCHASABLE_NEW_OFFER_OBSERVED') return es ? 'No existe una oferta Amazon comprable certificada.' : 'No certified purchasable Amazon offer exists.';
+  if (!candidate.ebay_category?.name && category.state === 'CATEGORY_UNAVAILABLE') return es ? 'Resolver categoría eBay exacta antes de calcular la tarifa.' : 'Resolve the exact eBay category before calculating the fee.';
   if (state === 'HOLD') return es ? 'Mantener en espera: no invertir hasta resolver la categoría o tarifa certificada.' : 'Hold — do not spend until the certified category or fee evidence is resolved.';
-  if (state === 'REJECTED' && cohortDecision(candidate) === 'REJECTED_ECONOMICS') return es ? 'No comprar: solo revisar si aparece evidencia nueva de costo, precio vendido o demanda.' : 'Do not buy: revisit only with new cost, sold-price, or demand evidence.';
-  if (state === 'REJECTED') return es ? 'Rechazado: no reanudar sin nueva evidencia de mercado certificada.' : 'Rejected — do not resume without new certified market evidence.';
+  if (state === 'REJECTED' && cohortDecision(candidate) === 'REJECTED_ECONOMICS') return es ? 'Producto económicamente inviable con el escenario pre-impuesto actual.' : 'Product is economically infeasible under the current pre-tax scenario.';
+  if (state === 'REJECTED') return es ? 'No reanudar: investigación asistida de eBay sin resultados certificados.' : 'Do not resume: owner-assisted eBay research produced no certified results.';
   if (state === 'VALIDATED') return es ? 'Revisar la evidencia certificada antes de cualquier acción comercial autorizada por separado.' : 'Review the certified decision evidence before any separately authorized commercial action.';
-  return es ? 'Revisar la evidencia material antes de cualquier investigación adicional permitida.' : 'Review the material evidence before any further permitted research.';
+  if (/UNPROVEN|UNKNOWN|NOT_VALIDATED/.test(String(candidate.ebay_demand || 'UNKNOWN'))) return es ? 'Obtener evidencia certificada de ventas o demanda eBay.' : 'Obtain certified eBay sales or demand evidence.';
+  return es ? 'Resolver el impuesto de compra para convertir el escenario pre-impuesto en economía final.' : 'Resolve purchase tax to convert the pre-tax scenario into final economics.';
 }
 function ownerEvidenceValue(value) {
   const code = String(value || 'UNKNOWN');
@@ -307,7 +317,7 @@ function ownerEvidenceValue(value) {
     UNKNOWN_NO_FACTUAL_EVIDENCE:'Sin evidencia factual certificada', MATERIAL_TWO_LEG_COSTS_UNKNOWN:'Faltan costos materiales de las dos etapas',
     MATERIAL_ECONOMIC_OR_MARKET_UNKNOWN:'Falta evidencia económica o de mercado material', UNKNOWN_MATERIAL_COSTS:'Costos materiales sin resolver',
     NOT_VALIDATED:'Aún no validado comercialmente', NOT_VALIDATED_OWNER_ASSISTED_NO_RESULTS:'Investigación asistida sin resultados certificados',
-    CATEGORY_CONFLICT:'Conflicto de categoría exacta', NOT_RETURNED:'No fue devuelto por la evidencia certificada',
+    CATEGORY_CONFLICT:'Conflicto de categoría exacta', CATEGORY_UNAVAILABLE:'No se obtuvo una categoría eBay factual para esta identidad exacta', NOT_RETURNED:'No fue devuelto por la evidencia certificada',
     UNKNOWN:'Sin evidencia factual certificada', SUPPORTED:'Respaldada por evidencia certificada', CONTINUE_RESEARCH:'Continuar investigación',
     BASE_OFFICIAL_FEE_PRETAX_SCENARIO_ECONOMICS:'Escenario pre-impuesto con tarifa oficial base'
   };
@@ -366,6 +376,21 @@ function exactV3Candidate(m, asin) {
   const exact = typeof asin === 'string' && /^[A-Z0-9]{10}$/.test(asin) ? asin : null;
   return exact ? cohortCandidates(m).find(candidate => candidate?.asin === exact) || null : null;
 }
+function ownerEvidenceSummary(candidate) {
+  const es = activeLocale() === 'es';
+  const offer = object(candidate.amazon_purchasable_offer);
+  const category = object(candidate.ebay_category_resolution);
+  const active = object(candidate.ebay_active_listing_price_evidence);
+  const economics = object(candidate.economics_reassessment);
+  const demand = String(candidate.ebay_demand || 'UNKNOWN');
+  const product = `${candidate.provenance || v3('notReturned')} · ${evidenceObserved(candidate.observed_at)}`;
+  const rows = [[es ? 'Observación del producto' : 'Product observation', product]];
+  if (offer.state === 'PURCHASABLE_NEW_OFFER_CONFIRMED') rows.push([es ? 'Oferta Amazon comprable' : 'Amazon purchasable offer', `${es ? 'Proveedor certificado · Offers20' : 'Certified provider · Offers20'} · ${offer.receipt_id || v3('notReturned')} · ${evidenceObserved(offer.offer_price?.observed_at || offer.observed_at)}`]);
+  rows.push([es ? 'Mercado y categoría eBay' : 'eBay market and category', `${category.state || v3('unknown')} · ${evidenceObserved(category.observed_at || active.observed_at || candidate.market_observed_at)}`]);
+  if (demand === 'NOT_VALIDATED_OWNER_ASSISTED_NO_RESULTS') rows.push([es ? 'Investigación de demanda asistida por propietario' : 'Owner-assisted demand research', `${ownerEvidenceValue(demand)} · ${evidenceObserved(candidate.owner_assisted_research?.recorded_at)}`]);
+  rows.push([es ? 'Cálculo económico' : 'Economic calculation', economics.base_official_fee_scenario_economics_complete === true ? (es ? 'Escenario pre-impuesto con insumos certificados' : 'Pre-tax scenario with certified inputs') : (es ? 'Economía final no calculable con la evidencia actual' : 'Final economics not calculable from current evidence')]);
+  return `<section class="owner-evidence-summary" aria-label="${esc(es ? 'Resumen de evidencia por campo' : 'Field-level evidence summary')}"><p class="eyebrow">${esc(es ? 'EVIDENCIA POR CAMPO' : 'FIELD-LEVEL EVIDENCE')}</p><dl>${rows.map(([label,value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl></section>`;
+}
 function ownerEvidenceRows(candidate) {
   const active = object(candidate.ebay_active_listing_price_evidence);
   const economics = object(candidate.economics_reassessment);
@@ -400,6 +425,7 @@ function ownerEvidenceRows(candidate) {
   return [
     [v3('identity'), candidate.gtin ? `${candidate.asin} · GTIN ${candidate.gtin}` : `${candidate.asin} · GTIN ${v3('unknown')}`, v3('factual')],
     [v3('amazonPrice'), price, Number.isFinite(candidate.amazon_price) ? v3('factual') : v3('unknown')],
+    [activeLocale() === 'es' ? 'Oferta Amazon comprable' : 'Amazon purchasable offer', offer.state === 'PURCHASABLE_NEW_OFFER_CONFIRMED' ? (activeLocale() === 'es' ? 'Oferta NUEVA comprable certificada' : 'Certified purchasable NEW offer') : (activeLocale() === 'es' ? 'No existe una oferta Amazon comprable certificada' : 'No certified purchasable Amazon offer exists'), offer.state === 'PURCHASABLE_NEW_OFFER_CONFIRMED' ? v3('factual') : v3('unknown')],
     [v3('acquisitionPrice'), Number.isFinite(amount(acquisitionPrice)) ? `${acquisitionPrice.currency || 'USD'} ${amount(acquisitionPrice)} · ${v3('observed')} ${evidenceObserved(confirmedOffer.offer_price?.observed_at || cost.price_observed_at)}` : v3('unknown'), Number.isFinite(amount(acquisitionPrice)) ? v3('factual') : v3('unknown')],
     [v3('amazonSourceShipping'), Number.isFinite(amount(sourceShipping)) ? `${sourceShipping.currency || 'USD'} ${amount(sourceShipping)}` : v3('unknown'), Number.isFinite(amount(sourceShipping)) ? v3('factual') : v3('unknown')],
     [v3('amazonTax'), ownerEvidenceValue(amazonTax.truth_level || candidate.amazon_purchasable_offer?.tax?.truth_level || v3('unknown')), v3('unknown')],
@@ -415,6 +441,7 @@ function ownerEvidenceRows(candidate) {
     [v3('ebaySurcharge'), ownerEvidenceValue(surcharge.state || v3('unknown')), v3('unknown')],
     [v3('outboundPackaging'), `${Number.isFinite(amount(outbound)) ? `${outbound.currency || 'USD'} ${amount(outbound).toFixed(2)}` : v3('unknown')} · ${Number.isFinite(amount(packaging)) ? `${packaging.currency || 'USD'} ${amount(packaging).toFixed(2)}` : v3('unknown')}`, v3('scenario')],
     [v3('landedCost'), Number.isFinite(amount(landed)) ? `${landed.currency || 'USD'} ${amount(landed)}` : v3('unknown'), landed.truth_level || v3('unknown')],
+    [activeLocale() === 'es' ? 'Estado económico' : 'Economic state', economicsReady ? (activeLocale() === 'es' ? 'Escenario pre-impuesto; la economía final requiere impuesto y demanda' : 'Pre-tax scenario; final economics requires tax and demand') : (activeLocale() === 'es' ? 'Economía final no calculable' : 'Final economics not calculable'), economicsReady ? v3('scenario') : v3('unknown')],
     [v3('breakEvenTarget'), `${minorOrUnknown(candidate.break_even_price)} · ${minorOrUnknown(candidate.target_price)}`, economicsReady ? v3('scenario') : v3('unknown')],
     [v3('profitMarginRoi'), `${minorOrUnknown(candidate.net_profit)} · ${rateOrUnknown(candidate.margin)} · ${rateOrUnknown(candidate.roi)}`, economicsReady ? v3('scenario') : v3('unknown')],
     [v3('targetAcquisitionCost'), Number.isInteger(tac.conservative_minor) ? usdMinor(tac.conservative_minor) : v3('unknown'), economicsReady ? v3('scenario') : v3('unknown')]
@@ -437,7 +464,7 @@ function ownerDossier(candidate, filter) {
   const evidence = ownerEvidenceRows(candidate);
   const economicState = candidate.economics || candidate.economic_validation_state || 'UNKNOWN';
   const next = ownerNextStep(candidate, state);
-  return `<section class="owner-dossier-page" data-owner-dossier-view="${esc(candidate.asin)}"><a class="owner-dossier-back" href="#opportunities?${new URLSearchParams({ view:'amazon-ebay', cohort:filter }).toString()}">← ${esc(v3('back'))}</a><article class="owner-dossier"><header class="owner-dossier-hero"><div class="owner-dossier-media">${productImage(candidate)}</div><div><p class="eyebrow">${esc(v3('dossier'))} · ${esc(v3('marketplace'))}</p><h1>${esc(candidate.title || candidate.asin)}</h1><p>${esc(candidate.brand || v3('brandUnknown'))} · ASIN ${esc(candidate.asin)}${candidate.gtin ? ` · GTIN ${esc(candidate.gtin)}` : ''}</p><div class="owner-state-row"><span class="owner-state owner-state-${state.toLowerCase()}">${esc(ownerStateLabel(state))}</span><span class="owner-path">${esc(path.label)}</span></div></div></header><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('currentDecision'))}</p><h2>${esc(ownerStateLabel(state))}</h2><p>${esc(ownerNarrative(candidate, state))}</p></section><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('why'))}</p><h2>${esc(path.label)}</h2><p>${esc(path.detail)}</p></section><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('amazonEvidence'))} · ${esc(v3('ebayEvidence'))} · ${esc(v3('economics'))}</p><div class="owner-dossier-evidence">${evidence.map(([label,value,truth]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd><small>${esc(truth)}</small></div>`).join('')}</div>${economicState === 'UNKNOWN_MATERIAL_COSTS' ? `<p class="owner-dossier-note">${esc(v3('noEconomicEvidence'))}</p>` : ''}</section><section class="owner-dossier-grid"><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('materialUnknowns'))}</p><h2>${esc(unknowns.length ? v3('unresolvedInputs', { count:unknowns.length }) : v3('noneRecorded'))}</h2><p>${esc(unknowns.length ? unknowns.join('; ') : v3('noAdditionalUnknowns'))}</p></section><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('risks'))}</p><h2>${esc(ownerEvidenceValue(candidate.risk || 'UNKNOWN'))}</h2><p>${esc(ownerEvidenceValue(candidate.commercial_lineage?.risk_state || v3('noRiskNarrative')))}</p></section><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('nextStep'))}</p><h2>${esc(next)}</h2><p>${esc(v3('commercialBlocked'))}</p></section></section>${ownerEvidenceNavigation(candidate)}${advancedEvidence(candidate)}<span class="authority-badge">${esc(activeLocale() === 'es' ? 'SOLO LECTURA · ACCIONES COMERCIALES BLOQUEADAS' : 'READ ONLY · COMMERCIAL ACTIONS BLOCKED')}</span></article></section>`;
+  return `<section class="owner-dossier-page" data-owner-dossier-view="${esc(candidate.asin)}"><a class="owner-dossier-back" href="#opportunities?${new URLSearchParams({ view:'amazon-ebay', cohort:filter }).toString()}">← ${esc(v3('back'))}</a><article class="owner-dossier"><header class="owner-dossier-hero"><div class="owner-dossier-media">${productImage(candidate)}</div><div><p class="eyebrow">${esc(v3('dossier'))} · ${esc(v3('marketplace'))}</p><h1>${esc(candidate.title || candidate.asin)}</h1><p>${esc(candidate.brand || v3('brandUnknown'))} · ASIN ${esc(candidate.asin)}${candidate.gtin ? ` · GTIN ${esc(candidate.gtin)}` : ''}</p><div class="owner-state-row"><span class="owner-state owner-state-${state.toLowerCase()}">${esc(ownerStateLabel(state))}</span><span class="owner-path">${esc(path.label)}</span></div></div></header><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('currentDecision'))}</p><h2>${esc(ownerStateLabel(state))}</h2><p>${esc(ownerNarrative(candidate, state))}</p></section><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('why'))}</p><h2>${esc(path.label)}</h2><p>${esc(path.detail)}</p></section><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('amazonEvidence'))} · ${esc(v3('ebayEvidence'))} · ${esc(v3('economics'))}</p><div class="owner-dossier-evidence">${evidence.map(([label,value,truth]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd><small>${esc(truth)}</small></div>`).join('')}</div>${economicState === 'UNKNOWN_MATERIAL_COSTS' ? `<p class="owner-dossier-note">${esc(v3('noEconomicEvidence'))}</p>` : ''}</section>${ownerEvidenceSummary(candidate)}<section class="owner-dossier-grid"><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('materialUnknowns'))}</p><h2>${esc(unknowns.length ? v3('unresolvedInputs', { count:unknowns.length }) : v3('noneRecorded'))}</h2><p>${esc(unknowns.length ? unknowns.join('; ') : v3('noAdditionalUnknowns'))}</p></section><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('risks'))}</p><h2>${esc(ownerEvidenceValue(candidate.risk || 'UNKNOWN'))}</h2><p>${esc(ownerEvidenceValue(candidate.commercial_lineage?.risk_state || v3('noRiskNarrative')))}</p></section><section class="owner-dossier-section"><p class="eyebrow">${esc(v3('nextStep'))}</p><h2>${esc(next)}</h2><p>${esc(v3('commercialBlocked'))}</p></section></section>${ownerEvidenceNavigation(candidate)}${advancedEvidence(candidate)}<span class="authority-badge">${esc(activeLocale() === 'es' ? 'SOLO LECTURA · ACCIONES COMERCIALES BLOQUEADAS' : 'READ ONLY · COMMERCIAL ACTIONS BLOCKED')}</span></article></section>`;
 }
 function amazonEbayDossiers(m) {
   const engine = object(object(m.states.discovery_engines).engine_b);
