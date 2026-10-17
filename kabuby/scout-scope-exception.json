@@ -12,10 +12,10 @@
   "migration_impact": "None. Existing Scout browser storage is neither initialized, reseeded, migrated, nor written.",
   "rollback_plan": "Revert the V3 evidence-projection commits and redeploy the retained prior Pages deployment if a production canary demonstrates a regression.",
   "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: AMAZON_EBAY_END_TO_END_COMMERCIAL_CLOSURE_V1",
-  "base_commit": "c07d4a86e5cc5ee743c997363eeec6945a2ecced",
+  "base_commit": "ba2821beadeb2ce724af053726afa61d3ad5df66",
   "source_fingerprints": {
-    "kabuby/index.html": "2e574e3c9fa0c6d58c1a4221bc5dde6b9f0410709e3017f590abb697769908df",
-    "kabuby/app.js": "36054721f34bb94b78e3b667ce66b98b121a19dc34cfc9e5e78c387814b6a3df",
+    "kabuby/index.html": "33d5ea57174a81673ae3fa1e910265003fd33ba8633038efca852a0f1e8169e1",
+    "kabuby/app.js": "93fbddf02f73b15ed5b29068f39370599bc83828a4f7596b6f5fa70e3231e0bd",
     "kabuby/styles.css": "41360175dab87b787ce2bff744231c27a895b813dba0ba9c0388be18fd4f4794",
     "test/kabuby-scout-production-baseline.test.mjs": "0d4aead22b9e78ec8fe6238e9f18cecf605c20576b2bd13e0b1c1724deb7e8dd",
     ".github/workflows/kabuby-foundation-ci.yml": "e07e6f5cd9141a2094584017f68743271407e4911ddd1bb9b0e718f26da22ce2"
