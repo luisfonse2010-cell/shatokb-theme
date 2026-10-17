@@ -61,3 +61,13 @@ test('the narrowly declared scope preserves Scout and forbids provider or commer
   assert.match(app, /BUY · BLOCKED/);
   assert.match(app, /PUBLISH · BLOCKED/);
 });
+
+test('owner dossier keeps distinct source shipping, tax, rank, fee, and field-level lineage without inventing a complete commercial outcome', () => {
+  for (const marker of ['amazonSourceShipping', 'amazonTax', 'currentSalesRank', 'avg90SalesRank', 'ebayBaseFee', 'ebayFixedFee', 'ebaySurcharge', 'evidenceObserved', 'Amazon purchasable offer observation', 'eBay category observation', 'eBay active-market observation', 'eBay base-fee policy']) {
+    assert.match(app, new RegExp(escaped(marker)));
+  }
+  assert.doesNotMatch(app, /\[v3\('shippingTax'\),/);
+  assert.match(app, /cohortDecision\(candidate\) === 'REJECTED_ECONOMICS'/);
+  assert.match(app, /No comprar: solo revisar si aparece evidencia nueva de costo, precio vendido o demanda/);
+  assert.match(app, /Recargo por desempeño del vendedor desconocido/);
+});

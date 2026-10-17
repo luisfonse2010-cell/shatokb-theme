@@ -1,5 +1,5 @@
 {
-  "mission": "V3_BRIDGE_CANONICAL_MERGE_AND_PERMANENT_REGRESSION_GUARD",
+  "mission": "AMAZON_EBAY_END_TO_END_COMMERCIAL_CLOSURE_V1",
   "allowed_change_scope": [
     "OPPORTUNITIES_UI",
     "RELEASE_SAFETY"
@@ -22,5 +22,5 @@
     "test/v3-capability-regression.test.mjs",
     ".github/workflows/kabuby-foundation-ci.yml"
   ],
-  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: V3_BRIDGE_CANONICAL_MERGE_AND_PERMANENT_REGRESSION_GUARD"
+  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: AMAZON_EBAY_END_TO_END_COMMERCIAL_CLOSURE_V1"
 }

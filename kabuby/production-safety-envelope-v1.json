@@ -21,10 +21,10 @@
       "chrome_handoff_contract_version": "SCOUT_CHROME_HANDOFF_V1"
     },
     "candidate_release": {
-      "release_id": "KEEPA_OFFERS20_V3_DOSSIER_PROJECTION_CANDIDATE",
+      "release_id": "AMAZON_EBAY_EVIDENCE_RECONCILIATION_CANDIDATE",
       "release_state": "CERTIFIED_PREPRODUCTION_CANDIDATE",
       "frontend_canonical_commit": "PENDING_CANONICAL_MERGE",
-      "frontend_artifact_fingerprint": "c7ae580b03cd2a93d5163e5cd15a8d3b7c4a72650853bb2eca96f86df0227d86",
+      "frontend_artifact_fingerprint": "439c2491c8da085d374b43cce3764a518b798d5e6e35f32a0175c8709985d8cd",
       "frontend_production_deployment": "NOT_DEPLOYED",
       "backend_canonical_commit": "e0e7be428b1e10aaa1213579a63aa99eb1d5703d",
       "api_version": "3c34696b-80e6-44cf-96db-909dc5a18337",
