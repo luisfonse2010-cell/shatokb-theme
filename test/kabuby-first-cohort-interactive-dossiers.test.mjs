@@ -68,7 +68,7 @@ test('owner dossier keeps distinct source shipping, tax, rank, fee, and field-le
   }
   assert.doesNotMatch(app, /\[v3\('shippingTax'\),/);
   assert.match(app, /cohortDecision\(candidate\) === 'REJECTED_ECONOMICS'/);
-  assert.match(app, /No comprar: solo revisar si aparece evidencia nueva de costo, precio vendido o demanda/);
+  assert.match(app, /Producto económicamente inviable con el escenario pre-impuesto actual/);
   assert.match(app, /Recargo por desempeño del vendedor desconocido/);
 });
 
@@ -87,4 +87,12 @@ test('Spanish V3 route copy localizes marketplace navigation without changing th
   }
   assert.match(app, /ebay\.url/);
   assert.match(app, /data-ebay-navigation/);
+});
+
+
+test('all fixed V3 dossiers use field-level offer lineage, truthful category explanation, economic classification, and a specific next action', () => {
+  assert.match(app, /cohortCandidates\(m\)/);
+  assert.match(app, /exactV3Candidate\(m, asin\)/);
+  for (const marker of ['ownerEvidenceSummary', 'Oferta Amazon comprable', 'receipt_id', 'No se obtuvo una categoría eBay factual para esta identidad exacta', 'Escenario pre-impuesto', 'Producto económicamente inviable con el escenario pre-impuesto actual', 'Obtener evidencia certificada de ventas o demanda eBay']) assert.match(app, new RegExp(escaped(marker)));
+  assert.doesNotMatch(app, /USD 0 \/ UNKNOWN/);
 });
