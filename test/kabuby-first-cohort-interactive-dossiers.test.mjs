@@ -80,3 +80,11 @@ test('Spanish owner dossiers keep rank context and unresolved evidence readable 
   assert.match(app, /UNKNOWN\|UNPROVEN\|NOT_PROVEN\|NOT_VALIDATED/);
   assert.match(app, /ownerEvidenceValue\(candidate\.ebay_category/);
 });
+
+test('Spanish V3 route copy localizes marketplace navigation without changing the exact destination', () => {
+  for (const marker of ['Buscar en eBay por GTIN exacto', 'Ruta especializada de marketplace con identidad primero', 'localizedDescription']) {
+    assert.match(app, new RegExp(escaped(marker)));
+  }
+  assert.match(app, /ebay\.url/);
+  assert.match(app, /data-ebay-navigation/);
+});
