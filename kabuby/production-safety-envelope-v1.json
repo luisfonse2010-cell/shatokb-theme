@@ -24,7 +24,7 @@
       "release_id": "KABUBY_OWNER_INTELLIGENCE_OS_CURRENT_COHORT_CANDIDATE",
       "release_state": "CERTIFIED_PREPRODUCTION_CANDIDATE",
       "frontend_canonical_commit": "PENDING_CANONICAL_MERGE",
-      "frontend_artifact_fingerprint": "f41d94b6258ea3bf137cf66d74736318a848e8e8356c8360573b4c9f45a9d72e",
+      "frontend_artifact_fingerprint": "033ecbcc3d290858a621573e855870f4edeca6061d6f9cfdd6d8fccae6c4881b",
       "frontend_production_deployment": "NOT_DEPLOYED",
       "backend_canonical_commit": "be95b3f6646a299a855beeb5090d67d1a4d2648c",
       "api_version": "PENDING_OWNER_OS_API_DEPLOYMENT",
