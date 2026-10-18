@@ -237,3 +237,17 @@ main { min-width:0; }
 .owner-product-thumb{width:44px;height:44px;object-fit:contain;float:left;margin:0 10px 5px 0;border-radius:6px;background:white}.owner-product-image{width:150px;height:150px;object-fit:contain;background:white;border-radius:12px}
 
 .owner-operational,.owner-product-summary,.owner-cockpit{padding:22px}.owner-operational h2,.owner-cockpit h2{font-size:24px;letter-spacing:-.03em;margin:8px 0 14px}.owner-operational p,.owner-cockpit p{color:var(--muted,#a3bacd);line-height:1.6}.owner-operational a,.owner-product-summary a,.owner-cockpit a{color:#9fd4ff;text-decoration:none}.owner-operational a:hover,.owner-product-summary a:hover{text-decoration:underline}.owner-operational .cohort-filters a{display:inline-block;border:1px solid var(--line);border-radius:18px;padding:8px 12px;font-size:11px;background:rgba(30,90,120,.12)}.owner-table{font-size:12px;table-layout:fixed;min-width:1050px}.owner-table th,.owner-table td{min-width:0;border-color:var(--line);overflow-wrap:anywhere;line-height:1.5}.owner-table th:first-child{width:8%}.owner-table th:nth-child(2){width:23%}.owner-table th:nth-child(3){width:15%}.owner-table th:nth-child(4){width:11%}.owner-table th:nth-child(5){width:15%}.owner-table th:nth-child(6){width:19%}.owner-table th:nth-child(7){width:9%}.owner-table td:nth-child(2){min-width:0}.owner-table strong{font-weight:600}.owner-table small{color:#9db3c8;font-size:10px}.owner-table tbody tr:hover{background:rgba(55,117,155,.07)}.state-pill[data-decision="REJECTED"]{color:#ffc0b6;background:#512923}.state-pill[data-decision="VALIDATE"]{color:#a7e8c6;background:#143d32}.locale-menu[hidden]{display:none}.owner-product-summary .metric-grid,.owner-cockpit .metric-grid{padding:12px 0}.owner-product-summary details{margin-top:20px}@media(max-width:620px){.owner-operational,.owner-product-summary,.owner-cockpit{padding:14px}}
+
+/* Owner decision hierarchy: compact visual rows, evidence on demand. */
+.owner-concentration {border-left:3px solid var(--warning, #c99a39);padding:.6rem .85rem;background:rgba(201,154,57,.08);font-size:.88rem;max-width:90ch}
+.owner-table .owner-product-thumb {width:72px;height:72px;object-fit:contain;border-radius:8px;background:white;float:left;margin:0 .8rem .6rem 0}
+.owner-product-name {font-weight:650;line-height:1.35;display:block;max-width:34ch}
+.owner-table td {vertical-align:top;padding:1rem .75rem}
+.owner-table small {line-height:1.45;margin-top:.45rem}
+.owner-evidence-navigation {display:flex;flex-wrap:wrap;gap:.5rem 1rem;font-size:.8rem;margin-top:.7rem;clear:both}
+.owner-table .state-pill {white-space:normal;font-size:.8rem}
+.owner-economics-summary {padding:1rem;background:rgba(128,128,128,.08);border-radius:10px}
+.owner-product-summary > h3 {margin-top:1.7rem}
+.cohort-filters a[aria-current="true"] {font-weight:700;text-decoration:underline}
+.owner-table th:first-child {width:28%}.owner-table th:nth-child(2) {width:12%}.owner-table th:nth-child(3) {width:13%}.owner-table th:nth-child(4) {width:11%}.owner-table th:nth-child(5) {width:15%}.owner-table th:nth-child(6) {width:21%}
+.owner-product-summary .owner-product-image {float:right;margin:0 0 1rem 1.5rem}.owner-product-summary h2 {max-width:48ch}.owner-product-summary::after {content:"";display:block;clear:both}
