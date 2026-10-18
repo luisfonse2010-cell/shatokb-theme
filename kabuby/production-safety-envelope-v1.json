@@ -56,6 +56,23 @@
       "runtime_bindings": "All bindings and runtime equal prior production, excluding intended code lineage",
       "unauthenticated_projection_http": 302,
       "preview_scope": "Static artifact and fail-closed Access verified on Pages preview; authenticated actual-data acceptance verified locally and on kabuby.com. Existing protected preview hostname serves a historical artifact; no DNS or auth change."
+    },
+    "candidate_release": {
+      "release_id": "KABUBY_SCALE100_DISCOVERY_DIVERSITY_AND_OWNER_UX_CORRECTION_V1",
+      "release_state": "CERTIFIED_PREPRODUCTION_CANDIDATE",
+      "frontend_canonical_commit": "PENDING_CERTIFICATION",
+      "frontend_artifact_fingerprint": "2937e63115dc3b6674f511cfe724764f1346a85346b7b4b75b7a71150f596c02",
+      "frontend_production_deployment": "NOT_DEPLOYED",
+      "backend_canonical_commit": "916a0fdcd91fb7ba1f0011afc6bb9b69f5b3fafe",
+      "api_version": "72131cd6-7d38-45a1-8cf7-71218a1f99c4",
+      "private_executor_version": "2cee6e51-7b9b-463b-b38f-4d8026bd9fda",
+      "d1_schema_version": "0095",
+      "read_model_version": "kabuby-owner-opportunity-page/v1",
+      "scout_baseline_version": "SCOUT_CANONICAL_PRODUCTION_BASELINE_V1",
+      "auth_contract_version": "KABUBY_ACCESS_SAME_ORIGIN_V1",
+      "routing_contract_version": "KABUBY_ROOT_LEGACY_REWRITE_V1",
+      "chrome_handoff_contract_version": "SCOUT_CHROME_HANDOFF_V1",
+      "real_scale100_executor_version": "bf08f4b7-6f69-4bd3-bc79-b93874237c68"
     }
   },
   "preview_production_artifact_parity": {
