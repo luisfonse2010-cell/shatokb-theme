@@ -11,3 +11,11 @@ test('primary list uses existing safe marketplace helpers, one incomplete econom
  const html=ownerOperationalView({status:'AVAILABLE',run:{run_id:'real'},summary:{total:100,VALIDATE:0,HOLD:95,REJECTED:5},rows:[row],limit:20,offset:0,total_filtered:95,diversity:{total_asins:100,top_brand:'Owala',top_brand_count:99,top_brand_share_percent:99,unique_parent_groups:3}},esc);
  assert.match(html,/99 de 100 ASINs son Owala/);assert.match(html,/1 venta NEW verificada/);assert.match(html,/Buscar en eBay por GTIN/);assert.match(html,/_nkw=0868453000202/);assert.match(html,/noopener noreferrer/);assert.doesNotMatch(html,/<td>[^]*?(?:OFFERS20_BUDGET_EXHAUSTED|RESEARCH_IN_FUTURE_AUTHORIZED_RUN|UNKNOWN)/);assert.equal((html.match(/Economía incompleta/g)||[]).length,1);assert.match(html,/No necesitas actuar/);
 });
+
+test('unavailable bounds are not advertised as supported ranges and known metrics retain units',()=>{
+ const row={asin:'B01F49C0QS',commercial_decision:'HOLD',product:{title:'Real identity'},economic_evaluation:{net_profit:'UNKNOWN',reference_economic_upper_bound:{state:'REFERENCE_UPPER_BOUND_UNAVAILABLE'}}};
+ const page={status:'AVAILABLE',run:{},summary:{},rows:[row]};const show=()=>ownerOperationalView(page,esc,{asin:row.asin});
+ assert.doesNotMatch(show(),/Límite sustentado/);
+ row.economic_evaluation.reference_economic_upper_bound={pre_unknown_cost_profit_upper_minor:-1234};assert.match(show(),/como máximo USD -12.34/);
+ row.economic_evaluation.net_profit=1234;row.economic_evaluation.roi=2500;assert.match(show(),/Beneficio USD 12.34/);assert.match(show(),/ROI sobre costo 25.00%/);
+});
