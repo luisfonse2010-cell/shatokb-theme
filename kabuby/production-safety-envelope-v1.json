@@ -117,7 +117,7 @@
       "frontend_canonical_commit": "e81713e574500f8754ad0f45790eafd7b942d35f",
       "frontend_artifact_fingerprint": "5a3ab60670f13a1aa534b84747037b5f2515b3dce18c1755dc2277df9ea2f927",
       "frontend_production_deployment": "NOT_DEPLOYED",
-      "backend_canonical_commit": "e41d39af7e7a750f8e72955deb3d752f306a7f39",
+      "backend_canonical_commit": "53f1fbb188dcb1d993bae9c299f6c497b2aadc65",
       "api_version": "NOT_DEPLOYED",
       "private_executor_version": "2cee6e51-7b9b-463b-b38f-4d8026bd9fda",
       "d1_schema_version": "0095",
