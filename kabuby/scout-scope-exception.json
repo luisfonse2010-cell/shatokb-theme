@@ -1,6 +1,6 @@
 {
   "mission": "KABUBY_OWNER_INTELLIGENCE_OS_CANONICAL_RECONCILIATION_AND_IMPLEMENTATION_V1",
-  "reason": "Connect current bounded canonical opportunity projection, preserve exact Scout runtime, storage, routing and handoff.",
+  "reason": "Preserve Scout and other non-opportunity navigation: asynchronous owner projection refresh must not rerender their workspaces.",
   "files_contracts_affected": [
     "kabuby/index.html",
     "kabuby/app.js",
@@ -8,14 +8,14 @@
     "test/kabuby-scout-production-baseline.test.mjs",
     ".github/workflows/kabuby-foundation-ci.yml"
   ],
-  "expected_behavior_change": "Current real cohort compact view, Today current commercial truth, Runs/history; no Scout changes.",
+  "expected_behavior_change": "Owner routes refresh their bounded data; Scout and existing non-owner surfaces keep their original single-render hash navigation. Late owner responses cannot redraw a different workspace.",
   "migration_impact": "None. Existing Scout browser storage is neither initialized, reseeded, migrated, nor written.",
   "rollback_plan": "Revert the V3 evidence-projection commits and redeploy the retained prior Pages deployment if a production canary demonstrates a regression.",
   "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: KABUBY_OWNER_INTELLIGENCE_OS_CANONICAL_RECONCILIATION_AND_IMPLEMENTATION_V1",
-  "base_commit": "ada73ff0fff7636a2e4e11e4018a0ac93e69ebb2",
+  "base_commit": "9f41e1a5c24c59992a2b0f5c919aa84d502a0877",
   "source_fingerprints": {
-    "kabuby/index.html": "08716c02d4894baf5901ebaa55129ab3db5673d74e18ea4d3d4a6e69fc7c6942",
-    "kabuby/app.js": "4e9be4be09d12298cde4aad684a0dee9793b65f7b73bbdad533134fe4c8f96c9",
+    "kabuby/index.html": "ae696941238f082a5e3f7c1effc66c95e6d26b42de1a7946afcfd3e3d4fd22bb",
+    "kabuby/app.js": "8ebe7d99723065e027f6fefb705654e60f2a1e4b595ba724b8680ed443b10d9c",
     "kabuby/styles.css": "1261b38c45e17dcc1fddac8b05b12b471a7d6c6457c7e179609d2b3cf844590d",
     "test/kabuby-scout-production-baseline.test.mjs": "0d4aead22b9e78ec8fe6238e9f18cecf605c20576b2bd13e0b1c1724deb7e8dd",
     ".github/workflows/kabuby-foundation-ci.yml": "e07e6f5cd9141a2094584017f68743271407e4911ddd1bb9b0e718f26da22ce2"
