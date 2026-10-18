@@ -61,7 +61,7 @@
       "release_id": "KABUBY_SCALE100_DISCOVERY_DIVERSITY_AND_OWNER_UX_CORRECTION_V1",
       "release_state": "CERTIFIED_PREPRODUCTION_CANDIDATE",
       "frontend_canonical_commit": "PENDING_CERTIFICATION",
-      "frontend_artifact_fingerprint": "8494b8ce46be4e0fe83e34cacdf9746b61cdf3f6d3248b2a042c0c8132271797",
+      "frontend_artifact_fingerprint": "20021acba0c4e8a1d51d29a651afe74c44b943a4369f0c9d3e4c6f603508d1c2",
       "frontend_production_deployment": "NOT_DEPLOYED",
       "backend_canonical_commit": "916a0fdcd91fb7ba1f0011afc6bb9b69f5b3fafe",
       "api_version": "72131cd6-7d38-45a1-8cf7-71218a1f99c4",
