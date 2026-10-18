@@ -114,11 +114,11 @@
     "candidate_release": {
       "release_id": "KABUBY_PROFIT_FIRST_DISCOVERY_AND_OWNER_OPERATING_SYSTEM_CLOSURE_V1",
       "release_state": "CERTIFIED_PREPRODUCTION_CANDIDATE",
-      "frontend_canonical_commit": "ae5a602f8251ba0c9a56aef0f5aeba7721ea1b01",
+      "frontend_canonical_commit": "e81713e574500f8754ad0f45790eafd7b942d35f",
       "frontend_artifact_fingerprint": "5a3ab60670f13a1aa534b84747037b5f2515b3dce18c1755dc2277df9ea2f927",
       "frontend_production_deployment": "NOT_DEPLOYED",
       "backend_canonical_commit": "e41d39af7e7a750f8e72955deb3d752f306a7f39",
-      "api_version": "6bbc7a2a-ca4a-4b2d-b9e0-150595e65ac0",
+      "api_version": "NOT_DEPLOYED",
       "private_executor_version": "2cee6e51-7b9b-463b-b38f-4d8026bd9fda",
       "d1_schema_version": "0095",
       "read_model_version": "kabuby-owner-opportunity-page/v1",
