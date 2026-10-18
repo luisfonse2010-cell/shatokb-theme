@@ -5,6 +5,26 @@
   "release_identity": {
     "schema_version": "kabuby-release-identity/v1",
     "current_release": {
+      "release_id": "KABUBY_PROFIT_FIRST_DISCOVERY_AND_OWNER_OPERATING_SYSTEM_CLOSURE_V1",
+      "release_state": "CERTIFIED_PRODUCTION_RELEASE",
+      "frontend_canonical_commit": "89fa7be23ac9facfcf3e44ed6cb95225a6ba77d9",
+      "frontend_artifact_fingerprint": "5a3ab60670f13a1aa534b84747037b5f2515b3dce18c1755dc2277df9ea2f927",
+      "frontend_production_deployment": "f8d48055-c22c-4845-9a7c-7c98c35c6eec",
+      "backend_canonical_commit": "53f1fbb188dcb1d993bae9c299f6c497b2aadc65",
+      "api_version": "d215f4f4-96d4-4582-a3cf-0da8462ab728",
+      "private_executor_version": "2cee6e51-7b9b-463b-b38f-4d8026bd9fda",
+      "d1_schema_version": "0095",
+      "read_model_version": "kabuby-owner-opportunity-page/v1",
+      "scout_baseline_version": "SCOUT_CANONICAL_PRODUCTION_BASELINE_V1",
+      "auth_contract_version": "KABUBY_ACCESS_SAME_ORIGIN_V1",
+      "routing_contract_version": "KABUBY_ROOT_LEGACY_REWRITE_V1",
+      "chrome_handoff_contract_version": "SCOUT_CHROME_HANDOFF_V1",
+      "real_scale100_executor_version": "bf08f4b7-6f69-4bd3-bc79-b93874237c68"
+    },
+    "last_known_good_release_id": "KABUBY_PROFIT_FIRST_DISCOVERY_AND_OWNER_OPERATING_SYSTEM_CLOSURE_V1",
+    "certification_rule": "A release is CANDIDATE_PRODUCTION_RELEASE until every mandatory critical production canary passes. Only then may it become CERTIFIED_PRODUCTION_RELEASE and replace last_known_good_release_id.",
+    "drift_policy": "Any material identity, schema, read-model, or artifact-fingerprint drift makes the release RELEASE_NOT_CERTIFIED.",
+    "previous_release": {
       "release_id": "KABUBY_SCALE100_DISCOVERY_DIVERSITY_AND_OWNER_UX_CORRECTION_V1",
       "release_state": "CERTIFIED_PRODUCTION_RELEASE",
       "frontend_canonical_commit": "ae5a602f8251ba0c9a56aef0f5aeba7721ea1b01",
@@ -21,77 +41,20 @@
       "chrome_handoff_contract_version": "SCOUT_CHROME_HANDOFF_V1",
       "real_scale100_executor_version": "bf08f4b7-6f69-4bd3-bc79-b93874237c68"
     },
-    "last_known_good_release_id": "KABUBY_SCALE100_DISCOVERY_DIVERSITY_AND_OWNER_UX_CORRECTION_V1",
-    "certification_rule": "A release is CANDIDATE_PRODUCTION_RELEASE until every mandatory critical production canary passes. Only then may it become CERTIFIED_PRODUCTION_RELEASE and replace last_known_good_release_id.",
-    "drift_policy": "Any material identity, schema, read-model, or artifact-fingerprint drift makes the release RELEASE_NOT_CERTIFIED.",
-    "previous_release": {
-      "release_id": "KABUBY_OWNER_INTELLIGENCE_OS_CURRENT_COHORT_PRODUCTION_V1",
-      "release_state": "CERTIFIED_PRODUCTION_RELEASE",
-      "frontend_canonical_commit": "dccd7a8643209354ce4b24bd8c3277ad03fa180c",
-      "frontend_artifact_fingerprint": "040a874a328033d3b2ce1cbe673bc9548fb0b9fc3dac83ddbe9317256061327f",
-      "frontend_production_deployment": "ed3ea506-5603-4a34-aaf2-1f40fa40da48",
-      "backend_canonical_commit": "be95b3f6646a299a855beeb5090d67d1a4d2648c",
-      "api_version": "72131cd6-7d38-45a1-8cf7-71218a1f99c4",
-      "private_executor_version": "2cee6e51-7b9b-463b-b38f-4d8026bd9fda",
-      "d1_schema_version": "0095",
-      "read_model_version": "kabuby-owner-opportunity-page/v1",
-      "scout_baseline_version": "SCOUT_CANONICAL_PRODUCTION_BASELINE_V1",
-      "auth_contract_version": "KABUBY_ACCESS_SAME_ORIGIN_V1",
-      "routing_contract_version": "KABUBY_ROOT_LEGACY_REWRITE_V1",
-      "chrome_handoff_contract_version": "SCOUT_CHROME_HANDOFF_V1",
-      "real_scale100_executor_version": "bf08f4b7-6f69-4bd3-bc79-b93874237c68"
-    },
     "production_evidence": {
-      "backend_ci": "https://github.com/luisfonse2010-cell/shato-meli-connector/actions/runs/39122235954",
-      "frontend_ci": "https://github.com/luisfonse2010-cell/shatokb-theme/actions/runs/39122696638",
-      "frontend_main_ci": "https://github.com/luisfonse2010-cell/shatokb-theme/actions/runs/39122755806",
-      "full_regression": 5103,
-      "canonical_e2e": 77,
-      "frontend_tests": 76,
-      "same_executable_artifact_after_certification_record": true,
-      "real_acceptance": {
-        "total": 100,
-        "VALIDATE": 0,
-        "HOLD": 95,
-        "REJECTED": 5,
-        "INCOMPLETE": 0,
-        "verified_new_sold": 32,
-        "default_visible": 95,
-        "bounded_page": 20,
-        "adjacent_page_duplicate_asins": 0,
-        "owner_tasks": 0,
-        "existing_scout_records": 10
-      },
-      "diversity": {
-        "brands": 2,
-        "top_brand": "Owala",
-        "top_brand_count": 99,
-        "top_brand_share_percent": 99,
-        "parent_groups": 3,
-        "owala_parent_groups": 2,
-        "commercial_families": "UNKNOWN",
-        "commercial_grouping": "No merge without size/capacity/pack/model/condition evidence",
-        "discovery_quotas_deployed": false
-      },
-      "root_cause": "Rank-ascending first 100 within a category, provider result concentration, ASIN-only dedupe; no client parent expansion or duplicate pages. Provider equal-rank tie-break UNKNOWN.",
-      "owner_policy_boundary": "Future discovery quotas require separate consolidated owner approval; no threshold is silently activated.",
-      "preservation": "200 Scale observations, 10 historical records, 107 transport receipts, 20 hydration receipts, 5 Finder pages and 3 runs exactly unchanged; zero D1 writes",
-      "runtime_bindings": "Every binding and script runtime unchanged except deliberate code lineage",
-      "unauthenticated_projection_http": 302,
-      "production_canaries": [
-        "HOME",
-        "OPPORTUNITIES",
-        "DETAILS",
-        "PAGINATION",
-        "REJECTED_FILTER",
-        "SCOUT",
-        "SUPPLY",
-        "ECONOMICS_RISK"
-      ],
-      "REAL_PROVIDER_CALLS": 0,
-      "TOKENS": 0,
-      "COMMERCIAL_MUTATIONS": 0,
-      "SCOUT_CHANGED": false
+      "backend_ci": "https://github.com/luisfonse2010-cell/shato-meli-connector/actions/runs/39125653502",
+      "frontend_ci": "https://github.com/luisfonse2010-cell/shatokb-theme/actions/runs/39126126936",
+      "authenticated_owner_canary": "PASS: 0 ready, 100 analyzed, 95 unproven, 5 rejected; no owner action; commercial commands blocked.",
+      "scout_canary": "PASS: existing 10 records before/after; original owner tab not edited.",
+      "static_parity": "PASS: five public executable assets match certified preview and production.",
+      "scope": "OWNER_UI_AND_PUBLIC_API_RELEASE_ONLY",
+      "private_scale_runtime": "NOT_PROMOTED: automatic approval review rejected deployment; retained bf08f4b7-6f69-4bd3-bc79-b93874237c68. New Scale source is offline-certified only.",
+      "new_grants": 0,
+      "new_runs": 0,
+      "provider_calls": 0,
+      "tokens_used": 0,
+      "commercial_mutations": 0,
+      "scout_changed": false
     },
     "rollback_history": [
       {
@@ -110,24 +73,7 @@
         "routing_contract_version": "KABUBY_ROOT_LEGACY_REWRITE_V1",
         "chrome_handoff_contract_version": "SCOUT_CHROME_HANDOFF_V1"
       }
-    ],
-    "candidate_release": {
-      "release_id": "KABUBY_PROFIT_FIRST_DISCOVERY_AND_OWNER_OPERATING_SYSTEM_CLOSURE_V1",
-      "release_state": "CERTIFIED_PREPRODUCTION_CANDIDATE",
-      "frontend_canonical_commit": "e81713e574500f8754ad0f45790eafd7b942d35f",
-      "frontend_artifact_fingerprint": "5a3ab60670f13a1aa534b84747037b5f2515b3dce18c1755dc2277df9ea2f927",
-      "frontend_production_deployment": "NOT_DEPLOYED",
-      "backend_canonical_commit": "53f1fbb188dcb1d993bae9c299f6c497b2aadc65",
-      "api_version": "NOT_DEPLOYED",
-      "private_executor_version": "2cee6e51-7b9b-463b-b38f-4d8026bd9fda",
-      "d1_schema_version": "0095",
-      "read_model_version": "kabuby-owner-opportunity-page/v1",
-      "scout_baseline_version": "SCOUT_CANONICAL_PRODUCTION_BASELINE_V1",
-      "auth_contract_version": "KABUBY_ACCESS_SAME_ORIGIN_V1",
-      "routing_contract_version": "KABUBY_ROOT_LEGACY_REWRITE_V1",
-      "chrome_handoff_contract_version": "SCOUT_CHROME_HANDOFF_V1",
-      "real_scale100_executor_version": "bf08f4b7-6f69-4bd3-bc79-b93874237c68"
-    }
+    ]
   },
   "preview_production_artifact_parity": {
     "platform_supports_identical_artifact_promotion": false,
