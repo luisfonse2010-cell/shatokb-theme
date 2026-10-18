@@ -30,3 +30,16 @@ payloads that do not retain `commercial_authority: NONE` and
 The binding must be verified with an authenticated browser request before any
 production promotion. This source change does not alter production, Cloudflare
 Access policy, Worker bindings, or traffic.
+
+
+## Bounded owner read queries
+
+The owner OS extends the same GET-only route with the closed read allowlist
+`view`, `run`, `decision`, `demand`, `category`, `limit`, `offset`, and `asin`.
+The upstream canonical loader validates values and duplicate keys; all SQL
+values use bound parameters. Pages forwards only these query keys to the same
+fixed private service. No provider, table, persistence key, URL, credential,
+command, or mutation can be selected. Access assertion and role checks remain
+unchanged. Pages never returns an assertion or forwards Cookie/Authorization.
+Default page size is 20, maximum 50. Current selection never falls back to an
+archive; historical V3 dossiers require explicit `view=history`.
