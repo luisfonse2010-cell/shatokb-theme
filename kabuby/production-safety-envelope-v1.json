@@ -110,7 +110,24 @@
         "routing_contract_version": "KABUBY_ROOT_LEGACY_REWRITE_V1",
         "chrome_handoff_contract_version": "SCOUT_CHROME_HANDOFF_V1"
       }
-    ]
+    ],
+    "candidate_release": {
+      "release_id": "KABUBY_PROFIT_FIRST_DISCOVERY_AND_OWNER_OPERATING_SYSTEM_CLOSURE_V1",
+      "release_state": "CERTIFIED_PREPRODUCTION_CANDIDATE",
+      "frontend_canonical_commit": "e81713e574500f8754ad0f45790eafd7b942d35f",
+      "frontend_artifact_fingerprint": "5a3ab60670f13a1aa534b84747037b5f2515b3dce18c1755dc2277df9ea2f927",
+      "frontend_production_deployment": "NOT_DEPLOYED",
+      "backend_canonical_commit": "53f1fbb188dcb1d993bae9c299f6c497b2aadc65",
+      "api_version": "NOT_DEPLOYED",
+      "private_executor_version": "2cee6e51-7b9b-463b-b38f-4d8026bd9fda",
+      "d1_schema_version": "0095",
+      "read_model_version": "kabuby-owner-opportunity-page/v1",
+      "scout_baseline_version": "SCOUT_CANONICAL_PRODUCTION_BASELINE_V1",
+      "auth_contract_version": "KABUBY_ACCESS_SAME_ORIGIN_V1",
+      "routing_contract_version": "KABUBY_ROOT_LEGACY_REWRITE_V1",
+      "chrome_handoff_contract_version": "SCOUT_CHROME_HANDOFF_V1",
+      "real_scale100_executor_version": "bf08f4b7-6f69-4bd3-bc79-b93874237c68"
+    }
   },
   "preview_production_artifact_parity": {
     "platform_supports_identical_artifact_promotion": false,

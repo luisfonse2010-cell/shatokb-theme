@@ -1,5 +1,5 @@
 {
-  "mission": "KABUBY_SCALE100_DISCOVERY_DIVERSITY_AND_OWNER_UX_CORRECTION_V1",
+  "mission": "KABUBY_PROFIT_FIRST_DISCOVERY_AND_OWNER_OPERATING_SYSTEM_CLOSURE_V1",
   "reason": "Owner opportunity language and visual hierarchy correction; existing Scout navigation and native assets unchanged.",
   "files_contracts_affected": [
     "kabuby/index.html",
@@ -8,14 +8,14 @@
     "test/kabuby-scout-production-baseline.test.mjs",
     ".github/workflows/kabuby-foundation-ci.yml"
   ],
-  "expected_behavior_change": "Owner list/detail uses readable commercial explanations, exact marketplace navigation and current-only filters. No Scout behavior changes.",
+  "expected_behavior_change": "Only eligible investment-ready opportunities enter the owner queue; existing human Decision Memory records APPROVE/WATCH/REJECT. Scout and portal read-only Access authority unchanged.",
   "migration_impact": "None. Existing Scout browser storage is neither initialized, reseeded, migrated, nor written.",
   "rollback_plan": "Revert the V3 evidence-projection commits and redeploy the retained prior Pages deployment if a production canary demonstrates a regression.",
-  "owner_authorization": "OWNER_DIRECT_ATTACHMENT_AUTHORIZATION: KABUBY_SCALE100_DISCOVERY_DIVERSITY_AND_OWNER_UX_CORRECTION_V1",
-  "base_commit": "cf477b6be8604d7419c73023c047afbb667464ed",
+  "owner_authorization": "OWNER_DIRECT_ATTACHMENT_AUTHORIZATION: KABUBY_PROFIT_FIRST_DISCOVERY_AND_OWNER_OPERATING_SYSTEM_CLOSURE_V1",
+  "base_commit": "d392cf91217f87e615d6fb60f400d9762c0be9d1",
   "source_fingerprints": {
-    "kabuby/index.html": "ae696941238f082a5e3f7c1effc66c95e6d26b42de1a7946afcfd3e3d4fd22bb",
-    "kabuby/app.js": "8ebe7d99723065e027f6fefb705654e60f2a1e4b595ba724b8680ed443b10d9c",
+    "kabuby/index.html": "254a046657ca9875466a966c2fe540250e1e3f3be69141b5a20ef697c8e2f65b",
+    "kabuby/app.js": "52eff1efc8404204aafd9f5b054e4ea56ff864ad13da625dc4ecdd3e2984204c",
     "kabuby/styles.css": "15a9c7ab03830ae6fdf5ba9a6b481c084dd31cca9ed5f6dec3f5c9e1a6ea1e37",
     "test/kabuby-scout-production-baseline.test.mjs": "0d4aead22b9e78ec8fe6238e9f18cecf605c20576b2bd13e0b1c1724deb7e8dd",
     ".github/workflows/kabuby-foundation-ci.yml": "e07e6f5cd9141a2094584017f68743271407e4911ddd1bb9b0e718f26da22ce2"
