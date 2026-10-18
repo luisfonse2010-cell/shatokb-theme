@@ -96,7 +96,7 @@ export async function submitOwnerOpportunityReview(row,action,{fetchImpl=fetch,u
  const response=await fetchImpl('https://api.kabuby.com/api/v1/memory/decisions',{method:'POST',credentials:'include',redirect:'error',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
  if(!response.ok)throw new Error('OWNER_REVIEW_NOT_CONFIRMED');
  const payload=await response.json(),event=payload?.data?.decision_event ?? payload?.decision_event;
- if(!event?.event_id||event.stage!==body.stage||event.event_type!==body.event_type||Object.entries(facts).some(([k,v])=>event.facts?.[k]!==v)||event.facts.publication_authorized!==false||event.facts.commercial_mutations!==0)throw new Error('OWNER_REVIEW_RECEIPT_DENIED');
+ if(!event?.event_id||event.stage!==body.stage||event.event_type!==body.event_type||Object.entries(body.identity).some(([k,v])=>event.identity?.[k]!==v)||Object.entries(facts).some(([k,v])=>event.facts?.[k]!==v)||event.facts.publication_authorized!==false||event.facts.commercial_mutations!==0)throw new Error('OWNER_REVIEW_RECEIPT_DENIED');
  return event;
 }
 export function ownerPreparationView(page,esc) {
