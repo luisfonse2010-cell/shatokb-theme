@@ -19,3 +19,11 @@ test('unavailable bounds are not advertised as supported ranges and known metric
  row.economic_evaluation.reference_economic_upper_bound={pre_unknown_cost_profit_upper_minor:-1234};assert.match(show(),/como máximo USD -12.34/);
  row.economic_evaluation.net_profit=1234;row.economic_evaluation.roi=2500;assert.match(show(),/Beneficio USD 12.34/);assert.match(show(),/ROI sobre costo 25.00%/);
 });
+
+test('a negative decision never claims active background research',()=>{
+ for(const decision of ['REJECTED','DO_NOT_SPEND']){
+ const row={asin:'B01F49C0QS',commercial_decision:decision,product:{title:'Persisted negative candidate'},economic_evaluation:{net_profit:'UNKNOWN'}};
+ const html=ownerOperationalView({status:'AVAILABLE',run:{},summary:{},rows:[row]},esc,{asin:row.asin});
+ assert.match(html,/No necesitas actuar — no continuar con este candidato/);assert.doesNotMatch(html,/investigación en segundo plano/);
+ }
+});
