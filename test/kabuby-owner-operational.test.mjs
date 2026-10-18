@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ownerCockpit, ownerOperationalView } from '../kabuby/owner-operational-view.js';
+import { ownerCockpit, ownerOperationalView, ownerRunHistory } from '../kabuby/owner-operational-view.js';
 const esc=v=>String(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
 test('owner cockpit has no investment-ready or routine HOLD owner tasks',()=>{const html=ownerCockpit({ready_for_owner_review_count:0,summary:{VALIDATE:0,HOLD:95,REJECTED:5,CONTINUE_RESEARCH:0,DO_NOT_SPEND:0,verified_new_sold:32}},esc);assert.match(html,/Todavía no hay candidatos listos para invertir/);assert.match(html,/No necesitas actuar sobre los productos en investigación/);assert.match(html,/Listos para revisar<\/small><strong>0/);assert.match(html,/Listos para publicar<\/small><strong>Por confirmar/);const unknown=ownerCockpit({summary:{VALIDATE:null,HOLD:null,CONTINUE_RESEARCH:null,REJECTED:null,DO_NOT_SPEND:null}},esc);assert.match(unknown,/Preparación de inversión por confirmar/);assert.doesNotMatch(unknown,/<strong>0<\/strong>/);});
 test('current unavailable state never renders historical product fallback',()=>{const html=ownerOperationalView(null,esc);assert.match(html,/Current opportunities unavailable/);assert.doesNotMatch(html,/Product Finder V3 owner dossiers/);});
@@ -35,3 +35,9 @@ test('normal owner queue never pads zero eligible opportunities with HOLD/reject
 });
 
 test('qualified card consumes canonical sold facts and factual target price',()=>{const row={asin:'B000000001',run_id:'run-1',commercial_decision:'VALIDATE',review_eligible:true,decision_reason:'FACTUAL_ECONOMICS_AND_MATERIAL_GATES_VALIDATED',verified_demand:{state:'VERIFIED_EXACT_NEW_SOLD_REFERENCE',sold_count:30},economic_evaluation:{net_profit:1500,margin:3000,roi:5000,risk_state:'RISK_ACCEPTABLE',input_evidence:{proposed_selling_price_minor:5000}}};const html=ownerOperationalView({status:'AVAILABLE',run:{run_id:'run-1'},ready_for_owner_review_count:1,summary:{},rows:[row]},esc);assert.match(html,/30 ventas NEW verificadas/);assert.match(html,/Venta objetivo/);assert.match(html,/USD 50.00/);assert.match(html,/Evidencia material acreditada/);assert.match(html,/Riesgo evaluado/);});
+
+test('run history displays factual receipt token total and leaves missing usage UNKNOWN',()=>{
+ const page={run:{cohort_id:'c',token_consumption:{total_tokens:144},provider_consumption:[]},summary:{},runs:[]};
+ assert.match(ownerRunHistory(page,esc),/Keepa tokens \(receipt total\): 144/);
+ delete page.run.token_consumption;assert.match(ownerRunHistory(page,esc),/Keepa tokens \(receipt total\): UNKNOWN/);
+});
