@@ -47,10 +47,12 @@ function isCertifiedPhysicalProjection(payload) {
 export async function handlePhysicalProjectionGateway({ request, binding }) {
   const url = new URL(request.url);
   if (request.method !== 'GET') return error(405, 'METHOD_NOT_ALLOWED');
-  if (url.pathname !== PHYSICAL_PROJECTION_PATH || url.search) {
+  if (url.pathname !== PHYSICAL_PROJECTION_PATH) {
     return error(400, 'PHYSICAL_PROJECTION_SCOPE_DENIED');
   }
 
+  const allowed = new Set(['view','run','decision','demand','category','limit','offset','asin']);
+  for (const key of url.searchParams.keys()) if (!allowed.has(key) || url.searchParams.getAll(key).length!==1) return error(400,'PHYSICAL_PROJECTION_SCOPE_DENIED');
   const assertion = request.headers.get('cf-access-jwt-assertion');
   if (!assertion) return error(401, 'AUTH_REQUIRED');
   if (!binding || typeof binding.fetch !== 'function') {
@@ -61,7 +63,7 @@ export async function handlePhysicalProjectionGateway({ request, binding }) {
   try {
     // Deliberately do not forward Cookie, Authorization, query parameters,
     // caller-selected URLs, or arbitrary headers.
-    upstream = await binding.fetch(new Request(`https://physical-projection.internal${PHYSICAL_PROJECTION_PATH}`, {
+    upstream = await binding.fetch(new Request(`https://physical-projection.internal${PHYSICAL_PROJECTION_PATH}${url.search}`, {
       method: 'GET',
       headers: {
         accept: 'application/json',

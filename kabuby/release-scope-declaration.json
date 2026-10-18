@@ -1,7 +1,9 @@
 {
-  "mission": "AMAZON_EBAY_END_TO_END_COMMERCIAL_CLOSURE_V1",
+  "mission": "KABUBY_OWNER_INTELLIGENCE_OS_CANONICAL_RECONCILIATION_AND_IMPLEMENTATION_V1",
   "allowed_change_scope": [
+    "HOME_UI",
     "OPPORTUNITIES_UI",
+    "API_PROJECTION",
     "RELEASE_SAFETY"
   ],
   "files_contracts_affected": [
@@ -20,7 +22,9 @@
     "scripts/production-safety-envelope-gate.mjs",
     "kabuby/v3-capability-contract.js",
     "test/v3-capability-regression.test.mjs",
-    ".github/workflows/kabuby-foundation-ci.yml"
+    ".github/workflows/kabuby-foundation-ci.yml",
+    "kabuby/owner-operational-view.js",
+    "kabuby/today/projection-gateway.mjs"
   ],
-  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: AMAZON_EBAY_END_TO_END_COMMERCIAL_CLOSURE_V1"
+  "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: KABUBY_OWNER_INTELLIGENCE_OS_CANONICAL_RECONCILIATION_AND_IMPLEMENTATION_V1"
 }

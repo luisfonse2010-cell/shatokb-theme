@@ -10,7 +10,7 @@ const fail = code => { throw new Error(code); };
 const read = (file, activeRoot = root) => readFileSync(path.join(activeRoot, file), 'utf8');
 const json = (file, activeRoot = root) => JSON.parse(read(file, activeRoot));
 const hash = text => createHash('sha256').update(text).digest('hex');
-const artifactFiles = Object.freeze(['kabuby/index.html', 'kabuby/app.js', 'kabuby/styles.css', 'kabuby/_redirects', 'kabuby/functions/api/v1/intelligence/physical.js', 'kabuby/v3-capability-contract.js']);
+const artifactFiles = Object.freeze(['kabuby/index.html', 'kabuby/app.js', 'kabuby/styles.css', 'kabuby/_redirects', 'kabuby/functions/api/v1/intelligence/physical.js', 'kabuby/v3-capability-contract.js', 'kabuby/owner-operational-view.js', 'kabuby/today/projection-gateway.mjs']);
 const requiredSurfaces = Object.freeze(['AUTH_ACCESS','ROOT_ROUTING','HOME','TODAY','OPPORTUNITIES','PRODUCT_DOSSIERS','SCOUT','SCOUT_CHROME_HANDOFF','ASK_KABUBY','API_READ_MODEL','PRIVATE_EXECUTOR_CONTROL_PLANE','D1_SCHEMA_COMPATIBILITY','V2_SPECIALIZED_ISOLATION','COMMERCIAL_MUTATION_FIREWALL']);
 const requiredGates = Object.freeze(['CANONICAL_SOURCE','REMOTE_CI','FULL_REGRESSION','MISSION_CONTROL','SCOPE_GATE','MIGRATION_GATE','RELEASE_MANIFEST','AUTH','ROUTING','HOME','TODAY','OPPORTUNITIES','DOSSIERS','SCOUT','CHROME_HANDOFF','API_READ_MODEL','PRIVATE_EXECUTOR','V2_ISOLATION','COMMERCIAL_FIREWALL','PREVIEW_SMOKE','ARTIFACT_FINGERPRINT']);
 

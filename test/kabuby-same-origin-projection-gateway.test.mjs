@@ -98,3 +98,10 @@ test('production rollback baseline records the retained production deployment an
   assert.equal(baseline.required_pre_promotion_gates.kabuby_com_cloudflare_access, 'REQUIRED');
   assert.equal(baseline.commercial_authority, 'NONE');
 });
+
+test('bounded owner filters stay on the same private authenticated GET route',async()=>{
+ let target;
+ const result=await handlePhysicalProjectionGateway({request:request('/api/v1/intelligence/physical?decision=HOLD&limit=20&offset=20&category=Accessories'),binding:{fetch:async value=>{target=value;return upstream();}}});
+ assert.equal(result.status,200);const url=new URL(target.url);assert.equal(url.hostname,'physical-projection.internal');assert.equal(url.searchParams.get('decision'),'HOLD');assert.equal(url.searchParams.get('offset'),'20');assert.equal(target.headers.get('cf-access-jwt-assertion'),assertion);assert.equal(target.headers.get('authorization'),null);
+ const duplicate=await handlePhysicalProjectionGateway({request:request('/api/v1/intelligence/physical?run=a&run=b'),binding:{fetch:async()=>{throw Error('must not reach upstream');}}});assert.equal(duplicate.status,400);
+});
