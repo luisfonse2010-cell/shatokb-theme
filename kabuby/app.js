@@ -639,6 +639,6 @@ if (postCaptureTarget) {
   document.querySelectorAll('[data-locale]').forEach(button=>button.addEventListener('click',()=>setLocale(button.dataset.locale)));
   document.querySelector('#notification-button').addEventListener('click',()=>go('attention'));
   document.querySelector('#owner-account').addEventListener('click',()=>go('account'));
-  window.addEventListener('hashchange',()=>{ projection=null; loadProjection().finally(render); render(); });
-  createNavigation(); updateStaticCopy(); render(); loadProjection().finally(render);
+  window.addEventListener('hashchange',()=>{ const {page}=route(); if(!['today','attention','opportunities'].includes(page)) { render(); return; } const requestedHash=window.location.hash; projection=null; loadProjection().finally(()=>{if(window.location.hash===requestedHash) render();}); render(); });
+  createNavigation(); updateStaticCopy(); render(); const initialHash=window.location.hash; loadProjection().finally(()=>{if(window.location.hash===initialHash) render();});
 }
