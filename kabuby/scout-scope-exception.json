@@ -14,8 +14,8 @@
   "owner_authorization": "OWNER_DIRECT_CHAT_AUTHORIZATION: KABUBY_OWNER_INTELLIGENCE_OS_CANONICAL_RECONCILIATION_AND_IMPLEMENTATION_V1",
   "base_commit": "ada73ff0fff7636a2e4e11e4018a0ac93e69ebb2",
   "source_fingerprints": {
-    "kabuby/index.html": "3b8c9686158183fdf61555fde37607e4e37c4927078418ce9a3a6fa417cf9c66",
-    "kabuby/app.js": "b39f4d021fef510fd34ceb36758b761c90e597dd01c4625757d8e661d5ddb662",
+    "kabuby/index.html": "08716c02d4894baf5901ebaa55129ab3db5673d74e18ea4d3d4a6e69fc7c6942",
+    "kabuby/app.js": "4e9be4be09d12298cde4aad684a0dee9793b65f7b73bbdad533134fe4c8f96c9",
     "kabuby/styles.css": "1261b38c45e17dcc1fddac8b05b12b471a7d6c6457c7e179609d2b3cf844590d",
     "test/kabuby-scout-production-baseline.test.mjs": "0d4aead22b9e78ec8fe6238e9f18cecf605c20576b2bd13e0b1c1724deb7e8dd",
     ".github/workflows/kabuby-foundation-ci.yml": "e07e6f5cd9141a2094584017f68743271407e4911ddd1bb9b0e718f26da22ce2"
