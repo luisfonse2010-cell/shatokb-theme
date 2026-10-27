@@ -1,0 +1,102 @@
+[
+  {
+    "path": "kabuby/index.html",
+    "sha256": "254a046657ca9875466a966c2fe540250e1e3f3be69141b5a20ef697c8e2f65b",
+    "matches_accepted_commit": false
+  },
+  {
+    "path": "kabuby/app.js",
+    "sha256": "52eff1efc8404204aafd9f5b054e4ea56ff864ad13da625dc4ecdd3e2984204c",
+    "matches_accepted_commit": false
+  },
+  {
+    "path": "kabuby/styles.css",
+    "sha256": "15a9c7ab03830ae6fdf5ba9a6b481c084dd31cca9ed5f6dec3f5c9e1a6ea1e37",
+    "matches_accepted_commit": false
+  },
+  {
+    "path": "kabuby/scout/index.html",
+    "sha256": "caabd6dd4c7362bad53a0c1219ba4900ceaf2b21ff3089b0593993b4b33a4e7f",
+    "matches_accepted_commit": true
+  },
+  {
+    "path": "kabuby/scout-owner.js",
+    "sha256": "c87f94d1d7a839bdb5528fb1530216d6a6af130b477213ce52693134227984de",
+    "matches_accepted_commit": true
+  },
+  {
+    "path": "kabuby/_headers",
+    "sha256": "62627fdfed8bd84e49e7ce8d4571bca463d2a233a8ad9e40fd466f459b2c5e3c",
+    "matches_accepted_commit": true
+  },
+  {
+    "path": "kabuby/_redirects",
+    "sha256": "b454d59ce8bba768aa2aec6c7f85461dc4506a648a9ae9d121b7e0dc4fad35fe",
+    "matches_accepted_commit": true
+  },
+  {
+    "path": "kabuby/production-surface-regression-gate.json",
+    "sha256": "e21ad93a178675fa1fe9e133a69b547e10b8fbfcb7dc629d06af6fd2eb44949d",
+    "matches_accepted_commit": true
+  },
+  {
+    "path": "kabuby/scout-production-baseline-v1.json",
+    "sha256": "9227107b1a0652dd37c8c2e404eb3d99ab7593eff6adb0f4266187bca91c9c2a",
+    "matches_accepted_commit": null
+  },
+  {
+    "path": "scripts/scout-protection-gate.mjs",
+    "sha256": "b6957fdaadcf0a0de20f6ccdf4adfe6b8cd7395f9b4b20766d0af4fb5bf818ae",
+    "matches_accepted_commit": null
+  },
+  {
+    "path": "test/kabuby-scout-production-baseline.test.mjs",
+    "sha256": "0d4aead22b9e78ec8fe6238e9f18cecf605c20576b2bd13e0b1c1724deb7e8dd",
+    "matches_accepted_commit": null
+  },
+  {
+    "path": "test/kabuby-production-surface-regression-gate.test.mjs",
+    "sha256": "3913a752ce176265c54c878d70b336856d89095ca49211aba519a559cb7a2149",
+    "matches_accepted_commit": true
+  },
+  {
+    "path": "test/scout-owner.test.mjs",
+    "sha256": "058f2d4ceb04933b776c1fce44968e0a82642d024f7d9c707304025e05b5dabf",
+    "matches_accepted_commit": true
+  },
+  {
+    "path": ".github/workflows/kabuby-foundation-ci.yml",
+    "sha256": "e07e6f5cd9141a2094584017f68743271407e4911ddd1bb9b0e718f26da22ce2",
+    "matches_accepted_commit": false
+  },
+  {
+    "path": "kabuby/scout/kabuby-today-fallback.js",
+    "sha256": "f779eb5c07a2fd0fbc1214785a69cb9eda437ce3a64dc1f03f06bb0e38bd7bc6",
+    "matches_accepted_commit": true
+  },
+  {
+    "path": "kabuby/scout/kabuby-today.css",
+    "sha256": "6bee1cbb09a76b47a275c941980f48818ea664c50fd7802d550055405d840c39",
+    "matches_accepted_commit": true
+  },
+  {
+    "path": "kabuby/scout/kabuby-today.js",
+    "sha256": "84fb649ef53ad050d8b7298649c5e70bace1a2ca2eacc3f85e59be60c39bb9c2",
+    "matches_accepted_commit": true
+  },
+  {
+    "path": "kabuby/scout/images/apple-touch-icon.png",
+    "sha256": "a948f5906333e960bc729a2a6423cb470cbeafd97f8a73ce9cbbfd35cb1961f9",
+    "matches_accepted_commit": true
+  },
+  {
+    "path": "kabuby/scout/images/kabuby-favicon.svg",
+    "sha256": "ccab2193ffe1703d51e357ef5e7a36e02771f859f9698ac2679058f85c5b27a9",
+    "matches_accepted_commit": true
+  },
+  {
+    "path": "kabuby/scout/images/kabuby-logo.svg",
+    "sha256": "3a0141093b8a6252c275650873acbe51271085bb6e27f5e25aa5ddbcc6c6ccf0",
+    "matches_accepted_commit": true
+  }
+]
